@@ -37,11 +37,46 @@ const _nonNodeTypes = {
   'PASSTHROUGH',
 };
 
+/// Coalesces config-check runs for the patrol page: at most one check
+/// runs at a time, and requests that arrive while a check is running
+/// collapse into a single follow-up run, so a burst of input changes
+/// never starts parallel checks and no change is silently dropped.
+class PatrolConfigCheckScheduler {
+  bool _running = false;
+  bool _rerunRequested = false;
+
+  bool get isRunning => _running;
+
+  /// Starts a check when idle and returns true; while a check is
+  /// running, remembers one follow-up run instead and returns false.
+  bool tryStart() {
+    if (_running) {
+      _rerunRequested = true;
+      return false;
+    }
+    _running = true;
+    return true;
+  }
+
+  /// Ends the current check; returns true when a follow-up run was
+  /// requested while it was running and should start now.
+  bool finish() {
+    _running = false;
+    if (!_rerunRequested) return false;
+    _rerunRequested = false;
+    return true;
+  }
+}
+
 class _PatrolViewState extends ConsumerState<PatrolView> {
   bool _chainReady = false;
-  bool _checkingConfig = false;
+  final _configCheckScheduler = PatrolConfigCheckScheduler();
   PatrolConfigCheck? _configCheck;
   String _configError = '';
+  ProviderSubscription? _profileSubscription;
+  ProviderSubscription? _runStateSubscription;
+
+  bool get _checkingConfig => _configCheckScheduler.isRunning;
 
   @override
   void initState() {
@@ -50,11 +85,36 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       if (mounted) setState(() => _chainReady = true);
     });
     _runConfigCheck();
+    // This page is kept alive across page switches, so a result from
+    // when it was opened goes stale when its inputs change elsewhere:
+    // switching or deleting the current profile, or starting/stopping
+    // the service. Re-run the check on those changes instead of
+    // leaving the old result on screen until a manual recheck.
+    _profileSubscription = ref.listenManual(
+      currentProfileProvider.select((state) => state?.id),
+      (previous, next) {
+        if (previous != next) _runConfigCheck();
+      },
+    );
+    _runStateSubscription = ref.listenManual(
+      runTimeProvider.select((state) => state != null),
+      (previous, next) {
+        if (previous != next) _runConfigCheck();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _profileSubscription?.close();
+    _runStateSubscription?.close();
+    super.dispose();
   }
 
   Future<void> _runConfigCheck() async {
-    if (_checkingConfig) return;
-    setState(() => _checkingConfig = true);
+    if (!_configCheckScheduler.tryStart()) return;
+    setState(() {});
+    var rerun = false;
     try {
       final message = await globalState.validatePatchedConfig(
         patchConfig: ref.read(patchClashConfigProvider),
@@ -65,7 +125,6 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       // which must not be reported as a failed config.
       final check = translateConfigCheck(message);
       setState(() {
-        _checkingConfig = false;
         _configCheck = check;
         _configError = check == PatrolConfigCheck.failed ? message : '';
       });
@@ -74,11 +133,16 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       // surface the original error as the failure message.
       if (!mounted) return;
       setState(() {
-        _checkingConfig = false;
         _configCheck = PatrolConfigCheck.failed;
         _configError = '$error';
       });
+    } finally {
+      rerun = _configCheckScheduler.finish();
+      if (mounted) setState(() {});
     }
+    // An input changed while this check was running: its result may
+    // already be stale, so run once more with the current inputs.
+    if (rerun && mounted) await _runConfigCheck();
   }
 
   int? _delayFor(DelayMap delayMap, String? testUrl, String name) {
