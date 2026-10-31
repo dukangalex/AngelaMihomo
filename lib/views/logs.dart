@@ -350,9 +350,6 @@ class _LogsViewState extends ConsumerState<LogsView>
     final level = ref.watch(
       patchClashConfigProvider.select((state) => state.logLevel),
     );
-    final aiSearch = ref.watch(
-      appSettingProvider.select((state) => state.logAiSearch),
-    );
     return CommonScaffold(
       actions: [
         IconButton(
@@ -385,16 +382,10 @@ class _LogsViewState extends ConsumerState<LogsView>
                 onPressed: _handleLogLevelSettings,
               ),
               PopupMenuItemData(
-                icon: aiSearch
-                    ? Icons.check_circle_rounded
-                    : Icons.circle_outlined,
-                label: appLocalizations.logAiSearch,
+                icon: Icons.health_and_safety_outlined,
+                label: appLocalizations.aiPatrol,
                 onPressed: () {
-                  ref
-                      .read(appSettingProvider.notifier)
-                      .updateState(
-                        (state) => state.copyWith(logAiSearch: !aiSearch),
-                      );
+                  globalState.appController.toPage(PageLabel.patrol);
                 },
               ),
               PopupMenuItemData(
@@ -447,7 +438,6 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
   bool? _pureBlack;
   var _filter = const LogsFilterState();
   Log? _expanded;
-  var _aiSearch = true;
   _LogMetrics? _metrics;
   _LogColors? _colors;
 
@@ -632,7 +622,7 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
       expanded: expanded,
       onTap: () => _toggle(log),
       onCopy: () => _copy(log),
-      onSearch: _aiSearch ? () => _search(log) : null,
+      onPatrol: () => _openPatrol(),
       onFilter: () => _filterBy(log),
     );
   }
@@ -650,12 +640,8 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
     context.showNotifier(appLocalizations.copySuccess);
   }
 
-  void _search(Log log) {
-    final uri = Uri.https('www.google.com', '/search', {
-      'q': appLocalizations.analyzeLogPrompt(log.raw),
-      'udm': '50',
-    });
-    globalState.openUrl(uri.toString());
+  void _openPatrol() {
+    globalState.appController.toPage(PageLabel.patrol);
   }
 
   void _filterBy(Log log) {
@@ -846,9 +832,6 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
     final level = ref.watch(
       patchClashConfigProvider.select((state) => state.logLevel),
     );
-    _aiSearch = ref.watch(
-      appSettingProvider.select((state) => state.logAiSearch),
-    );
     final compact = ref.watch(isMobileViewProvider);
     final pureBlack = ref.watch(
       themeSettingProvider.select((state) => state.pureBlack),
@@ -886,7 +869,7 @@ class _LogRow extends StatelessWidget {
   final bool expanded;
   final VoidCallback onTap;
   final VoidCallback onCopy;
-  final VoidCallback? onSearch;
+  final VoidCallback onPatrol;
   final VoidCallback onFilter;
 
   const _LogRow({
@@ -896,7 +879,7 @@ class _LogRow extends StatelessWidget {
     required this.expanded,
     required this.onTap,
     required this.onCopy,
-    required this.onSearch,
+    required this.onPatrol,
     required this.onFilter,
   });
 
@@ -977,13 +960,15 @@ class _LogRow extends StatelessWidget {
                     icon: const Icon(Icons.copy_rounded, size: 16),
                     label: Text(appLocalizations.copy),
                   ),
-                  if (onSearch != null)
-                    TextButton.icon(
-                      onPressed: onSearch,
-                      style: buttonStyle,
-                      icon: const Icon(Icons.search_rounded, size: 16),
-                      label: Text(appLocalizations.search),
+                  TextButton.icon(
+                    onPressed: onPatrol,
+                    style: buttonStyle,
+                    icon: const Icon(
+                      Icons.health_and_safety_outlined,
+                      size: 16,
                     ),
+                    label: Text(appLocalizations.aiPatrol),
+                  ),
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerLeft,

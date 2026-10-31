@@ -21,6 +21,13 @@ class Navigation {
             DashboardView(key: const GlobalObjectKey(PageLabel.dashboard)),
       ),
       NavigationItem(
+        icon: const Icon(Icons.health_and_safety_outlined),
+        label: PageLabel.patrol,
+        builder: (_) =>
+            PatrolView(key: const GlobalObjectKey(PageLabel.patrol)),
+        modes: [NavigationItemMode.mobile, NavigationItemMode.desktop],
+      ),
+      NavigationItem(
         icon: const Icon(Icons.explore),
         label: PageLabel.proxies,
         builder: (_) => ProviderScope(

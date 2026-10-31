@@ -1665,6 +1665,188 @@ class AppLocalizations {
     return Intl.message('AI Search', name: 'logAiSearch', desc: '', args: []);
   }
 
+  /// `AI Patrol`
+  String get aiPatrol {
+    return Intl.message('AI Patrol', name: 'aiPatrol', desc: '', args: []);
+  }
+
+  /// `Everything looks good`
+  String get patrolAllGood {
+    return Intl.message('Everything looks good', name: 'patrolAllGood', desc: '', args: []);
+  }
+
+  /// `Recheck`
+  String get patrolRecheck {
+    return Intl.message('Recheck', name: 'patrolRecheck', desc: '', args: []);
+  }
+
+  /// `No problems found`
+  String get patrolNoProblems {
+    return Intl.message('No problems found', name: 'patrolNoProblems', desc: '', args: []);
+  }
+
+  /// `Log problems`
+  String get patrolSectionLogs {
+    return Intl.message('Log problems', name: 'patrolSectionLogs', desc: '', args: []);
+  }
+
+  /// `Connection failures`
+  String get patrolLogConnection {
+    return Intl.message('Connection failures', name: 'patrolLogConnection', desc: '', args: []);
+  }
+
+  /// `DNS failures`
+  String get patrolLogDns {
+    return Intl.message('DNS failures', name: 'patrolLogDns', desc: '', args: []);
+  }
+
+  /// `Timeouts`
+  String get patrolLogTimeouts {
+    return Intl.message('Timeouts', name: 'patrolLogTimeouts', desc: '', args: []);
+  }
+
+  /// `Rule problems`
+  String get patrolLogRule {
+    return Intl.message('Rule problems', name: 'patrolLogRule', desc: '', args: []);
+  }
+
+  /// `Subscription`
+  String get patrolSectionSubscription {
+    return Intl.message('Subscription', name: 'patrolSectionSubscription', desc: '', args: []);
+  }
+
+  /// `No profile selected`
+  String get patrolSubNoProfile {
+    return Intl.message('No profile selected', name: 'patrolSubNoProfile', desc: '', args: []);
+  }
+
+  /// `Last updated`
+  String get patrolSubLastUpdated {
+    return Intl.message('Last updated', name: 'patrolSubLastUpdated', desc: '', args: []);
+  }
+
+  /// `Never updated`
+  String get patrolSubNeverUpdated {
+    return Intl.message('Never updated', name: 'patrolSubNeverUpdated', desc: '', args: []);
+  }
+
+  /// `Update overdue — refresh it manually once`
+  String get patrolSubStale {
+    return Intl.message('Update overdue — refresh it manually once', name: 'patrolSubStale', desc: '', args: []);
+  }
+
+  /// `Subscription expired`
+  String get patrolSubExpired {
+    return Intl.message('Subscription expired', name: 'patrolSubExpired', desc: '', args: []);
+  }
+
+  /// `The last update failed`
+  String get patrolSubUpdateFailed {
+    return Intl.message('The last update failed', name: 'patrolSubUpdateFailed', desc: '', args: []);
+  }
+
+  /// `Node health`
+  String get patrolSectionNodes {
+    return Intl.message('Node health', name: 'patrolSectionNodes', desc: '', args: []);
+  }
+
+  /// `Working`
+  String get patrolNodesWorking {
+    return Intl.message('Working', name: 'patrolNodesWorking', desc: '', args: []);
+  }
+
+  /// `Unavailable`
+  String get patrolNodesUnavailable {
+    return Intl.message('Unavailable', name: 'patrolNodesUnavailable', desc: '', args: []);
+  }
+
+  /// `Untested`
+  String get patrolNodesUntested {
+    return Intl.message('Untested', name: 'patrolNodesUntested', desc: '', args: []);
+  }
+
+  /// `No speed-test data yet`
+  String get patrolNodesNoData {
+    return Intl.message('No speed-test data yet', name: 'patrolNodesNoData', desc: '', args: []);
+  }
+
+  /// `Most nodes are unreachable — likely a network or subscription problem, not a single bad node`
+  String get patrolNodesWidespread {
+    return Intl.message('Most nodes are unreachable — likely a network or subscription problem, not a single bad node', name: 'patrolNodesWidespread', desc: '', args: []);
+  }
+
+  /// `Some nodes are unavailable`
+  String get patrolNodesSomeDown {
+    return Intl.message('Some nodes are unavailable', name: 'patrolNodesSomeDown', desc: '', args: []);
+  }
+
+  /// `Mode & chain`
+  String get patrolSectionLink {
+    return Intl.message('Mode & chain', name: 'patrolSectionLink', desc: '', args: []);
+  }
+
+  /// `Chain proxy is off`
+  String get patrolChainOff {
+    return Intl.message('Chain proxy is off', name: 'patrolChainOff', desc: '', args: []);
+  }
+
+  /// `Chain proxy is on`
+  String get patrolChainOn {
+    return Intl.message('Chain proxy is on', name: 'patrolChainOn', desc: '', args: []);
+  }
+
+  /// `Entry or exit is not selected yet`
+  String get patrolChainIncomplete {
+    return Intl.message('Entry or exit is not selected yet', name: 'patrolChainIncomplete', desc: '', args: []);
+  }
+
+  /// `One chain hop looks down`
+  String get patrolChainHopDown {
+    return Intl.message('One chain hop looks down', name: 'patrolChainHopDown', desc: '', args: []);
+  }
+
+  /// `Core & config`
+  String get patrolSectionCore {
+    return Intl.message('Core & config', name: 'patrolSectionCore', desc: '', args: []);
+  }
+
+  /// `Version`
+  String get patrolVersion {
+    return Intl.message('Version', name: 'patrolVersion', desc: '', args: []);
+  }
+
+  /// `Config check passed`
+  String get patrolConfigValid {
+    return Intl.message('Config check passed', name: 'patrolConfigValid', desc: '', args: []);
+  }
+
+  /// `Config check failed`
+  String get patrolConfigInvalid {
+    return Intl.message('Config check failed', name: 'patrolConfigInvalid', desc: '', args: []);
+  }
+
+  /// `Checking config…`
+  String get patrolConfigChecking {
+    return Intl.message('Checking config…', name: 'patrolConfigChecking', desc: '', args: []);
+  }
+
+  /// `Start the service to run the full config check`
+  String get patrolConfigUnavailable {
+    return Intl.message('Start the service to run the full config check', name: 'patrolConfigUnavailable', desc: '', args: []);
+  }
+
+  /// `{count, plural, one{1 area needs attention} other{{count} areas need attention}}`
+  String patrolAttentionNeeded(num count) {
+    return Intl.plural(
+      count,
+      one: '1 area needs attention',
+      other: '$count areas need attention',
+      name: 'patrolAttentionNeeded',
+      desc: '',
+      args: [count],
+    );
+  }
+
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);
