@@ -898,6 +898,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolConfigInvalid": MessageLookupByLibrary.simpleMessage("配置校验未通过"),
     "patrolConfigChecking": MessageLookupByLibrary.simpleMessage("正在校验配置…"),
     "patrolConfigUnavailable": MessageLookupByLibrary.simpleMessage("启动服务后才能做完整配置校验"),
+    "profileSwitchFailed": MessageLookupByLibrary.simpleMessage("配置切换失败，当前配置未变更，请检查后重试"),
+    "profileSwitchFailedRollback": MessageLookupByLibrary.simpleMessage("新配置切换失败，已切回原来的配置"),
     "patrolAttentionNeeded": m54,
     "logLevel": MessageLookupByLibrary.simpleMessage("日志等级"),
     "logLevelDebugHint": m28,

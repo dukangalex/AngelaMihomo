@@ -1227,5 +1227,7 @@
   "patrolConfigChecking": "正在校验配置…",
   "patrolConfigUnavailable": "启动服务后才能做完整配置校验",
   "patrolAttentionNeeded": "{count} 处需要留意",
-  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}}
+  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}},
+  "profileSwitchFailedRollback": "新配置切换失败，已切回原来的配置",
+  "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试"
 }

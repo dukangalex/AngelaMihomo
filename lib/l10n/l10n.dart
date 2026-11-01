@@ -1847,6 +1847,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Couldn't switch to the new profile, so the previous profile was restored`
+  String get profileSwitchFailedRollback {
+    return Intl.message('Couldn\'t switch to the new profile, so the previous profile was restored', name: 'profileSwitchFailedRollback', desc: '', args: []);
+  }
+
+  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
+  String get profileSwitchFailed {
+    return Intl.message('Couldn\'t switch profiles. The current profile is unchanged; check it and try again', name: 'profileSwitchFailed', desc: '', args: []);
+  }
+
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);

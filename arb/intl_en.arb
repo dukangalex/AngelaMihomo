@@ -1227,5 +1227,7 @@
   "patrolConfigChecking": "Checking config…",
   "patrolConfigUnavailable": "Start the service to run the full config check",
   "patrolAttentionNeeded": "{count, plural, one {1 area needs attention} other {{count} areas need attention}}",
-  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}}
+  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}},
+  "profileSwitchFailedRollback": "Couldn't switch to the new profile, so the previous profile was restored",
+  "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again"
 }
