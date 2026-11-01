@@ -145,6 +145,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m53(count) =>
       "${Intl.plural(count, one: 'year', other: 'years')}";
+  static String m54(count) =>
+      "${Intl.plural(count, one: '1 area needs attention', other: '${count} areas need attention')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1159,6 +1161,41 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("Locate"),
     "log": MessageLookupByLibrary.simpleMessage("Log"),
     "logAiSearch": MessageLookupByLibrary.simpleMessage("AI Search"),
+    "aiPatrol": MessageLookupByLibrary.simpleMessage("AI Patrol"),
+    "patrolAllGood": MessageLookupByLibrary.simpleMessage("Everything looks good"),
+    "patrolRecheck": MessageLookupByLibrary.simpleMessage("Recheck"),
+    "patrolNoProblems": MessageLookupByLibrary.simpleMessage("No problems found"),
+    "patrolSectionLogs": MessageLookupByLibrary.simpleMessage("Log problems"),
+    "patrolLogConnection": MessageLookupByLibrary.simpleMessage("Connection failures"),
+    "patrolLogDns": MessageLookupByLibrary.simpleMessage("DNS failures"),
+    "patrolLogTimeouts": MessageLookupByLibrary.simpleMessage("Timeouts"),
+    "patrolLogRule": MessageLookupByLibrary.simpleMessage("Rule problems"),
+    "patrolSectionSubscription": MessageLookupByLibrary.simpleMessage("Subscription"),
+    "patrolSubNoProfile": MessageLookupByLibrary.simpleMessage("No profile selected"),
+    "patrolSubLastUpdated": MessageLookupByLibrary.simpleMessage("Last updated"),
+    "patrolSubNeverUpdated": MessageLookupByLibrary.simpleMessage("Never updated"),
+    "patrolSubStale": MessageLookupByLibrary.simpleMessage("Update overdue — refresh it manually once"),
+    "patrolSubExpired": MessageLookupByLibrary.simpleMessage("Subscription expired"),
+    "patrolSubUpdateFailed": MessageLookupByLibrary.simpleMessage("The last update failed"),
+    "patrolSectionNodes": MessageLookupByLibrary.simpleMessage("Node health"),
+    "patrolNodesWorking": MessageLookupByLibrary.simpleMessage("Working"),
+    "patrolNodesUnavailable": MessageLookupByLibrary.simpleMessage("Unavailable"),
+    "patrolNodesUntested": MessageLookupByLibrary.simpleMessage("Untested"),
+    "patrolNodesNoData": MessageLookupByLibrary.simpleMessage("No speed-test data yet"),
+    "patrolNodesWidespread": MessageLookupByLibrary.simpleMessage("Most nodes are unreachable — likely a network or subscription problem, not a single bad node"),
+    "patrolNodesSomeDown": MessageLookupByLibrary.simpleMessage("Some nodes are unavailable"),
+    "patrolSectionLink": MessageLookupByLibrary.simpleMessage("Mode & chain"),
+    "patrolChainOff": MessageLookupByLibrary.simpleMessage("Chain proxy is off"),
+    "patrolChainOn": MessageLookupByLibrary.simpleMessage("Chain proxy is on"),
+    "patrolChainIncomplete": MessageLookupByLibrary.simpleMessage("Entry or exit is not selected yet"),
+    "patrolChainHopDown": MessageLookupByLibrary.simpleMessage("One chain hop looks down"),
+    "patrolSectionCore": MessageLookupByLibrary.simpleMessage("Core & config"),
+    "patrolVersion": MessageLookupByLibrary.simpleMessage("Version"),
+    "patrolConfigValid": MessageLookupByLibrary.simpleMessage("Config check passed"),
+    "patrolConfigInvalid": MessageLookupByLibrary.simpleMessage("Config check failed"),
+    "patrolConfigChecking": MessageLookupByLibrary.simpleMessage("Checking config…"),
+    "patrolConfigUnavailable": MessageLookupByLibrary.simpleMessage("Start the service to run the full config check"),
+    "patrolAttentionNeeded": m54,
     "logLevel": MessageLookupByLibrary.simpleMessage("Log Level"),
     "logLevelDebugHint": m28,
     "logcat": MessageLookupByLibrary.simpleMessage("Log Capture"),

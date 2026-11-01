@@ -5,6 +5,7 @@ export 'profiles/profiles.dart';
 export 'profiles/scripts.dart';
 export 'toolbox.dart';
 export 'logs.dart';
+export 'patrol.dart';
 export 'access.dart';
 export 'config/config.dart';
 export 'application_setting.dart';
