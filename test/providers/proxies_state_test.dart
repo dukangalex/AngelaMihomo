@@ -1,4 +1,5 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/explicit_policy.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
@@ -51,6 +52,90 @@ void main() {
     test('按名称排序', () {
       final sorted = sortProxies(proxies, ProxiesSortType.name);
       expect(sorted.map((proxy) => proxy.name), ['a', 'b', 'c', 'd', 'e']);
+    });
+
+    group('链式落地置顶（T34）', () {
+      final withChain = [
+        _proxy('c'),
+        _proxy('a'),
+        _proxy(explicitChainGroup),
+        _proxy('b'),
+      ];
+
+      test('pinChainLandingFirst 把链式落地移到首位，其余相对顺序不变', () {
+        final pinned = pinChainLandingFirst(withChain);
+        expect(pinned.map((proxy) => proxy.name), [
+          explicitChainGroup,
+          'c',
+          'a',
+          'b',
+        ]);
+      });
+
+      test('pinChainLandingFirst 无链式落地或已在首位时原样返回', () {
+        expect(pinChainLandingFirst(proxies), same(proxies));
+        final alreadyFirst = [_proxy(explicitChainGroup), _proxy('a')];
+        expect(pinChainLandingFirst(alreadyFirst), same(alreadyFirst));
+      });
+
+      test('默认顺序置顶：链式落地第一，其余保持原序', () {
+        final sorted = sortProxies(
+          withChain,
+          ProxiesSortType.none,
+          pinChainLanding: true,
+        );
+        expect(sorted.map((proxy) => proxy.name), [
+          explicitChainGroup,
+          'c',
+          'a',
+          'b',
+        ]);
+      });
+
+      test('按名称排序置顶：链式落地第一，其余按名称排', () {
+        final sorted = sortProxies(
+          withChain,
+          ProxiesSortType.name,
+          pinChainLanding: true,
+        );
+        expect(sorted.map((proxy) => proxy.name), [
+          explicitChainGroup,
+          'a',
+          'b',
+          'c',
+        ]);
+      });
+
+      test('按延迟排序置顶：链式落地延迟最高也第一，其余按延迟升序', () {
+        final delays = {explicitChainGroup: 224, 'c': 300, 'a': 50, 'b': 100};
+        final sorted = sortProxies(
+          withChain,
+          ProxiesSortType.delay,
+          delayOf: (name) => delays[name],
+          pinChainLanding: true,
+        );
+        expect(sorted.map((proxy) => proxy.name), [
+          explicitChainGroup,
+          'a',
+          'b',
+          'c',
+        ]);
+      });
+
+      test('不置顶时行为不变：链式落地按延迟排到末尾', () {
+        final delays = {explicitChainGroup: 224, 'c': 300, 'a': 50, 'b': 100};
+        final sorted = sortProxies(
+          withChain,
+          ProxiesSortType.delay,
+          delayOf: (name) => delays[name],
+        );
+        expect(sorted.map((proxy) => proxy.name), [
+          'a',
+          'b',
+          explicitChainGroup,
+          'c',
+        ]);
+      });
     });
   });
 
@@ -295,6 +380,57 @@ void main() {
   });
 
   group('按需排序', () {
+    test('链式落地只在首个选择组置顶，其他选择组排序不变（T34）', () {
+      globalState.config = Config(
+        themeProps: defaultThemeProps,
+        currentProfileId: 'p',
+        profiles: [
+          Profile(
+            id: 'p',
+            autoUpdateDuration: Duration.zero,
+            unfoldSet: {'A', 'B'},
+          ),
+        ],
+        proxiesStyle: const ProxiesStyle(sortType: ProxiesSortType.name),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentGroupsStateProvider.overrideWith(
+            (ref) => GroupsState(
+              value: [
+                Group(
+                  type: GroupType.Selector,
+                  name: 'A',
+                  all: [_proxy('b'), _proxy(explicitChainGroup), _proxy('a')],
+                ),
+                Group(
+                  type: GroupType.Selector,
+                  name: 'B',
+                  all: [_proxy('b'), _proxy(explicitChainGroup), _proxy('a')],
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(sortedGroupsStateProvider(''), (_, _) {});
+
+      List<String> names(String group) => [
+        for (final proxy
+            in container
+                    .read(sortedGroupsStateProvider(''))
+                    .value
+                    .getGroup(group)
+                    ?.all ??
+                const <Proxy>[])
+          proxy.name,
+      ];
+
+      expect(names('A'), [explicitChainGroup, 'a', 'b']);
+      expect(names('B'), ['a', 'b', explicitChainGroup]);
+    });
+
     test('只排序展开的分组，展开其他分组不重排已排好的', () {
       globalState.config = Config(
         themeProps: defaultThemeProps,

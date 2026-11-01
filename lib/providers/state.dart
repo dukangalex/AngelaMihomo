@@ -1,4 +1,5 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/explicit_policy.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
@@ -369,10 +370,24 @@ List<int> _delaySortValues(
   ];
 }
 
+/// Moves the chain landing entry ([explicitChainGroup]) to the front,
+/// keeping every other entry in its existing relative order. Returns the
+/// list unchanged when the chain landing entry is absent or already first.
+List<Proxy> pinChainLandingFirst(List<Proxy> proxies) {
+  final index = proxies.indexWhere((proxy) => proxy.name == explicitChainGroup);
+  if (index <= 0) return proxies;
+  return [
+    proxies[index],
+    ...proxies.sublist(0, index),
+    ...proxies.sublist(index + 1),
+  ];
+}
+
 List<Proxy> sortProxies(
   List<Proxy> proxies,
   ProxiesSortType sortType, {
   int? Function(String proxyName)? delayOf,
+  bool pinChainLanding = false,
 }) {
   final order = switch (sortType) {
     ProxiesSortType.none => null,
@@ -381,8 +396,10 @@ List<Proxy> sortProxies(
       _delaySortValues(proxies, delayOf),
     ),
   };
-  if (order == null) return proxies;
-  return [for (final index in order) proxies[index]];
+  final sorted = order == null
+      ? proxies
+      : [for (final index in order) proxies[index]];
+  return pinChainLanding ? pinChainLandingFirst(sorted) : sorted;
 }
 
 int _delaySortValue(int? delay) =>
@@ -461,16 +478,30 @@ class SortedGroupProxies extends _$SortedGroupProxies {
   @override
   List<Proxy>? build(String query, String groupName) {
     final group = ref.watch(
-      filterGroupsStateProvider(
-        query,
-      ).select((state) => state.value.getGroup(groupName)),
+      filterGroupsStateProvider(query)
+          .select((state) => state.value.getGroup(groupName)),
     );
     if (group == null) return _lastSorted = const [];
     final proxies = group.all;
+    // The chain landing entry stays pinned to the top of the first
+    // selector group under every sort order (T34); other groups sort
+    // exactly as before.
+    final pinChainLanding =
+        ref
+            .watch(currentGroupsStateProvider)
+            .value
+            .where((item) => item.type == GroupType.Selector)
+            .firstOrNull
+            ?.name ==
+        groupName;
     final sortType = ref.watch(
       proxiesStyleSettingProvider.select((state) => state.sortType),
     );
-    if (sortType == ProxiesSortType.none) return _lastSorted = proxies;
+    if (sortType == ProxiesSortType.none) {
+      return _lastSorted = pinChainLanding
+          ? pinChainLandingFirst(proxies)
+          : proxies;
+    }
 
     int? Function(String proxyName)? delayOf;
     if (sortType == ProxiesSortType.delay) {
@@ -486,14 +517,24 @@ class SortedGroupProxies extends _$SortedGroupProxies {
       delayOf = (proxyName) => lookup(proxyName, group.testUrl);
     }
     if (proxies.length < backgroundSortThreshold) {
-      return _lastSorted = sortProxies(proxies, sortType, delayOf: delayOf);
+      return _lastSorted = sortProxies(
+        proxies,
+        sortType,
+        delayOf: delayOf,
+        pinChainLanding: pinChainLanding,
+      );
     }
     final pending = _reuseOrder(
       _lastSorted ?? (query.isEmpty ? _orderCache[groupName] : null),
       proxies,
     );
     if (pending == null && query.isNotEmpty) {
-      return _lastSorted = sortProxies(proxies, sortType, delayOf: delayOf);
+      return _lastSorted = sortProxies(
+        proxies,
+        sortType,
+        delayOf: delayOf,
+        pinChainLanding: pinChainLanding,
+      );
     }
 
     var active = true;
@@ -504,11 +545,21 @@ class SortedGroupProxies extends _$SortedGroupProxies {
     order.then(
       (order) {
         if (!active) return;
-        state = _remember([for (final index in order) proxies[index]]);
+        final sorted = [for (final index in order) proxies[index]];
+        state = _remember(
+          pinChainLanding ? pinChainLandingFirst(sorted) : sorted,
+        );
       },
       onError: (Object _) {
         if (!active) return;
-        state = _remember(sortProxies(proxies, sortType, delayOf: delayOf));
+        state = _remember(
+          sortProxies(
+            proxies,
+            sortType,
+            delayOf: delayOf,
+            pinChainLanding: pinChainLanding,
+          ),
+        );
       },
     );
     return _lastSorted = pending;
