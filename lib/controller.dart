@@ -55,6 +55,10 @@ class AppController {
   // supplied on the first change. This is not VPN readiness confirmation.
   String? _profileRollbackId;
   bool _hasProfileRollbackId = false;
+  // Set when a failed full-rebuild switch stopped the service and queued a
+  // rollback: once the rollback profile is applied, restart the service so
+  // the user ends up running again without a manual trip to the home page.
+  String? _resumeServiceForProfileId;
   int _backgroundLoadVersion = 0;
 
   int _updateGroupsRetryCount = 0;
@@ -840,13 +844,44 @@ class AppController {
           _ref.read(currentProfileIdProvider) != requestedProfileId) {
         return;
       }
-      if (hardRestart) {
+      // Switching profiles while the Android service is running takes the
+      // full rebuild path (stop the VPN, apply the new profile in the
+      // stopped state, restart the VPN), the same path as a core restart.
+      // The hot-reload path below cannot fully hand over TUN, DNS and
+      // chain structure differences between profiles (T33).
+      final wasRunning =
+          globalState.isStart || _ref.read(runTimeProvider.notifier).isStart;
+      final fullRebuild =
+          hardRestart || (system.isAndroid && profileChanged && wasRunning);
+      if (fullRebuild) {
         _ref.read(isRestartingCoreProvider.notifier).state = true;
         try {
           await _restartCore();
+          final appliedId = _ref.read(currentProfileIdProvider);
+          if (appliedId != null && appliedId == requestedProfileId) {
+            _profileRollbackId = appliedId;
+            _hasProfileRollbackId = true;
+          }
+          _resumeServiceForProfileId = null;
         } catch (err) {
-          _reportCoreRestartFailure(err);
-          rethrow;
+          commonPrint.error(
+            '[Profile] Full-rebuild switch failed: ${err.formatErrorLog}',
+          );
+          final fallback = _rollbackProfileSwitch(
+            profileChanged: profileChanged,
+            requestedProfileId: requestedProfileId,
+          );
+          if (fallback != null) {
+            if (wasRunning) {
+              _resumeServiceForProfileId = fallback;
+            }
+            globalState.showNotifier(
+              appLocalizations.profileSwitchFailedRollback,
+            );
+          } else {
+            globalState.showNotifier(appLocalizations.profileSwitchFailed);
+            if (hardRestart) rethrow;
+          }
         } finally {
           _ref.read(isRestartingCoreProvider.notifier).state = false;
         }
@@ -865,24 +900,30 @@ class AppController {
             _profileRollbackId = appliedId;
             _hasProfileRollbackId = true;
           }
-        } catch (err) {
-          final currentId = _ref.read(currentProfileIdProvider);
-          final fallback = _profileRollbackId;
-          final canRollback =
-              profileChanged &&
-              currentId == requestedProfileId &&
-              _hasProfileRollbackId &&
-              fallback != null &&
-              fallback != currentId &&
-              _ref
-                  .read(profilesProvider)
-                  .any((profile) => profile.id == fallback);
-          if (canRollback) {
-            // The provider listener queues the fallback once. A failed fallback
-            // won't switch back to the failed selection or override a newer one.
-            _ref.read(currentProfileIdProvider.notifier).value = fallback;
+          if (_resumeServiceForProfileId != null &&
+              _resumeServiceForProfileId != appliedId) {
+            // A different profile was applied; the pending resume is moot.
+            _resumeServiceForProfileId = null;
           }
-          globalState.showNotifier(err.toString());
+          if (appliedId != null &&
+              _resumeServiceForProfileId == appliedId &&
+              !globalState.isStart) {
+            _resumeServiceForProfileId = null;
+            await globalState.handleStart([updateRunTime, updateTraffic]);
+          }
+        } catch (err) {
+          commonPrint.error(
+            '[Profile] Switch failed: ${err.formatErrorLog}',
+          );
+          final fallback = _rollbackProfileSwitch(
+            profileChanged: profileChanged,
+            requestedProfileId: requestedProfileId,
+          );
+          globalState.showNotifier(
+            fallback != null
+                ? appLocalizations.profileSwitchFailedRollback
+                : appLocalizations.profileSwitchFailed,
+          );
         }
       }
       _ref.read(logsProvider.notifier).value = FixedList(maxLogLength);
@@ -890,6 +931,31 @@ class AppController {
       globalState.computeHeightMapCache = {};
       addCheckIpNumDebounce();
     });
+  }
+
+  /// Queues a switch back to the last known-good profile after a failed
+  /// switch. Returns the fallback profile id when a rollback was queued,
+  /// or null when rolling back is not possible (no recorded fallback, a
+  /// newer selection already superseded this one, or the fallback profile
+  /// no longer exists).
+  String? _rollbackProfileSwitch({
+    required bool profileChanged,
+    required String? requestedProfileId,
+  }) {
+    final currentId = _ref.read(currentProfileIdProvider);
+    final fallback = _profileRollbackId;
+    final canRollback =
+        profileChanged &&
+        currentId == requestedProfileId &&
+        _hasProfileRollbackId &&
+        fallback != null &&
+        fallback != currentId &&
+        _ref.read(profilesProvider).any((profile) => profile.id == fallback);
+    if (!canRollback) return null;
+    // The provider listener queues the fallback once. A failed fallback
+    // won't switch back to the failed selection or override a newer one.
+    _ref.read(currentProfileIdProvider.notifier).value = fallback;
+    return fallback;
   }
 
   void _reportCoreRestartFailure(Object error) {

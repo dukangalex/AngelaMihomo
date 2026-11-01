@@ -1195,6 +1195,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolConfigInvalid": MessageLookupByLibrary.simpleMessage("Config check failed"),
     "patrolConfigChecking": MessageLookupByLibrary.simpleMessage("Checking config…"),
     "patrolConfigUnavailable": MessageLookupByLibrary.simpleMessage("Start the service to run the full config check"),
+    "profileSwitchFailed": MessageLookupByLibrary.simpleMessage("Couldn\'t switch profiles. The current profile is unchanged; check it and try again"),
+    "profileSwitchFailedRollback": MessageLookupByLibrary.simpleMessage("Couldn\'t switch to the new profile, so the previous profile was restored"),
     "patrolAttentionNeeded": m54,
     "logLevel": MessageLookupByLibrary.simpleMessage("Log Level"),
     "logLevelDebugHint": m28,
