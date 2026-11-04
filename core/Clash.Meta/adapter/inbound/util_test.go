@@ -31,3 +31,26 @@ func TestParseSocksAddrFQDN(t *testing.T) {
 		t.Fatalf("host=%q port=%d", got.Host, got.DstPort)
 	}
 }
+
+func TestParseSocksAddrTruncated(t *testing.T) {
+	// None of these may panic; all must yield empty host/IP and port 0.
+	cases := map[string]socks5.Addr{
+		"empty":            {},
+		"domain type only": {socks5.AtypDomainName},
+		"domain short":     {socks5.AtypDomainName, 10, 'a', 'b'},
+		"domain no port":   {socks5.AtypDomainName, 3, 'a', 'b', 'c'},
+		"domain half port": {socks5.AtypDomainName, 3, 'a', 'b', 'c', 0x01},
+		"ipv4 short":       {socks5.AtypIPv4, 1, 2, 3},
+		"ipv4 no port":     {socks5.AtypIPv4, 1, 2, 3, 4},
+		"ipv6 short":       {socks5.AtypIPv6, 0x20, 0x01},
+		"unknown type":     {0x09, 1, 2, 3, 4, 5, 6},
+	}
+	for name, addr := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := parseSocksAddr(addr)
+			if got.Host != "" || got.DstPort != 0 || got.DstIP.IsValid() {
+				t.Fatalf("expected empty metadata, got host=%q ip=%v port=%d", got.Host, got.DstIP, got.DstPort)
+			}
+		})
+	}
+}
