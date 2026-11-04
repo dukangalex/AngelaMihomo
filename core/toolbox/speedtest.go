@@ -74,7 +74,9 @@ var speedTestExitIPURLs = []string{
 	"https://api.ip.sb/cdn-cgi/trace",
 }
 
-var speedTestExitInfoURL = "http://ip-api.com/json/"
+// HTTPS only: the exit IP is sensitive and must not be requested over
+// plaintext HTTP (the previous ip-api.com endpoint offers no TLS).
+var speedTestExitInfoURL = "https://get.geojs.io/v1/ip/geo.json"
 
 var (
 	speedtestNetServersURL = "https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true"
@@ -486,21 +488,18 @@ func (t *speedTester) probeOnly(ctx context.Context) {
 }
 
 func (t *speedTester) fetchExitInfo(ctx context.Context) json.RawMessage {
-	url := speedTestExitInfoURL
-	if t.params.Lang != "" {
-		url += "?lang=" + t.params.Lang
-	}
 	fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	resp, body, err := t.fetch(fetchCtx, t.probe, url, 16*1024)
+	resp, body, err := t.fetch(fetchCtx, t.probe, speedTestExitInfoURL, 16*1024)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil
 	}
 	var info struct {
 		Status string `json:"status"`
 		Query  string `json:"query"`
+		IP     string `json:"ip"`
 	}
-	if json.Unmarshal(body, &info) != nil || info.Status == "fail" || info.Query == "" {
+	if json.Unmarshal(body, &info) != nil || info.Status == "fail" || (info.Query == "" && info.IP == "") {
 		return nil
 	}
 	return json.RawMessage(body)
