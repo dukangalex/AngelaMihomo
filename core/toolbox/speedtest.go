@@ -75,7 +75,7 @@ var speedTestExitIPURLs = []string{
 }
 
 // HTTPS only: the exit IP is sensitive and must not be requested over
-// plaintext HTTP (the previous ip-api.com endpoint offers no TLS).
+// plaintext HTTP (the previous plaintext endpoint offers no TLS).
 var speedTestExitInfoURL = "https://get.geojs.io/v1/ip/geo.json"
 
 var (
