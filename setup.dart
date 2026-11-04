@@ -610,17 +610,8 @@ class BuildCommand extends Command {
     required String env,
     required String suffix,
   }) async {
-    final sentryDsn = Platform.environment['SENTRY_DSN'] ?? '';
-    final sentryArg = sentryDsn.isNotEmpty
-        ? ' --build-dart-define=SENTRY_DSN=$sentryDsn'
-        : '';
     final suffixArg = suffix.isNotEmpty
         ? ' --build-dart-define=APP_ASSET_SUFFIX=$suffix'
-        : '';
-
-    final ipinfoToken = Platform.environment['IPINFO_TOKEN'] ?? '';
-    final ipinfoArg = ipinfoToken.isNotEmpty
-        ? ' --build-dart-define=IPINFO_TOKEN=$ipinfoToken'
         : '';
 
     final appDevArg = Build.isDev ? ' --build-dart-define=APP_DEV=true' : '';
@@ -629,7 +620,7 @@ class BuildCommand extends Command {
     await Build.exec(
       name: name,
       Build.getExecutable(
-        'flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args$sentryArg$suffixArg$ipinfoArg --build-dart-define=APP_ENV=$env$appDevArg',
+        'flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args$suffixArg --build-dart-define=APP_ENV=$env$appDevArg',
       ),
     );
   }
