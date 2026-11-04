@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="AcceptsUserCertificates">
+<network-security-config>
+    <!-- Only system CAs are trusted. User-installed CAs are not accepted, so
+         on-device traffic inspection setups cannot silently MITM the app. -->
     <base-config>
         <trust-anchors>
             <certificates src="system" />
-            <certificates src="user" />
         </trust-anchors>
     </base-config>
+    <!-- Cleartext is limited to loopback, which the app uses to talk to its
+         local core. All remote traffic must use TLS. -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
-        <domain includeSubdomains="true">ip-api.com</domain>
     </domain-config>
 </network-security-config>

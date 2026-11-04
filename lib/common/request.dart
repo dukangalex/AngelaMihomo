@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:intl/intl.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
@@ -271,12 +270,9 @@ class Request {
   }
 
   List<String> _getPrimaryIpSources() {
-    final locale = Intl.getCurrentLocale().toLowerCase();
-    final isZh = locale.startsWith('zh');
-    return [
-      isZh ? 'http://ip-api.com/json/?lang=zh-CN' : 'http://ip-api.com/json',
-      'https://get.geojs.io/v1/ip/geo.json',
-    ];
+    // HTTPS only: the exit IP is sensitive, so it is never requested over
+    // plaintext HTTP (the previous plaintext source had no TLS endpoint).
+    return ['https://get.geojs.io/v1/ip/geo.json', 'https://api.ip.sb/geoip'];
   }
 
   final List<String> _domesticIpSources = [
@@ -367,12 +363,7 @@ class Request {
                 if (text.startsWith('{')) {
                   final jsonMap = json.decode(text);
                   if (jsonMap is Map<String, dynamic>) {
-                    if (url.contains('ip-api.com') &&
-                        jsonMap['status'] != 'success') {
-                      ipInfo = null;
-                    } else {
-                      ipInfo = IpInfo.fromJson(jsonMap);
-                    }
+                    ipInfo = IpInfo.fromJson(jsonMap);
                   }
                 } else {
                   ipInfo = IpInfo.fromCloudflareTrace(text);
@@ -587,8 +578,7 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout,
   }) async {
-    final isZh = Intl.getCurrentLocale().toLowerCase().startsWith('zh');
-    final cacheKey = '${ip}_${isZh ? 'zh' : 'en'}';
+    final cacheKey = ip;
 
     final cached = await _getValidCachedIp(cacheKey);
     if (cached != null) {
@@ -596,9 +586,8 @@ class Request {
     }
 
     final effectiveTimeout = timeout ?? const Duration(seconds: 5);
-    final url = isZh
-        ? 'http://ip-api.com/json/$ip?lang=zh-CN'
-        : 'http://ip-api.com/json/$ip';
+    // HTTPS only (see _getPrimaryIpSources).
+    final url = 'https://get.geojs.io/v1/ip/geo/$ip.json';
 
     try {
       final res = await _dio.get<Map<String, dynamic>>(
