@@ -24,12 +24,18 @@ env:
   # SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
   SIGNPATH_API_TOKEN: ''
   
+# Default token scope for every job; jobs that need more declare it themselves.
+permissions:
+  contents: read
+
 jobs:
   version-guard:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Verify tag matches pubspec version
         run: |
           if [[ "${GITHUB_REF}" != refs/tags/v* ]]; then
@@ -76,30 +82,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           submodules: recursive
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Rust (Windows)
         if: matrix.platform == 'windows'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: ${{ matrix.arch == 'arm64' && 'aarch64-pc-windows-msvc' || 'x86_64-pc-windows-msvc' }}
 
       - name: Setup Rust (Android)
         if: matrix.platform == 'android'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
 
       - name: Setup Rust (Linux)
         if: matrix.platform == 'linux'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
 
       - name: Setup Rust (macOS)
         if: matrix.platform == 'macos'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: ${{ matrix.arch == 'amd64' && 'x86_64-apple-darwin' || 'aarch64-apple-darwin' }}
 
@@ -133,7 +140,7 @@ jobs:
           
       - name: Setup Java (Android)
         if: matrix.platform == 'android'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: '17'
@@ -170,7 +177,7 @@ jobs:
           sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::ForceIPv4=true --fix-missing libcurl4-openssl-dev ninja-build libgtk-3-dev rpm
 
       - name: Setup Golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ matrix.compatible == true && '1.24.x' || '1.25.x' }}
           cache-dependency-path: core/go.sum
@@ -180,7 +187,7 @@ jobs:
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: ${{ contains(matrix.os, 'arm') && 'master' || 'stable' }}
           cache: true
@@ -281,7 +288,7 @@ jobs:
       - name: Upload Unsigned Core
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-core
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-core-${{ matrix.arch }}-${{ matrix.compatible }}
           path: libclash/windows/AngelaMihomoCore.exe
@@ -297,7 +304,7 @@ jobs:
 
       - name: Sign Core (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -320,7 +327,7 @@ jobs:
       - name: Upload Unsigned HelperService
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-helper
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-helper-${{ matrix.arch }}-${{ matrix.compatible }}
           path: libclash/windows/AngelaMihomoHelperService.exe
@@ -336,7 +343,7 @@ jobs:
 
       - name: Sign HelperService (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -370,7 +377,7 @@ jobs:
       - name: Upload Unsigned AngelaMihomo
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-bettbox
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-bettbox-${{ matrix.arch }}-${{ matrix.compatible }}
           path: build/windows/${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}/runner/Release/AngelaMihomo.exe
@@ -386,7 +393,7 @@ jobs:
 
       - name: Sign AngelaMihomo (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -416,7 +423,7 @@ jobs:
       - name: Upload Unsigned Installer
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-installer
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-installer-${{ matrix.arch }}-${{ matrix.compatible }}
           path: ${{ env.INSTALLER_PATH }}
@@ -432,7 +439,7 @@ jobs:
 
       - name: Sign Installer (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -447,7 +454,7 @@ jobs:
       - name: Clean up intermediate unsigned artifacts
         if: always() && matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         continue-on-error: true
-        uses: geekyeggo/delete-artifact@v6
+        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6
         with:
           name: |
             unsigned-core-${{ matrix.arch }}-${{ matrix.compatible }}
@@ -459,7 +466,7 @@ jobs:
 
       - name: Upload Artifacts (macOS & Android)
         if: matrix.platform != 'linux' && matrix.platform != 'windows'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}
           path: ./dist/*
@@ -468,7 +475,7 @@ jobs:
 
       - name: Upload Windows Installer Artifact
         if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-installer
           path: ./dist/*.exe
@@ -477,7 +484,7 @@ jobs:
 
       - name: Upload Windows Portable Artifact
         if: matrix.platform == 'windows' && matrix.compatible == true && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-portable
           path: ./dist/*.zip
@@ -486,7 +493,7 @@ jobs:
 
       - name: Upload DEB Artifact
         if: matrix.platform == 'linux'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-deb
           path: ./dist/*.deb
@@ -495,7 +502,7 @@ jobs:
 
       - name: Upload AppImage Artifact
         if: matrix.platform == 'linux' && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-AppImage
           path: ./dist/*.AppImage
@@ -504,7 +511,7 @@ jobs:
 
       - name: Upload RPM Artifact
         if: matrix.platform == 'linux' && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-rpm
           path: ./dist/*.rpm
@@ -513,17 +520,22 @@ jobs:
 
   upload:
     if: startsWith(github.ref, 'refs/tags/v')
-    permissions: write-all
+    # Least privilege: create/update the GitHub Release and read this run's
+    # artifacts. Nothing else in this job needs the token.
+    permissions:
+      contents: write
+      actions: read
     needs: [ build ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Download
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           path: ./dist/
           pattern: AngelaMihomo-*
@@ -546,7 +558,7 @@ jobs:
 
       - name: Release
         if: ${{ env.SHOULD_RELEASE == 'true' }}
-        uses: softprops/action-gh-release@v3.0.0
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           files: ./dist/*
           body_path: './release.md'

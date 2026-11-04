@@ -271,7 +271,7 @@ class Request {
 
   List<String> _getPrimaryIpSources() {
     // HTTPS only: the exit IP is sensitive, so it is never requested over
-    // plaintext HTTP (the previous ip-api.com source had no TLS endpoint).
+    // plaintext HTTP (the previous plaintext source had no TLS endpoint).
     return ['https://get.geojs.io/v1/ip/geo.json', 'https://api.ip.sb/geoip'];
   }
 
