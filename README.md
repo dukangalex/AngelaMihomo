@@ -60,6 +60,57 @@
 **从其他版本迁移（Android）**：自 v1.19.7-chain.1 起本应用使用独立包名，可直接与其他版本并存安装；如需迁移数据，请先在原应用中导出备份，再在本应用中导入恢复。
 
 ---
+---
+
+## 📦 分发与安全性
+
+[English version below](#distribution--security-english)
+
+我们把目前的分发状态如实写在这里，不回避短板；安全性则给出可以逐项核对的事实。
+
+**分发现状（短板明示）**
+
+* 本项目仅通过 GitHub Releases 分发，未上架 Google Play、App Store、Microsoft Store 等任何官方应用商店。
+* Windows 安装包目前尚未做代码签名，首次安装时系统 SmartScreen 会给出安全提示，需要手动确认后继续。
+* macOS 安装包为临时签名，尚未做 Apple 公证，首次打开时系统会拦截，需要在系统设置中手动放行。
+* Android 为直接安装 APK，部分手机厂商的安全扫描会对这类安装给出风险提示。
+
+以上提示都来自分发形态，而不是应用本身被发现存在安全问题。
+
+**安全性（可核对）**
+
+* **全开源**：源代码以 GPL-3.0 许可证公开，发布包由 GitHub Actions 从公开源码自动构建，您安装的二进制与您能读到的代码一一对应。
+* **可校验**：每个安装包的 SHA-256 摘要都显示在 GitHub 发布页对应文件的资产信息中，下载后可与本地计算值比对；Android 正式签名证书的 SHA-256 指纹为 `70128cacee64c4620a840c1626d806351149e85222fd3e00312e0771e6fd3f5e`，安装前可核对。
+* **不收集数据**：应用无广告、无遥测、不收集使用数据；更新检查仅访问 GitHub。
+* **密钥隔离**：正式签名私钥仅保存在 CI 密钥中，不进入代码仓库。
+* **发版门槛**：每个版本发布前，都要在模拟器中导入真实形态的订阅做全功能实测，通过后才发布。
+
+平台分发的门槛，我们如实告知；属于我们自己的部分——代码、构建与校验——我们按能力范围内最严的标准做。
+
+### Distribution & Security (English)
+
+We state our current distribution status plainly, including its shortcomings, and give verifiable facts about security.
+
+**Distribution status (limitations, stated openly)**
+
+* This project is distributed only through GitHub Releases. It is not listed on Google Play, the App Store, the Microsoft Store, or any other official app store.
+* Windows installers are not yet code-signed. SmartScreen will show a security prompt on first install, which requires manual confirmation to continue.
+* macOS packages are ad-hoc signed and not yet notarized with Apple. Gatekeeper will block the first launch until you allow it manually in System Settings.
+* Android is installed by sideloading the APK. Some phone vendors' security scanners show risk prompts for this kind of installation.
+
+These prompts come from the distribution method, not from any known security problem in the app itself.
+
+**Security (verifiable)**
+
+* **Fully open source**: the source code is public under GPL-3.0, and release packages are built automatically by GitHub Actions from that public source — the binary you install corresponds to the code you can read.
+* **Verifiable**: the SHA-256 digest of every package is shown in the asset details on the GitHub release page; compare it with the value you compute locally after downloading. The Android release signing certificate's SHA-256 fingerprint is `70128cacee64c4620a840c1626d806351149e85222fd3e00312e0771e6fd3f5e`.
+* **No data collection**: no ads, no telemetry, no usage data collection; update checks only contact GitHub.
+* **Key isolation**: release signing keys exist only in CI secrets, never in the repository.
+* **Release gate**: before every release, the build is installed on an emulator and exercised end-to-end with real-world subscriptions.
+
+Where distribution platforms set the limits, we say so. Where the work is ours — code, build, and verification — we hold ourselves to the strictest standard within our reach.
+
+---
 ## 💡 常见问题
 
 1. **安装环境与兼容版本**：
