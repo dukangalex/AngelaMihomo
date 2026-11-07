@@ -119,6 +119,20 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     if (mounted) setState(() => _applyError = '');
   }
 
+  /// The one-tap start for new users (T57's preset goal, kept after
+  /// the toolbox preset card was retired): a pure action that turns
+  /// the three interception options on together. It carries no
+  /// state of its own — the switches below remain the only state.
+  Future<void> _applyRecommended() async {
+    final value = SystemExplicitStore.instance.value;
+    setState(() {
+      value.privacy = true;
+      value.blockCommonWebRtc = true;
+      value.blockAds = true;
+    });
+    await _commit();
+  }
+
   /// Descriptions stay collapsed until the row is tapped, so the page reads
   /// as a compact list of switches; the explanation is one tap away.
   final _expanded = <String>{};
@@ -195,6 +209,24 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     return generateSection(
       title: appLocalizations.systemExplicitTitle,
       items: [
+        // Group header (T57 final form): the recommended combination
+        // as a pure action — no state badge, no second state machine;
+        // the switches below are the only state there is.
+        ListItem(
+          title: Text(appLocalizations.chinaAdaptRecommendTitle),
+          subtitle: Text(appLocalizations.chinaAdaptRecommendDesc),
+          trailing: FilledButton.tonal(
+            onPressed: _applyRecommended,
+            child: Text(appLocalizations.chinaAdaptApplyRecommended),
+          ),
+        ),
+        // Auto-set system DNS deliberately does NOT move into this
+        // group; the note only says where it lives.
+        _infoItem(
+          id: 'autoDnsNote',
+          title: appLocalizations.autoSetSystemDns,
+          desc: appLocalizations.chinaAdaptDnsNoteDesc,
+        ),
         // T54: effectiveness is per class and visible on this page —
         // direct exceptions are the only options that pause outside
         // rule mode; interception options keep working everywhere.

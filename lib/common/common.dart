@@ -23,7 +23,6 @@ export 'lock.dart';
 export 'log_redaction.dart';
 export 'patrol_store.dart';
 export 'control_style.dart';
-export 'china_preset.dart';
 export 'update_download.dart';
 export 'update_installer.dart';
 export 'measure.dart';

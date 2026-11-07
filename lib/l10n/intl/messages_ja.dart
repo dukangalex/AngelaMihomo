@@ -1876,7 +1876,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "systemExplicitSwitch": MessageLookupByLibrary.simpleMessage("Switch"),
     "systemExplicitTitle": MessageLookupByLibrary.simpleMessage(
-      "System options",
+      "China adaptation",
     ),
     "systemFont": MessageLookupByLibrary.simpleMessage("システムフォント"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("システムプロキシ"),

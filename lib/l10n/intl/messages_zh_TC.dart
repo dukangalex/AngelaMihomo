@@ -1682,7 +1682,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "自适应通路、防隐私、中国直连",
     ),
     "systemExplicitSwitch": MessageLookupByLibrary.simpleMessage("切换"),
-    "systemExplicitTitle": MessageLookupByLibrary.simpleMessage("系统显式"),
+    "systemExplicitTitle": MessageLookupByLibrary.simpleMessage("中国自适应性"),
     "systemFont": MessageLookupByLibrary.simpleMessage("系統字體"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("系統代理"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("設定系統代理"),

@@ -10320,10 +10320,10 @@ class AppLocalizations {
     );
   }
 
-  /// `System options`
+  /// `China adaptation`
   String get systemExplicitTitle {
     return Intl.message(
-      'System options',
+      'China adaptation',
       name: 'systemExplicitTitle',
       desc: '',
       args: [],
@@ -10681,6 +10681,22 @@ class AppLocalizations {
 
 
   /// `China adaptation preset`
+  String get chinaAdaptApplyRecommended {
+    return Intl.message('Turn on recommended', name: 'chinaAdaptApplyRecommended', desc: '', args: []);
+  }
+
+  String get chinaAdaptDnsNoteDesc {
+    return Intl.message('That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system\'s DNS, not the DNS inside your profile, and does nothing on Android.', name: 'chinaAdaptDnsNoteDesc', desc: '', args: []);
+  }
+
+  String get chinaAdaptRecommendDesc {
+    return Intl.message('For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.', name: 'chinaAdaptRecommendDesc', desc: '', args: []);
+  }
+
+  String get chinaAdaptRecommendTitle {
+    return Intl.message('Recommended combination', name: 'chinaAdaptRecommendTitle', desc: '', args: []);
+  }
+
   String get chinaPreset {
     return Intl.message('China adaptation preset', name: 'chinaPreset', desc: '', args: []);
   }
