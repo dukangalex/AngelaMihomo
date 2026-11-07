@@ -36,13 +36,13 @@ class AiConfigView extends ConsumerStatefulWidget {
 }
 
 class _AiConfigViewState extends ConsumerState<AiConfigView> {
-  // The form mirrors the profile editor's field setup exactly (a
-  // Form around the list, fields on the app theme's own field
-  // border). The previous shape — bare fields carrying an explicit
-  // stock OutlineInputBorder against the theme's custom field
-  // border — rendered as one solid grey block on device: no fields,
-  // no labels, nothing tappable (T30 repair round).
-  final _formKey = GlobalKey<FormState>();
+  // T30 repair round: this page's TextFormFields rendered as one
+  // solid grey block on device — no labels, nothing tappable, no
+  // exception anywhere — while identical fields in dialogs and
+  // sheets rendered fine. The page never validates, so the fields
+  // are plain TextFields now (same controllers, same decorations);
+  // the FormField wrapper was the only layer left that this page
+  // had and every working surface did not.
   final _baseUrlController = TextEditingController();
   final _apiKeyController = TextEditingController();
   final _modelController = TextEditingController();
@@ -119,116 +119,109 @@ class _AiConfigViewState extends ConsumerState<AiConfigView> {
       title: appLocalizations.aiConfigTitle,
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+          : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              children: [
+                Text(
+                  appLocalizations.aiConfigDesc,
+                  style: context.textTheme.bodyMedium,
                 ),
-                children: [
-                  Text(
-                    appLocalizations.aiConfigDesc,
-                    style: context.textTheme.bodyMedium,
+                const SizedBox(height: 16),
+                Text(
+                  appLocalizations.aiPreset,
+                  style: context.textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final item in aiProviderPresets)
+                      ChoiceChip(
+                        label: Text(item.name),
+                        selected: _presetName == item.name,
+                        onSelected: (_) {
+                          setState(() {
+                            _presetName = item.name;
+                            _baseUrlController.text = item.baseUrl;
+                            if (item.defaultModel.isNotEmpty) {
+                              _modelController.text = item.defaultModel;
+                            }
+                            _testResult = null;
+                          });
+                        },
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _baseUrlController,
+                  decoration: InputDecoration(
+                    labelText: appLocalizations.aiEndpoint,
                   ),
-                  const SizedBox(height: 16),
+                  keyboardType: TextInputType.url,
+                  onChanged: (_) => _presetName = _matchPreset(
+                    _baseUrlController.text.trim(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _apiKeyController,
+                  decoration: InputDecoration(
+                    labelText: appLocalizations.aiApiKey,
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _modelController,
+                  decoration: InputDecoration(
+                    labelText: appLocalizations.aiModel,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    FilledButton(
+                      onPressed: _save,
+                      child: Text(appLocalizations.save),
+                    ),
+                    const SizedBox(width: 12),
+                    OutlinedButton(
+                      onPressed: _testing ? null : _test,
+                      child: Text(appLocalizations.aiTestConnection),
+                    ),
+                    if (_testResult != null) ...[
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(_testResult!)),
+                    ],
+                  ],
+                ),
+                if (preset != null && preset.keysUrl != null) ...[
+                  const SizedBox(height: 24),
                   Text(
-                    appLocalizations.aiPreset,
+                    appLocalizations.aiGroqGuideTitle,
                     style: context.textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
+                  Text(appLocalizations.aiGuideSteps),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 8,
                     children: [
-                      for (final item in aiProviderPresets)
-                        ChoiceChip(
-                          label: Text(item.name),
-                          selected: _presetName == item.name,
-                          onSelected: (_) {
-                            setState(() {
-                              _presetName = item.name;
-                              _baseUrlController.text = item.baseUrl;
-                              if (item.defaultModel.isNotEmpty) {
-                                _modelController.text = item.defaultModel;
-                              }
-                              _testResult = null;
-                            });
-                          },
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _baseUrlController,
-                    decoration: InputDecoration(
-                      labelText: appLocalizations.aiEndpoint,
-                    ),
-                    keyboardType: TextInputType.url,
-                    onChanged: (_) => _presetName = _matchPreset(
-                      _baseUrlController.text.trim(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _apiKeyController,
-                    decoration: InputDecoration(
-                      labelText: appLocalizations.aiApiKey,
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _modelController,
-                    decoration: InputDecoration(
-                      labelText: appLocalizations.aiModel,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      FilledButton(
-                        onPressed: _save,
-                        child: Text(appLocalizations.save),
+                      TextButton(
+                        onPressed: () => globalState.openUrl(preset.keysUrl!),
+                        child: Text(appLocalizations.aiGetKey),
                       ),
-                      const SizedBox(width: 12),
-                      OutlinedButton(
-                        onPressed: _testing ? null : _test,
-                        child: Text(appLocalizations.aiTestConnection),
-                      ),
-                      if (_testResult != null) ...[
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(_testResult!)),
-                      ],
-                    ],
-                  ),
-                  if (preset != null && preset.keysUrl != null) ...[
-                    const SizedBox(height: 24),
-                    Text(
-                      appLocalizations.aiGroqGuideTitle,
-                      style: context.textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(appLocalizations.aiGuideSteps),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
+                      if (preset.zdrUrl != null)
                         TextButton(
-                          onPressed: () => globalState.openUrl(preset.keysUrl!),
-                          child: Text(appLocalizations.aiGetKey),
+                          onPressed: () => globalState.openUrl(preset.zdrUrl!),
+                          child: Text(appLocalizations.aiZdrSettings),
                         ),
-                        if (preset.zdrUrl != null)
-                          TextButton(
-                            onPressed: () =>
-                                globalState.openUrl(preset.zdrUrl!),
-                            child: Text(appLocalizations.aiZdrSettings),
-                          ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
-              ),
+              ],
             ),
     );
   }
