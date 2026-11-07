@@ -669,7 +669,9 @@ class _ChinaPresetCardState extends ConsumerState<_ChinaPresetCard> {
             member(appLocalizations.systemExplicitBlockAds, options.blockAds),
             member(appLocalizations.autoSetSystemDns, autoDns),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 FilledButton.tonal(
                   onPressed: _applying || state == ChinaPresetState.on
@@ -677,7 +679,6 @@ class _ChinaPresetCardState extends ConsumerState<_ChinaPresetCard> {
                       : () => _apply(true),
                   child: Text(appLocalizations.chinaPresetApply),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: _applying || state == ChinaPresetState.off
                       ? null

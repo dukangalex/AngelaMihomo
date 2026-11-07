@@ -106,8 +106,10 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('Change routing mode?'), findsOneWidget);
+      // T54 wording: leaving rule mode pauses only the direct
+      // exceptions; interception options keep working.
       expect(
-        find.textContaining('Direct mode bypasses the proxy'),
+        find.textContaining('pauses the system explicit direct exceptions'),
         findsOneWidget,
       );
       await tester.tap(find.text('Cancel'));
@@ -176,14 +178,28 @@ void main() {
     expect(find.text(desc), findsNothing);
   });
   test('routing preferences pause and restore without mutation', () {
+    // T54 semantics: outside rule mode the direct exceptions pause,
+    // but the interception class (here WebRTC blocking) keeps
+    // applying, terminated by a MATCH to the selected mode's target.
     final opts = SystemExplicitOptions(
       chinaDirect: true,
       blockCommonWebRtc: true,
     );
     final rule = opts.buildRuntimeRulesForMode(Mode.rule);
-    expect(rule, isNotEmpty);
-    expect(opts.buildRuntimeRulesForMode(Mode.global), isEmpty);
-    expect(opts.buildRuntimeRulesForMode(Mode.direct), isEmpty);
+    expect(rule, contains('GEOIP,CN,DIRECT,no-resolve'));
+    expect(rule, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    final global = opts.buildRuntimeRulesForMode(Mode.global);
+    expect(global, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    expect(global.last, 'MATCH,GLOBAL');
+    expect(global, isNot(contains('GEOIP,CN,DIRECT,no-resolve')));
+    final direct = opts.buildRuntimeRulesForMode(Mode.direct);
+    expect(direct, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    expect(direct.last, 'MATCH,DIRECT');
+    expect(direct, isNot(contains('GEOIP,CN,DIRECT,no-resolve')));
+    // Building runtime rules never mutates the stored choices, and
+    // returning to rule mode restores the full set.
+    expect(opts.chinaDirect, isTrue);
+    expect(opts.blockCommonWebRtc, isTrue);
     expect(opts.buildRuntimeRulesForMode(Mode.rule), rule);
     final roundtrip = SystemExplicitOptions.fromJson(opts.toJson());
     expect(roundtrip.toJson(), opts.toJson());
