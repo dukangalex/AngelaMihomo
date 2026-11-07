@@ -1245,7 +1245,7 @@
   "appLock": "App lock",
   "appLockDesc": "Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.",
   "appLockEnterPin": "Enter PIN",
-  "appLockSetPin": "Set a PIN (4-8 digits)",
+  "appLockSetPin": "Set a PIN (4-6 digits)",
   "appLockConfirmPin": "Enter the PIN again",
   "appLockPinMismatch": "The two PINs do not match",
   "appLockWrongPin": "Wrong PIN",
@@ -1261,5 +1261,12 @@
   "appLockUnlockBiometric": "Unlock with biometrics",
   "controlStyle": "Control style",
   "controlStyleLiquidGlass": "Liquid glass",
-  "controlStyleKeycap": "Keycap · Futuristic"
+  "controlStyleKeycap": "Keycap · Futuristic",
+  "chinaPreset": "China adaptation preset",
+  "chinaPresetDesc": "One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.",
+  "chinaPresetStateOn": "Applied",
+  "chinaPresetStateOff": "Not applied",
+  "chinaPresetStateCustomized": "Customized",
+  "chinaPresetApply": "Apply preset",
+  "chinaPresetReset": "Restore defaults"
 }

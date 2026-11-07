@@ -1281,7 +1281,7 @@
   "appLock": "应用锁",
   "appLockDesc": "打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。",
   "appLockEnterPin": "输入 PIN",
-  "appLockSetPin": "设置 PIN（4-8 位）",
+  "appLockSetPin": "设置 PIN（4-6 位）",
   "appLockConfirmPin": "再次输入 PIN",
   "appLockPinMismatch": "两次输入不一致",
   "appLockWrongPin": "PIN 不正确",
@@ -1297,5 +1297,12 @@
   "appLockUnlockBiometric": "用生物识别解锁",
   "controlStyle": "控件风格",
   "controlStyleLiquidGlass": "液态玻璃",
-  "controlStyleKeycap": "按键质感 · 未来感"
+  "controlStyleKeycap": "按键质感 · 未来感",
+  "chinaPreset": "中国适配预设",
+  "chinaPresetDesc": "一键应用面向中国网络环境的推荐组合。只组合本应用已有能力，不新增规则、不新增请求。",
+  "chinaPresetStateOn": "已开启",
+  "chinaPresetStateOff": "未开启",
+  "chinaPresetStateCustomized": "已自定义",
+  "chinaPresetApply": "开启预设",
+  "chinaPresetReset": "恢复默认"
 }

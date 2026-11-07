@@ -66,6 +66,32 @@ extension SubscriptionInfoExtension on SubscriptionInfo {
     }
     return total > 0 ? appLocalizations.infiniteTime : null;
   }
+
+  /// Whole days left before expiry (negative once expired); null
+  /// when the subscription reports no expiry.
+  int? get daysUntilExpire {
+    if (expire <= 0) return null;
+    final expireAt = DateTime.fromMillisecondsSinceEpoch(expire * 1000);
+    return expireAt.difference(DateTime.now()).inDays;
+  }
+
+  /// T57: warn when expiry is a week away or already passed.
+  bool get expireWarning {
+    final days = daysUntilExpire;
+    return days != null && days <= 7;
+  }
+
+  /// Remaining traffic share in [0, 1]; null when no total is known.
+  double? get remainingTrafficRatio {
+    if (total <= 0) return null;
+    return ((total - upload - download) / total).clamp(0.0, 1.0);
+  }
+
+  /// T57: warn when less than a tenth of the traffic remains.
+  bool get trafficWarning {
+    final ratio = remainingTrafficRatio;
+    return ratio != null && ratio < 0.10;
+  }
 }
 
 @freezed

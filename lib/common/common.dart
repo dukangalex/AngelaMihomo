@@ -23,6 +23,7 @@ export 'lock.dart';
 export 'log_redaction.dart';
 export 'patrol_store.dart';
 export 'control_style.dart';
+export 'china_preset.dart';
 export 'measure.dart';
 export 'mixin.dart';
 export 'navigation.dart';

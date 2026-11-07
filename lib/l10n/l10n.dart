@@ -10593,9 +10593,9 @@ class AppLocalizations {
     return Intl.message('Enter PIN', name: 'appLockEnterPin', desc: '', args: []);
   }
 
-  /// `Set a PIN (4-8 digits)`
+  /// `Set a PIN (4-6 digits)`
   String get appLockSetPin {
-    return Intl.message('Set a PIN (4-8 digits)', name: 'appLockSetPin', desc: '', args: []);
+    return Intl.message('Set a PIN (4-6 digits)', name: 'appLockSetPin', desc: '', args: []);
   }
 
   /// `Enter the PIN again`
@@ -10677,6 +10677,42 @@ class AppLocalizations {
   /// `Keycap · Futuristic`
   String get controlStyleKeycap {
     return Intl.message('Keycap · Futuristic', name: 'controlStyleKeycap', desc: '', args: []);
+  }
+
+
+  /// `China adaptation preset`
+  String get chinaPreset {
+    return Intl.message('China adaptation preset', name: 'chinaPreset', desc: '', args: []);
+  }
+
+  /// `One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.`
+  String get chinaPresetDesc {
+    return Intl.message('One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.', name: 'chinaPresetDesc', desc: '', args: []);
+  }
+
+  /// `Applied`
+  String get chinaPresetStateOn {
+    return Intl.message('Applied', name: 'chinaPresetStateOn', desc: '', args: []);
+  }
+
+  /// `Not applied`
+  String get chinaPresetStateOff {
+    return Intl.message('Not applied', name: 'chinaPresetStateOff', desc: '', args: []);
+  }
+
+  /// `Customized`
+  String get chinaPresetStateCustomized {
+    return Intl.message('Customized', name: 'chinaPresetStateCustomized', desc: '', args: []);
+  }
+
+  /// `Apply preset`
+  String get chinaPresetApply {
+    return Intl.message('Apply preset', name: 'chinaPresetApply', desc: '', args: []);
+  }
+
+  /// `Restore defaults`
+  String get chinaPresetReset {
+    return Intl.message('Restore defaults', name: 'chinaPresetReset', desc: '', args: []);
   }
 
 }

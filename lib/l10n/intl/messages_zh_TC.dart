@@ -137,13 +137,20 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "chinaPreset": MessageLookupByLibrary.simpleMessage("China adaptation preset"),
+    "chinaPresetDesc": MessageLookupByLibrary.simpleMessage("One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests."),
+    "chinaPresetStateOn": MessageLookupByLibrary.simpleMessage("Applied"),
+    "chinaPresetStateOff": MessageLookupByLibrary.simpleMessage("Not applied"),
+    "chinaPresetStateCustomized": MessageLookupByLibrary.simpleMessage("Customized"),
+    "chinaPresetApply": MessageLookupByLibrary.simpleMessage("Apply preset"),
+    "chinaPresetReset": MessageLookupByLibrary.simpleMessage("Restore defaults"),
     "controlStyle": MessageLookupByLibrary.simpleMessage("Control style"),
     "controlStyleLiquidGlass": MessageLookupByLibrary.simpleMessage("Liquid glass"),
     "controlStyleKeycap": MessageLookupByLibrary.simpleMessage("Keycap · Futuristic"),
     "appLock": MessageLookupByLibrary.simpleMessage("App lock"),
     "appLockDesc": MessageLookupByLibrary.simpleMessage("Require a PIN when opening the app. Only the interface locks — the VPN service keeps running."),
     "appLockEnterPin": MessageLookupByLibrary.simpleMessage("Enter PIN"),
-    "appLockSetPin": MessageLookupByLibrary.simpleMessage("Set a PIN (4-8 digits)"),
+    "appLockSetPin": MessageLookupByLibrary.simpleMessage("Set a PIN (4-6 digits)"),
     "appLockConfirmPin": MessageLookupByLibrary.simpleMessage("Enter the PIN again"),
     "appLockPinMismatch": MessageLookupByLibrary.simpleMessage("The two PINs do not match"),
     "appLockWrongPin": MessageLookupByLibrary.simpleMessage("Wrong PIN"),

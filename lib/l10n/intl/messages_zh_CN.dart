@@ -138,13 +138,20 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "chinaPreset": MessageLookupByLibrary.simpleMessage("中国适配预设"),
+    "chinaPresetDesc": MessageLookupByLibrary.simpleMessage("一键应用面向中国网络环境的推荐组合。只组合本应用已有能力，不新增规则、不新增请求。"),
+    "chinaPresetStateOn": MessageLookupByLibrary.simpleMessage("已开启"),
+    "chinaPresetStateOff": MessageLookupByLibrary.simpleMessage("未开启"),
+    "chinaPresetStateCustomized": MessageLookupByLibrary.simpleMessage("已自定义"),
+    "chinaPresetApply": MessageLookupByLibrary.simpleMessage("开启预设"),
+    "chinaPresetReset": MessageLookupByLibrary.simpleMessage("恢复默认"),
     "controlStyle": MessageLookupByLibrary.simpleMessage("控件风格"),
     "controlStyleLiquidGlass": MessageLookupByLibrary.simpleMessage("液态玻璃"),
     "controlStyleKeycap": MessageLookupByLibrary.simpleMessage("按键质感 · 未来感"),
     "appLock": MessageLookupByLibrary.simpleMessage("应用锁"),
     "appLockDesc": MessageLookupByLibrary.simpleMessage("打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。"),
     "appLockEnterPin": MessageLookupByLibrary.simpleMessage("输入 PIN"),
-    "appLockSetPin": MessageLookupByLibrary.simpleMessage("设置 PIN（4-8 位）"),
+    "appLockSetPin": MessageLookupByLibrary.simpleMessage("设置 PIN（4-6 位）"),
     "appLockConfirmPin": MessageLookupByLibrary.simpleMessage("再次输入 PIN"),
     "appLockPinMismatch": MessageLookupByLibrary.simpleMessage("两次输入不一致"),
     "appLockWrongPin": MessageLookupByLibrary.simpleMessage("PIN 不正确"),

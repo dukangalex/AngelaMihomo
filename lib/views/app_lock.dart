@@ -54,7 +54,7 @@ class PinPad extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 6; i++)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 5),
                 width: 13,
@@ -197,7 +197,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 PinPad(
                   enteredLength: _entered.length,
                   onDigit: (digit) {
-                    if (_entered.length >= 8) return;
+                    if (_entered.length >= 6) return;
                     setState(() {
                       _entered += digit;
                       _error = null;
@@ -431,7 +431,7 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
         PinPad(
           enteredLength: _entered.length,
           onDigit: (digit) {
-            if (_entered.length >= 8) return;
+            if (_entered.length >= 6) return;
             setState(() => _entered += digit);
           },
           onDelete: () {
