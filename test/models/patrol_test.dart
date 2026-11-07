@@ -328,4 +328,52 @@ void main() {
       expect(report.problemCount, 2);
     });
   });
+  group('T29 transient noise and suggested actions', () {
+    test('transitioning lifecycle lines never count as issues', () {
+      final section = classifyLogs([
+        for (var i = 0; i < 171; i++)
+          PatrolLogEntry(
+            level: 'warning',
+            payload: 'tun lifecycle is transitioning, dial tcp failed',
+            time: DateTime(2026),
+          ),
+        PatrolLogEntry(
+          level: 'error',
+          payload: 'dns resolve failed: no such host',
+          time: DateTime(2026),
+        ),
+      ]);
+      expect(section.transientSkipped, 171);
+      expect(section.totalIssues, 1);
+      expect(section.suggestedAction, PatrolAction.flushDns);
+    });
+
+    test('sections suggest their whitelist action', () {
+      final stale = evaluateSubscription(
+        const PatrolSubscriptionInput(
+          hasProfile: true,
+          isRemote: true,
+          lastUpdateFailed: true,
+        ),
+        DateTime(2026),
+      );
+      expect(stale.suggestedAction, PatrolAction.updateSubscription);
+      final nodes = evaluateNodes(const [
+        PatrolNodeSample(name: 'a', delay: 0),
+        PatrolNodeSample(name: 'b', delay: 120),
+      ]);
+      expect(nodes.suggestedAction, PatrolAction.testNodes);
+      const core = PatrolCoreSection(
+        input: PatrolCoreInput(
+          versionLabel: 'v',
+          configCheck: PatrolConfigCheck.failed,
+        ),
+      );
+      expect(core.suggestedAction, PatrolAction.reloadConfig);
+      const link = PatrolLinkSection(
+        input: PatrolLinkInput(mode: 'rule'),
+      );
+      expect(link.suggestedAction, isNull);
+    });
+  });
 }

@@ -10380,6 +10380,97 @@ class AppLocalizations {
     return Intl.message('Privacy, WebRTC and ad blocking keep working in global/direct mode.', name: 'systemExplicitInterceptionActiveDesc', desc: '', args: []);
   }
 
+
+  /// `Fix`
+  String get patrolFix {
+    return Intl.message('Fix', name: 'patrolFix', desc: '', args: []);
+  }
+
+  /// `Update the subscription now`
+  String get patrolActionUpdateSubscription {
+    return Intl.message('Update the subscription now', name: 'patrolActionUpdateSubscription', desc: '', args: []);
+  }
+
+  /// `Retest all nodes`
+  String get patrolActionTestNodes {
+    return Intl.message('Retest all nodes', name: 'patrolActionTestNodes', desc: '', args: []);
+  }
+
+  /// `Flush DNS and FakeIP caches`
+  String get patrolActionFlushDns {
+    return Intl.message('Flush DNS and FakeIP caches', name: 'patrolActionFlushDns', desc: '', args: []);
+  }
+
+  /// `Reload the configuration`
+  String get patrolActionReloadConfig {
+    return Intl.message('Reload the configuration', name: 'patrolActionReloadConfig', desc: '', args: []);
+  }
+
+  /// `Run this fix?`
+  String get patrolFixConfirmTitle {
+    return Intl.message('Run this fix?', name: 'patrolFixConfirmTitle', desc: '', args: []);
+  }
+
+  /// `The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.`
+  String get patrolFixConfirmDesc {
+    return Intl.message('The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.', name: 'patrolFixConfirmDesc', desc: '', args: []);
+  }
+
+  /// `Don't ask again this session (low-risk fixes only)`
+  String get patrolFixTrustSession {
+    return Intl.message('Don\'t ask again this session (low-risk fixes only)', name: 'patrolFixTrustSession', desc: '', args: []);
+  }
+
+  /// `Fix applied and verified`
+  String get patrolFixApplied {
+    return Intl.message('Fix applied and verified', name: 'patrolFixApplied', desc: '', args: []);
+  }
+
+  /// `Fix did not verify — previous state restored`
+  String get patrolFixRolledBack {
+    return Intl.message('Fix did not verify — previous state restored', name: 'patrolFixRolledBack', desc: '', args: []);
+  }
+
+  /// `The fix did not go through`
+  String get patrolFixFailed {
+    return Intl.message('The fix did not go through', name: 'patrolFixFailed', desc: '', args: []);
+  }
+
+  /// `Repair history`
+  String get patrolRecords {
+    return Intl.message('Repair history', name: 'patrolRecords', desc: '', args: []);
+  }
+
+  /// `No repairs yet`
+  String get patrolRecordsEmpty {
+    return Intl.message('No repairs yet', name: 'patrolRecordsEmpty', desc: '', args: []);
+  }
+
+  /// `Undo`
+  String get patrolRecordUndo {
+    return Intl.message('Undo', name: 'patrolRecordUndo', desc: '', args: []);
+  }
+
+  /// `Applied`
+  String get patrolOutcomeApplied {
+    return Intl.message('Applied', name: 'patrolOutcomeApplied', desc: '', args: []);
+  }
+
+  /// `Rolled back`
+  String get patrolOutcomeRolledBack {
+    return Intl.message('Rolled back', name: 'patrolOutcomeRolledBack', desc: '', args: []);
+  }
+
+  /// `Failed`
+  String get patrolOutcomeFailed {
+    return Intl.message('Failed', name: 'patrolOutcomeFailed', desc: '', args: []);
+  }
+
+  /// `Undone`
+  String get patrolOutcomeUndone {
+    return Intl.message('Undone', name: 'patrolOutcomeUndone', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

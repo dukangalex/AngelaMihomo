@@ -587,6 +587,9 @@ class AppController {
           ? null
           : await profile.profileLastModified;
       final newProfile = await profile.update(validate: validate);
+      // Patrol failure marks (T29): a successful update clears any
+      // recorded failure for this profile.
+      await PatrolStore.clearUpdateFailure(profile.id);
       _ref
           .read(profilesProvider.notifier)
           .setProfile(newProfile.copyWith(isUpdating: false));
@@ -595,8 +598,55 @@ class AppController {
         return;
       }
       applyProfileDebounce(silence: true);
+    } catch (error) {
+      // Record the failure so the patrol report can show "last update
+      // failed" long after the transient message is gone.
+      await PatrolStore.markUpdateFailed(profile.id, '$error');
+      rethrow;
     } finally {
       _updatingProfileIds.remove(profile.id);
+      unawaited(refreshPatrolBadge());
+    }
+  }
+
+  /// Light patrol evaluation for the navigation badge (T29): counts
+  /// problem-severity log and subscription sections only. The patrol
+  /// page runs the full report and refreshes the same count.
+  Future<void> refreshPatrolBadge() async {
+    try {
+      var problems = 0;
+      final logSection = classifyLogs([
+        for (final log in _ref.read(logsProvider).list)
+          PatrolLogEntry(
+            level: log.logLevel.name,
+            payload: log.payload,
+            time: log.time,
+          ),
+      ]);
+      if (logSection.severity == PatrolSeverity.problem) problems++;
+      final profile = _ref.read(currentProfileProvider);
+      if (profile != null) {
+        final failure = await PatrolStore.updateFailureFor(profile.id);
+        final expireSeconds = profile.subscriptionInfo?.expire ?? 0;
+        final section = evaluateSubscription(
+          PatrolSubscriptionInput(
+            hasProfile: true,
+            isRemote: profile.url.isNotEmpty,
+            lastUpdateDate: profile.lastUpdateDate,
+            autoUpdateEnabled: profile.realAutoUpdate,
+            autoUpdateDuration: profile.autoUpdateDuration,
+            expiresAt: expireSeconds > 0
+                ? DateTime.fromMillisecondsSinceEpoch(expireSeconds * 1000)
+                : null,
+            lastUpdateFailed: failure != null,
+          ),
+          DateTime.now(),
+        );
+        if (section.severity == PatrolSeverity.problem) problems++;
+      }
+      patrolAttentionCount.value = problems;
+    } catch (_) {
+      // The badge is advisory; never let it break startup or updates.
     }
   }
 
@@ -1614,6 +1664,9 @@ class AppController {
       await applyProfile();
       addCheckIpNumDebounce();
     }
+    // Patrol badge (T29): evaluate once at startup; the patrol page
+    // and later profile updates keep it current.
+    unawaited(refreshPatrolBadge());
   }
 
   Future<void> syncDesktopRuntimeState({

@@ -43,11 +43,26 @@ class PatrolLogIssueGroup {
   });
 }
 
+/// Whitelist repair actions the patrol executor may run (T29 phase 1).
+/// Anything outside this list is never executed automatically: the
+/// report can only point at it. Each action is low-risk and reversible
+/// or read-only in effect.
+enum PatrolAction { updateSubscription, testNodes, flushDns, reloadConfig }
+
 class PatrolLogSection {
   final int totalIssues;
   final Map<PatrolLogIssueKind, PatrolLogIssueGroup> groups;
 
-  const PatrolLogSection({required this.totalIssues, required this.groups});
+  /// Warning/error lines skipped as transient lifecycle churn (e.g.
+  /// "tun lifecycle is transitioning" during start/stop): state noise,
+  /// not failures, so they never raise the section's severity.
+  final int transientSkipped;
+
+  const PatrolLogSection({
+    required this.totalIssues,
+    required this.groups,
+    this.transientSkipped = 0,
+  });
 
   bool get hasIssues => totalIssues > 0;
 
@@ -55,6 +70,20 @@ class PatrolLogSection {
       hasIssues ? PatrolSeverity.problem : PatrolSeverity.ok;
 
   PatrolLogIssueGroup? groupOf(PatrolLogIssueKind kind) => groups[kind];
+
+  /// DNS noise points at the cache first, rule problems at a reload,
+  /// everything else at a fresh node test (which separates a transient
+  /// blip from a dead node).
+  PatrolAction? get suggestedAction {
+    if (!hasIssues) return null;
+    if (groups.containsKey(PatrolLogIssueKind.dns)) {
+      return PatrolAction.flushDns;
+    }
+    if (groups.containsKey(PatrolLogIssueKind.rule)) {
+      return PatrolAction.reloadConfig;
+    }
+    return PatrolAction.testNodes;
+  }
 }
 
 /// Subscription state for the current profile.
@@ -110,6 +139,15 @@ class PatrolSubscriptionSection {
     if (isStale || neverUpdated) return PatrolSeverity.notice;
     return PatrolSeverity.ok;
   }
+
+  /// A remote profile that failed, expired or went stale can be acted
+  /// on right away: fetch it again through the normal update path.
+  PatrolAction? get suggestedAction =>
+      input.hasProfile &&
+          input.isRemote &&
+          (lastUpdateFailed || isExpired || isStale || neverUpdated)
+      ? PatrolAction.updateSubscription
+      : null;
 }
 
 /// One node's most recent speed-test result. [delay] is null when the node
@@ -151,6 +189,9 @@ class PatrolNodeSection {
     if (dead > 0) return PatrolSeverity.notice;
     return PatrolSeverity.ok;
   }
+
+  PatrolAction? get suggestedAction =>
+      total > 0 && (dead > 0 || tested == 0) ? PatrolAction.testNodes : null;
 }
 
 /// Outbound mode and chain-proxy state.
@@ -192,6 +233,11 @@ class PatrolLinkSection {
   PatrolSeverity get severity => (chainIncomplete || chainHopDown)
       ? PatrolSeverity.problem
       : PatrolSeverity.ok;
+
+  /// A down hop gets a retest; an incomplete chain configuration needs
+  /// the user's own chain settings, so no whitelist action is offered.
+  PatrolAction? get suggestedAction =>
+      chainHopDown ? PatrolAction.testNodes : null;
 }
 
 /// Outcome of a config validation run, as the patrol report needs it.
@@ -256,6 +302,11 @@ class PatrolCoreSection {
     PatrolConfigCheck.unavailable => PatrolSeverity.notice,
     _ => PatrolSeverity.ok,
   };
+
+  PatrolAction? get suggestedAction =>
+      input.configCheck == PatrolConfigCheck.failed
+      ? PatrolAction.reloadConfig
+      : null;
 }
 
 /// The full patrol report: five sections plus headline counts.
@@ -324,11 +375,30 @@ class PatrolReport {
 /// dial failure it usually rides on), then generic connection failures,
 /// then rule/provider problems. Info and debug entries never count:
 /// at those levels the same words appear in healthy traffic logs.
+/// Payload signatures of transient lifecycle churn. During TUN
+/// start/stop the core logs lines like "tun lifecycle is
+/// transitioning" at warning level, sometimes hundreds of times; they
+/// describe a state change in progress, not a failure, and counting
+/// them once buried every real problem under noise (field report:
+/// 171 accumulated copies). Matched before classification, at any
+/// level, and reported separately as [PatrolLogSection.transientSkipped].
+const patrolTransientSignatures = ['transitioning'];
+
+bool isTransientLogNoise(String payload) {
+  final text = payload.toLowerCase();
+  return patrolTransientSignatures.any(text.contains);
+}
+
 PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
   final counts = <PatrolLogIssueKind, int>{};
   final samples = <PatrolLogIssueKind, String>{};
   var total = 0;
+  var transientSkipped = 0;
   for (final entry in entries) {
+    if (isTransientLogNoise(entry.payload)) {
+      transientSkipped++;
+      continue;
+    }
     if (entry.level != 'warning' && entry.level != 'error') continue;
     final kind = _classifyPayload(entry.payload);
     if (kind == null) continue;
@@ -338,6 +408,7 @@ PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
   }
   return PatrolLogSection(
     totalIssues: total,
+    transientSkipped: transientSkipped,
     groups: {
       for (final kind in PatrolLogIssueKind.values)
         if (counts.containsKey(kind))
