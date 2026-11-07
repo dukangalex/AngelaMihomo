@@ -1573,18 +1573,25 @@ class _ToolViewState extends ConsumerState<ToolsView> {
             tooltip: Intl.message(logsItem.label.name),
           ),
       ],
-      body: ScrollEdgeRise(
-        builder: (context, rise) => ListView.builder(
-          key: _query.isEmpty ? toolsStoreKey : null,
-          itemCount: _query.isEmpty ? items.length : searchResults.length,
-          itemBuilder: (_, index) {
-            return _query.isEmpty ? items[index] : searchResults[index];
-          },
-          padding: EdgeInsets.only(
-            bottom:
-                (globalState.isAndroidTV ? 80.0 : 20.0) +
-                (isMobileView ? getFloatingBottomBarReserveHeight(context) : 0),
-            top: 8 + rise,
+      // Static glass scope (T38): section cards keep the glass fill, rim
+      // and radius, but this is a long scrolling list — no real-time blur.
+      body: GlassScope(
+        live: false,
+        child: ScrollEdgeRise(
+          builder: (context, rise) => ListView.builder(
+            key: _query.isEmpty ? toolsStoreKey : null,
+            itemCount: _query.isEmpty ? items.length : searchResults.length,
+            itemBuilder: (_, index) {
+              return _query.isEmpty ? items[index] : searchResults[index];
+            },
+            padding: EdgeInsets.only(
+              bottom:
+                  (globalState.isAndroidTV ? 80.0 : 20.0) +
+                  (isMobileView
+                      ? getFloatingBottomBarReserveHeight(context)
+                      : 0),
+              top: 8 + rise,
+            ),
           ),
         ),
       ),

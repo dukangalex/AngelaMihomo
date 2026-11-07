@@ -579,18 +579,23 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       onKeywordsUpdate: _onKeywordsUpdate,
       searchState: AppBarSearchState(onSearch: _onSearch),
       actions: _buildActions(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildTabs(),
-          Expanded(
-            child: switch (_tab) {
-              _ConnectionsTab.active => _buildActiveList(),
-              _ConnectionsTab.closed => _buildClosedList(),
-              _ConnectionsTab.all => _buildAllList(),
-            },
-          ),
-        ],
+      // Static glass scope (T38): connection cards in these long lists
+      // keep the glass fill, rim and radius without real-time blur.
+      body: GlassScope(
+        live: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildTabs(),
+            Expanded(
+              child: switch (_tab) {
+                _ConnectionsTab.active => _buildActiveList(),
+                _ConnectionsTab.closed => _buildClosedList(),
+                _ConnectionsTab.all => _buildAllList(),
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

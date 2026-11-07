@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:bett_box/state.dart';
+import 'glass.dart';
 import 'text.dart';
 
 class CommonDialog extends ConsumerWidget {
@@ -64,6 +65,65 @@ class CommonDialog extends ConsumerWidget {
     final size = ref.watch(viewSizeProvider);
     final isTv = globalState.isAndroidTV;
     final theme = Theme.of(context);
+    // Liquid glass (T38 full rollout): dialogs are finite modal surfaces,
+    // so they take the live glass treatment — neutral fill, bright rim,
+    // specular top band — over the dimmed barrier. An explicit
+    // [backgroundColor] from the caller still wins over the glass fill.
+    final glassTokens = GlassTokens.resolve(
+      context.colorScheme,
+      GlassKind.dialog,
+    );
+    final glassShape = RoundedSuperellipseBorder(
+      borderRadius: BorderRadius.circular(28),
+      side: BorderSide(
+        color: glassTokens.rim,
+        width: 0.5,
+        strokeAlign: BorderSide.strokeAlignInside,
+      ),
+    );
+    final dialog = AlertDialog(
+      title: titleTrailing == null
+          ? EmojiText(title)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                EmojiText(title),
+                const SizedBox(width: 8),
+                titleTrailing!,
+              ],
+            ),
+      actions: _buildActions(context),
+      titleTextStyle: context.textTheme.titleLarge?.copyWith(
+        fontSize: 19,
+        fontWeight: FontWeight.w600,
+      ),
+      contentTextStyle: context.textTheme.bodyMedium?.copyWith(
+        color: context.colorScheme.onSurfaceVariant,
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
+      contentPadding: padding ?? const EdgeInsets.fromLTRB(22, 14, 22, 18),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      shape: glassShape,
+      backgroundColor: backgroundColor ?? glassTokens.effectiveFill,
+      content: Theme(
+        data: theme.copyWith(
+          inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+            fillColor: theme.brightness == Brightness.light
+                ? theme.colorScheme.surfaceContainer
+                : null,
+          ),
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: min(size.height - 40, 500),
+            maxWidth: 300,
+          ),
+          width: size.width - 40,
+          child: !overrideScroll ? SingleChildScrollView(child: child) : child,
+        ),
+      ),
+    );
     return PopScope(
       canPop: !isTv,
       onPopInvokedWithResult: !isTv
@@ -74,49 +134,10 @@ class CommonDialog extends ConsumerWidget {
               if (ModalRoute.of(context)?.isCurrent != true) return;
               Navigator.of(context).pop();
             },
-      child: AlertDialog(
-        title: titleTrailing == null
-            ? EmojiText(title)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  EmojiText(title),
-                  const SizedBox(width: 8),
-                  titleTrailing!,
-                ],
-              ),
-        actions: _buildActions(context),
-        titleTextStyle: context.textTheme.titleLarge?.copyWith(
-          fontSize: 19,
-          fontWeight: FontWeight.w600,
-        ),
-        contentTextStyle: context.textTheme.bodyMedium?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
-        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
-        contentPadding: padding ?? const EdgeInsets.fromLTRB(22, 14, 22, 18),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        backgroundColor: backgroundColor,
-        content: Theme(
-          data: theme.copyWith(
-            inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-              fillColor: theme.brightness == Brightness.light
-                  ? theme.colorScheme.surfaceContainer
-                  : null,
-            ),
-          ),
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: min(size.height - 40, 500),
-              maxWidth: 300,
-            ),
-            width: size.width - 40,
-            child: !overrideScroll
-                ? SingleChildScrollView(child: child)
-                : child,
-          ),
-        ),
+      child: GlassSurface(
+        shape: glassShape,
+        tokens: glassTokens,
+        child: dialog,
       ),
     );
   }
@@ -136,7 +157,7 @@ class CommonModal extends ConsumerWidget {
         height: size.height * 0.85,
         decoration: ShapeDecoration(
           shape: RoundedSuperellipseBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
         ),
         clipBehavior: Clip.antiAlias,

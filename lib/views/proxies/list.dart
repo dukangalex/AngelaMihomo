@@ -18,23 +18,29 @@ class ProxiesListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActiveConsumer(
-      builder: (_, ref) {
-        final state = ref.watch(proxiesListStateProvider);
+    // Static glass scope (T38): group cards and node tiles in this long
+    // scrolling list keep the glass fill, rim and radius without
+    // real-time blur.
+    return GlassScope(
+      live: false,
+      child: ActiveConsumer(
+        builder: (_, ref) {
+          final state = ref.watch(proxiesListStateProvider);
 
-        if (state.groups.isEmpty) {
-          return NullStatus(
-            label: appLocalizations.nullTip(appLocalizations.proxies),
+          if (state.groups.isEmpty) {
+            return NullStatus(
+              label: appLocalizations.nullTip(appLocalizations.proxies),
+            );
+          }
+
+          return _ProxyGroupsList(
+            groups: state.groups,
+            columns: state.columns,
+            cardType: state.proxyCardType,
+            currentUnfoldSet: state.currentUnfoldSet,
           );
-        }
-
-        return _ProxyGroupsList(
-          groups: state.groups,
-          columns: state.columns,
-          cardType: state.proxyCardType,
-          currentUnfoldSet: state.currentUnfoldSet,
-        );
-      },
+        },
+      ),
     );
   }
 }

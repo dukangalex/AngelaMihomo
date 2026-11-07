@@ -2,6 +2,8 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'glass.dart';
+
 class CommonPopupRoute<T> extends PopupRoute<T> {
   final WidgetBuilder builder;
   ValueNotifier<Offset> offsetNotifier;
@@ -331,23 +333,26 @@ class CommonPopupMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
-    return IntrinsicHeight(
+    // Liquid glass (T38 full rollout): popup menus are small finite modal
+    // surfaces — neutral glass fill, bright rim, specular band. The
+    // elevation shadow moves to an outer DecoratedBox because GlassSurface
+    // clips its child (and would clip the Material shadow away).
+    final glassTokens = GlassTokens.resolve(colorScheme, GlassKind.dialog);
+    final glassShape = RoundedSuperellipseBorder(
+      borderRadius: BorderRadius.circular(26),
+      side: BorderSide(
+        color: glassTokens.rim,
+        width: 0.5,
+        strokeAlign: BorderSide.strokeAlignInside,
+      ),
+    );
+    final menu = IntrinsicHeight(
       child: IntrinsicWidth(
         child: Material(
-          elevation: 8,
           shadowColor: Colors.black.withValues(alpha: isLight ? 0.5 : 0.8),
-          color: isLight
-              ? colorScheme.surfaceContainerLowest
-              : colorScheme.surfaceContainerHighest,
+          color: glassTokens.effectiveFill,
           clipBehavior: Clip.antiAlias,
-          shape: RoundedSuperellipseBorder(
-            borderRadius: BorderRadius.circular(26),
-            side: BorderSide(
-              color: colorScheme.outlineVariant.withValues(
-                alpha: isLight ? 0.45 : 0.25,
-              ),
-            ),
-          ),
+          shape: glassShape,
           child: Padding(
             padding: const EdgeInsets.all(6),
             child: Column(
@@ -367,6 +372,19 @@ class CommonPopupMenu extends StatelessWidget {
           ),
         ),
       ),
+    );
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        shape: glassShape,
+        shadows: [
+          BoxShadow(
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: isLight ? 0.18 : 0.45),
+          ),
+        ],
+      ),
+      child: GlassSurface(shape: glassShape, tokens: glassTokens, child: menu),
     );
   }
 }

@@ -300,7 +300,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       ),
     );
 
-    final spacing = 12.mAp;
+    // Composition (T38 full rollout, light touch): the grid rhythm opens
+    // up from 12 to 16 so card groups breathe as distinct bands instead of
+    // one tight mosaic; content and tile order are user data and stay
+    // untouched.
+    final spacing = 16.mAp;
     final sizes = ref.watch(
       appSettingProvider.select(
         (state) => system.isAndroid
@@ -335,96 +339,159 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             )
           : null,
       actions: _buildActions(showStartSwitch, isDark),
-      body: ScrollEdgeRise(
-        builder: (_, rise) => Align(
-          alignment: Alignment.topCenter,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final contentWidth = math.min(
-                constraints.maxWidth,
-                dashboardMaxGridWidth,
-              );
-              final int columns = isMobileView
-                  ? 8
-                  : DashboardGridBand.of(contentWidth).columns;
-              final bottomReserve = isMobileView
-                  ? getFloatingBottomBarReserveHeight(context)
-                  : 0.0;
-              final verticalPadding = 32.0 + bottomReserve;
-              final unitHeight = dashboardUnitHeight(
-                contentWidth,
-                availableHeight: constraints.hasBoundedHeight
-                    ? constraints.maxHeight - rise
-                    : null,
-                spacing: spacing,
-                verticalPadding: verticalPadding,
-              );
+      body: GlassScope(
+        child: ScrollEdgeRise(
+          builder: (_, rise) => Align(
+            alignment: Alignment.topCenter,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentWidth = math.min(
+                  constraints.maxWidth,
+                  dashboardMaxGridWidth,
+                );
+                final int columns = isMobileView
+                    ? 8
+                    : DashboardGridBand.of(contentWidth).columns;
+                final bottomReserve = isMobileView
+                    ? getFloatingBottomBarReserveHeight(context)
+                    : 0.0;
+                final verticalPadding = 32.0 + bottomReserve;
+                final unitHeight = dashboardUnitHeight(
+                  contentWidth,
+                  availableHeight: constraints.hasBoundedHeight
+                      ? constraints.maxHeight - rise
+                      : null,
+                  spacing: spacing,
+                  verticalPadding: verticalPadding,
+                );
 
-              final dashboardContent = ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: dashboardMaxGridWidth,
-                ),
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    16 + rise,
-                    16,
-                    16 + bottomReserve,
+                final dashboardContent = ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: dashboardMaxGridWidth,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildIsEdit(
-                        (isEdit) => isEdit
-                            ? SystemBackBlock(
-                                child: CommonPopScope(
-                                  onPop: () {
-                                    _handleUpdateIsEdit();
-                                    return false;
-                                  },
-                                  child: const SizedBox.shrink(),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      _buildIsEdit(
-                        (isEdit) => EditableGrid<DashboardTile>(
-                          key: const ValueKey('dashboard-grid'),
-                          items: children,
-                          editing: isEdit,
-                          crossAxisCount: columns,
-                          crossAxisSpacing: spacing,
-                          mainAxisSpacing: spacing,
-                          keyOf: (tile) => tile.widget.family,
-                          crossAxisCellCountOf: (tile) => tile.size.cross * 4,
-                          itemBuilder: (_, tile) => buildDashboardTile(tile),
-                          canResize: (tile) => tile.widget.resizable,
-                          onResize: _resizeWidget,
-                          canDelete: (tile) => tile.widget.widget.isDeletable,
-                          onDelete: _deleteWidget,
-                          onMove: _moveWidget,
-                          overlayWrapper: (child) => DashboardWidgetMetrics(
-                            unitHeight: unitHeight,
-                            spacing: spacing,
-                            columns: columns,
-                            child: child,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      20 + rise,
+                      20,
+                      20 + bottomReserve,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildIsEdit(
+                          (isEdit) => isEdit
+                              ? SystemBackBlock(
+                                  child: CommonPopScope(
+                                    onPop: () {
+                                      _handleUpdateIsEdit();
+                                      return false;
+                                    },
+                                    child: const SizedBox.shrink(),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        _buildIsEdit(
+                          (isEdit) => EditableGrid<DashboardTile>(
+                            key: const ValueKey('dashboard-grid'),
+                            items: children,
+                            editing: isEdit,
+                            crossAxisCount: columns,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            keyOf: (tile) => tile.widget.family,
+                            crossAxisCellCountOf: (tile) => tile.size.cross * 4,
+                            itemBuilder: (_, tile) => buildDashboardTile(tile),
+                            canResize: (tile) => tile.widget.resizable,
+                            onResize: _resizeWidget,
+                            canDelete: (tile) => tile.widget.widget.isDeletable,
+                            onDelete: _deleteWidget,
+                            onMove: _moveWidget,
+                            overlayWrapper: (child) => DashboardWidgetMetrics(
+                              unitHeight: unitHeight,
+                              spacing: spacing,
+                              columns: columns,
+                              child: child,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
+                );
+
+                return DashboardWidgetMetrics(
+                  unitHeight: unitHeight,
+                  spacing: spacing,
+                  columns: columns,
+                  child: Stack(
+                    children: [
+                      const Positioned.fill(child: _GlassAmbientBackground()),
+                      dashboardContent,
                     ],
                   ),
-                ),
-              );
-
-              return DashboardWidgetMetrics(
-                unitHeight: unitHeight,
-                spacing: spacing,
-                columns: columns,
-                child: dashboardContent,
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Soft neutral glows behind the dashboard grid. The glass cards blur this
+/// layer as they pass over it; it is decorative and fixed while content
+/// scrolls (T38 liquid glass, phase 1). Round 3: the glows are neutral
+/// gray/white — the glass is untainted, so ambient colour must come from
+/// real content, not from a brand-coloured backdrop painting the cards.
+class _GlassAmbientBackground extends StatelessWidget {
+  const _GlassAmbientBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final neutral = colorScheme.onSurface;
+    // Composition (T38 full rollout): the light moves from two corner
+    // glows to one broad key light centred over the header zone plus a
+    // smaller fill at the lower right — the cards pick up a different
+    // specular direction than both upstream and the phase-1 sample.
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned(
+            top: -220,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _glow(
+                neutral.withValues(alpha: isLight ? 0.1 : 0.15),
+                size: 460,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -190,
+            right: -140,
+            child: _glow(
+              neutral.withValues(alpha: isLight ? 0.07 : 0.11),
+              size: 380,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glow(Color color, {double size = 340}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
       ),
     );
   }
@@ -464,7 +531,7 @@ class _AddDashboardWidgetModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = 12.mAp;
+    final spacing = 16.mAp;
     const columns = 8;
     final packedItems = packGridItems(items, columns);
     return DashboardWidgetMetrics(

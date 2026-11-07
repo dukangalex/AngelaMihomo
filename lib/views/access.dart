@@ -1190,22 +1190,27 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return ScrollEdgeRise(
-      builder: (_, rise) => SingleChildScrollView(
-        padding: EdgeInsets.only(top: 8 + rise),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: 32 + MediaQuery.paddingOf(context).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ..._buildModeSetting(),
-              ..._buildSortSetting(),
-              ..._buildSourceSetting(),
-              ..._buildActionSetting(),
-            ],
+    // Static glass scope (T38): setting cards keep the glass fill, rim and
+    // radius without real-time blur.
+    return GlassScope(
+      live: false,
+      child: ScrollEdgeRise(
+        builder: (_, rise) => SingleChildScrollView(
+          padding: EdgeInsets.only(top: 8 + rise),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: 32 + MediaQuery.paddingOf(context).bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._buildModeSetting(),
+                ..._buildSortSetting(),
+                ..._buildSourceSetting(),
+                ..._buildActionSetting(),
+              ],
+            ),
           ),
         ),
       ),

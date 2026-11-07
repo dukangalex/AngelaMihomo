@@ -1,6 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
+import 'package:bett_box/widgets/glass.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -110,7 +111,11 @@ class CommonCard extends StatelessWidget {
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
 
-  BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
+  BorderSide getBorderSide(
+    BuildContext context,
+    Set<WidgetState> states, {
+    GlassTokens? glass,
+  }) {
     final colorScheme = context.colorScheme;
     final hoverColor = isSelected
         ? colorScheme.primary.opacity80
@@ -120,6 +125,15 @@ class CommonCard extends StatelessWidget {
         states.contains(WidgetState.pressed)) {
       return BorderSide(
         color: hoverColor,
+        strokeAlign: BorderSide.strokeAlignInside,
+      );
+    }
+    if (glass != null && !isSelected) {
+      return BorderSide(
+        color: glass.rim,
+        // 0.5px hairline stroke (Apple iOS 27 kit calibre, T38); the
+        // brighter rim light is painted by GlassSurface on top.
+        width: 0.5,
         strokeAlign: BorderSide.strokeAlignInside,
       );
     }
@@ -134,12 +148,19 @@ class CommonCard extends StatelessWidget {
     );
   }
 
-  Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
+  Color? getBackgroundColor(
+    BuildContext context,
+    Set<WidgetState> states, {
+    GlassTokens? glass,
+  }) {
     final colorScheme = context.colorScheme;
     if (isSelected) {
       return type == CommonCardType.filled
           ? colorScheme.secondaryContainer.opacity80
           : colorScheme.secondaryContainer;
+    }
+    if (glass != null) {
+      return glass.effectiveFill;
     }
     final isLight = colorScheme.brightness == Brightness.light;
     return isLight
@@ -153,7 +174,9 @@ class CommonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actualRadius = radius ?? 20.0;
+    // Glass-surfaced cards take a larger, softer radius (T38 round 3,
+    // 20–28 band); flat cards keep the stock 20.
+    final actualRadius = radius ?? (GlassScope.isActive(context) ? 24.0 : 20.0);
     var childWidget = child;
 
     if (info != null) {
@@ -181,6 +204,13 @@ class CommonCard extends StatelessWidget {
     final shape = RoundedSuperellipseBorder(
       borderRadius: BorderRadius.circular(actualRadius),
     );
+    final glass = GlassScope.isActive(context)
+        ? GlassTokens.resolve(
+            context.colorScheme,
+            GlassKind.card,
+            realtime: GlassScope.isLive(context),
+          )
+        : null;
     Widget card = OutlinedButton(
       onLongPress: onLongPress,
       clipBehavior: clipBehavior,
@@ -190,10 +220,10 @@ class CommonCard extends StatelessWidget {
         iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
         iconSize: WidgetStateProperty.all(20),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states),
+          (states) => getBackgroundColor(context, states, glass: glass),
         ),
         side: WidgetStateProperty.resolveWith(
-          (states) => getBorderSide(context, states),
+          (states) => getBorderSide(context, states, glass: glass),
         ),
         minimumSize: WidgetStatePropertyAll(isInteractive ? null : Size.zero),
         tapTargetSize: isInteractive ? null : MaterialTapTargetSize.shrinkWrap,
@@ -201,6 +231,10 @@ class CommonCard extends StatelessWidget {
       onPressed: onPressed,
       child: childWidget,
     );
+
+    if (glass != null) {
+      card = GlassSurface(shape: shape, tokens: glass, child: card);
+    }
 
     if (elevated) {
       card = DecoratedBox(

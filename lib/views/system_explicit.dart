@@ -35,20 +35,42 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     if (on && mode != Mode.rule) {
       final accepted = await showDialog<bool>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(appLocalizations.systemExplicitRuleModeTitle),
-          content: Text(appLocalizations.systemExplicitRuleModeDesc),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(appLocalizations.cancel),
+        builder: (dialogContext) {
+          // Liquid glass (T38 full rollout): same modal treatment as
+          // CommonDialog — neutral fill, bright rim, specular band.
+          final glassTokens = GlassTokens.resolve(
+            dialogContext.colorScheme,
+            GlassKind.dialog,
+          );
+          final glassShape = RoundedSuperellipseBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(
+              color: glassTokens.rim,
+              width: 0.5,
+              strokeAlign: BorderSide.strokeAlignInside,
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(appLocalizations.systemExplicitSwitch),
+          );
+          return GlassSurface(
+            shape: glassShape,
+            tokens: glassTokens,
+            child: AlertDialog(
+              shape: glassShape,
+              backgroundColor: glassTokens.effectiveFill,
+              title: Text(appLocalizations.systemExplicitRuleModeTitle),
+              content: Text(appLocalizations.systemExplicitRuleModeDesc),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(appLocalizations.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(appLocalizations.systemExplicitSwitch),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       );
       if (accepted != true || !mounted) return;
       await globalState.appController.changeMode(Mode.rule);
@@ -163,73 +185,73 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     return generateSection(
       title: appLocalizations.systemExplicitTitle,
       items: [
-          if (incompatible)
-            ListItem(
-              title: Text(appLocalizations.systemExplicitInactive),
-              subtitle: Text(appLocalizations.systemExplicitInactiveDesc),
-            ),
-          if (_applyError.isNotEmpty)
-            ListItem(
-              title: Text(appLocalizations.systemExplicitApplyState),
-              subtitle: Text(_applyError),
-            ),
-          _optionItem(
-            id: 'privacy',
-            title: appLocalizations.systemExplicitPrivacy,
-            desc: appLocalizations.systemExplicitPrivacyDesc,
-            value: value.privacy,
-            onChanged: (on) =>
-                _setRuleOption(on, (valueOn) => value.privacy = valueOn),
+        if (incompatible)
+          ListItem(
+            title: Text(appLocalizations.systemExplicitInactive),
+            subtitle: Text(appLocalizations.systemExplicitInactiveDesc),
           ),
-          _optionItem(
-            id: 'chinaDirect',
-            title: appLocalizations.systemExplicitChinaDirect,
-            desc: appLocalizations.systemExplicitChinaDirectDesc,
-            value: value.chinaDirect,
-            onChanged: (on) =>
-                _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn),
+        if (_applyError.isNotEmpty)
+          ListItem(
+            title: Text(appLocalizations.systemExplicitApplyState),
+            subtitle: Text(_applyError),
           ),
-          _optionItem(
-            id: 'chinaDnsDirect',
-            title: appLocalizations.systemExplicitChinaDnsDirect,
-            desc: appLocalizations.systemExplicitChinaDnsDirectDesc,
-            value: value.chinaPublicDnsDirect,
-            onChanged: (on) => _setRuleOption(
-              on,
-              (valueOn) => value.chinaPublicDnsDirect = valueOn,
-            ),
+        _optionItem(
+          id: 'privacy',
+          title: appLocalizations.systemExplicitPrivacy,
+          desc: appLocalizations.systemExplicitPrivacyDesc,
+          value: value.privacy,
+          onChanged: (on) =>
+              _setRuleOption(on, (valueOn) => value.privacy = valueOn),
+        ),
+        _optionItem(
+          id: 'chinaDirect',
+          title: appLocalizations.systemExplicitChinaDirect,
+          desc: appLocalizations.systemExplicitChinaDirectDesc,
+          value: value.chinaDirect,
+          onChanged: (on) =>
+              _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn),
+        ),
+        _optionItem(
+          id: 'chinaDnsDirect',
+          title: appLocalizations.systemExplicitChinaDnsDirect,
+          desc: appLocalizations.systemExplicitChinaDnsDirectDesc,
+          value: value.chinaPublicDnsDirect,
+          onChanged: (on) => _setRuleOption(
+            on,
+            (valueOn) => value.chinaPublicDnsDirect = valueOn,
           ),
-          _optionItem(
-            id: 'lanDirect',
-            title: appLocalizations.systemExplicitLanDirect,
-            desc: appLocalizations.systemExplicitLanDirectDesc,
-            value: value.lanDirect,
-            onChanged: (on) =>
-                _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
+        ),
+        _optionItem(
+          id: 'lanDirect',
+          title: appLocalizations.systemExplicitLanDirect,
+          desc: appLocalizations.systemExplicitLanDirectDesc,
+          value: value.lanDirect,
+          onChanged: (on) =>
+              _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
+        ),
+        _optionItem(
+          id: 'blockWebRtc',
+          title: appLocalizations.systemExplicitBlockWebRtc,
+          desc: appLocalizations.systemExplicitBlockWebRtcDesc,
+          value: value.blockCommonWebRtc,
+          onChanged: (on) => _setRuleOption(
+            on,
+            (valueOn) => value.blockCommonWebRtc = valueOn,
           ),
-          _optionItem(
-            id: 'blockWebRtc',
-            title: appLocalizations.systemExplicitBlockWebRtc,
-            desc: appLocalizations.systemExplicitBlockWebRtcDesc,
-            value: value.blockCommonWebRtc,
-            onChanged: (on) => _setRuleOption(
-              on,
-              (valueOn) => value.blockCommonWebRtc = valueOn,
-            ),
-          ),
-          _optionItem(
-            id: 'blockAds',
-            title: appLocalizations.systemExplicitBlockAds,
-            desc: appLocalizations.systemExplicitBlockAdsDesc,
-            value: value.blockAds,
-            onChanged: (on) =>
-                _setRuleOption(on, (valueOn) => value.blockAds = valueOn),
-          ),
-          _infoItem(
-            id: 'limits',
-            title: appLocalizations.systemExplicitLimits,
-            desc: appLocalizations.systemExplicitLimitsDesc,
-          ),
+        ),
+        _optionItem(
+          id: 'blockAds',
+          title: appLocalizations.systemExplicitBlockAds,
+          desc: appLocalizations.systemExplicitBlockAdsDesc,
+          value: value.blockAds,
+          onChanged: (on) =>
+              _setRuleOption(on, (valueOn) => value.blockAds = valueOn),
+        ),
+        _infoItem(
+          id: 'limits',
+          title: appLocalizations.systemExplicitLimits,
+          desc: appLocalizations.systemExplicitLimitsDesc,
+        ),
       ],
     ).first;
   }

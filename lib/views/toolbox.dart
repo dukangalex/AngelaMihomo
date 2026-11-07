@@ -288,17 +288,22 @@ class _ToolboxViewState extends ConsumerState<ToolboxView> {
                 icon: const Icon(Icons.dashboard_customize_outlined),
               ),
             ],
-      body: _editing
-          ? SystemBackBlock(
-              child: CommonPopScope(
-                onPop: () {
-                  _setEditing(false);
-                  return false;
-                },
-                child: body,
-              ),
-            )
-          : body,
+      // Static glass scope (T38): tool cards keep the glass fill, rim and
+      // radius without real-time blur.
+      body: GlassScope(
+        live: false,
+        child: _editing
+            ? SystemBackBlock(
+                child: CommonPopScope(
+                  onPop: () {
+                    _setEditing(false);
+                    return false;
+                  },
+                  child: body,
+                ),
+              )
+            : body,
+      ),
     );
   }
 }
