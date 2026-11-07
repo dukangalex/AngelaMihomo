@@ -71,6 +71,7 @@ dependencies:
     path: plugins/code_forge
   material_ui: ^1.6.0
   cupertino_ui: ^1.1.2
+  local_auth: ^3.0.2
 dependency_overrides:
   flutter_rust_bridge: 2.13.0
   # Vendored: upstream 0.2.0 plus the Clang 21 build fix from

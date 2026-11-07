@@ -138,6 +138,23 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "appLock": MessageLookupByLibrary.simpleMessage("应用锁"),
+    "appLockDesc": MessageLookupByLibrary.simpleMessage("打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。"),
+    "appLockEnterPin": MessageLookupByLibrary.simpleMessage("输入 PIN"),
+    "appLockSetPin": MessageLookupByLibrary.simpleMessage("设置 PIN（4-8 位）"),
+    "appLockConfirmPin": MessageLookupByLibrary.simpleMessage("再次输入 PIN"),
+    "appLockPinMismatch": MessageLookupByLibrary.simpleMessage("两次输入不一致"),
+    "appLockWrongPin": MessageLookupByLibrary.simpleMessage("PIN 不正确"),
+    "appLockWait": MessageLookupByLibrary.simpleMessage("尝试次数过多，请稍后再试。"),
+    "appLockNoRecovery": MessageLookupByLibrary.simpleMessage("PIN 没有找回方式。忘记后只能清除应用数据重新进入。"),
+    "appLockRelock": MessageLookupByLibrary.simpleMessage("离开后多久重新锁定"),
+    "appLockRelockImmediate": MessageLookupByLibrary.simpleMessage("立即"),
+    "appLockRelock30s": MessageLookupByLibrary.simpleMessage("30 秒"),
+    "appLockRelock1m": MessageLookupByLibrary.simpleMessage("1 分钟"),
+    "appLockRelock5m": MessageLookupByLibrary.simpleMessage("5 分钟"),
+    "appLockBiometric": MessageLookupByLibrary.simpleMessage("使用生物识别"),
+    "appLockBiometricUnavailable": MessageLookupByLibrary.simpleMessage("此设备没有可用的生物识别"),
+    "appLockUnlockBiometric": MessageLookupByLibrary.simpleMessage("用生物识别解锁"),
     "saveSuccess": MessageLookupByLibrary.simpleMessage("已保存"),
     "aiConfigTitle": MessageLookupByLibrary.simpleMessage("AI 解读（自备 Key）"),
     "aiConfigDesc": MessageLookupByLibrary.simpleMessage("可选功能。填入你自己的 API Key 后，巡检页可对报告做 AI 解读。不填 Key 时巡检完全在本地工作，不会向任何地方发送数据。"),

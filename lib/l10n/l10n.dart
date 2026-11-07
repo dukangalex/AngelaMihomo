@@ -10577,6 +10577,92 @@ class AppLocalizations {
     return Intl.message('AI request failed', name: 'aiError', desc: '', args: []);
   }
 
+
+  /// `App lock`
+  String get appLock {
+    return Intl.message('App lock', name: 'appLock', desc: '', args: []);
+  }
+
+  /// `Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.`
+  String get appLockDesc {
+    return Intl.message('Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.', name: 'appLockDesc', desc: '', args: []);
+  }
+
+  /// `Enter PIN`
+  String get appLockEnterPin {
+    return Intl.message('Enter PIN', name: 'appLockEnterPin', desc: '', args: []);
+  }
+
+  /// `Set a PIN (4-8 digits)`
+  String get appLockSetPin {
+    return Intl.message('Set a PIN (4-8 digits)', name: 'appLockSetPin', desc: '', args: []);
+  }
+
+  /// `Enter the PIN again`
+  String get appLockConfirmPin {
+    return Intl.message('Enter the PIN again', name: 'appLockConfirmPin', desc: '', args: []);
+  }
+
+  /// `The two PINs do not match`
+  String get appLockPinMismatch {
+    return Intl.message('The two PINs do not match', name: 'appLockPinMismatch', desc: '', args: []);
+  }
+
+  /// `Wrong PIN`
+  String get appLockWrongPin {
+    return Intl.message('Wrong PIN', name: 'appLockWrongPin', desc: '', args: []);
+  }
+
+  /// `Too many attempts. Wait a while and try again.`
+  String get appLockWait {
+    return Intl.message('Too many attempts. Wait a while and try again.', name: 'appLockWait', desc: '', args: []);
+  }
+
+  /// `There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.`
+  String get appLockNoRecovery {
+    return Intl.message('There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.', name: 'appLockNoRecovery', desc: '', args: []);
+  }
+
+  /// `Re-lock after leaving`
+  String get appLockRelock {
+    return Intl.message('Re-lock after leaving', name: 'appLockRelock', desc: '', args: []);
+  }
+
+  /// `Immediately`
+  String get appLockRelockImmediate {
+    return Intl.message('Immediately', name: 'appLockRelockImmediate', desc: '', args: []);
+  }
+
+  /// `30 seconds`
+  String get appLockRelock30s {
+    return Intl.message('30 seconds', name: 'appLockRelock30s', desc: '', args: []);
+  }
+
+  /// `1 minute`
+  String get appLockRelock1m {
+    return Intl.message('1 minute', name: 'appLockRelock1m', desc: '', args: []);
+  }
+
+  /// `5 minutes`
+  String get appLockRelock5m {
+    return Intl.message('5 minutes', name: 'appLockRelock5m', desc: '', args: []);
+  }
+
+  /// `Use biometrics`
+  String get appLockBiometric {
+    return Intl.message('Use biometrics', name: 'appLockBiometric', desc: '', args: []);
+  }
+
+  /// `Biometrics are not available on this device`
+  String get appLockBiometricUnavailable {
+    return Intl.message('Biometrics are not available on this device', name: 'appLockBiometricUnavailable', desc: '', args: []);
+  }
+
+  /// `Unlock with biometrics`
+  String get appLockUnlockBiometric {
+    return Intl.message('Unlock with biometrics', name: 'appLockUnlockBiometric', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

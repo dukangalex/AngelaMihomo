@@ -1277,5 +1277,22 @@
   "aiSend": "发送",
   "aiThinking": "正在请 AI 解读…",
   "aiResultTitle": "AI 解读结果",
-  "aiError": "AI 请求失败"
+  "aiError": "AI 请求失败",
+  "appLock": "应用锁",
+  "appLockDesc": "打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。",
+  "appLockEnterPin": "输入 PIN",
+  "appLockSetPin": "设置 PIN（4-8 位）",
+  "appLockConfirmPin": "再次输入 PIN",
+  "appLockPinMismatch": "两次输入不一致",
+  "appLockWrongPin": "PIN 不正确",
+  "appLockWait": "尝试次数过多，请稍后再试。",
+  "appLockNoRecovery": "PIN 没有找回方式。忘记后只能清除应用数据重新进入。",
+  "appLockRelock": "离开后多久重新锁定",
+  "appLockRelockImmediate": "立即",
+  "appLockRelock30s": "30 秒",
+  "appLockRelock1m": "1 分钟",
+  "appLockRelock5m": "5 分钟",
+  "appLockBiometric": "使用生物识别",
+  "appLockBiometricUnavailable": "此设备没有可用的生物识别",
+  "appLockUnlockBiometric": "用生物识别解锁"
 }

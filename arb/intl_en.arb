@@ -1277,5 +1277,22 @@
   "aiSend": "Send",
   "aiThinking": "Asking the AI…",
   "aiResultTitle": "AI interpretation",
-  "aiError": "AI request failed"
+  "aiError": "AI request failed",
+  "appLock": "App lock",
+  "appLockDesc": "Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.",
+  "appLockEnterPin": "Enter PIN",
+  "appLockSetPin": "Set a PIN (4-8 digits)",
+  "appLockConfirmPin": "Enter the PIN again",
+  "appLockPinMismatch": "The two PINs do not match",
+  "appLockWrongPin": "Wrong PIN",
+  "appLockWait": "Too many attempts. Wait a while and try again.",
+  "appLockNoRecovery": "There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.",
+  "appLockRelock": "Re-lock after leaving",
+  "appLockRelockImmediate": "Immediately",
+  "appLockRelock30s": "30 seconds",
+  "appLockRelock1m": "1 minute",
+  "appLockRelock5m": "5 minutes",
+  "appLockBiometric": "Use biometrics",
+  "appLockBiometricUnavailable": "Biometrics are not available on this device",
+  "appLockUnlockBiometric": "Unlock with biometrics"
 }
