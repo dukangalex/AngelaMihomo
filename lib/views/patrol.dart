@@ -92,6 +92,15 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   bool _sessionTrust = false;
   bool _fixing = false;
 
+  /// On-page fix feedback (T29 repair round). The fix loop must be
+  /// visible HERE — authorization, progress, outcome and the failure
+  /// reason — not only as a transient snackbar or on the records
+  /// page. [_fixStatusText] keeps the last run's outcome on the page
+  /// until the next run starts.
+  PatrolAction? _fixStatusAction;
+  String? _fixStatusText;
+  bool _fixStatusFailed = false;
+
   /// BYOK AI config (T30). Null until loaded; the interpretation
   /// entry only appears when a config exists and is complete — with
   /// no key there is no AI UI anywhere (zero disturbance rule).
@@ -553,44 +562,83 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     ];
   }
 
+  /// Authorization prompt for a fix. Shown through the app-wide
+  /// dialog route (root navigator, the same path as every other
+  /// prompt in the app) — a page-local dialog route is exactly the
+  /// kind of wiring that can swallow a tap without a trace.
   Future<bool?> _confirmFix(PatrolAction action) async {
     var trust = false;
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(appLocalizations.patrolFixConfirmTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _actionLabel(action),
-                style: context.textTheme.titleSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(appLocalizations.patrolFixConfirmDesc),
-              const SizedBox(height: 8),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: trust,
-                onChanged: (value) =>
-                    setDialogState(() => trust = value ?? false),
-                title: Text(appLocalizations.patrolFixTrustSession),
-              ),
-            ],
-          ),
+    return globalState.showCommonDialog<bool>(
+      child: StatefulBuilder(
+        builder: (context, setDialogState) => CommonDialog(
+          title: appLocalizations.patrolFixConfirmTitle,
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext, null),
+              onPressed: () => Navigator.of(context).pop(null),
               child: Text(appLocalizations.cancel),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext, trust),
+              onPressed: () => Navigator.of(context).pop(trust),
               child: Text(appLocalizations.patrolFix),
             ),
           ],
+          child: Container(
+            width: 300,
+            constraints: const BoxConstraints(maxHeight: 260),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _actionLabel(action),
+                    style: context.textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(appLocalizations.patrolFixConfirmDesc),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: trust,
+                    onChanged: (value) =>
+                        setDialogState(() => trust = value ?? false),
+                    title: Text(appLocalizations.patrolFixTrustSession),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  /// The persistent on-page status line for the fix loop: a spinner
+  /// while a fix runs, then its outcome (with the failure reason)
+  /// until the next run replaces it.
+  Widget _fixStatusBand(BuildContext context) {
+    final scheme = context.colorScheme;
+    final action = _fixStatusAction;
+    return ListItem(
+      leading: _fixing
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(
+              _fixStatusFailed
+                  ? Icons.error_outline
+                  : Icons.check_circle_outline,
+              color: _fixStatusFailed ? scheme.error : scheme.primary,
+            ),
+      title: Text(
+        action == null
+            ? appLocalizations.patrolFix
+            : '${appLocalizations.patrolFix} · ${_actionLabel(action)}',
+      ),
+      subtitle: Text(
+        _fixing ? appLocalizations.patrolFixRunning : (_fixStatusText ?? ''),
       ),
     );
   }
@@ -623,15 +671,31 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   /// One authorized fix run: snapshot → whitelist action → rebuild
   /// the report → verify → auto-rollback when verification fails and
   /// a snapshot exists → record the outcome (T29 phase-1 loop).
+  ///
+  /// Every step reports back on THIS page (see [_fixStatusBand]): the
+  /// authorization prompt, the running state, the outcome and — on
+  /// any failure, including an executor that could not run at all —
+  /// the reason. An exception anywhere in the chain lands in the
+  /// status line instead of vanishing: a fix tap with zero visible
+  /// effect is itself the defect this page must never reproduce.
   Future<void> _runFix(PatrolAction action) async {
     if (_fixing) return;
-    if (!_sessionTrust) {
-      final trust = await _confirmFix(action);
-      if (trust == null || !mounted) return;
-      _sessionTrust = trust;
-    }
-    setState(() => _fixing = true);
+    setState(() {
+      _fixing = true;
+      _fixStatusAction = action;
+      _fixStatusText = null;
+      _fixStatusFailed = false;
+    });
     try {
+      if (!_sessionTrust) {
+        final trust = await _confirmFix(action);
+        if (!mounted) return;
+        if (trust == null) {
+          setState(() => _fixStatusText = appLocalizations.patrolFixCancelled);
+          return;
+        }
+        _sessionTrust = trust;
+      }
       final before = _readReport();
       final profile = ref.read(currentProfileProvider);
       final result = await executePatrolAction(
@@ -677,13 +741,28 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       );
       patrolAttentionCount.value = _readReport().problemCount;
       if (mounted) {
-        globalState.showNotifier(
-          switch (outcome) {
-            'applied' => appLocalizations.patrolFixApplied,
-            'failedRolledBack' => appLocalizations.patrolFixRolledBack,
-            _ => appLocalizations.patrolFixFailed,
-          },
-        );
+        final headline = switch (outcome) {
+          'applied' => appLocalizations.patrolFixApplied,
+          'failedRolledBack' => appLocalizations.patrolFixRolledBack,
+          _ => appLocalizations.patrolFixFailed,
+        };
+        setState(() {
+          _fixStatusFailed = outcome != 'applied';
+          // The executor's reason rides along: 'no current profile',
+          // a core error, the group counts — never a bare failure.
+          _fixStatusText = result.detail.isEmpty
+              ? headline
+              : '$headline · ${result.detail}';
+        });
+        globalState.showNotifier(headline);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _fixStatusFailed = true;
+          _fixStatusText =
+              '${appLocalizations.patrolFixFailed} · $error';
+        });
       }
     } finally {
       if (mounted) setState(() => _fixing = false);
@@ -902,6 +981,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       body: ListView(
         children: [
           _verdictBand(context, report),
+          if (_fixing || _fixStatusText != null) _fixStatusBand(context),
           ..._section(
             context,
             appLocalizations.patrolSectionLogs,

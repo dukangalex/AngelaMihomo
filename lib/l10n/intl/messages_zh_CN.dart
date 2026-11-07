@@ -210,6 +210,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolFixConfirmDesc": MessageLookupByLibrary.simpleMessage("执行后会立即重建巡检报告复验结果。订阅更新若未通过复验，会自动恢复更新前的配置文件。"),
     "patrolFixTrustSession": MessageLookupByLibrary.simpleMessage("本次使用内不再逐项询问（仅低风险修复）"),
     "patrolFixApplied": MessageLookupByLibrary.simpleMessage("已修复并通过复验"),
+    "patrolFixCancelled": MessageLookupByLibrary.simpleMessage("已取消修复——未做任何更改"),
+    "patrolFixRunning": MessageLookupByLibrary.simpleMessage("正在执行修复并复验…"),
     "patrolFixRolledBack": MessageLookupByLibrary.simpleMessage("修复未通过复验，已恢复原状"),
     "patrolFixFailed": MessageLookupByLibrary.simpleMessage("修复未成功"),
     "patrolRecords": MessageLookupByLibrary.simpleMessage("修复记录"),

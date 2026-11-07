@@ -10446,6 +10446,16 @@ class AppLocalizations {
     return Intl.message('The fix did not go through', name: 'patrolFixFailed', desc: '', args: []);
   }
 
+  /// `Running the fix and re-checking…`
+  String get patrolFixRunning {
+    return Intl.message('Running the fix and re-checking…', name: 'patrolFixRunning', desc: '', args: []);
+  }
+
+  /// `Fix cancelled — nothing was changed`
+  String get patrolFixCancelled {
+    return Intl.message('Fix cancelled — nothing was changed', name: 'patrolFixCancelled', desc: '', args: []);
+  }
+
   /// `Repair history`
   String get patrolRecords {
     return Intl.message('Repair history', name: 'patrolRecords', desc: '', args: []);

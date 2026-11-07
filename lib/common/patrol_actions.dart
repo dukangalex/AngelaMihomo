@@ -64,7 +64,14 @@ Future<PatrolActionResult> executePatrolAction(
         );
       }
     case PatrolAction.testNodes:
-      await totalDelayTestCoordinator.runAll();
+      try {
+        await totalDelayTestCoordinator.runAll();
+      } catch (error) {
+        // With the core stopped, the per-group delay requests fail
+        // inside the coordinator; that must come back as a stated
+        // reason, not as a throw the caller can swallow silently.
+        return PatrolActionResult(executed: false, detail: '$error');
+      }
       return PatrolActionResult(
         executed: true,
         detail:
@@ -72,8 +79,12 @@ Future<PatrolActionResult> executePatrolAction(
             '${totalDelayTestCoordinator.totalGroups} groups',
       );
     case PatrolAction.flushDns:
-      await clashCore.flushDnsCache();
-      await clashCore.flushFakeIP();
+      try {
+        await clashCore.flushDnsCache();
+        await clashCore.flushFakeIP();
+      } catch (error) {
+        return PatrolActionResult(executed: false, detail: '$error');
+      }
       return const PatrolActionResult(executed: true);
     case PatrolAction.reloadConfig:
       final applied = await controller.applyProfileChecked();

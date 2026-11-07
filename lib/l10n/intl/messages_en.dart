@@ -225,6 +225,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolFixConfirmDesc": MessageLookupByLibrary.simpleMessage("The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically."),
     "patrolFixTrustSession": MessageLookupByLibrary.simpleMessage("Don't ask again this session (low-risk fixes only)"),
     "patrolFixApplied": MessageLookupByLibrary.simpleMessage("Fix applied and verified"),
+    "patrolFixCancelled": MessageLookupByLibrary.simpleMessage("Fix cancelled \u2014 nothing was changed"),
+    "patrolFixRunning": MessageLookupByLibrary.simpleMessage("Running the fix and re-checking\u2026"),
     "patrolFixRolledBack": MessageLookupByLibrary.simpleMessage("Fix did not verify — previous state restored"),
     "patrolFixFailed": MessageLookupByLibrary.simpleMessage("The fix did not go through"),
     "patrolRecords": MessageLookupByLibrary.simpleMessage("Repair history"),
