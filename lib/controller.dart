@@ -14,6 +14,7 @@ import 'package:bett_box/plugins/service.dart' as vpn_service;
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/dialog.dart';
+import 'package:bett_box/widgets/glass.dart';
 import 'package:bett_box/widgets/input.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -912,9 +913,7 @@ class AppController {
             await globalState.handleStart([updateRunTime, updateTraffic]);
           }
         } catch (err) {
-          commonPrint.error(
-            '[Profile] Switch failed: ${err.formatErrorLog}',
-          );
+          commonPrint.error('[Profile] Switch failed: ${err.formatErrorLog}');
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
             requestedProfileId: requestedProfileId,
@@ -1954,24 +1953,46 @@ class AppController {
     if (currentMode == Mode.rule && mode != Mode.rule && explicit.anyEnabled) {
       final accepted = await showDialog<bool>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(zh ? '切换模式？' : 'Change routing mode?'),
-          content: Text(
-            zh
-                ? '全局或直连模式会暂停系统显式路由规则，包括局域网发现和常见端口阻断。直连模式不经过代理。选项会保留，切回规则模式时恢复。'
-                : 'Global or direct mode suspends system explicit routing rules, including discovery and common-port blocks. Direct mode bypasses the proxy. Choices are kept and restored in rule mode.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(zh ? '取消' : 'Cancel'),
+        builder: (dialogContext) {
+          // Liquid glass (T38 full rollout): same modal treatment as
+          // CommonDialog — neutral fill, bright rim, specular band.
+          final glassTokens = GlassTokens.resolve(
+            dialogContext.colorScheme,
+            GlassKind.dialog,
+          );
+          final glassShape = RoundedSuperellipseBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(
+              color: glassTokens.rim,
+              width: 0.5,
+              strokeAlign: BorderSide.strokeAlignInside,
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(zh ? '切换' : 'Switch'),
+          );
+          return GlassSurface(
+            shape: glassShape,
+            tokens: glassTokens,
+            child: AlertDialog(
+              shape: glassShape,
+              backgroundColor: glassTokens.effectiveFill,
+              title: Text(zh ? '切换模式？' : 'Change routing mode?'),
+              content: Text(
+                zh
+                    ? '全局或直连模式会暂停系统显式路由规则，包括局域网发现和常见端口阻断。直连模式不经过代理。选项会保留，切回规则模式时恢复。'
+                    : 'Global or direct mode suspends system explicit routing rules, including discovery and common-port blocks. Direct mode bypasses the proxy. Choices are kept and restored in rule mode.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(zh ? '取消' : 'Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(zh ? '切换' : 'Switch'),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       );
       if (accepted != true || !context.mounted) return;
     }

@@ -216,14 +216,19 @@ class TunnelListView extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: tunnels.isEmpty
-          ? Center(child: NullStatus(label: appLocalizations.noData))
-          : ScrollEdgeRise(
-              builder: (_, rise) => ListView(
-                padding: EdgeInsets.only(top: 16 + rise),
-                children: [const TunnelListWidget()],
+      // Static glass scope (T38): tunnel cards keep the glass fill, rim
+      // and radius without real-time blur.
+      body: GlassScope(
+        live: false,
+        child: tunnels.isEmpty
+            ? Center(child: NullStatus(label: appLocalizations.noData))
+            : ScrollEdgeRise(
+                builder: (_, rise) => ListView(
+                  padding: EdgeInsets.only(top: 16 + rise),
+                  children: [const TunnelListWidget()],
+                ),
               ),
-            ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTunnelDialog(context, ref, tunnels),
         child: const Icon(Icons.add),

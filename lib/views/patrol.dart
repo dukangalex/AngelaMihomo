@@ -465,10 +465,78 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     return items;
   }
 
+  /// The page's verdict band (T38 composition + glass): the patrol
+  /// conclusion leads the page as a live-glass card with a severity badge,
+  /// lifted out of the flat list rhythm of the sections below it. The
+  /// content is unchanged — same verdict text, same checking subtitle —
+  /// only the hierarchy and surface change.
+  Widget _verdictBand(BuildContext context, PatrolReport report) {
+    final attention = report.attentionCount;
+    final severity = report.hasProblems
+        ? PatrolSeverity.problem
+        : attention > 0
+        ? PatrolSeverity.notice
+        : PatrolSeverity.ok;
+    final scheme = context.colorScheme;
+    final badgeColor = switch (severity) {
+      PatrolSeverity.problem => scheme.error,
+      PatrolSeverity.notice => scheme.tertiary,
+      PatrolSeverity.ok => scheme.primary,
+    };
+    return GlassScope(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+        child: CommonCard(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: badgeColor.withValues(alpha: 0.12),
+                  ),
+                  child: _severityIcon(context, severity),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        attention > 0
+                            ? appLocalizations.patrolAttentionNeeded(attention)
+                            : appLocalizations.patrolAllGood,
+                        style: context.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (_checkingConfig) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          appLocalizations.patrolConfigChecking,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final report = _buildReport();
-    final attention = report.attentionCount;
     return CommonScaffold(
       title: appLocalizations.aiPatrol,
       actions: [
@@ -483,24 +551,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       ],
       body: ListView(
         children: [
-          ListItem(
-            leading: _severityIcon(
-              context,
-              report.hasProblems
-                  ? PatrolSeverity.problem
-                  : attention > 0
-                  ? PatrolSeverity.notice
-                  : PatrolSeverity.ok,
-            ),
-            title: Text(
-              attention > 0
-                  ? appLocalizations.patrolAttentionNeeded(attention)
-                  : appLocalizations.patrolAllGood,
-            ),
-            subtitle: _checkingConfig
-                ? Text(appLocalizations.patrolConfigChecking)
-                : null,
-          ),
+          _verdictBand(context, report),
           ..._section(
             context,
             appLocalizations.patrolSectionLogs,

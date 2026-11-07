@@ -59,7 +59,9 @@ class ThemeView extends ConsumerWidget {
       if (brightness == Brightness.dark) const _PrueBlackItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
-    return generateListView(items);
+    // Static glass scope (T38): item cards keep the glass fill, rim and
+    // radius without real-time blur.
+    return GlassScope(live: false, child: generateListView(items));
   }
 }
 

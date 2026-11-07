@@ -1,10 +1,13 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/providers/providers.dart';
+import 'package:bett_box/widgets/glass.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/physics.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +39,28 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     vsync: this,
     duration: const Duration(milliseconds: 140),
   );
+
+  /// Selection bubble "pop": springs from [NavBarPillPainter.bubblePopStart]
+  /// back to 1.0 every time the selected tab changes, so the enlarged glass
+  /// bubble settles with a spring instead of snapping (T38 round 3).
+  late final AnimationController _bubbleController =
+      AnimationController.unbounded(vsync: this, value: 1.0);
+
+  void _popBubble() {
+    if (!_motion) {
+      _bubbleController.value = 1.0;
+      return;
+    }
+    _bubbleController.value = NavBarPillPainter.bubblePopStart;
+    _bubbleController.animateWith(
+      SpringSimulation(
+        const SpringDescription(mass: 1, stiffness: 320, damping: 21),
+        NavBarPillPainter.bubblePopStart,
+        1.0,
+        0,
+      ),
+    );
+  }
 
   int? _activePointerId;
   bool _isDragging = false;
@@ -104,11 +129,19 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   void initState() {
     super.initState();
     _lastSnappedIndex = widget.selectedIndex;
+    // Best-effort: when the refraction shader lands, rebuild once so the
+    // bar picks up the rim-displacement stage. Failure leaves plain glass.
+    GlassRefraction.ensureLoaded().then((ready) {
+      if (ready && mounted) setState(() {});
+    });
   }
 
   @override
   void didUpdateWidget(covariant GoogleBottomNavBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      _popBubble();
+    }
     if (widget.selectedIndex != oldWidget.selectedIndex &&
         _activePointerId == null) {
       _highlightedIndex.value = widget.selectedIndex;
@@ -126,6 +159,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     _dragOffset.dispose();
     _posController.dispose();
     _liftController.dispose();
+    _bubbleController.dispose();
     super.dispose();
   }
 
@@ -200,9 +234,11 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
           )!
         : (pureBlack ? Colors.black : colorScheme.surfaceContainerHigh);
 
-    final navColor = widgetBodyColor.withValues(alpha: 0.98);
-    final shadowStrength = isLight ? 1.0 : 3.0;
-
+    final glassTokens = GlassTokens.resolve(
+      colorScheme,
+      GlassKind.navigationBar,
+      base: widgetBodyColor,
+    );
     const itemTextStyle = TextStyle(
       fontSize: 10.5,
       fontWeight: FontWeight.w500,
@@ -366,185 +402,205 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                 _barWidth = constraints.maxWidth;
                 const barHeight = 60.0;
 
+                final barShape = RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                );
+
                 return RepaintBoundary(
-                  child: Container(
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: navColor,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.transparent,
-                        width: 1,
-                        strokeAlign: BorderSide.strokeAlignInside,
-                      ),
-                      boxShadow: [
+                  child: DecoratedBox(
+                    decoration: ShapeDecoration(
+                      shape: barShape,
+                      shadows: [
+                        // Shadow calibrated against Apple's iOS 27 kit
+                        // (T38): 0 8px 15px at 2% black — a whisper of a
+                        // shadow; separation comes from the rim and fill,
+                        // not from a drop shadow.
                         BoxShadow(
-                          blurRadius: 24,
+                          blurRadius: 15,
                           offset: const Offset(0, 8),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.08 * shadowStrength,
-                          ),
-                        ),
-                        BoxShadow(
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.04 * shadowStrength,
-                          ),
+                          color: Colors.black.withValues(alpha: 0.02),
                         ),
                       ],
                     ),
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        if (count > 0)
-                          Positioned.fill(
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                painter: NavBarPillPainter(
-                                  position: _posController,
-                                  lift: _liftController,
-                                  dragOffset: _dragOffset,
-                                  count: count,
-                                  slot: _clampWithResistance,
-                                  color: primaryColor,
-                                  baseAlpha: isLight ? 0.12 : 0.20,
-                                  activeAlpha: isLight ? 0.18 : 0.26,
-                                ),
-                              ),
-                            ),
-                          ),
-                        RepaintBoundary(
-                          child: AnimatedBuilder(
-                            animation: Listenable.merge([
-                              _posController,
-                              _dragOffset,
-                              _pressedIndex,
-                              _liftController,
-                            ]),
-                            builder: (context, _) {
-                              final currentPos = _clampWithResistance(
-                                _posController.value + _dragOffset.value,
-                                count,
-                              );
-                              final pressedIdx = _pressedIndex.value;
-                              final liftValue = _liftController.value;
-
-                              final jumpFrom = _jumpFromIndex;
-                              final jumpTo = _jumpToIndex;
-                              final isNonAdjacentJump =
-                                  jumpFrom != null &&
-                                  jumpTo != null &&
-                                  (jumpFrom - jumpTo).abs() > 1;
-                              final minJump = isNonAdjacentJump
-                                  ? math.min(jumpFrom, jumpTo)
-                                  : -1;
-                              final maxJump = isNonAdjacentJump
-                                  ? math.max(jumpFrom, jumpTo)
-                                  : -1;
-
-                              return Row(
-                                children: List.generate(count, (index) {
-                                  final item = widget.navigationItems[index];
-                                  final isPressed = index == pressedIdx;
-                                  final double itemScale;
-                                  final Color itemColor;
-                                  if (isNonAdjacentJump &&
-                                      index > minJump &&
-                                      index < maxJump) {
-                                    itemScale = 1.0;
-                                    itemColor = onSurfaceVariantColor;
-                                  } else {
-                                    final double selectFactor;
-                                    if (isNonAdjacentJump) {
-                                      if (index == jumpFrom) {
-                                        final distFromOrigin =
-                                            (currentPos - jumpFrom).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distFromOrigin,
-                                            );
-                                      } else if (index == jumpTo) {
-                                        final distToTarget =
-                                            (currentPos - jumpTo).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distToTarget,
-                                            );
-                                      } else {
-                                        selectFactor = 0.0;
-                                      }
-                                    } else {
-                                      final rawDist = (currentPos - index)
-                                          .abs();
-                                      if (rawDist >= 1.0) {
-                                        selectFactor = 0.0;
-                                      } else {
-                                        final dist = rawDist.clamp(0.0, 1.0);
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(dist);
-                                      }
-                                    }
-
-                                    if (selectFactor <= 0.0 && !isPressed) {
-                                      itemScale = 1.0;
-                                      itemColor = onSurfaceVariantColor;
-                                    } else {
-                                      itemScale = isPressed
-                                          ? (1.0 - 0.05 * liftValue)
-                                          : (1.0 + 0.04 * selectFactor);
-                                      itemColor = Color.lerp(
-                                        onSurfaceVariantColor,
-                                        primaryColor,
-                                        selectFactor,
-                                      )!;
-                                    }
-                                  }
-
-                                  return Expanded(
-                                    child: Center(
-                                      child: Transform.scale(
-                                        scale: itemScale,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconTheme(
-                                              data: IconThemeData(
-                                                color: itemColor,
-                                                size: 22,
-                                              ),
-                                              child: item.icon,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              localizedLabels[index],
-                                              style: itemTextStyle.copyWith(
-                                                color: itemColor,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              );
-                            },
+                    child: GlassSurface(
+                      shape: barShape,
+                      tokens: glassTokens,
+                      refractionSize: Size(constraints.maxWidth, barHeight),
+                      refractionRadius: 30,
+                      child: Container(
+                        height: barHeight,
+                        decoration: BoxDecoration(
+                          color: glassTokens.effectiveFill,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: glassTokens.rim,
+                            // 0.5px hairline stroke (Apple kit calibre);
+                            // the brighter rim light stays in
+                            // GlassSurface and the pill painter.
+                            width: 0.5,
+                            strokeAlign: BorderSide.strokeAlignInside,
                           ),
                         ),
-                      ],
+                        child: Stack(
+                          alignment: Alignment.centerLeft,
+                          children: [
+                            if (count > 0)
+                              Positioned.fill(
+                                child: RepaintBoundary(
+                                  child: CustomPaint(
+                                    painter: NavBarPillPainter(
+                                      position: _posController,
+                                      lift: _liftController,
+                                      dragOffset: _dragOffset,
+                                      bubble: _bubbleController,
+                                      count: count,
+                                      slot: _clampWithResistance,
+                                      color: primaryColor,
+                                      baseAlpha: isLight ? 0.30 : 0.34,
+                                      activeAlpha: isLight ? 0.38 : 0.42,
+                                      rimColor: Colors.white.withValues(
+                                        alpha: isLight ? 0.55 : 0.40,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            RepaintBoundary(
+                              child: AnimatedBuilder(
+                                animation: Listenable.merge([
+                                  _posController,
+                                  _dragOffset,
+                                  _pressedIndex,
+                                  _liftController,
+                                ]),
+                                builder: (context, _) {
+                                  final currentPos = _clampWithResistance(
+                                    _posController.value + _dragOffset.value,
+                                    count,
+                                  );
+                                  final pressedIdx = _pressedIndex.value;
+                                  final liftValue = _liftController.value;
+
+                                  final jumpFrom = _jumpFromIndex;
+                                  final jumpTo = _jumpToIndex;
+                                  final isNonAdjacentJump =
+                                      jumpFrom != null &&
+                                      jumpTo != null &&
+                                      (jumpFrom - jumpTo).abs() > 1;
+                                  final minJump = isNonAdjacentJump
+                                      ? math.min(jumpFrom, jumpTo)
+                                      : -1;
+                                  final maxJump = isNonAdjacentJump
+                                      ? math.max(jumpFrom, jumpTo)
+                                      : -1;
+
+                                  return Row(
+                                    children: List.generate(count, (index) {
+                                      final item =
+                                          widget.navigationItems[index];
+                                      final isPressed = index == pressedIdx;
+                                      final double itemScale;
+                                      final Color itemColor;
+                                      if (isNonAdjacentJump &&
+                                          index > minJump &&
+                                          index < maxJump) {
+                                        itemScale = 1.0;
+                                        itemColor = onSurfaceVariantColor;
+                                      } else {
+                                        final double selectFactor;
+                                        if (isNonAdjacentJump) {
+                                          if (index == jumpFrom) {
+                                            final distFromOrigin =
+                                                (currentPos - jumpFrom)
+                                                    .abs()
+                                                    .clamp(0.0, 1.0);
+                                            selectFactor =
+                                                1.0 -
+                                                Curves.easeOut.transform(
+                                                  distFromOrigin,
+                                                );
+                                          } else if (index == jumpTo) {
+                                            final distToTarget =
+                                                (currentPos - jumpTo)
+                                                    .abs()
+                                                    .clamp(0.0, 1.0);
+                                            selectFactor =
+                                                1.0 -
+                                                Curves.easeOut.transform(
+                                                  distToTarget,
+                                                );
+                                          } else {
+                                            selectFactor = 0.0;
+                                          }
+                                        } else {
+                                          final rawDist = (currentPos - index)
+                                              .abs();
+                                          if (rawDist >= 1.0) {
+                                            selectFactor = 0.0;
+                                          } else {
+                                            final dist = rawDist.clamp(
+                                              0.0,
+                                              1.0,
+                                            );
+                                            selectFactor =
+                                                1.0 -
+                                                Curves.easeOut.transform(dist);
+                                          }
+                                        }
+
+                                        if (selectFactor <= 0.0 && !isPressed) {
+                                          itemScale = 1.0;
+                                          itemColor = onSurfaceVariantColor;
+                                        } else {
+                                          itemScale = isPressed
+                                              ? (1.0 - 0.05 * liftValue)
+                                              : (1.0 + 0.04 * selectFactor);
+                                          itemColor = Color.lerp(
+                                            onSurfaceVariantColor,
+                                            primaryColor,
+                                            selectFactor,
+                                          )!;
+                                        }
+                                      }
+
+                                      return Expanded(
+                                        child: Center(
+                                          child: Transform.scale(
+                                            scale: itemScale,
+                                            alignment: Alignment.center,
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconTheme(
+                                                  data: IconThemeData(
+                                                    color: itemColor,
+                                                    size: 22,
+                                                  ),
+                                                  child: item.icon,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  localizedLabels[index],
+                                                  style: itemTextStyle.copyWith(
+                                                    color: itemColor,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -561,39 +617,61 @@ class NavBarPillPainter extends CustomPainter {
   final Animation<double> position;
   final Animation<double> lift;
   final ValueListenable<double> dragOffset;
+  final Animation<double> bubble;
   final int count;
   final double Function(double slot, int count) slot;
   final Color color;
   final double baseAlpha;
   final double activeAlpha;
+  final Color rimColor;
 
   NavBarPillPainter({
     required this.position,
     required this.lift,
     required this.dragOffset,
+    required this.bubble,
     required this.count,
     required this.slot,
     required this.color,
     required this.baseAlpha,
     required this.activeAlpha,
-  }) : super(repaint: Listenable.merge([position, lift, dragOffset]));
+    required this.rimColor,
+  }) : super(repaint: Listenable.merge([position, lift, dragOffset, bubble]));
 
   static const double _restingGap = 4.0;
+
+  /// Resting size of the selection bubble relative to the plain pill
+  /// (T38 round 3: an enlarged glass bubble, per the reference research —
+  /// selected = inflated + brightened, not recoloured).
+  static const double bubbleInflation = 1.18;
+
+  /// Where the bubble spring starts on every selection change (it springs
+  /// back to 1.0 with a slight overshoot, which scales the inflation).
+  static const double bubblePopStart = 0.85;
 
   Rect pillRect(Size size) {
     final slotWidth = size.width / count;
     final gap = _restingGap * (1 - lift.value);
-    final width = math.max(0.0, slotWidth - 2 * gap);
-    final center =
+    final baseWidth = math.max(0.0, slotWidth - 2 * gap);
+    final baseHeight = size.height - 2 * gap;
+    final pop = bubble.value;
+    final width = math.min(baseWidth * bubbleInflation * pop, slotWidth * 1.3);
+    final height = math.min(
+      baseHeight * (1 + (bubbleInflation - 1) * 0.55) * pop,
+      size.height - 4,
+    );
+    final centerX =
         (slot(position.value + dragOffset.value, count) + 0.5) * slotWidth;
-    return Rect.fromLTWH(center - width / 2, gap, width, size.height - 2 * gap);
+    return Rect.fromCenter(
+      center: Offset(centerX, size.height / 2),
+      width: width,
+      height: height,
+    );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final t = lift.value;
-    final restingRadius = (size.height - 2 * _restingGap) / 2;
-    final radius = restingRadius + (size.height / 2 - restingRadius) * t;
     final alpha = baseAlpha + (activeAlpha - baseAlpha) * t;
     canvas.clipRRect(
       RRect.fromRectAndRadius(
@@ -601,9 +679,32 @@ class NavBarPillPainter extends CustomPainter {
         Radius.circular(size.height / 2),
       ),
     );
+    final rect = pillRect(size);
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(rect.height / 2),
+    );
+    // Glass body of the bubble.
+    canvas.drawRRect(rrect, Paint()..color = color.withValues(alpha: alpha));
+    // Specular sheen across the top of the bubble.
+    final sheen = Paint()
+      ..shader = ui.Gradient.linear(
+        rect.topCenter,
+        rect.bottomCenter,
+        [
+          Colors.white.withValues(alpha: 0.30 + 0.12 * t),
+          Colors.white.withValues(alpha: 0),
+        ],
+        const [0, 0.55],
+      );
+    canvas.drawRRect(rrect, sheen);
+    // Bright rim: the bubble's refraction edge.
     canvas.drawRRect(
-      RRect.fromRectAndRadius(pillRect(size), Radius.circular(radius)),
-      Paint()..color = color.withValues(alpha: alpha),
+      rrect.deflate(0.5),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = rimColor.withValues(alpha: rimColor.a * (0.75 + 0.25 * t)),
     );
   }
 
@@ -612,9 +713,11 @@ class NavBarPillPainter extends CustomPainter {
     return oldDelegate.position != position ||
         oldDelegate.lift != lift ||
         oldDelegate.dragOffset != dragOffset ||
+        oldDelegate.bubble != bubble ||
         oldDelegate.count != count ||
         oldDelegate.color != color ||
         oldDelegate.baseAlpha != baseAlpha ||
-        oldDelegate.activeAlpha != activeAlpha;
+        oldDelegate.activeAlpha != activeAlpha ||
+        oldDelegate.rimColor != rimColor;
   }
 }

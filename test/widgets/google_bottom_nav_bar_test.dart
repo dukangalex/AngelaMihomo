@@ -262,4 +262,12 @@ void main() {
 
     await tester.pumpAndSettle();
   });
+
+  test('选中态是放大的玻璃气泡：膨胀系数在 1.15–1.25 之间（T38 第三轮）', () {
+    expect(
+      NavBarPillPainter.bubbleInflation,
+      inInclusiveRange(1.15, 1.25),
+    );
+    expect(NavBarPillPainter.bubblePopStart, lessThan(1.0));
+  });
 }

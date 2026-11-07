@@ -5,6 +5,7 @@ import 'package:bett_box/state.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'glass.dart';
 import 'pop_scope.dart';
 import 'scaffold.dart';
 import 'side_sheet.dart';
@@ -355,23 +356,42 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
       );
     }
 
-    final backgroundColor = context.colorScheme.surfaceContainerLow;
     final isTv = globalState.isAndroidTV;
 
-    final sheetContent = Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: ShapeDecoration(
-        color: backgroundColor,
-        shape: const RoundedSuperellipseBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
-        ),
+    // Liquid glass (T38 full rollout): bottom sheets are finite modal
+    // surfaces — neutral glass fill, bright rim, specular band. The blur
+    // sits behind the whole sheet (one BackdropFilter); list items inside
+    // the sheet body do not blur individually.
+    final glassTokens = GlassTokens.resolve(
+      context.colorScheme,
+      GlassKind.dialog,
+    );
+    final sheetShape = RoundedSuperellipseBorder(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+      // 0.5px hairline stroke (Apple iOS 27 kit calibre, T38).
+      side: BorderSide(
+        color: glassTokens.rim,
+        width: 0.5,
+        strokeAlign: BorderSide.strokeAlignInside,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          header,
-          Flexible(flex: 1, child: bodyContent),
-        ],
+    );
+
+    final sheetContent = GlassSurface(
+      shape: sheetShape,
+      tokens: glassTokens,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: glassTokens.effectiveFill,
+          shape: sheetShape,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            header,
+            Flexible(flex: 1, child: bodyContent),
+          ],
+        ),
       ),
     );
 

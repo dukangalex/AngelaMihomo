@@ -141,67 +141,75 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
       title: appLocalizations.profiles,
       floatingActionButton: _buildFAB(),
       actions: _buildActions(),
-      body: ActiveConsumer(
-        builder: (_, ref) {
-          final profilesSelectorState = ref.watch(
-            profilesSelectorStateProvider,
-          );
-          final isMobileView = ref.watch(isMobileViewProvider);
-          if (profilesSelectorState.profiles.isEmpty) {
-            return NullStatus(label: appLocalizations.nullProfileDesc);
-          }
-          final columns = system.isAndroid
-              ? 1
-              : profilesSelectorState.profiles.length <
-                    profilesSelectorState.columns
-              ? profilesSelectorState.profiles.length
-              : profilesSelectorState.columns;
-          return ScrollEdgeRise(
-            builder: (context, rise) => Align(
-              alignment: Alignment.topCenter,
-              child: SingleChildScrollView(
-                key: profilesStoreKey,
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 16 + rise,
-                  bottom:
-                      (profilesSelectorState.profiles.isNotEmpty &&
-                              profilesSelectorState.profiles.length % columns ==
-                                  0
-                          ? 88
-                          : 16) +
-                      (isMobileView
-                          ? getFloatingBottomBarReserveHeight(context)
-                          : 0),
-                ),
-                child: Grid(
-                  mainAxisSpacing: 14,
-                  crossAxisSpacing: 14,
-                  crossAxisCount: columns,
-                  children: [
-                    for (
-                      int i = 0;
-                      i < profilesSelectorState.profiles.length;
-                      i++
-                    )
-                      GridItem(
-                        child: ProfileItem(
-                          key: Key(profilesSelectorState.profiles[i].id),
-                          profile: profilesSelectorState.profiles[i],
-                          groupValue: profilesSelectorState.currentProfileId,
-                          onChanged: (profileId) {
-                            ref.read(currentProfileIdProvider.notifier).value =
-                                profileId;
-                          },
+      // Static glass scope (T38): profile cards in a scrolling list keep
+      // the glass fill, rim and radius without real-time blur.
+      body: GlassScope(
+        live: false,
+        child: ActiveConsumer(
+          builder: (_, ref) {
+            final profilesSelectorState = ref.watch(
+              profilesSelectorStateProvider,
+            );
+            final isMobileView = ref.watch(isMobileViewProvider);
+            if (profilesSelectorState.profiles.isEmpty) {
+              return NullStatus(label: appLocalizations.nullProfileDesc);
+            }
+            final columns = system.isAndroid
+                ? 1
+                : profilesSelectorState.profiles.length <
+                      profilesSelectorState.columns
+                ? profilesSelectorState.profiles.length
+                : profilesSelectorState.columns;
+            return ScrollEdgeRise(
+              builder: (context, rise) => Align(
+                alignment: Alignment.topCenter,
+                child: SingleChildScrollView(
+                  key: profilesStoreKey,
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16 + rise,
+                    bottom:
+                        (profilesSelectorState.profiles.isNotEmpty &&
+                                profilesSelectorState.profiles.length %
+                                        columns ==
+                                    0
+                            ? 88
+                            : 16) +
+                        (isMobileView
+                            ? getFloatingBottomBarReserveHeight(context)
+                            : 0),
+                  ),
+                  child: Grid(
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 14,
+                    crossAxisCount: columns,
+                    children: [
+                      for (
+                        int i = 0;
+                        i < profilesSelectorState.profiles.length;
+                        i++
+                      )
+                        GridItem(
+                          child: ProfileItem(
+                            key: Key(profilesSelectorState.profiles[i].id),
+                            profile: profilesSelectorState.profiles[i],
+                            groupValue: profilesSelectorState.currentProfileId,
+                            onChanged: (profileId) {
+                              ref
+                                      .read(currentProfileIdProvider.notifier)
+                                      .value =
+                                  profileId;
+                            },
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -485,13 +493,15 @@ class ProfileItem extends StatelessWidget {
         ),
         onProfileSelectionChanged: (selection) {
           changed = true;
-          container.read(profilesProvider.notifier).updateProfile(
-            profile.id,
-            (p) => p.copyWith(
-              useScriptOverride: selection.useScriptOverride,
-              scriptId: selection.scriptId,
-            ),
-          );
+          container
+              .read(profilesProvider.notifier)
+              .updateProfile(
+                profile.id,
+                (p) => p.copyWith(
+                  useScriptOverride: selection.useScriptOverride,
+                  scriptId: selection.scriptId,
+                ),
+              );
         },
       ),
     );
