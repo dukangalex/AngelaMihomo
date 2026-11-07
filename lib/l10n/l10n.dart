@@ -10355,6 +10355,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.`
+  String autoUpdateOnImportTipDefault(num hours) {
+    return Intl.message(
+      'Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.',
+      name: 'autoUpdateOnImportTipDefault',
+      desc: '',
+      args: [hours],
+    );
+  }
+
   /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
   String get systemExplicitDirectExceptionModeDesc {
     return Intl.message('China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.', name: 'systemExplicitDirectExceptionModeDesc', desc: '', args: []);

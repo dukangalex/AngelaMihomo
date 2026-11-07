@@ -23,6 +23,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m55(hours) =>
       "已按订阅源的建议开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
 
+  static String m56(hours) =>
+      "已开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
+
   static String m0(log) => "分析Angela Mihomo(Mihomo)日志:${log}";
 
   static String m1(error) => "自动备份失败：${error}";
@@ -225,6 +228,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage("拦截类选项在当前模式下生效"),
     "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage("防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。"),
     "autoUpdateOnImportTip": m55,
+    "autoUpdateOnImportTipDefault": m56,
     "about": MessageLookupByLibrary.simpleMessage("关于"),
     "accessControl": MessageLookupByLibrary.simpleMessage("分应用代理"),
     "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(

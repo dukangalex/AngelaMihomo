@@ -139,14 +139,24 @@ class EditProfileViewState extends State<EditProfileView> {
         await appController.addProfile(updatedProfile);
         // T50: say it on this page — a freshly imported subscription
         // auto-updates by default, and the user should not have to dig
-        // through settings to learn that.
+        // through settings to learn that. The wording must match the
+        // facts: the provider-suggested variant is used only when the
+        // fetch actually adopted a suggested interval (the resulting
+        // duration differs from the one in this form); otherwise the
+        // plain variant, which claims no suggestion.
         if (mounted && updatedProfile.realAutoUpdate) {
+          final adoptedSuggested =
+              updatedProfile.autoUpdateDuration != profile.autoUpdateDuration;
           await globalState.showMessage(
             title: appLocalizations.tip,
             message: TextSpan(
-              text: appLocalizations.autoUpdateOnImportTip(
-                updatedProfile.autoUpdateDuration.inHours,
-              ),
+              text: adoptedSuggested
+                  ? appLocalizations.autoUpdateOnImportTip(
+                      updatedProfile.autoUpdateDuration.inHours,
+                    )
+                  : appLocalizations.autoUpdateOnImportTipDefault(
+                      updatedProfile.autoUpdateDuration.inHours,
+                    ),
             ),
             cancelable: false,
           );

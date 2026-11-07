@@ -23,6 +23,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m55(hours) =>
       "Auto-update is on for this subscription (every ${hours} h, as suggested by the provider). You can change it in the profile settings.";
 
+  static String m56(hours) =>
+      "Auto-update is on for this subscription (every ${hours} h). You can change it in the profile settings.";
+
   static String m0(log) => "Analyze Angela Mihomo (Mihomo) log: ${log}";
 
   static String m1(error) => "Auto backup failed: ${error}";
@@ -240,6 +243,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage("Interception is active in this mode"),
     "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage("Privacy, WebRTC and ad blocking keep working in global/direct mode."),
     "autoUpdateOnImportTip": m55,
+    "autoUpdateOnImportTipDefault": m56,
     "about": MessageLookupByLibrary.simpleMessage("About"),
     "accessControl": MessageLookupByLibrary.simpleMessage("Access Control"),
     "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
