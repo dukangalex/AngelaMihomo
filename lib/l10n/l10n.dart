@@ -10471,6 +10471,112 @@ class AppLocalizations {
     return Intl.message('Undone', name: 'patrolOutcomeUndone', desc: '', args: []);
   }
 
+
+  /// `Saved`
+  String get saveSuccess {
+    return Intl.message('Saved', name: 'saveSuccess', desc: '', args: []);
+  }
+
+  /// `AI interpretation (BYOK)`
+  String get aiConfigTitle {
+    return Intl.message('AI interpretation (BYOK)', name: 'aiConfigTitle', desc: '', args: []);
+  }
+
+  /// `Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.`
+  String get aiConfigDesc {
+    return Intl.message('Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.', name: 'aiConfigDesc', desc: '', args: []);
+  }
+
+  /// `Provider preset`
+  String get aiPreset {
+    return Intl.message('Provider preset', name: 'aiPreset', desc: '', args: []);
+  }
+
+  /// `API endpoint`
+  String get aiEndpoint {
+    return Intl.message('API endpoint', name: 'aiEndpoint', desc: '', args: []);
+  }
+
+  /// `API key`
+  String get aiApiKey {
+    return Intl.message('API key', name: 'aiApiKey', desc: '', args: []);
+  }
+
+  /// `Model`
+  String get aiModel {
+    return Intl.message('Model', name: 'aiModel', desc: '', args: []);
+  }
+
+  /// `Test connection`
+  String get aiTestConnection {
+    return Intl.message('Test connection', name: 'aiTestConnection', desc: '', args: []);
+  }
+
+  /// `Connection OK`
+  String get aiTestOk {
+    return Intl.message('Connection OK', name: 'aiTestOk', desc: '', args: []);
+  }
+
+  /// `Connection failed`
+  String get aiTestFailed {
+    return Intl.message('Connection failed', name: 'aiTestFailed', desc: '', args: []);
+  }
+
+  /// `Get an API key`
+  String get aiGroqGuideTitle {
+    return Intl.message('Get an API key', name: 'aiGroqGuideTitle', desc: '', args: []);
+  }
+
+  /// `1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.`
+  String get aiGuideSteps {
+    return Intl.message('1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.', name: 'aiGuideSteps', desc: '', args: []);
+  }
+
+  /// `Open key console`
+  String get aiGetKey {
+    return Intl.message('Open key console', name: 'aiGetKey', desc: '', args: []);
+  }
+
+  /// `Zero-retention settings`
+  String get aiZdrSettings {
+    return Intl.message('Zero-retention settings', name: 'aiZdrSettings', desc: '', args: []);
+  }
+
+  /// `AI interpretation`
+  String get aiInterpret {
+    return Intl.message('AI interpretation', name: 'aiInterpret', desc: '', args: []);
+  }
+
+  /// `Send this to the AI?`
+  String get aiPreviewTitle {
+    return Intl.message('Send this to the AI?', name: 'aiPreviewTitle', desc: '', args: []);
+  }
+
+  /// `This is the exact text that will be sent. Node names, addresses and credentials are masked.`
+  String get aiPreviewDesc {
+    return Intl.message('This is the exact text that will be sent. Node names, addresses and credentials are masked.', name: 'aiPreviewDesc', desc: '', args: []);
+  }
+
+  /// `Send`
+  String get aiSend {
+    return Intl.message('Send', name: 'aiSend', desc: '', args: []);
+  }
+
+  /// `Asking the AI…`
+  String get aiThinking {
+    return Intl.message('Asking the AI…', name: 'aiThinking', desc: '', args: []);
+  }
+
+  /// `AI interpretation`
+  String get aiResultTitle {
+    return Intl.message('AI interpretation', name: 'aiResultTitle', desc: '', args: []);
+  }
+
+  /// `AI request failed`
+  String get aiError {
+    return Intl.message('AI request failed', name: 'aiError', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

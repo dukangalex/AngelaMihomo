@@ -9,6 +9,7 @@ export 'patrol.dart';
 export 'access.dart';
 export 'config/config.dart';
 export 'application_setting.dart';
+export 'ai_config.dart';
 export 'about.dart';
 export 'backup_and_recovery.dart';
 export 'resources.dart';

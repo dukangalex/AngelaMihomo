@@ -1,6 +1,9 @@
+import 'package:bett_box/common/ai_client.dart';
+import 'package:bett_box/common/ai_config.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/patrol_actions.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/views/ai_config.dart';
 import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
@@ -89,6 +92,11 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   bool _sessionTrust = false;
   bool _fixing = false;
 
+  /// BYOK AI config (T30). Null until loaded; the interpretation
+  /// entry only appears when a config exists and is complete — with
+  /// no key there is no AI UI anywhere (zero disturbance rule).
+  AiConfig? _aiConfig;
+
   bool get _checkingConfig => _configCheckScheduler.isRunning;
 
   Future<void> _loadUpdateFailure() async {
@@ -113,6 +121,9 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       if (mounted) setState(() => _chainReady = true);
     });
     _loadUpdateFailure();
+    AiConfigStore.load().then((config) {
+      if (mounted) setState(() => _aiConfig = config);
+    });
     _runConfigCheck();
     // This page is kept alive across page switches, so a result from
     // when it was opened goes stale when its inputs change elsewhere:
@@ -679,6 +690,103 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     }
   }
 
+  /// AI interpretation flow (T30): build the redacted summary, show
+  /// it verbatim for confirmation, only then call the provider and
+  /// show its answer. The AI never executes anything itself — any
+  /// fix still goes through the page's whitelist executor.
+  Future<void> _runAiInterpretation() async {
+    final config = _aiConfig;
+    if (config == null || !config.configured) return;
+    final report = _readReport();
+    final names = <String>{};
+    for (final group in ref.read(groupsProvider)) {
+      for (final proxy in group.all) {
+        names.add(proxy.name);
+      }
+    }
+    if (report.link.input.chainEntry.isNotEmpty) {
+      names.add(report.link.input.chainEntry);
+    }
+    if (report.link.input.chainLanding.isNotEmpty) {
+      names.add(report.link.input.chainLanding);
+    }
+    final summary = buildPatrolSummary(report, nodeNames: names.toList());
+    if (!mounted) return;
+    final send = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(appLocalizations.aiPreviewTitle),
+        content: SizedBox(
+          width: 520,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(appLocalizations.aiPreviewDesc),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    summary,
+                    style: context.textTheme.bodySmall,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(appLocalizations.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(appLocalizations.aiSend),
+          ),
+        ],
+      ),
+    );
+    if (send != true || !mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Expanded(child: Text(appLocalizations.aiThinking)),
+          ],
+        ),
+      ),
+    );
+    String result;
+    try {
+      result = await fetchAiInterpretation(config, summary);
+    } catch (error) {
+      result = '${appLocalizations.aiError}: $error';
+    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(appLocalizations.aiResultTitle),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(child: SelectableText(result)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(appLocalizations.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// The page's verdict band (T38 composition + glass): the patrol
   /// conclusion leads the page as a live-glass card with a severity badge,
   /// lifted out of the flat list rhythm of the sections below it. The
@@ -758,6 +866,21 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     return CommonScaffold(
       title: appLocalizations.aiPatrol,
       actions: [
+        if (_aiConfig?.configured ?? false)
+          IconButton(
+            onPressed: _runAiInterpretation,
+            tooltip: appLocalizations.aiInterpret,
+            icon: const Icon(Icons.auto_awesome_outlined),
+          ),
+        IconButton(
+          onPressed: () async {
+            await BaseNavigator.push(context, const AiConfigView());
+            final config = await AiConfigStore.load();
+            if (mounted) setState(() => _aiConfig = config);
+          },
+          tooltip: appLocalizations.aiConfigTitle,
+          icon: const Icon(Icons.tune_outlined),
+        ),
         IconButton(
           onPressed: () => BaseNavigator.push(
             context,
