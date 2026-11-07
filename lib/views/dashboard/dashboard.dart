@@ -451,9 +451,22 @@ class _GlassAmbientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // T64 sample: the keycap-future style gets its own ambience —
+    // the same neutral key light, but the fill glow takes the theme
+    // primary (the cyan edge light of the key language) so the slabs
+    // sit in a faintly lit seat instead of a neutral studio.
+    return ValueListenableBuilder<ControlStyle>(
+      valueListenable: controlStyleNotifier,
+      builder: (context, style, _) =>
+          _build(context, style == ControlStyle.keycapFuture),
+    );
+  }
+
+  Widget _build(BuildContext context, bool keycap) {
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final neutral = colorScheme.onSurface;
+    final fill = keycap ? colorScheme.primary : neutral;
     // Composition (T38 full rollout): the light moves from two corner
     // glows to one broad key light centred over the header zone plus a
     // smaller fill at the lower right — the cards pick up a different
@@ -476,7 +489,11 @@ class _GlassAmbientBackground extends StatelessWidget {
             bottom: -190,
             right: -140,
             child: _glow(
-              neutral.withValues(alpha: isLight ? 0.07 : 0.11),
+              fill.withValues(
+                alpha: keycap
+                    ? (isLight ? 0.12 : 0.16)
+                    : (isLight ? 0.07 : 0.11),
+              ),
               size: 380,
             ),
           ),

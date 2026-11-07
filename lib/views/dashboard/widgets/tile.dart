@@ -151,27 +151,68 @@ class DashboardTileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = DashboardDecor(
+      mark: mark,
+      bottom: markBottom,
+      angle: markAngle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InfoHeader(
+            info: info,
+            actions: actions,
+            padding: baseInfoEdgeInsets.copyWith(bottom: 0),
+          ),
+          Expanded(child: child),
+        ],
+      ),
+    );
     return SizedBox(
       height: getWidgetHeight(context, size.rows),
-      child: CommonCard(
-        onPressed: onPressed,
-        onLongPress: onLongPress,
-        child: DashboardDecor(
-          mark: mark,
-          bottom: markBottom,
-          angle: markAngle,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              InfoHeader(
-                info: info,
-                actions: actions,
-                padding: baseInfoEdgeInsets.copyWith(bottom: 0),
+      // T64 sample: under the keycap-future style the tile face is a
+      // physical key slab (same primitives as the bottom-bar keys and
+      // the start key) instead of the glass card. Content, layout and
+      // tap targets are identical either way — only the surface
+      // language changes.
+      child: ValueListenableBuilder<ControlStyle>(
+        valueListenable: controlStyleNotifier,
+        builder: (context, style, _) {
+          if (style != ControlStyle.keycapFuture) {
+            return CommonCard(
+              onPressed: onPressed,
+              onLongPress: onLongPress,
+              child: content,
+            );
+          }
+          final scheme = context.colorScheme;
+          if (onPressed == null && onLongPress == null) {
+            return DecoratedBox(
+              decoration: keycapFaceDecoration(
+                scheme,
+                selected: false,
+                pressed01: 0,
               ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
+              child: content,
+            );
+          }
+          return KeycapPressable(
+            builder: (context, sink) => DecoratedBox(
+              decoration: keycapFaceDecoration(
+                scheme,
+                selected: false,
+                pressed01: sink,
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  onTap: onPressed,
+                  onLongPress: onLongPress,
+                  child: content,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
