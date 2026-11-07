@@ -1026,7 +1026,15 @@ class GlobalState {
           hasAuthentication && patchConfig.skipAuthPrefixes.isNotEmpty
           ? patchConfig.skipAuthPrefixes
           : null,
-      'mode': patchConfig.mode.name,
+      // T54: with interception options on, global/direct run as rule
+      // mode under the hood so the REJECT rules are evaluated; the
+      // synthesized MATCH (see buildRuntimeRulesForMode) keeps every
+      // other flow on the user-selected mode's path. The UI mode stays
+      // exactly what the user picked.
+      'mode': effectiveRuntimeMode(
+        SystemExplicitStore.instance.value,
+        patchConfig.mode,
+      ).name,
       'tun': {
         'enable': tun.enable,
         'device': tun.device,

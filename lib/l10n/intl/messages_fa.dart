@@ -20,6 +20,9 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'fa';
 
+  static String m54(hours) =>
+      "Auto-update is on for this subscription (every ${hours} h, as suggested by the provider). You can change it in the profile settings.";
+
   static String m0(log) => "تحلیل گزارش Angela Mihomo (Mihomo): ${log}";
 
   static String m1(error) => "پشتیبان‌گیری خودکار ناموفق بود: ${error}";
@@ -145,6 +148,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "mihomoCoreVersion": MessageLookupByLibrary.simpleMessage("Mihomo core version"),
+    "testAllDelay": MessageLookupByLibrary.simpleMessage("Test all groups"),
+    "proxyDelayNotTested": MessageLookupByLibrary.simpleMessage("Not tested"),
+    "systemExplicitDirectExceptionModeDesc": MessageLookupByLibrary.simpleMessage("China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected."),
+    "systemExplicitExceptionsInactive": MessageLookupByLibrary.simpleMessage("Direct exceptions are not active in this mode"),
+    "systemExplicitExceptionsInactiveDesc": MessageLookupByLibrary.simpleMessage("China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode."),
+    "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage("Interception is active in this mode"),
+    "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage("Privacy, WebRTC and ad blocking keep working in global/direct mode."),
+    "autoUpdateOnImportTip": m54,
     "about": MessageLookupByLibrary.simpleMessage("درباره"),
     "accessControl": MessageLookupByLibrary.simpleMessage("کنترل دسترسی"),
     "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(

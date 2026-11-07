@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../profiles/scripts.dart'
     show showGroupSwitchOptions, showScriptCustomOptions;
 import 'advanced_settings.dart';
+import 'common.dart';
 import 'setting.dart';
 import 'tab.dart';
 
@@ -62,6 +63,32 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           icon: const Icon(Icons.tune),
           tooltip: appLocalizations.custom,
         ),
+      // T41: total delay test — one tap tests every group on the page.
+      // Progress and the running state live on this page's action bar:
+      // while a run is active the button is a disabled spinner, and each
+      // group's delays refresh in place as its test finishes.
+      AnimatedBuilder(
+        animation: totalDelayTestCoordinator,
+        builder: (_, _) {
+          final running = totalDelayTestCoordinator.isRunning;
+          return IconButton(
+            onPressed: running
+                ? null
+                : () => totalDelayTestCoordinator.runAll(),
+            tooltip: running
+                ? '${totalDelayTestCoordinator.doneGroups}/${totalDelayTestCoordinator.totalGroups}'
+                : appLocalizations.testAllDelay,
+            icon: running
+                ? const RepaintBoundary(
+                    child: SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : const Icon(Icons.network_ping),
+          );
+        },
+      ),
       CommonPopupBox(
         targetBuilder: (open) {
           return IconButton(

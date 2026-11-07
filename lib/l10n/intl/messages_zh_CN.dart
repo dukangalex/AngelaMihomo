@@ -20,6 +20,9 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh_CN';
 
+  static String m55(hours) =>
+      "已按订阅源的建议开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
+
   static String m0(log) => "分析Angela Mihomo(Mihomo)日志:${log}";
 
   static String m1(error) => "自动备份失败：${error}";
@@ -135,6 +138,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "mihomoCoreVersion": MessageLookupByLibrary.simpleMessage("Mihomo 内核版本"),
+    "testAllDelay": MessageLookupByLibrary.simpleMessage("全部测速"),
+    "proxyDelayNotTested": MessageLookupByLibrary.simpleMessage("未测速"),
+    "systemExplicitDirectExceptionModeDesc": MessageLookupByLibrary.simpleMessage("中国直连、公共 DNS 直连、局域直连只在规则模式下生效，与全局/直连的路由方式冲突。切换后会恢复已保存的选择。拦截类选项在所有模式下都生效，不受影响。"),
+    "systemExplicitExceptionsInactive": MessageLookupByLibrary.simpleMessage("直连例外在当前模式下未生效"),
+    "systemExplicitExceptionsInactiveDesc": MessageLookupByLibrary.simpleMessage("中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。"),
+    "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage("拦截类选项在当前模式下生效"),
+    "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage("防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。"),
+    "autoUpdateOnImportTip": m55,
     "about": MessageLookupByLibrary.simpleMessage("关于"),
     "accessControl": MessageLookupByLibrary.simpleMessage("分应用代理"),
     "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(

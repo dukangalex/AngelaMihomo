@@ -15,19 +15,41 @@ Future<void> saveAndReloadSystemExplicit({
   }
 }
 
-/// These rules are evaluated only in Mihomo's rule mode. Reject an
-/// incompatible configuration rather than silently weakening the enabled rules
-/// or changing the user's unrelated global/direct routing semantics.
+/// Mode compatibility is split by option class (T54):
+///
+/// * Interception options (privacy discovery blocks, WebRTC block, ad
+///   block) only ever REJECT traffic, so they are independent of the
+///   routing mode: in global/direct mode the runtime config is
+///   synthesized as rule mode with the interception rules first and a
+///   final MATCH to the mode's own target (see
+///   [SystemExplicitOptions.buildRuntimeRulesForMode] and
+///   [effectiveRuntimeMode]). The user's selected mode and its UI
+///   semantics never change.
+/// * Direct-exception options (China direct, China public DNS direct,
+///   LAN direct) contradict the whole point of global/direct mode —
+///   they carve direct holes in a mode whose contract is "everything
+///   goes one way" — so they stay rule-mode only.
+///
+/// Reject an incompatible configuration rather than silently weakening
+/// the enabled rules or changing the user's unrelated routing semantics.
 bool systemExplicitModeCompatible(SystemExplicitOptions options, Mode mode) =>
-    !options.anyEnabled || mode == Mode.rule;
+    mode == Mode.rule || !options.directExceptionsEnabled;
 
 void requireSystemExplicitMode(SystemExplicitOptions options, Mode mode) {
   if (!systemExplicitModeCompatible(options, mode)) {
     throw StateError(
-      'System explicit routing requires rule mode. Switch to rule mode or turn off all system explicit routing options.',
+      'System explicit direct exceptions require rule mode. Switch to rule mode or turn off the China direct / public DNS direct / LAN direct options.',
     );
   }
 }
+
+/// The mode the core must actually run for [options] under the
+/// user-selected [mode]. Identical to [mode] except when interception
+/// options are on outside rule mode: the core then runs rule mode so
+/// the interception rules are evaluated, while the synthesized MATCH
+/// rule keeps every non-intercepted flow on the selected mode's path.
+Mode effectiveRuntimeMode(SystemExplicitOptions options, Mode mode) =>
+    mode != Mode.rule && options.interceptionEnabled ? Mode.rule : mode;
 
 /// The QUIC block (VpnProps.disableQuic) and the system-explicit China
 /// direct routing share one China determination: QUIC to China destinations
@@ -69,6 +91,15 @@ class SystemExplicitOptions {
       blockCommonWebRtc ||
       blockAds;
 
+  /// Interception class (T54): REJECT-only options that work in every
+  /// outbound mode.
+  bool get interceptionEnabled => privacy || blockCommonWebRtc || blockAds;
+
+  /// Direct-exception class (T54): options that only make sense in
+  /// rule mode.
+  bool get directExceptionsEnabled =>
+      chinaDirect || chinaPublicDnsDirect || lanDirect;
+
   Map<String, dynamic> toJson() => {
     'privacy': privacy,
     'chinaDirect': chinaDirect,
@@ -91,10 +122,25 @@ class SystemExplicitOptions {
 
   /// Runtime-only routing/security rules, applied ahead of profile-owned rules.
   /// Public resolver direct routing is deliberately a separate opt-in.
-  List<String> buildRuntimeRulesForMode(Mode mode) =>
-      mode == Mode.rule ? buildRuntimeRules() : const [];
+  ///
+  /// In rule mode this is the full rule set. In global/direct mode only
+  /// the interception class applies (T54): the core is switched to rule
+  /// mode under the hood ([effectiveRuntimeMode]) and the interception
+  /// rules are followed by a MATCH to the selected mode's target, so
+  /// everything not intercepted keeps exactly the selected mode's path.
+  /// Direct exceptions are never emitted outside rule mode.
+  List<String> buildRuntimeRulesForMode(Mode mode) => switch (mode) {
+    Mode.rule => buildRuntimeRules(),
+    Mode.global => interceptionEnabled
+        ? [...buildInterceptionRules(), 'MATCH,GLOBAL']
+        : const [],
+    Mode.direct => interceptionEnabled
+        ? [...buildInterceptionRules(), 'MATCH,DIRECT']
+        : const [],
+  };
 
-  List<String> buildRuntimeRules() => [
+  /// The interception class only (T54), in the canonical order.
+  List<String> buildInterceptionRules() => [
     if (privacy) ...[
       'AND,((NETWORK,UDP),(DST-PORT,5353)),REJECT',
       'AND,((NETWORK,UDP),(DST-PORT,5355)),REJECT',
@@ -112,6 +158,10 @@ class SystemExplicitOptions {
       for (final range in ['3478-3480', '5349-5355', '19302-19305'])
         'AND,((NETWORK,UDP),(DST-PORT,$range)),REJECT',
     ],
+  ];
+
+  List<String> buildRuntimeRules() => [
+    ...buildInterceptionRules(),
     // This opt-in precedes broad China routing so its exceptional intent is
     // visible and independently replaces matching profile DNS routes.
     if (chinaPublicDnsDirect) ...[

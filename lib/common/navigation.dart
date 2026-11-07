@@ -21,13 +21,6 @@ class Navigation {
             DashboardView(key: const GlobalObjectKey(PageLabel.dashboard)),
       ),
       NavigationItem(
-        icon: const Icon(Icons.health_and_safety_outlined),
-        label: PageLabel.patrol,
-        builder: (_) =>
-            PatrolView(key: const GlobalObjectKey(PageLabel.patrol)),
-        modes: [NavigationItemMode.mobile, NavigationItemMode.desktop],
-      ),
-      NavigationItem(
         icon: const Icon(Icons.explore),
         label: PageLabel.proxies,
         builder: (_) => ProviderScope(
@@ -43,6 +36,15 @@ class Navigation {
         label: PageLabel.profiles,
         builder: (_) =>
             ProfilesView(key: const GlobalObjectKey(PageLabel.profiles)),
+      ),
+      // T37: AI Patrol sits after Profiles in the bar
+      // (Home / Proxies / Profiles / AI Patrol / More).
+      NavigationItem(
+        icon: const Icon(Icons.health_and_safety_outlined),
+        label: PageLabel.patrol,
+        builder: (_) =>
+            PatrolView(key: const GlobalObjectKey(PageLabel.patrol)),
+        modes: [NavigationItemMode.mobile, NavigationItemMode.desktop],
       ),
       NavigationItem(
         icon: Icon(Icons.cable_rounded),

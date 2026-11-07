@@ -47,16 +47,18 @@ const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
 final defaultThemeProps = ThemeProps(primaryColor: defaultPrimaryColor);
 
+// T52: fresh installs start from the ordinary-user basics only —
+// connection state & start/stop, current exit & latency, traffic usage.
+// Everything else stays available in the layout customizer; saved
+// layouts of upgraded users are untouched (these lists are only the
+// fallback when no layout was ever saved).
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
   DashboardWidget.systemProxyButton,
   DashboardWidget.tunButton,
   DashboardWidget.outboundMode,
   DashboardWidget.networkDetection,
-  DashboardWidget.intranetIp,
   DashboardWidget.trafficUsage,
-  DashboardWidget.memoryInfo,
-  DashboardWidget.connectionsCount,
   DashboardWidget.startButton,
 ];
 
@@ -65,8 +67,6 @@ const List<DashboardWidget> defaultAndroidDashboardWidgets = [
   DashboardWidget.networkSpeed,
   DashboardWidget.trafficUsage,
   DashboardWidget.networkDetection,
-  DashboardWidget.connectionsCount,
-  DashboardWidget.memoryInfo,
   DashboardWidget.startButton,
 ];
 

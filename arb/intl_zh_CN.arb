@@ -1229,5 +1229,14 @@
   "patrolAttentionNeeded": "{count} 处需要留意",
   "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}},
   "profileSwitchFailedRollback": "新配置切换失败，已切回原来的配置",
-  "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试"
+  "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试",
+  "mihomoCoreVersion": "Mihomo 内核版本",
+  "testAllDelay": "全部测速",
+  "proxyDelayNotTested": "未测速",
+  "systemExplicitDirectExceptionModeDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效，与全局/直连的路由方式冲突。切换后会恢复已保存的选择。拦截类选项在所有模式下都生效，不受影响。",
+  "systemExplicitExceptionsInactive": "直连例外在当前模式下未生效",
+  "systemExplicitExceptionsInactiveDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。",
+  "systemExplicitInterceptionActive": "拦截类选项在当前模式下生效",
+  "systemExplicitInterceptionActiveDesc": "防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。",
+  "autoUpdateOnImportTip": "已按订阅源的建议开启自动更新（每 {hours} 小时）。可在配置设置里调整。"
 }

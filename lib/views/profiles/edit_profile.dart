@@ -52,7 +52,9 @@ class EditProfileViewState extends State<EditProfileView> {
     super.initState();
     labelController = TextEditingController(text: widget.profile.label);
     urlController = TextEditingController(text: widget.profile.url);
-    autoUpdate = widget.isNew ? false : widget.profile.autoUpdate;
+    // T50: a new profile starts with auto-update on (the model default);
+    // existing profiles keep whatever the user set.
+    autoUpdate = widget.profile.autoUpdate;
     useScriptOverride = widget.profile.useScriptOverride;
     scriptId = widget.profile.scriptId;
     autoUpdateDurationController = TextEditingController(
@@ -135,6 +137,20 @@ class EditProfileViewState extends State<EditProfileView> {
       try {
         final updatedProfile = await profile.update();
         await appController.addProfile(updatedProfile);
+        // T50: say it on this page — a freshly imported subscription
+        // auto-updates by default, and the user should not have to dig
+        // through settings to learn that.
+        if (mounted && updatedProfile.realAutoUpdate) {
+          await globalState.showMessage(
+            title: appLocalizations.tip,
+            message: TextSpan(
+              text: appLocalizations.autoUpdateOnImportTip(
+                updatedProfile.autoUpdateDuration.inHours,
+              ),
+            ),
+            cancelable: false,
+          );
+        }
       } on Object catch (e) {
         if (mounted) {
           await globalState.showMessage(

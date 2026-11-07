@@ -1950,7 +1950,11 @@ class AppController {
     final currentMode = _ref.read(patchClashConfigProvider).mode;
     if (currentMode == mode) return;
     final zh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
-    if (currentMode == Mode.rule && mode != Mode.rule && explicit.anyEnabled) {
+    // T54: only the direct-exception class pauses outside rule mode;
+    // interception options keep working, so they never trigger this.
+    if (currentMode == Mode.rule &&
+        mode != Mode.rule &&
+        explicit.directExceptionsEnabled) {
       final accepted = await showDialog<bool>(
         context: context,
         builder: (dialogContext) {
@@ -1977,8 +1981,8 @@ class AppController {
               title: Text(zh ? '切换模式？' : 'Change routing mode?'),
               content: Text(
                 zh
-                    ? '全局或直连模式会暂停系统显式路由规则，包括局域网发现和常见端口阻断。直连模式不经过代理。选项会保留，切回规则模式时恢复。'
-                    : 'Global or direct mode suspends system explicit routing rules, including discovery and common-port blocks. Direct mode bypasses the proxy. Choices are kept and restored in rule mode.',
+                    ? '全局或直连模式会暂停系统显式的直连例外（中国直连、公共 DNS 直连、局域直连）。拦截类选项（防隐私、阻断 WebRTC、广告拦截）在新模式下继续生效。选项会保留，切回规则模式时例外恢复。'
+                    : 'Global or direct mode pauses the system explicit direct exceptions (China direct, public DNS direct, LAN direct). Interception options (privacy, WebRTC block, ad block) keep working in the new mode. Choices are kept and the exceptions resume in rule mode.',
               ),
               actions: [
                 TextButton(
@@ -2091,10 +2095,13 @@ class AppController {
   }
 
   Future<bool> exportLogs() async {
+    // T36: exported logs leave the device, so credentials (subscription
+    // URLs and tokens, node UUIDs/passwords, DAV credentials) are
+    // scrubbed first; the line structure stays for diagnosability.
     final logsRaw = _ref
         .read(filteredLogsProvider)
         .logs
-        .map((item) => item.line)
+        .map((item) => redactLogText(item.line))
         .toList();
     final data = await Isolate.run<List<int>>(() async {
       final logsRawString = logsRaw.join('\n');

@@ -266,9 +266,21 @@ extension ProfileExtension on Profile {
     final response = await request.getFileResponseForUrl(url);
     final disposition = response.headers['content-disposition']?.firstOrNull;
     final userinfo = response.headers['subscription-userinfo']?.firstOrNull;
+    // T50: a subscription may suggest its own refresh interval via the
+    // `profile-update-interval` header (in hours). Adopt it only on the
+    // first successful fetch, so a provider can seed the default without
+    // ever overriding an interval the user picked later.
+    final suggestedHours = int.tryParse(
+      response.headers['profile-update-interval']?.firstOrNull ?? '',
+    );
+    final adoptSuggested =
+        lastUpdateDate == null && suggestedHours != null && suggestedHours > 0;
     return await copyWith(
       label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
+      autoUpdateDuration: adoptSuggested
+          ? Duration(hours: suggestedHours)
+          : autoUpdateDuration,
     ).saveFile(response.data, validate: validate);
   }
 

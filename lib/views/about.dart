@@ -189,6 +189,18 @@ class AboutView extends StatelessWidget {
                             '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
+                          // T61: the bundled Mihomo core version, fed from
+                          // core/CORE_VERSION by setup.dart (same source
+                          // as the value injected into the core binary).
+                          Text(
+                            '${appLocalizations.mihomoCoreVersion} $bundledCoreVersion',
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ],
                       ),
                     ],

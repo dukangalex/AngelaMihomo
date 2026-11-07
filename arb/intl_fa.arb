@@ -1189,5 +1189,14 @@
   "systemExplicitRuleModeTitle": "Switch to rule mode?",
   "systemExplicitSubtitle": "Adaptive path, privacy, China direct",
   "systemExplicitSwitch": "Switch",
-  "systemExplicitTitle": "System options"
+  "systemExplicitTitle": "System options",
+  "mihomoCoreVersion": "Mihomo core version",
+  "testAllDelay": "Test all groups",
+  "proxyDelayNotTested": "Not tested",
+  "systemExplicitDirectExceptionModeDesc": "China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.",
+  "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
+  "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
+  "systemExplicitInterceptionActive": "Interception is active in this mode",
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
+  "autoUpdateOnImportTip": "Auto-update is on for this subscription (every {hours} h, as suggested by the provider). You can change it in the profile settings."
 }
