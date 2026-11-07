@@ -133,6 +133,7 @@ Future<void> delayTest(
   String? testUrl,
   String? groupName,
   Future<void> Function()? onDelayUpdated,
+  bool coordinated = true,
 }) async {
   Future<void> runTest() async {
     final appController = globalState.appController;
@@ -190,12 +191,59 @@ Future<void> delayTest(
     appController.addSortNum();
   }
 
-  if (groupName == null || groupName.isEmpty) {
+  if (groupName == null || groupName.isEmpty || !coordinated) {
     await runTest();
     return;
   }
   await delayTestCoordinator.run(groupName, runTest);
 }
+
+/// T41: one-tap delay test for every group on the proxies page.
+///
+/// Reuses the exact single-group path ([delayTest] and its per-target
+/// request pool), so there is no second speed-test implementation: each
+/// group runs with the shared concurrency cap from the proxies style
+/// settings and the core's unified health-check timeout, a group that
+/// fails or times out only marks its own results, and no group's
+/// current selection is ever touched. Groups run one after another so
+/// a huge subscription cannot flood the network or the core.
+class TotalDelayTestCoordinator extends ChangeNotifier {
+  bool _running = false;
+  int _doneGroups = 0;
+  int _totalGroups = 0;
+
+  bool get isRunning => _running;
+  int get doneGroups => _doneGroups;
+  int get totalGroups => _totalGroups;
+
+  Future<bool> runAll() async {
+    if (_running) return false;
+    final groups = globalState.appController.getCurrentGroups();
+    _running = true;
+    _doneGroups = 0;
+    _totalGroups = groups.length;
+    notifyListeners();
+    try {
+      for (final group in groups) {
+        if (group.all.isNotEmpty) {
+          await delayTest(
+            group.all,
+            testUrl: group.testUrl,
+            coordinated: false,
+          );
+        }
+        _doneGroups++;
+        notifyListeners();
+      }
+      return true;
+    } finally {
+      _running = false;
+      notifyListeners();
+    }
+  }
+}
+
+final totalDelayTestCoordinator = TotalDelayTestCoordinator();
 
 double getScrollToSelectedOffset({
   required String groupName,

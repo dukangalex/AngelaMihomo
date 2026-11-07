@@ -10329,6 +10329,434 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Mihomo core version`
+  String get mihomoCoreVersion {
+    return Intl.message('Mihomo core version', name: 'mihomoCoreVersion', desc: '', args: []);
+  }
+
+  /// `Test all groups`
+  String get testAllDelay {
+    return Intl.message('Test all groups', name: 'testAllDelay', desc: '', args: []);
+  }
+
+  /// `Not tested`
+  String get proxyDelayNotTested {
+    return Intl.message('Not tested', name: 'proxyDelayNotTested', desc: '', args: []);
+  }
+
+  /// `Auto-update is on for this subscription (every $hours h, as suggested by the provider). You can change it in the profile settings.`
+  String autoUpdateOnImportTip(num hours) {
+    return Intl.message(
+      'Auto-update is on for this subscription (every $hours h, as suggested by the provider). You can change it in the profile settings.',
+      name: 'autoUpdateOnImportTip',
+      desc: '',
+      args: [hours],
+    );
+  }
+
+  /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
+  String get systemExplicitDirectExceptionModeDesc {
+    return Intl.message('China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.', name: 'systemExplicitDirectExceptionModeDesc', desc: '', args: []);
+  }
+
+  /// `Direct exceptions are not active in this mode`
+  String get systemExplicitExceptionsInactive {
+    return Intl.message('Direct exceptions are not active in this mode', name: 'systemExplicitExceptionsInactive', desc: '', args: []);
+  }
+
+  /// `China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.`
+  String get systemExplicitExceptionsInactiveDesc {
+    return Intl.message('China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.', name: 'systemExplicitExceptionsInactiveDesc', desc: '', args: []);
+  }
+
+  /// `Interception is active in this mode`
+  String get systemExplicitInterceptionActive {
+    return Intl.message('Interception is active in this mode', name: 'systemExplicitInterceptionActive', desc: '', args: []);
+  }
+
+  /// `Privacy, WebRTC and ad blocking keep working in global/direct mode.`
+  String get systemExplicitInterceptionActiveDesc {
+    return Intl.message('Privacy, WebRTC and ad blocking keep working in global/direct mode.', name: 'systemExplicitInterceptionActiveDesc', desc: '', args: []);
+  }
+
+
+  /// `Fix`
+  String get patrolFix {
+    return Intl.message('Fix', name: 'patrolFix', desc: '', args: []);
+  }
+
+  /// `Update the subscription now`
+  String get patrolActionUpdateSubscription {
+    return Intl.message('Update the subscription now', name: 'patrolActionUpdateSubscription', desc: '', args: []);
+  }
+
+  /// `Retest all nodes`
+  String get patrolActionTestNodes {
+    return Intl.message('Retest all nodes', name: 'patrolActionTestNodes', desc: '', args: []);
+  }
+
+  /// `Flush DNS and FakeIP caches`
+  String get patrolActionFlushDns {
+    return Intl.message('Flush DNS and FakeIP caches', name: 'patrolActionFlushDns', desc: '', args: []);
+  }
+
+  /// `Reload the configuration`
+  String get patrolActionReloadConfig {
+    return Intl.message('Reload the configuration', name: 'patrolActionReloadConfig', desc: '', args: []);
+  }
+
+  /// `Run this fix?`
+  String get patrolFixConfirmTitle {
+    return Intl.message('Run this fix?', name: 'patrolFixConfirmTitle', desc: '', args: []);
+  }
+
+  /// `The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.`
+  String get patrolFixConfirmDesc {
+    return Intl.message('The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.', name: 'patrolFixConfirmDesc', desc: '', args: []);
+  }
+
+  /// `Don't ask again this session (low-risk fixes only)`
+  String get patrolFixTrustSession {
+    return Intl.message('Don\'t ask again this session (low-risk fixes only)', name: 'patrolFixTrustSession', desc: '', args: []);
+  }
+
+  /// `Fix applied and verified`
+  String get patrolFixApplied {
+    return Intl.message('Fix applied and verified', name: 'patrolFixApplied', desc: '', args: []);
+  }
+
+  /// `Fix did not verify — previous state restored`
+  String get patrolFixRolledBack {
+    return Intl.message('Fix did not verify — previous state restored', name: 'patrolFixRolledBack', desc: '', args: []);
+  }
+
+  /// `The fix did not go through`
+  String get patrolFixFailed {
+    return Intl.message('The fix did not go through', name: 'patrolFixFailed', desc: '', args: []);
+  }
+
+  /// `Repair history`
+  String get patrolRecords {
+    return Intl.message('Repair history', name: 'patrolRecords', desc: '', args: []);
+  }
+
+  /// `No repairs yet`
+  String get patrolRecordsEmpty {
+    return Intl.message('No repairs yet', name: 'patrolRecordsEmpty', desc: '', args: []);
+  }
+
+  /// `Undo`
+  String get patrolRecordUndo {
+    return Intl.message('Undo', name: 'patrolRecordUndo', desc: '', args: []);
+  }
+
+  /// `Applied`
+  String get patrolOutcomeApplied {
+    return Intl.message('Applied', name: 'patrolOutcomeApplied', desc: '', args: []);
+  }
+
+  /// `Rolled back`
+  String get patrolOutcomeRolledBack {
+    return Intl.message('Rolled back', name: 'patrolOutcomeRolledBack', desc: '', args: []);
+  }
+
+  /// `Failed`
+  String get patrolOutcomeFailed {
+    return Intl.message('Failed', name: 'patrolOutcomeFailed', desc: '', args: []);
+  }
+
+  /// `Undone`
+  String get patrolOutcomeUndone {
+    return Intl.message('Undone', name: 'patrolOutcomeUndone', desc: '', args: []);
+  }
+
+
+  /// `Saved`
+  String get saveSuccess {
+    return Intl.message('Saved', name: 'saveSuccess', desc: '', args: []);
+  }
+
+  /// `AI interpretation (BYOK)`
+  String get aiConfigTitle {
+    return Intl.message('AI interpretation (BYOK)', name: 'aiConfigTitle', desc: '', args: []);
+  }
+
+  /// `Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.`
+  String get aiConfigDesc {
+    return Intl.message('Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.', name: 'aiConfigDesc', desc: '', args: []);
+  }
+
+  /// `Provider preset`
+  String get aiPreset {
+    return Intl.message('Provider preset', name: 'aiPreset', desc: '', args: []);
+  }
+
+  /// `API endpoint`
+  String get aiEndpoint {
+    return Intl.message('API endpoint', name: 'aiEndpoint', desc: '', args: []);
+  }
+
+  /// `API key`
+  String get aiApiKey {
+    return Intl.message('API key', name: 'aiApiKey', desc: '', args: []);
+  }
+
+  /// `Model`
+  String get aiModel {
+    return Intl.message('Model', name: 'aiModel', desc: '', args: []);
+  }
+
+  /// `Test connection`
+  String get aiTestConnection {
+    return Intl.message('Test connection', name: 'aiTestConnection', desc: '', args: []);
+  }
+
+  /// `Connection OK`
+  String get aiTestOk {
+    return Intl.message('Connection OK', name: 'aiTestOk', desc: '', args: []);
+  }
+
+  /// `Connection failed`
+  String get aiTestFailed {
+    return Intl.message('Connection failed', name: 'aiTestFailed', desc: '', args: []);
+  }
+
+  /// `Get an API key`
+  String get aiGroqGuideTitle {
+    return Intl.message('Get an API key', name: 'aiGroqGuideTitle', desc: '', args: []);
+  }
+
+  /// `1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.`
+  String get aiGuideSteps {
+    return Intl.message('1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.', name: 'aiGuideSteps', desc: '', args: []);
+  }
+
+  /// `Open key console`
+  String get aiGetKey {
+    return Intl.message('Open key console', name: 'aiGetKey', desc: '', args: []);
+  }
+
+  /// `Zero-retention settings`
+  String get aiZdrSettings {
+    return Intl.message('Zero-retention settings', name: 'aiZdrSettings', desc: '', args: []);
+  }
+
+  /// `AI interpretation`
+  String get aiInterpret {
+    return Intl.message('AI interpretation', name: 'aiInterpret', desc: '', args: []);
+  }
+
+  /// `Send this to the AI?`
+  String get aiPreviewTitle {
+    return Intl.message('Send this to the AI?', name: 'aiPreviewTitle', desc: '', args: []);
+  }
+
+  /// `This is the exact text that will be sent. Node names, addresses and credentials are masked.`
+  String get aiPreviewDesc {
+    return Intl.message('This is the exact text that will be sent. Node names, addresses and credentials are masked.', name: 'aiPreviewDesc', desc: '', args: []);
+  }
+
+  /// `Send`
+  String get aiSend {
+    return Intl.message('Send', name: 'aiSend', desc: '', args: []);
+  }
+
+  /// `Asking the AI…`
+  String get aiThinking {
+    return Intl.message('Asking the AI…', name: 'aiThinking', desc: '', args: []);
+  }
+
+  /// `AI interpretation`
+  String get aiResultTitle {
+    return Intl.message('AI interpretation', name: 'aiResultTitle', desc: '', args: []);
+  }
+
+  /// `AI request failed`
+  String get aiError {
+    return Intl.message('AI request failed', name: 'aiError', desc: '', args: []);
+  }
+
+
+  /// `App lock`
+  String get appLock {
+    return Intl.message('App lock', name: 'appLock', desc: '', args: []);
+  }
+
+  /// `Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.`
+  String get appLockDesc {
+    return Intl.message('Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.', name: 'appLockDesc', desc: '', args: []);
+  }
+
+  /// `Enter PIN`
+  String get appLockEnterPin {
+    return Intl.message('Enter PIN', name: 'appLockEnterPin', desc: '', args: []);
+  }
+
+  /// `Set a PIN (4-6 digits)`
+  String get appLockSetPin {
+    return Intl.message('Set a PIN (4-6 digits)', name: 'appLockSetPin', desc: '', args: []);
+  }
+
+  /// `Enter the PIN again`
+  String get appLockConfirmPin {
+    return Intl.message('Enter the PIN again', name: 'appLockConfirmPin', desc: '', args: []);
+  }
+
+  /// `The two PINs do not match`
+  String get appLockPinMismatch {
+    return Intl.message('The two PINs do not match', name: 'appLockPinMismatch', desc: '', args: []);
+  }
+
+  /// `Wrong PIN`
+  String get appLockWrongPin {
+    return Intl.message('Wrong PIN', name: 'appLockWrongPin', desc: '', args: []);
+  }
+
+  /// `Too many attempts. Wait a while and try again.`
+  String get appLockWait {
+    return Intl.message('Too many attempts. Wait a while and try again.', name: 'appLockWait', desc: '', args: []);
+  }
+
+  /// `There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.`
+  String get appLockNoRecovery {
+    return Intl.message('There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.', name: 'appLockNoRecovery', desc: '', args: []);
+  }
+
+  /// `Re-lock after leaving`
+  String get appLockRelock {
+    return Intl.message('Re-lock after leaving', name: 'appLockRelock', desc: '', args: []);
+  }
+
+  /// `Immediately`
+  String get appLockRelockImmediate {
+    return Intl.message('Immediately', name: 'appLockRelockImmediate', desc: '', args: []);
+  }
+
+  /// `30 seconds`
+  String get appLockRelock30s {
+    return Intl.message('30 seconds', name: 'appLockRelock30s', desc: '', args: []);
+  }
+
+  /// `1 minute`
+  String get appLockRelock1m {
+    return Intl.message('1 minute', name: 'appLockRelock1m', desc: '', args: []);
+  }
+
+  /// `5 minutes`
+  String get appLockRelock5m {
+    return Intl.message('5 minutes', name: 'appLockRelock5m', desc: '', args: []);
+  }
+
+  /// `Use biometrics`
+  String get appLockBiometric {
+    return Intl.message('Use biometrics', name: 'appLockBiometric', desc: '', args: []);
+  }
+
+  /// `Biometrics are not available on this device`
+  String get appLockBiometricUnavailable {
+    return Intl.message('Biometrics are not available on this device', name: 'appLockBiometricUnavailable', desc: '', args: []);
+  }
+
+  /// `Unlock with biometrics`
+  String get appLockUnlockBiometric {
+    return Intl.message('Unlock with biometrics', name: 'appLockUnlockBiometric', desc: '', args: []);
+  }
+
+
+  /// `Control style`
+  String get controlStyle {
+    return Intl.message('Control style', name: 'controlStyle', desc: '', args: []);
+  }
+
+  /// `Liquid glass`
+  String get controlStyleLiquidGlass {
+    return Intl.message('Liquid glass', name: 'controlStyleLiquidGlass', desc: '', args: []);
+  }
+
+  /// `Keycap · Futuristic`
+  String get controlStyleKeycap {
+    return Intl.message('Keycap · Futuristic', name: 'controlStyleKeycap', desc: '', args: []);
+  }
+
+
+  /// `China adaptation preset`
+  String get chinaPreset {
+    return Intl.message('China adaptation preset', name: 'chinaPreset', desc: '', args: []);
+  }
+
+  /// `One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.`
+  String get chinaPresetDesc {
+    return Intl.message('One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.', name: 'chinaPresetDesc', desc: '', args: []);
+  }
+
+  /// `Applied`
+  String get chinaPresetStateOn {
+    return Intl.message('Applied', name: 'chinaPresetStateOn', desc: '', args: []);
+  }
+
+  /// `Not applied`
+  String get chinaPresetStateOff {
+    return Intl.message('Not applied', name: 'chinaPresetStateOff', desc: '', args: []);
+  }
+
+  /// `Customized`
+  String get chinaPresetStateCustomized {
+    return Intl.message('Customized', name: 'chinaPresetStateCustomized', desc: '', args: []);
+  }
+
+  /// `Apply preset`
+  String get chinaPresetApply {
+    return Intl.message('Apply preset', name: 'chinaPresetApply', desc: '', args: []);
+  }
+
+  /// `Restore defaults`
+  String get chinaPresetReset {
+    return Intl.message('Restore defaults', name: 'chinaPresetReset', desc: '', args: []);
+  }
+
+
+  /// `No installer for this device was found in this release. Opening the release page instead.`
+  String get updateNoMatchingAsset {
+    return Intl.message('No installer for this device was found in this release. Opening the release page instead.', name: 'updateNoMatchingAsset', desc: '', args: []);
+  }
+
+  /// `This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.`
+  String get updateSumsMissing {
+    return Intl.message('This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.', name: 'updateSumsMissing', desc: '', args: []);
+  }
+
+  /// `The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.`
+  String get updateChecksumMismatch {
+    return Intl.message('The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.', name: 'updateChecksumMismatch', desc: '', args: []);
+  }
+
+  /// `The installer is starting. The app will close so the update can replace its files.`
+  String get updateInstallLaunch {
+    return Intl.message('The installer is starting. The app will close so the update can replace its files.', name: 'updateInstallLaunch', desc: '', args: []);
+  }
+
+  /// `Downloading update`
+  String get updateProgressTitle {
+    return Intl.message('Downloading update', name: 'updateProgressTitle', desc: '', args: []);
+  }
+
+  /// `Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.`
+  String get updateInstallPermissionNote {
+    return Intl.message('Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones\' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release\'s SHA256SUMS.', name: 'updateInstallPermissionNote', desc: '', args: []);
+  }
+
+  /// `In-app install is not available on this platform yet; opening the release page.`
+  String get updateDesktopNote {
+    return Intl.message('In-app install is not available on this platform yet; opening the release page.', name: 'updateDesktopNote', desc: '', args: []);
+  }
+
+
+  /// `The core is not running, so this download goes direct instead of through the local proxy.`
+  String get updateDirectNote {
+    return Intl.message('The core is not running, so this download goes direct instead of through the local proxy.', name: 'updateDirectNote', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

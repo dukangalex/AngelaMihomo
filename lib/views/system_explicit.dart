@@ -30,9 +30,17 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     });
   }
 
-  Future<void> _setRuleOption(bool on, void Function(bool) update) async {
+  /// [directException] marks the direct-exception class (T54). Only
+  /// that class needs rule mode: turning one on in global/direct mode
+  /// offers the switch to rule mode. Interception options apply
+  /// directly in every mode and never show the dialog.
+  Future<void> _setRuleOption(
+    bool on,
+    void Function(bool) update, {
+    required bool directException,
+  }) async {
     final mode = ref.read(patchClashConfigProvider).mode;
-    if (on && mode != Mode.rule) {
+    if (on && directException && mode != Mode.rule) {
       final accepted = await showDialog<bool>(
         context: context,
         builder: (dialogContext) {
@@ -57,7 +65,9 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
               shape: glassShape,
               backgroundColor: glassTokens.effectiveFill,
               title: Text(appLocalizations.systemExplicitRuleModeTitle),
-              content: Text(appLocalizations.systemExplicitRuleModeDesc),
+              content: Text(
+                appLocalizations.systemExplicitDirectExceptionModeDesc,
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
@@ -185,10 +195,21 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     return generateSection(
       title: appLocalizations.systemExplicitTitle,
       items: [
+        // T54: effectiveness is per class and visible on this page —
+        // direct exceptions are the only options that pause outside
+        // rule mode; interception options keep working everywhere.
         if (incompatible)
           ListItem(
-            title: Text(appLocalizations.systemExplicitInactive),
-            subtitle: Text(appLocalizations.systemExplicitInactiveDesc),
+            title: Text(appLocalizations.systemExplicitExceptionsInactive),
+            subtitle: Text(
+              appLocalizations.systemExplicitExceptionsInactiveDesc,
+            ),
+          ),
+        if (mode != Mode.rule && value.interceptionEnabled)
+          _infoItem(
+            id: 'interceptionActive',
+            title: appLocalizations.systemExplicitInterceptionActive,
+            desc: appLocalizations.systemExplicitInterceptionActiveDesc,
           ),
         if (_applyError.isNotEmpty)
           ListItem(
@@ -201,7 +222,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitPrivacyDesc,
           value: value.privacy,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.privacy = valueOn),
+              _setRuleOption(on, (valueOn) => value.privacy = valueOn, directException: false),
         ),
         _optionItem(
           id: 'chinaDirect',
@@ -209,7 +230,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitChinaDirectDesc,
           value: value.chinaDirect,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn),
+              _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn, directException: true),
         ),
         _optionItem(
           id: 'chinaDnsDirect',
@@ -219,6 +240,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           onChanged: (on) => _setRuleOption(
             on,
             (valueOn) => value.chinaPublicDnsDirect = valueOn,
+            directException: true,
           ),
         ),
         _optionItem(
@@ -227,7 +249,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitLanDirectDesc,
           value: value.lanDirect,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
+              _setRuleOption(on, (valueOn) => value.lanDirect = valueOn, directException: true),
         ),
         _optionItem(
           id: 'blockWebRtc',
@@ -237,6 +259,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           onChanged: (on) => _setRuleOption(
             on,
             (valueOn) => value.blockCommonWebRtc = valueOn,
+            directException: false,
           ),
         ),
         _optionItem(
@@ -245,7 +268,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitBlockAdsDesc,
           value: value.blockAds,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.blockAds = valueOn),
+              _setRuleOption(on, (valueOn) => value.blockAds = valueOn, directException: false),
         ),
         _infoItem(
           id: 'limits',

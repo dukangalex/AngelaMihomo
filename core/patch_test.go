@@ -1779,3 +1779,70 @@ func TestApplyPatchTunDNSMode(t *testing.T) {
 		t.Errorf("patched dns-mode should override, got %q", rawCfg.Tun.DNSMode)
 	}
 }
+
+// T40: region groups (select groups whose members include their paired
+// "<name>-自动选择" url-test group) must not receive the chain landing;
+// the main selector still gets it first and other plain select groups
+// still get it appended.
+func TestApplyPatchChainSkipsRegionGroups(t *testing.T) {
+	raw := parsePatchProfile(t, `
+proxy-providers:
+  subscription:
+    type: inline
+    payload:
+      - {name: Entry, type: ss, server: e.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+      - {name: Landing, type: ss, server: l.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+      - {name: SGNode, type: ss, server: s.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+proxy-groups:
+  - {name: Manual, type: select, use: [subscription]}
+  - {name: Singapore, type: select, proxies: [Singapore-自动选择, SGNode]}
+  - {name: Singapore-自动选择, type: url-test, proxies: [SGNode], url: "https://example.com", interval: 300}
+  - {name: Others, type: select, use: [subscription]}
+rules:
+  - MATCH,Manual
+`)
+	params := patchParams(t, `{"chain-policy": {"enabled": true, "entry": "Entry", "landing": "Landing"}}`)
+	if _, err := applyPatch(raw, params); err != nil {
+		t.Fatal(err)
+	}
+	containsChain := func(groupName string) bool {
+		group := findGroup(raw.ProxyGroup, groupName)
+		if group == nil {
+			t.Fatalf("group %q missing after patch", groupName)
+		}
+		for _, member := range anyStrings(group["proxies"]) {
+			if text, ok := member.(string); ok && text == explicitChainGroup {
+				return true
+			}
+		}
+		return false
+	}
+	if !containsChain("Manual") {
+		t.Error("main selector must keep the chain landing first")
+	}
+	if containsChain("Singapore") {
+		t.Error("region group must not receive the chain landing")
+	}
+	if !containsChain("Others") {
+		t.Error("plain select group must keep the appended chain landing")
+	}
+}
+
+func TestIsRegionSelectGroup(t *testing.T) {
+	groups := []map[string]any{
+		{"name": "HK", "type": "select", "proxies": []any{"HK-自动选择", "node1"}},
+		{"name": "HK-自动选择", "type": "url-test", "proxies": []any{"node1"}},
+		{"name": "Plain", "type": "select", "proxies": []any{"node2"}},
+		{"name": "Fake", "type": "select", "proxies": []any{"Fake-自动选择"}},
+		{"name": "Fake-自动选择", "type": "select", "proxies": []any{"node3"}},
+	}
+	if !isRegionSelectGroup(groups[0], groups) {
+		t.Error("paired url-test member should mark a region group")
+	}
+	if isRegionSelectGroup(groups[2], groups) {
+		t.Error("group without the paired member is not a region group")
+	}
+	if isRegionSelectGroup(groups[3], groups) {
+		t.Error("paired group that is not url-test must not mark a region group")
+	}
+}

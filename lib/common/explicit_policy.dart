@@ -40,6 +40,24 @@ bool applyChainPolicy(
       'proxies': [entryName, landingName],
     });
   }
+  // T40: region groups (a select group whose members include its
+  // paired "<name>-自动选择" url-test group, the converter's region
+  // signature) keep only their own region's nodes; the chain landing
+  // is not appended there. Mirrors core/patch.go isRegionSelectGroup.
+  final urlTestNames = <String>{
+    for (final group in list)
+      if (group is Map && group['type']?.toString() == 'url-test')
+        group['name']?.toString() ?? '',
+  };
+  bool isRegionGroup(Map group) {
+    final name = group['name']?.toString() ?? '';
+    if (name.isEmpty) return false;
+    final paired = '$name-自动选择';
+    if (!urlTestNames.contains(paired)) return false;
+    final members = group['proxies'];
+    return members is List && members.contains(paired);
+  }
+
   var selectors = 0;
   for (final group in list) {
     if (group is! Map || group['type']?.toString() != 'select') continue;
@@ -47,6 +65,7 @@ bool applyChainPolicy(
     final members = group['proxies'];
     if (members is! List || members.contains(explicitChainGroup)) continue;
     selectors++;
+    if (selectors > 1 && isRegionGroup(group)) continue;
     if (selectors == 1) {
       // The main selector lists the chain first so it is the default
       // choice once a chain is configured; other selectors keep the

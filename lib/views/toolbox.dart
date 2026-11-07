@@ -229,6 +229,8 @@ class _ToolboxViewState extends ConsumerState<ToolboxView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const _ChinaPresetCard(),
+          const SizedBox(height: 12),
           AnimatedSize(
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
@@ -533,6 +535,159 @@ class _ToolCardState extends State<_ToolCard> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// China adaptation preset card (T57): the recommended combination
+/// of existing capabilities, its live state, and the full composition
+/// list — all visible on the toolbox page itself. Applying or
+/// resetting moves every member together and reloads the running
+/// config; changing any member elsewhere turns the state to
+/// "customized" and the preset leaves the user's change alone.
+class _ChinaPresetCard extends ConsumerStatefulWidget {
+  const _ChinaPresetCard();
+
+  @override
+  ConsumerState<_ChinaPresetCard> createState() => _ChinaPresetCardState();
+}
+
+class _ChinaPresetCardState extends ConsumerState<_ChinaPresetCard> {
+  bool _loaded = false;
+  bool _applying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemExplicitStore.instance.ensureLoaded().then((_) {
+      if (mounted) setState(() => _loaded = true);
+    });
+  }
+
+  Future<void> _apply(bool on) async {
+    if (_applying) return;
+    setState(() => _applying = true);
+    try {
+      final store = SystemExplicitStore.instance;
+      await store.ensureLoaded();
+      store.value = on
+          ? chinaPresetExplicitOn(store.value)
+          : chinaPresetExplicitOff(store.value);
+      await saveAndReloadSystemExplicit(
+        save: SystemExplicitStore.instance.save,
+        reload: () => globalState.appController.applyProfileChecked(),
+      );
+      // Automatic system DNS is part of the combination and also its
+      // factory default: applying AND resetting both keep it on.
+      ref
+          .read(networkSettingProvider.notifier)
+          .updateState((state) => state.copyWith(autoSetSystemDns: true));
+      if (mounted) {
+        globalState.showNotifier(appLocalizations.saveSuccess);
+      }
+    } catch (error) {
+      if (mounted) {
+        globalState.showNotifier('$error');
+      }
+    } finally {
+      if (mounted) setState(() => _applying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final autoDns = ref.watch(
+      networkSettingProvider.select((state) => state.autoSetSystemDns),
+    );
+    final options = SystemExplicitStore.instance.value;
+    final state = _loaded
+        ? chinaPresetState(options: options, autoSetSystemDns: autoDns)
+        : null;
+    final scheme = context.colorScheme;
+    final stateText = switch (state) {
+      ChinaPresetState.on => appLocalizations.chinaPresetStateOn,
+      ChinaPresetState.off => appLocalizations.chinaPresetStateOff,
+      ChinaPresetState.customized => appLocalizations.chinaPresetStateCustomized,
+      null => '…',
+    };
+    Widget member(String label, bool on) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Icon(
+              on ? Icons.check_circle_outline : Icons.circle_outlined,
+              size: 16,
+              color: on ? scheme.primary : scheme.outline,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(label, style: context.textTheme.bodyMedium)),
+          ],
+        ),
+      );
+    }
+
+    return CommonCard(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.travel_explore_outlined, color: scheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    appLocalizations.chinaPreset,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Chip(
+                  label: Text(stateText),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              appLocalizations.chinaPresetDesc,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 10),
+            member(appLocalizations.systemExplicitPrivacy, options.privacy),
+            member(
+              appLocalizations.systemExplicitBlockWebRtc,
+              options.blockCommonWebRtc,
+            ),
+            member(appLocalizations.systemExplicitBlockAds, options.blockAds),
+            member(appLocalizations.autoSetSystemDns, autoDns),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonal(
+                  onPressed: _applying || state == ChinaPresetState.on
+                      ? null
+                      : () => _apply(true),
+                  child: Text(appLocalizations.chinaPresetApply),
+                ),
+                OutlinedButton(
+                  onPressed: _applying || state == ChinaPresetState.off
+                      ? null
+                      : () => _apply(false),
+                  child: Text(appLocalizations.chinaPresetReset),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

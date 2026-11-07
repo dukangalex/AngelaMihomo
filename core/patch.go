@@ -1247,6 +1247,13 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				continue
 			}
 			selectors++
+			// T40: region groups keep only their own region's nodes —
+			// the chain landing is not a region node and must not be
+			// appended there. The main selector (first) is exempt so
+			// its behaviour never changes.
+			if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+				continue
+			}
 			members := anyStrings(group["proxies"])
 			if selectors == 1 {
 				// The main selector lists the chain first so it is the
@@ -1435,6 +1442,11 @@ func patchLegacyChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) err
 			}
 		}
 		selectors++
+		// T40: skip region groups (see patchChainPolicy); the main
+		// selector still takes the chain first.
+		if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+			continue
+		}
 		if selectors == 1 {
 			// The main selector lists the chain first so it is the
 			// default choice once a chain is configured; other
@@ -1447,6 +1459,38 @@ func patchLegacyChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) err
 		}
 	}
 	return nil
+}
+
+// isRegionSelectGroup reports whether a select group is a region
+// group (T40): the subscription converter emits every region group as
+// a select group whose members include its paired url-test group
+// named "<group>-自动选择". The signature depends only on that paired
+// structure, never on a list of region names. The chain landing is
+// not a region node — its exit is decided by the chain entry/landing
+// pair — so it must not be appended to region groups.
+func isRegionSelectGroup(group map[string]any, groups []map[string]any) bool {
+	name, _ := group["name"].(string)
+	if name == "" {
+		return false
+	}
+	paired := name + "-自动选择"
+	pairedIsURLTest := false
+	for _, other := range groups {
+		if otherName, _ := other["name"].(string); otherName == paired {
+			otherType, _ := other["type"].(string)
+			pairedIsURLTest = otherType == "url-test"
+			break
+		}
+	}
+	if !pairedIsURLTest {
+		return false
+	}
+	for _, member := range anyStrings(group["proxies"]) {
+		if text, ok := member.(string); ok && text == paired {
+			return true
+		}
+	}
+	return false
 }
 
 func anyStrings(value any) []any {

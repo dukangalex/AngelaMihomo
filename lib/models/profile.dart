@@ -66,6 +66,32 @@ extension SubscriptionInfoExtension on SubscriptionInfo {
     }
     return total > 0 ? appLocalizations.infiniteTime : null;
   }
+
+  /// Whole days left before expiry (negative once expired); null
+  /// when the subscription reports no expiry.
+  int? get daysUntilExpire {
+    if (expire <= 0) return null;
+    final expireAt = DateTime.fromMillisecondsSinceEpoch(expire * 1000);
+    return expireAt.difference(DateTime.now()).inDays;
+  }
+
+  /// T57: warn when expiry is a week away or already passed.
+  bool get expireWarning {
+    final days = daysUntilExpire;
+    return days != null && days <= 7;
+  }
+
+  /// Remaining traffic share in [0, 1]; null when no total is known.
+  double? get remainingTrafficRatio {
+    if (total <= 0) return null;
+    return ((total - upload - download) / total).clamp(0.0, 1.0);
+  }
+
+  /// T57: warn when less than a tenth of the traffic remains.
+  bool get trafficWarning {
+    final ratio = remainingTrafficRatio;
+    return ratio != null && ratio < 0.10;
+  }
 }
 
 @freezed
@@ -266,9 +292,21 @@ extension ProfileExtension on Profile {
     final response = await request.getFileResponseForUrl(url);
     final disposition = response.headers['content-disposition']?.firstOrNull;
     final userinfo = response.headers['subscription-userinfo']?.firstOrNull;
+    // T50: a subscription may suggest its own refresh interval via the
+    // `profile-update-interval` header (in hours). Adopt it only on the
+    // first successful fetch, so a provider can seed the default without
+    // ever overriding an interval the user picked later.
+    final suggestedHours = int.tryParse(
+      response.headers['profile-update-interval']?.firstOrNull ?? '',
+    );
+    final adoptSuggested =
+        lastUpdateDate == null && suggestedHours != null && suggestedHours > 0;
     return await copyWith(
       label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
+      autoUpdateDuration: adoptSuggested
+          ? Duration(hours: suggestedHours)
+          : autoUpdateDuration,
     ).saveFile(response.data, validate: validate);
   }
 

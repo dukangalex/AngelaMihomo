@@ -38,6 +38,14 @@ class App {
     return await methodChannel.invokeMethod<bool>('moveTaskToBack');
   }
 
+  /// Hands a verified update APK (in the app cache) to the Android
+  /// system installer (T56).
+  Future<bool?> installApk(String path) async {
+    return await methodChannel.invokeMethod<bool>('installApk', {
+      'path': path,
+    });
+  }
+
   Future<List<Package>> getPackages({bool forceRefresh = false}) async {
     final packagesRaw = await methodChannel.invokeListMethod<Map<dynamic, dynamic>>(
       'getPackages',

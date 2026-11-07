@@ -321,7 +321,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final title = customTitle ?? appLocalizations.dashboard;
     return CommonScaffold(
       title: title,
-      titleWidget: globalState.isPre
+      titleWidget: globalState.isPre && kDebugMode
           ? Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,7 +902,7 @@ class _PreviewMark extends StatelessWidget {
         border: Border.all(color: colorScheme.primary.withValues(alpha: 0.6)),
       ),
       child: Text(
-        kDebugMode ? 'DEBUG' : 'PRE',
+        'DEBUG',
         style: context.textTheme.labelSmall?.copyWith(
           fontSize: 9.5,
           height: 1.3,

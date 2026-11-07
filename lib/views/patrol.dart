@@ -1,4 +1,9 @@
+import 'package:bett_box/common/ai_client.dart';
+import 'package:bett_box/common/ai_config.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/patrol_actions.dart';
+import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/views/ai_config.dart';
 import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
@@ -76,13 +81,48 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   ProviderSubscription? _profileSubscription;
   ProviderSubscription? _runStateSubscription;
 
+  /// Recorded last-update failure for the current profile (recorded
+  /// by the update flow via PatrolStore), keyed by profile id so a
+  /// profile switch never shows another profile's failure.
+  bool _updateFailed = false;
+  String _failureProfileId = '';
+
+  /// "Fix all low-risk items without asking" lasts for this page
+  /// session only (spec: 本次全权修复）. It is never persisted.
+  bool _sessionTrust = false;
+  bool _fixing = false;
+
+  /// BYOK AI config (T30). Null until loaded; the interpretation
+  /// entry only appears when a config exists and is complete — with
+  /// no key there is no AI UI anywhere (zero disturbance rule).
+  AiConfig? _aiConfig;
+
   bool get _checkingConfig => _configCheckScheduler.isRunning;
+
+  Future<void> _loadUpdateFailure() async {
+    final profileId = ref.read(currentProfileProvider)?.id;
+    if (profileId == null) {
+      _failureProfileId = '';
+      _updateFailed = false;
+      return;
+    }
+    final failure = await PatrolStore.updateFailureFor(profileId);
+    if (!mounted) return;
+    setState(() {
+      _failureProfileId = profileId;
+      _updateFailed = failure != null;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     ProfileChainStore.instance.ensureLoaded().then((_) {
       if (mounted) setState(() => _chainReady = true);
+    });
+    _loadUpdateFailure();
+    AiConfigStore.load().then((config) {
+      if (mounted) setState(() => _aiConfig = config);
     });
     _runConfigCheck();
     // This page is kept alive across page switches, so a result from
@@ -93,7 +133,10 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     _profileSubscription = ref.listenManual(
       currentProfileProvider.select((state) => state?.id),
       (previous, next) {
-        if (previous != next) _runConfigCheck();
+        if (previous != next) {
+          _runConfigCheck();
+          _loadUpdateFailure();
+        }
       },
     );
     _runStateSubscription = ref.listenManual(
@@ -166,13 +209,31 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     return null;
   }
 
-  PatrolReport _buildReport() {
-    final logs = ref.watch(logsProvider.select((state) => state.list));
-    final profile = ref.watch(currentProfileProvider);
-    final groups = ref.watch(groupsProvider);
-    final delayMap = ref.watch(delayDataSourceProvider);
-    final mode = ref.watch(patchClashConfigProvider.select((s) => s.mode));
+  PatrolReport _buildReport() => _reportFrom(
+    logs: ref.watch(logsProvider.select((state) => state.list)),
+    profile: ref.watch(currentProfileProvider),
+    groups: ref.watch(groupsProvider),
+    delayMap: ref.watch(delayDataSourceProvider),
+    mode: ref.watch(patchClashConfigProvider.select((s) => s.mode)),
+  );
 
+  /// Same report built from one-shot reads, for the fix flow's
+  /// before/after verification (ref.watch is build-only).
+  PatrolReport _readReport() => _reportFrom(
+    logs: ref.read(logsProvider).list,
+    profile: ref.read(currentProfileProvider),
+    groups: ref.read(groupsProvider),
+    delayMap: ref.read(delayDataSourceProvider),
+    mode: ref.read(patchClashConfigProvider).mode,
+  );
+
+  PatrolReport _reportFrom({
+    required List<Log> logs,
+    required Profile? profile,
+    required List<Group> groups,
+    required DelayMap delayMap,
+    required Mode mode,
+  }) {
     final seen = <String>{};
     final nodeSamples = <PatrolNodeSample>[];
     for (final group in groups) {
@@ -212,9 +273,12 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
         expiresAt: expireSeconds > 0
             ? DateTime.fromMillisecondsSinceEpoch(expireSeconds * 1000)
             : null,
-        // The app does not persist update failures today; the report
-        // stays silent about them until the update flow records them.
-        lastUpdateFailed: null,
+        // Recorded by the update flow (T29): the profile's last
+        // update failure, shown until a later update succeeds.
+        lastUpdateFailed:
+            profile != null && _failureProfileId == profile.id
+            ? _updateFailed
+            : null,
       ),
       nodes: nodeSamples,
       link: PatrolLinkInput(
@@ -465,6 +529,264 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     return items;
   }
 
+  String _actionLabel(PatrolAction action) => patrolActionLabel(action);
+
+  /// Appends the section's whitelist fix action (T29) when the
+  /// section is not healthy: every problem on this page carries its
+  /// executable next step instead of being a display-only warning.
+  List<Widget> _withAction(
+    List<Widget> items,
+    PatrolAction? action,
+    PatrolSeverity severity,
+  ) {
+    if (action == null || severity == PatrolSeverity.ok) return items;
+    return [
+      ...items,
+      ListItem(
+        leading: const Icon(Icons.build_outlined),
+        title: Text(_actionLabel(action)),
+        trailing: FilledButton.tonal(
+          onPressed: _fixing ? null : () => _runFix(action),
+          child: Text(appLocalizations.patrolFix),
+        ),
+      ),
+    ];
+  }
+
+  Future<bool?> _confirmFix(PatrolAction action) async {
+    var trust = false;
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(appLocalizations.patrolFixConfirmTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _actionLabel(action),
+                style: context.textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(appLocalizations.patrolFixConfirmDesc),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: trust,
+                onChanged: (value) =>
+                    setDialogState(() => trust = value ?? false),
+                title: Text(appLocalizations.patrolFixTrustSession),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, null),
+              child: Text(appLocalizations.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, trust),
+              child: Text(appLocalizations.patrolFix),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _verifyFix(
+    PatrolAction action,
+    PatrolReport before,
+    PatrolReport after,
+  ) {
+    return switch (action) {
+      PatrolAction.updateSubscription =>
+        after.subscription.severity != PatrolSeverity.problem &&
+            !_updateFailed,
+      // A retest verifies when it strictly improves the picture: fewer
+      // dead nodes, first data where there was none, a chain hop back,
+      // or the section fully healthy.
+      PatrolAction.testNodes =>
+        after.nodes.dead < before.nodes.dead ||
+            (before.nodes.tested == 0 && after.nodes.tested > 0) ||
+            after.nodes.severity == PatrolSeverity.ok ||
+            (before.link.chainHopDown && !after.link.chainHopDown),
+      // A cache flush has no direct observable; execution is the
+      // verification available, and the record says what ran.
+      PatrolAction.flushDns => true,
+      PatrolAction.reloadConfig =>
+        after.core.input.configCheck != PatrolConfigCheck.failed,
+    };
+  }
+
+  /// One authorized fix run: snapshot → whitelist action → rebuild
+  /// the report → verify → auto-rollback when verification fails and
+  /// a snapshot exists → record the outcome (T29 phase-1 loop).
+  Future<void> _runFix(PatrolAction action) async {
+    if (_fixing) return;
+    if (!_sessionTrust) {
+      final trust = await _confirmFix(action);
+      if (trust == null || !mounted) return;
+      _sessionTrust = trust;
+    }
+    setState(() => _fixing = true);
+    try {
+      final before = _readReport();
+      final profile = ref.read(currentProfileProvider);
+      final result = await executePatrolAction(
+        globalState.appController,
+        action,
+        profile: profile,
+      );
+      if (action == PatrolAction.reloadConfig) {
+        await _runConfigCheck();
+      }
+      if (action == PatrolAction.updateSubscription) {
+        await _loadUpdateFailure();
+      }
+      final after = _readReport();
+      final verified = result.executed && _verifyFix(action, before, after);
+      var outcome = verified ? 'applied' : 'failed';
+      String? keptBackup;
+      if (!verified &&
+          action == PatrolAction.updateSubscription &&
+          result.profileBackupPath != null &&
+          profile != null) {
+        final rolledBack = await rollbackSubscriptionSnapshot(
+          globalState.appController,
+          profile: profile,
+          backupPath: result.profileBackupPath!,
+        );
+        if (rolledBack) outcome = 'failedRolledBack';
+      }
+      if (verified && action == PatrolAction.updateSubscription) {
+        // Keep the snapshot so the records page can undo this fix.
+        keptBackup = result.profileBackupPath;
+      }
+      await PatrolStore.addRecord(
+        PatrolRepairRecord(
+          id: '${DateTime.now().microsecondsSinceEpoch}',
+          at: DateTime.now(),
+          action: action,
+          outcome: outcome,
+          detail: result.detail,
+          profileBackupPath: keptBackup,
+          profileId: profile?.id,
+        ),
+      );
+      patrolAttentionCount.value = _readReport().problemCount;
+      if (mounted) {
+        globalState.showNotifier(
+          switch (outcome) {
+            'applied' => appLocalizations.patrolFixApplied,
+            'failedRolledBack' => appLocalizations.patrolFixRolledBack,
+            _ => appLocalizations.patrolFixFailed,
+          },
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _fixing = false);
+    }
+  }
+
+  /// AI interpretation flow (T30): build the redacted summary, show
+  /// it verbatim for confirmation, only then call the provider and
+  /// show its answer. The AI never executes anything itself — any
+  /// fix still goes through the page's whitelist executor.
+  Future<void> _runAiInterpretation() async {
+    final config = _aiConfig;
+    if (config == null || !config.configured) return;
+    final report = _readReport();
+    final names = <String>{};
+    for (final group in ref.read(groupsProvider)) {
+      for (final proxy in group.all) {
+        names.add(proxy.name);
+      }
+    }
+    if (report.link.input.chainEntry.isNotEmpty) {
+      names.add(report.link.input.chainEntry);
+    }
+    if (report.link.input.chainLanding.isNotEmpty) {
+      names.add(report.link.input.chainLanding);
+    }
+    final summary = buildPatrolSummary(report, nodeNames: names.toList());
+    if (!mounted) return;
+    final send = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(appLocalizations.aiPreviewTitle),
+        content: SizedBox(
+          width: 520,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(appLocalizations.aiPreviewDesc),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    summary,
+                    style: context.textTheme.bodySmall,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(appLocalizations.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(appLocalizations.aiSend),
+          ),
+        ],
+      ),
+    );
+    if (send != true || !mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Expanded(child: Text(appLocalizations.aiThinking)),
+          ],
+        ),
+      ),
+    );
+    String result;
+    try {
+      result = await fetchAiInterpretation(config, summary);
+    } catch (error) {
+      result = '${appLocalizations.aiError}: $error';
+    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(appLocalizations.aiResultTitle),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(child: SelectableText(result)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(appLocalizations.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// The page's verdict band (T38 composition + glass): the patrol
   /// conclusion leads the page as a live-glass card with a severity badge,
   /// lifted out of the flat list rhythm of the sections below it. The
@@ -537,12 +859,40 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   @override
   Widget build(BuildContext context) {
     final report = _buildReport();
+    // Keep the navigation badge on the full report's problem count.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      patrolAttentionCount.value = report.problemCount;
+    });
     return CommonScaffold(
       title: appLocalizations.aiPatrol,
       actions: [
+        if (_aiConfig?.configured ?? false)
+          IconButton(
+            onPressed: _runAiInterpretation,
+            tooltip: appLocalizations.aiInterpret,
+            icon: const Icon(Icons.auto_awesome_outlined),
+          ),
+        IconButton(
+          onPressed: () async {
+            await BaseNavigator.push(context, const AiConfigView());
+            final config = await AiConfigStore.load();
+            if (mounted) setState(() => _aiConfig = config);
+          },
+          tooltip: appLocalizations.aiConfigTitle,
+          icon: const Icon(Icons.tune_outlined),
+        ),
+        IconButton(
+          onPressed: () => BaseNavigator.push(
+            context,
+            const PatrolRecordsView(),
+          ),
+          tooltip: appLocalizations.patrolRecords,
+          icon: const Icon(Icons.history),
+        ),
         IconButton(
           onPressed: () {
             _runConfigCheck();
+            _loadUpdateFailure();
             setState(() {});
           },
           tooltip: appLocalizations.patrolRecheck,
@@ -555,30 +905,144 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
           ..._section(
             context,
             appLocalizations.patrolSectionLogs,
-            _logItems(context, report.logs),
+            _withAction(
+              _logItems(context, report.logs),
+              report.logs.suggestedAction,
+              report.logs.severity,
+            ),
           ),
           ..._section(
             context,
             appLocalizations.patrolSectionSubscription,
-            _subscriptionItems(context, report.subscription),
+            _withAction(
+              _subscriptionItems(context, report.subscription),
+              report.subscription.suggestedAction,
+              report.subscription.severity,
+            ),
           ),
           ..._section(
             context,
             appLocalizations.patrolSectionNodes,
-            _nodeItems(context, report.nodes),
+            _withAction(
+              _nodeItems(context, report.nodes),
+              report.nodes.suggestedAction,
+              report.nodes.severity,
+            ),
           ),
           ..._section(
             context,
             appLocalizations.patrolSectionLink,
-            _linkItems(context, report.link),
+            _withAction(
+              _linkItems(context, report.link),
+              report.link.suggestedAction,
+              report.link.severity,
+            ),
           ),
           ..._section(
             context,
             appLocalizations.patrolSectionCore,
-            _coreItems(context, report.core),
+            _withAction(
+              _coreItems(context, report.core),
+              report.core.suggestedAction,
+              report.core.severity,
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+String patrolActionLabel(PatrolAction action) => switch (action) {
+  PatrolAction.updateSubscription =>
+    appLocalizations.patrolActionUpdateSubscription,
+  PatrolAction.testNodes => appLocalizations.patrolActionTestNodes,
+  PatrolAction.flushDns => appLocalizations.patrolActionFlushDns,
+  PatrolAction.reloadConfig => appLocalizations.patrolActionReloadConfig,
+};
+
+String patrolOutcomeLabel(String outcome) => switch (outcome) {
+  'applied' => appLocalizations.patrolOutcomeApplied,
+  'failedRolledBack' => appLocalizations.patrolOutcomeRolledBack,
+  'undone' => appLocalizations.patrolOutcomeUndone,
+  _ => appLocalizations.patrolOutcomeFailed,
+};
+
+/// Repair history (T29): every fix attempt with its outcome, and a
+/// manual undo for subscription updates that kept their snapshot.
+class PatrolRecordsView extends ConsumerStatefulWidget {
+  const PatrolRecordsView({super.key});
+
+  @override
+  ConsumerState<PatrolRecordsView> createState() => _PatrolRecordsViewState();
+}
+
+class _PatrolRecordsViewState extends ConsumerState<PatrolRecordsView> {
+  List<PatrolRepairRecord>? _records;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final records = await PatrolStore.records();
+    if (mounted) setState(() => _records = records);
+  }
+
+  Future<void> _undo(PatrolRepairRecord record) async {
+    final backup = record.profileBackupPath;
+    if (backup == null) return;
+    Profile? profile;
+    for (final candidate in ref.read(profilesProvider)) {
+      if (candidate.id == record.profileId) {
+        profile = candidate;
+        break;
+      }
+    }
+    if (profile == null) return;
+    final restored = await rollbackSubscriptionSnapshot(
+      globalState.appController,
+      profile: profile,
+      backupPath: backup,
+    );
+    if (restored) {
+      await PatrolStore.updateRecord(record.copyWith(outcome: 'undone'));
+      await _load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final records = _records;
+    return CommonScaffold(
+      title: appLocalizations.patrolRecords,
+      body: records == null
+          ? const Center(child: CircularProgressIndicator())
+          : records.isEmpty
+          ? Center(child: Text(appLocalizations.patrolRecordsEmpty))
+          : ListView(
+              children: [
+                for (final record in records)
+                  ListItem(
+                    title: Text(patrolActionLabel(record.action)),
+                    subtitle: Text(
+                      '${record.at.lastUpdateTimeDesc} · '
+                      '${patrolOutcomeLabel(record.outcome)}'
+                      '${record.detail.isEmpty ? '' : ' · ${record.detail}'}',
+                    ),
+                    trailing:
+                        record.outcome == 'applied' &&
+                            record.profileBackupPath != null
+                        ? TextButton(
+                            onPressed: () => _undo(record),
+                            child: Text(appLocalizations.patrolRecordUndo),
+                          )
+                        : null,
+                  ),
+              ],
+            ),
     );
   }
 }
