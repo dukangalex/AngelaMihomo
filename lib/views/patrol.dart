@@ -284,8 +284,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             : null,
         // Recorded by the update flow (T29): the profile's last
         // update failure, shown until a later update succeeds.
-        lastUpdateFailed:
-            profile != null && _failureProfileId == profile.id
+        lastUpdateFailed: profile != null && _failureProfileId == profile.id
             ? _updateFailed
             : null,
       ),
@@ -597,12 +596,24 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
                   const SizedBox(height: 8),
                   Text(appLocalizations.patrolFixConfirmDesc),
                   const SizedBox(height: 8),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: trust,
-                    onChanged: (value) =>
-                        setDialogState(() => trust = value ?? false),
-                    title: Text(appLocalizations.patrolFixTrustSession),
+                  // Plain Row + Checkbox instead of CheckboxListTile:
+                  // the compound tile rendered as an empty grey block
+                  // in this dialog on device (same grey-box signature
+                  // as the T30 form repair).
+                  InkWell(
+                    onTap: () => setDialogState(() => trust = !trust),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: trust,
+                          onChanged: (value) =>
+                              setDialogState(() => trust = value ?? false),
+                        ),
+                        Expanded(
+                          child: Text(appLocalizations.patrolFixTrustSession),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -650,8 +661,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   ) {
     return switch (action) {
       PatrolAction.updateSubscription =>
-        after.subscription.severity != PatrolSeverity.problem &&
-            !_updateFailed,
+        after.subscription.severity != PatrolSeverity.problem && !_updateFailed,
       // A retest verifies when it strictly improves the picture: fewer
       // dead nodes, first data where there was none, a chain hop back,
       // or the section fully healthy.
@@ -760,8 +770,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       if (mounted) {
         setState(() {
           _fixStatusFailed = true;
-          _fixStatusText =
-              '${appLocalizations.patrolFixFailed} · $error';
+          _fixStatusText = '${appLocalizations.patrolFixFailed} · $error';
         });
       }
     } finally {
@@ -961,10 +970,8 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
           icon: const Icon(Icons.tune_outlined),
         ),
         IconButton(
-          onPressed: () => BaseNavigator.push(
-            context,
-            const PatrolRecordsView(),
-          ),
+          onPressed: () =>
+              BaseNavigator.push(context, const PatrolRecordsView()),
           tooltip: appLocalizations.patrolRecords,
           icon: const Icon(Icons.history),
         ),
