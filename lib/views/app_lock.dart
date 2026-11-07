@@ -117,7 +117,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
   void initState() {
     super.initState();
     _lockedUntilMs = widget.config.lockedUntilMs;
-    if (widget.config.biometricEnabled) {
+    // Biometrics are not wired on Android in this build (they need
+    // a FragmentActivity host); never offer or attempt them there.
+    if (widget.config.biometricEnabled && !system.isAndroid) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric());
     }
   }
@@ -216,7 +218,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       ? _submit
                       : null,
                 ),
-                if (widget.config.biometricEnabled) ...[
+                if (widget.config.biometricEnabled && !system.isAndroid) ...[
                   const SizedBox(height: 8),
                   TextButton.icon(
                     onPressed: _tryBiometric,
@@ -247,6 +249,7 @@ class AppLockGate extends StatefulWidget {
 class _AppLockGateState extends State<AppLockGate>
     with WidgetsBindingObserver {
   AppLockConfig? _config;
+  bool _loaded = false;
   bool _locked = false;
   DateTime? _backgroundedAt;
 
@@ -254,52 +257,85 @@ class _AppLockGateState extends State<AppLockGate>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // The settings page and this gate live in the same process:
+    // every store save bumps the revision, and the gate reloads on
+    // the spot. (Previously nothing ever refreshed the gate's
+    // startup snapshot, so a lock enabled in settings stayed unknown
+    // to the gate until the process died — the lock simply never
+    // engaged when the task was swiped away but the process lived.)
+    AppLockStore.revision.addListener(_onStoreChanged);
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    final config = await AppLockStore.load();
+    if (!mounted) return;
+    setState(() {
+      _config = config;
+      _loaded = true;
+      _locked = appLockShouldLock(
+        config: config,
+        coldStart: true,
+        backgroundedAt: null,
+        now: DateTime.now(),
+      );
+    });
+  }
+
+  void _onStoreChanged() {
     AppLockStore.load().then((config) {
-      if (!mounted) return;
-      setState(() {
-        _config = config;
-        _locked = config.enabled && config.hasPin;
-      });
+      if (mounted) setState(() => _config = config);
     });
   }
 
   @override
   void dispose() {
+    AppLockStore.revision.removeListener(_onStoreChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final config = _config;
-    if (config == null || !config.enabled || !config.hasPin) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _backgroundedAt ??= DateTime.now();
-    } else if (state == AppLifecycleState.resumed) {
-      final backgroundedAt = _backgroundedAt;
-      _backgroundedAt = null;
-      if (backgroundedAt == null || _locked) return;
-      final elapsed = DateTime.now().difference(backgroundedAt).inSeconds;
-      if (elapsed >= config.relockSeconds) {
-        setState(() => _locked = true);
-      }
+      return;
     }
-  }
-
-  /// Settings changes re-read the config so enabling/disabling the
-  /// lock from the settings page takes effect without a restart.
-  Future<void> refresh() async {
-    final config = await AppLockStore.load();
-    if (mounted) setState(() => _config = config);
+    if (state != AppLifecycleState.resumed) return;
+    final backgroundedAt = _backgroundedAt;
+    _backgroundedAt = null;
+    if (_locked) return;
+    // Re-read the store instead of trusting the snapshot taken at
+    // startup: the config may have changed while we were away (or
+    // in a previous visit to the settings page in this process).
+    AppLockStore.load().then((config) {
+      if (!mounted) return;
+      setState(() {
+        _config = config;
+        _locked = appLockShouldLock(
+          config: config,
+          coldStart: false,
+          backgroundedAt: backgroundedAt,
+          now: DateTime.now(),
+        );
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        widget.child,
-        if (_locked && _config != null)
+        // Nothing of the app shows until the first config read has
+        // answered: content first appears either unlocked or behind
+        // the PIN screen, never as a flash of the unlocked UI.
+        if (_loaded) widget.child,
+        if (!_loaded)
+          Positioned.fill(
+            child: ColoredBox(color: context.colorScheme.surface),
+          ),
+        if (_loaded && _locked && _config != null)
           Positioned.fill(
             child: AppLockScreen(
               config: _config!,
@@ -517,9 +553,13 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
                           ],
                         ),
                       ),
-                      ListItem(
-                        title: Text(appLocalizations.appLockBiometric),
-                        trailing: Switch(
+                      // No fake switches: on Android biometrics
+                      // are not implemented in this build, so the
+                      // option is not shown there at all.
+                      if (!system.isAndroid)
+                        ListItem(
+                          title: Text(appLocalizations.appLockBiometric),
+                          trailing: Switch(
                           value: config.biometricEnabled,
                           onChanged: (on) async {
                             if (on) {

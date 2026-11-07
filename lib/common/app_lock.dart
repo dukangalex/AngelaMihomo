@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// App lock state (T39). The PIN is never stored: only a salted
@@ -93,27 +96,80 @@ Duration appLockBackoff(int failedAttempts) {
   return Duration(seconds: seconds > 300 ? 300 : seconds);
 }
 
-class AppLockStore {
-  static const _key = 'app_lock.v1';
+/// The gate's lock decision, kept pure so every entry path is unit
+/// tested: a cold start always locks when a PIN is set; a return
+/// from the background locks once the configured interval has
+/// elapsed (an interval of 0 therefore locks on any return).
+bool appLockShouldLock({
+  required AppLockConfig config,
+  required bool coldStart,
+  required DateTime? backgroundedAt,
+  required DateTime now,
+}) {
+  if (!config.enabled || !config.hasPin) return false;
+  if (coldStart) return true;
+  final since = backgroundedAt;
+  if (since == null) return false;
+  return now.difference(since).inSeconds >= config.relockSeconds;
+}
 
-  static Future<AppLockConfig> load() async {
-    final raw = (await SharedPreferences.getInstance()).getString(_key);
-    if (raw == null || raw.isEmpty) return const AppLockConfig();
+class AppLockStore {
+  static const _legacyPrefsKey = 'app_lock.v1';
+  static const _fileName = 'app_lock_v1.json';
+
+  /// Bumped on every save so the mounted gate reloads its config
+  /// immediately — settings changes take effect in the same process,
+  /// without waiting for a restart or a lifecycle event.
+  static final ValueNotifier<int> revision = ValueNotifier(0);
+
+  /// Test seam: when set, the config file lives in this directory
+  /// instead of the application support directory.
+  @visibleForTesting
+  static Directory? storageDirOverride;
+
+  static Future<File> _file() async {
+    final dir =
+        storageDirOverride ?? await getApplicationSupportDirectory();
+    return File('${dir.path}/$_fileName');
+  }
+
+  static AppLockConfig? _tryParse(String raw) {
     try {
       final decoded = jsonDecode(raw);
       return decoded is Map<String, dynamic>
           ? AppLockConfig.fromJson(decoded)
-          : const AppLockConfig();
+          : null;
     } catch (_) {
-      return const AppLockConfig();
+      return null;
     }
   }
 
-  static Future<void> save(AppLockConfig config) async {
-    await (await SharedPreferences.getInstance()).setString(
-      _key,
-      jsonEncode(config.toJson()),
+  static Future<AppLockConfig> load() async {
+    // Primary storage is a small JSON file written with flush: the
+    // previous SharedPreferences copy could silently lose a just-set
+    // PIN when the process was killed before the platform side got
+    // around to persisting it (apply() is fire-and-forget), which
+    // left the gate reading "no PIN set" on the next cold start.
+    try {
+      final file = await _file();
+      if (await file.exists()) {
+        final parsed = _tryParse(await file.readAsString());
+        if (parsed != null) return parsed;
+      }
+    } catch (_) {
+      // Fall through to the legacy copy.
+    }
+    final raw = (await SharedPreferences.getInstance()).getString(
+      _legacyPrefsKey,
     );
+    if (raw == null || raw.isEmpty) return const AppLockConfig();
+    return _tryParse(raw) ?? const AppLockConfig();
+  }
+
+  static Future<void> save(AppLockConfig config) async {
+    final file = await _file();
+    await file.writeAsString(jsonEncode(config.toJson()), flush: true);
+    revision.value++;
   }
 
   static Future<AppLockConfig> setPin(String pin) async {

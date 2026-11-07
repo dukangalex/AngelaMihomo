@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bett_box/common/app_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,8 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
+  late Directory tempDir;
+
+  setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    tempDir = await Directory.systemTemp.createTemp('app_lock_test');
+    AppLockStore.storageDirOverride = tempDir;
+  });
+
+  tearDown(() async {
+    AppLockStore.storageDirOverride = null;
+    if (await tempDir.exists()) {
+      await tempDir.delete(recursive: true);
+    }
   });
 
   test('PIN is stored only as a salted hash and verifies', () async {
@@ -34,5 +47,106 @@ void main() {
     expect(appLockBackoff(5), const Duration(seconds: 30));
     expect(appLockBackoff(4), Duration.zero);
     expect(appLockBackoff(99), const Duration(seconds: 300));
+  });
+
+  test('config persists to the store file and survives a reload', () async {
+    await AppLockStore.setPin('1357');
+    final file = File('${tempDir.path}/app_lock_v1.json');
+    expect(await file.exists(), isTrue);
+    // The PIN hash is on disk synchronously after save (flush), not
+    // merely queued in a platform preferences cache.
+    expect(await file.readAsString(), contains('pinHash'));
+    final loaded = await AppLockStore.load();
+    expect(loaded.enabled, isTrue);
+    expect(loaded.hasPin, isTrue);
+  });
+
+  group('appLockShouldLock', () {
+    final t0 = DateTime(2026, 11, 7, 12, 0, 0);
+    AppLockConfig config({bool enabled = true, int relockSeconds = 0}) =>
+        AppLockConfig(
+          enabled: enabled,
+          salt: 's',
+          pinHash: 'h',
+          relockSeconds: relockSeconds,
+        );
+
+    test('cold start locks when enabled with a PIN', () {
+      expect(
+        appLockShouldLock(
+          config: config(),
+          coldStart: true,
+          backgroundedAt: null,
+          now: t0,
+        ),
+        isTrue,
+      );
+    });
+
+    test('never locks when disabled or PIN-less', () {
+      expect(
+        appLockShouldLock(
+          config: config(enabled: false),
+          coldStart: true,
+          backgroundedAt: null,
+          now: t0,
+        ),
+        isFalse,
+      );
+      expect(
+        appLockShouldLock(
+          config: const AppLockConfig(enabled: true),
+          coldStart: true,
+          backgroundedAt: null,
+          now: t0,
+        ),
+        isFalse,
+      );
+    });
+
+    test('immediate relock locks on any return from background', () {
+      expect(
+        appLockShouldLock(
+          config: config(relockSeconds: 0),
+          coldStart: false,
+          backgroundedAt: t0,
+          now: t0.add(const Duration(seconds: 1)),
+        ),
+        isTrue,
+      );
+    });
+
+    test('timed relock waits for the interval', () {
+      expect(
+        appLockShouldLock(
+          config: config(relockSeconds: 30),
+          coldStart: false,
+          backgroundedAt: t0,
+          now: t0.add(const Duration(seconds: 29)),
+        ),
+        isFalse,
+      );
+      expect(
+        appLockShouldLock(
+          config: config(relockSeconds: 30),
+          coldStart: false,
+          backgroundedAt: t0,
+          now: t0.add(const Duration(seconds: 30)),
+        ),
+        isTrue,
+      );
+    });
+
+    test('no background stint means no lock', () {
+      expect(
+        appLockShouldLock(
+          config: config(relockSeconds: 0),
+          coldStart: false,
+          backgroundedAt: null,
+          now: t0,
+        ),
+        isFalse,
+      );
+    });
   });
 }
