@@ -138,6 +138,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "controlStyle": MessageLookupByLibrary.simpleMessage("控件风格"),
+    "controlStyleLiquidGlass": MessageLookupByLibrary.simpleMessage("液态玻璃"),
+    "controlStyleKeycap": MessageLookupByLibrary.simpleMessage("按键质感 · 未来感"),
     "appLock": MessageLookupByLibrary.simpleMessage("应用锁"),
     "appLockDesc": MessageLookupByLibrary.simpleMessage("打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。"),
     "appLockEnterPin": MessageLookupByLibrary.simpleMessage("输入 PIN"),

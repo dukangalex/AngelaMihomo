@@ -56,6 +56,7 @@ class ThemeView extends ConsumerWidget {
     final items = <Widget>[
       const _ThemeModeItem(),
       const _PrimaryColorItem(),
+      const _ControlStyleItem(),
       if (brightness == Brightness.dark) const _PrueBlackItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
@@ -819,4 +820,40 @@ class _SliderDefaultsM3 extends SliderThemeData {
 
   @override
   double? get trackGap => 6.0;
+}
+
+/// Control style picker (T62): liquid glass (default) or the
+/// futuristic keycap skin, side by side in Appearance. Switching is
+/// instant — the bottom bar and key buttons re-skin in place.
+class _ControlStyleItem extends StatelessWidget {
+  const _ControlStyleItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ControlStyle>(
+      valueListenable: controlStyleNotifier,
+      builder: (context, style, _) {
+        return ListItem(
+          title: Text(appLocalizations.controlStyle),
+          subtitle: Wrap(
+            spacing: 8,
+            children: [
+              ChoiceChip(
+                label: Text(appLocalizations.controlStyleLiquidGlass),
+                selected: style == ControlStyle.liquidGlass,
+                onSelected: (_) =>
+                    ControlStyleStore.save(ControlStyle.liquidGlass),
+              ),
+              ChoiceChip(
+                label: Text(appLocalizations.controlStyleKeycap),
+                selected: style == ControlStyle.keycapFuture,
+                onSelected: (_) =>
+                    ControlStyleStore.save(ControlStyle.keycapFuture),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

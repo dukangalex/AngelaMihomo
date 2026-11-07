@@ -1254,5 +1254,8 @@
   "appLockRelock5m": "5 minutes",
   "appLockBiometric": "Use biometrics",
   "appLockBiometricUnavailable": "Biometrics are not available on this device",
-  "appLockUnlockBiometric": "Unlock with biometrics"
+  "appLockUnlockBiometric": "Unlock with biometrics",
+  "controlStyle": "Control style",
+  "controlStyleLiquidGlass": "Liquid glass",
+  "controlStyleKeycap": "Keycap · Futuristic"
 }

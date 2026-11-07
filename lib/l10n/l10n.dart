@@ -10663,6 +10663,22 @@ class AppLocalizations {
     return Intl.message('Unlock with biometrics', name: 'appLockUnlockBiometric', desc: '', args: []);
   }
 
+
+  /// `Control style`
+  String get controlStyle {
+    return Intl.message('Control style', name: 'controlStyle', desc: '', args: []);
+  }
+
+  /// `Liquid glass`
+  String get controlStyleLiquidGlass {
+    return Intl.message('Liquid glass', name: 'controlStyleLiquidGlass', desc: '', args: []);
+  }
+
+  /// `Keycap · Futuristic`
+  String get controlStyleKeycap {
+    return Intl.message('Keycap · Futuristic', name: 'controlStyleKeycap', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

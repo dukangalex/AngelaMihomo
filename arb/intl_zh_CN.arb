@@ -1294,5 +1294,8 @@
   "appLockRelock5m": "5 分钟",
   "appLockBiometric": "使用生物识别",
   "appLockBiometricUnavailable": "此设备没有可用的生物识别",
-  "appLockUnlockBiometric": "用生物识别解锁"
+  "appLockUnlockBiometric": "用生物识别解锁",
+  "controlStyle": "控件风格",
+  "controlStyleLiquidGlass": "液态玻璃",
+  "controlStyleKeycap": "按键质感 · 未来感"
 }

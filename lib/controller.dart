@@ -1667,6 +1667,8 @@ class AppController {
     // Patrol badge (T29): evaluate once at startup; the patrol page
     // and later profile updates keep it current.
     unawaited(refreshPatrolBadge());
+    // Control style (T62): hydrate the saved skin before first frame.
+    unawaited(ControlStyleStore.load());
   }
 
   Future<void> syncDesktopRuntimeState({
