@@ -1264,5 +1264,12 @@
   "chinaPresetStateOff": "Not applied",
   "chinaPresetStateCustomized": "Customized",
   "chinaPresetApply": "Apply preset",
-  "chinaPresetReset": "Restore defaults"
+  "chinaPresetReset": "Restore defaults",
+  "updateNoMatchingAsset": "No installer for this device was found in this release. Opening the release page instead.",
+  "updateSumsMissing": "This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.",
+  "updateChecksumMismatch": "The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.",
+  "updateInstallLaunch": "The installer is starting. The app will close so the update can replace its files.",
+  "updateProgressTitle": "Downloading update",
+  "updateInstallPermissionNote": "Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.",
+  "updateDesktopNote": "In-app install is not available on this platform yet; opening the release page."
 }

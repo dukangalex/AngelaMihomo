@@ -10715,6 +10715,42 @@ class AppLocalizations {
     return Intl.message('Restore defaults', name: 'chinaPresetReset', desc: '', args: []);
   }
 
+
+  /// `No installer for this device was found in this release. Opening the release page instead.`
+  String get updateNoMatchingAsset {
+    return Intl.message('No installer for this device was found in this release. Opening the release page instead.', name: 'updateNoMatchingAsset', desc: '', args: []);
+  }
+
+  /// `This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.`
+  String get updateSumsMissing {
+    return Intl.message('This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.', name: 'updateSumsMissing', desc: '', args: []);
+  }
+
+  /// `The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.`
+  String get updateChecksumMismatch {
+    return Intl.message('The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.', name: 'updateChecksumMismatch', desc: '', args: []);
+  }
+
+  /// `The installer is starting. The app will close so the update can replace its files.`
+  String get updateInstallLaunch {
+    return Intl.message('The installer is starting. The app will close so the update can replace its files.', name: 'updateInstallLaunch', desc: '', args: []);
+  }
+
+  /// `Downloading update`
+  String get updateProgressTitle {
+    return Intl.message('Downloading update', name: 'updateProgressTitle', desc: '', args: []);
+  }
+
+  /// `Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.`
+  String get updateInstallPermissionNote {
+    return Intl.message('Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones\' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release\'s SHA256SUMS.', name: 'updateInstallPermissionNote', desc: '', args: []);
+  }
+
+  /// `In-app install is not available on this platform yet; opening the release page.`
+  String get updateDesktopNote {
+    return Intl.message('In-app install is not available on this platform yet; opening the release page.', name: 'updateDesktopNote', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

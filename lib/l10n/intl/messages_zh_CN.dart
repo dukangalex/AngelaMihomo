@@ -138,6 +138,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "updateNoMatchingAsset": MessageLookupByLibrary.simpleMessage("此版本没有与本机匹配的安装包，改为打开版本发布页。"),
+    "updateSumsMissing": MessageLookupByLibrary.simpleMessage("此版本缺少该安装包的 SHA256SUMS 校验条目，无法验证应用内下载，改为打开版本发布页。"),
+    "updateChecksumMismatch": MessageLookupByLibrary.simpleMessage("下载文件未通过 SHA-256 校验，已删除，未安装任何内容。"),
+    "updateInstallLaunch": MessageLookupByLibrary.simpleMessage("安装程序即将启动，应用会先退出以便替换文件。"),
+    "updateProgressTitle": MessageLookupByLibrary.simpleMessage("正在下载更新"),
+    "updateInstallPermissionNote": MessageLookupByLibrary.simpleMessage("Android 可能会要求允许本应用安装应用（REQUEST_INSTALL_PACKAGES 权限，仅用于更新）。部分手机的安全扫描会对自更新给出风险提示——本文件只有在 SHA-256 与发布页 SHA256SUMS 一致后才会交给安装器。"),
+    "updateDesktopNote": MessageLookupByLibrary.simpleMessage("此平台暂不支持应用内安装，改为打开版本发布页。"),
     "chinaPreset": MessageLookupByLibrary.simpleMessage("中国适配预设"),
     "chinaPresetDesc": MessageLookupByLibrary.simpleMessage("一键应用面向中国网络环境的推荐组合。只组合本应用已有能力，不新增规则、不新增请求。"),
     "chinaPresetStateOn": MessageLookupByLibrary.simpleMessage("已开启"),

@@ -16,6 +16,7 @@ import android.util.Base64
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -195,6 +196,33 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         scope.cancel()
     }
 
+    // In-app update (T56): hand the verified APK in the app cache to
+    // the system installer. The file URI goes through FileProvider so
+    // no broad storage access is needed; the user still confirms in
+    // the system installer UI.
+    private fun installApk(path: String?, result: Result) {
+        val activity = activityRef?.get()
+        if (path == null || activity == null) {
+            result.error("unavailable", "Cannot launch the installer", null)
+            return
+        }
+        try {
+            val uri = FileProvider.getUriForFile(
+                activity,
+                activity.packageName + ".fileprovider",
+                File(path)
+            )
+            val intent = Intent(Intent.ACTION_VIEW)
+                .setDataAndType(uri, "application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            activity.startActivity(intent)
+            result.success(true)
+        } catch (e: Exception) {
+            result.error("install_failed", e.message, null)
+        }
+    }
+
     private fun tip(message: String?) {
         if (GlobalState.flutterEngine == null) {
             Toast.makeText(AngelaMihomoApplication.getAppContext(), message, Toast.LENGTH_LONG).show()
@@ -203,6 +231,9 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
+            "installApk" -> {
+                installApk(call.argument<String>("path"), result)
+            }
             "moveTaskToBack" -> {
                 activityRef?.get()?.moveTaskToBack(true)
                 result.success(true)

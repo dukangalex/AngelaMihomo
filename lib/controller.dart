@@ -1424,6 +1424,26 @@ class AppController {
       if (res != true) {
         return;
       }
+      // In-app update (T56) for Android/Windows: verified download
+      // and installer hand-off. Falls back to the release page (with
+      // the reason already shown) when no verifiable asset exists.
+      if (system.isAndroid || system.isWindows) {
+        final outcome = await runInAppUpdate(
+          // The controller's context is the app-level navigator
+          // context (globalState), not a widget State context.
+          // ignore: use_build_context_synchronously
+          context,
+          data,
+          repository: repository,
+          exitApp: handleExit,
+        );
+        if (outcome != InAppUpdateOutcome.fellBackToPage) {
+          return;
+        }
+      }
+      if (system.isMacOS || system.isLinux) {
+        globalState.showNotifier(appLocalizations.updateDesktopNote);
+      }
       const String assetSuffix = String.fromEnvironment('APP_ASSET_SUFFIX');
       var finalSuffix = assetSuffix;
       if (assetSuffix.isNotEmpty && appPath.isPortable && system.isWindows) {

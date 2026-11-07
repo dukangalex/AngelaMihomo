@@ -1304,5 +1304,12 @@
   "chinaPresetStateOff": "未开启",
   "chinaPresetStateCustomized": "已自定义",
   "chinaPresetApply": "开启预设",
-  "chinaPresetReset": "恢复默认"
+  "chinaPresetReset": "恢复默认",
+  "updateNoMatchingAsset": "此版本没有与本机匹配的安装包，改为打开版本发布页。",
+  "updateSumsMissing": "此版本缺少该安装包的 SHA256SUMS 校验条目，无法验证应用内下载，改为打开版本发布页。",
+  "updateChecksumMismatch": "下载文件未通过 SHA-256 校验，已删除，未安装任何内容。",
+  "updateInstallLaunch": "安装程序即将启动，应用会先退出以便替换文件。",
+  "updateProgressTitle": "正在下载更新",
+  "updateInstallPermissionNote": "Android 可能会要求允许本应用安装应用（REQUEST_INSTALL_PACKAGES 权限，仅用于更新）。部分手机的安全扫描会对自更新给出风险提示——本文件只有在 SHA-256 与发布页 SHA256SUMS 一致后才会交给安装器。",
+  "updateDesktopNote": "此平台暂不支持应用内安装，改为打开版本发布页。"
 }

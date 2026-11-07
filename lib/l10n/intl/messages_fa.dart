@@ -148,6 +148,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "updateNoMatchingAsset": MessageLookupByLibrary.simpleMessage("No installer for this device was found in this release. Opening the release page instead."),
+    "updateSumsMissing": MessageLookupByLibrary.simpleMessage("This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead."),
+    "updateChecksumMismatch": MessageLookupByLibrary.simpleMessage("The downloaded file failed SHA-256 verification and was deleted. Nothing was installed."),
+    "updateInstallLaunch": MessageLookupByLibrary.simpleMessage("The installer is starting. The app will close so the update can replace its files."),
+    "updateProgressTitle": MessageLookupByLibrary.simpleMessage("Downloading update"),
+    "updateInstallPermissionNote": MessageLookupByLibrary.simpleMessage("Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS."),
+    "updateDesktopNote": MessageLookupByLibrary.simpleMessage("In-app install is not available on this platform yet; opening the release page."),
     "chinaPreset": MessageLookupByLibrary.simpleMessage("China adaptation preset"),
     "chinaPresetDesc": MessageLookupByLibrary.simpleMessage("One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests."),
     "chinaPresetStateOn": MessageLookupByLibrary.simpleMessage("Applied"),
