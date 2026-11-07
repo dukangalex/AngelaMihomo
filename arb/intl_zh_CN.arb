@@ -1311,5 +1311,6 @@
   "updateInstallLaunch": "安装程序即将启动，应用会先退出以便替换文件。",
   "updateProgressTitle": "正在下载更新",
   "updateInstallPermissionNote": "Android 可能会要求允许本应用安装应用（REQUEST_INSTALL_PACKAGES 权限，仅用于更新）。部分手机的安全扫描会对自更新给出风险提示——本文件只有在 SHA-256 与发布页 SHA256SUMS 一致后才会交给安装器。",
-  "updateDesktopNote": "此平台暂不支持应用内安装，改为打开版本发布页。"
+  "updateDesktopNote": "此平台暂不支持应用内安装，改为打开版本发布页。",
+  "updateDirectNote": "核心未运行，本次下载将直连（不走本地代理）。"
 }

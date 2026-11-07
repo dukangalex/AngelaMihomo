@@ -140,6 +140,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "updateDirectNote": MessageLookupByLibrary.simpleMessage("The core is not running, so this download goes direct instead of through the local proxy."),
     "updateNoMatchingAsset": MessageLookupByLibrary.simpleMessage("No installer for this device was found in this release. Opening the release page instead."),
     "updateSumsMissing": MessageLookupByLibrary.simpleMessage("This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead."),
     "updateChecksumMismatch": MessageLookupByLibrary.simpleMessage("The downloaded file failed SHA-256 verification and was deleted. Nothing was installed."),

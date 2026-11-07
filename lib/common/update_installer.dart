@@ -196,6 +196,13 @@ class _UpdateDownloadDialogState extends State<_UpdateDownloadDialog> {
           LinearProgressIndicator(value: _progress == 0 ? null : _progress),
           const SizedBox(height: 12),
           Text('${(_progress * 100).toStringAsFixed(0)}%'),
+          if (globalState.appState.runTime == null) ...[
+            const SizedBox(height: 12),
+            Text(
+              appLocalizations.updateDirectNote,
+              style: context.textTheme.bodySmall,
+            ),
+          ],
           if (widget.isAndroid) ...[
             const SizedBox(height: 12),
             Text(

@@ -138,6 +138,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "updateDirectNote": MessageLookupByLibrary.simpleMessage("核心未运行，本次下载将直连（不走本地代理）。"),
     "updateNoMatchingAsset": MessageLookupByLibrary.simpleMessage("此版本没有与本机匹配的安装包，改为打开版本发布页。"),
     "updateSumsMissing": MessageLookupByLibrary.simpleMessage("此版本缺少该安装包的 SHA256SUMS 校验条目，无法验证应用内下载，改为打开版本发布页。"),
     "updateChecksumMismatch": MessageLookupByLibrary.simpleMessage("下载文件未通过 SHA-256 校验，已删除，未安装任何内容。"),

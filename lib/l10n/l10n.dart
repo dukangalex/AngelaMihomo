@@ -10751,6 +10751,12 @@ class AppLocalizations {
     return Intl.message('In-app install is not available on this platform yet; opening the release page.', name: 'updateDesktopNote', desc: '', args: []);
   }
 
+
+  /// `The core is not running, so this download goes direct instead of through the local proxy.`
+  String get updateDirectNote {
+    return Intl.message('The core is not running, so this download goes direct instead of through the local proxy.', name: 'updateDirectNote', desc: '', args: []);
+  }
+
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
