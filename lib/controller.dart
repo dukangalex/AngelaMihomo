@@ -2046,23 +2046,25 @@ class AppController {
 
   Future<void> changeMode(Mode mode) async {
     await SystemExplicitStore.instance.ensureLoaded();
-    // T54 defect 1: resolve the dialog context from the navigator at
-    // call time. The controller's captured context sits above
-    // MaterialApp (no Navigator ancestor); passing it to showDialog
-    // crashes with Navigator.of == null. Before the first frame there
-    // is no navigator yet — refuse the switch instead of crashing;
-    // the UI keeps showing the old mode, so no false state is shown.
-    final dialogContext = globalState.navigatorKey.currentState?.context;
-    if (dialogContext == null || !dialogContext.mounted) return;
     final explicit = SystemExplicitStore.instance.value;
     final currentMode = _ref.read(patchClashConfigProvider).mode;
     if (currentMode == mode) return;
-    final zh = Localizations.maybeLocaleOf(dialogContext)?.languageCode == 'zh';
+    // T54 defect 1: the confirmation dialog needs a context under the
+    // navigator, resolved at call time. The controller's captured
+    // context sits above MaterialApp (no Navigator ancestor); passing
+    // it to showDialog crashes with Navigator.of == null. Before the
+    // first frame there is no navigator yet — in that case refuse the
+    // switch instead of crashing; the UI keeps showing the old mode.
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    final localeContext = dialogContext ?? context;
+    if (!localeContext.mounted) return;
+    final zh = Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
     // T54: only the direct-exception class pauses outside rule mode;
     // interception options keep working, so they never trigger this.
     if (currentMode == Mode.rule &&
         mode != Mode.rule &&
         explicit.directExceptionsEnabled) {
+      if (dialogContext == null || !dialogContext.mounted) return;
       final accepted = await showDialog<bool>(
         context: dialogContext,
         builder: (dialogContext) {
@@ -2109,8 +2111,9 @@ class AppController {
       if (accepted != true || !dialogContext.mounted) return;
     }
     final oldMode = _ref.read(patchClashConfigProvider).mode;
+    if (!localeContext.mounted) return;
     final isZh =
-        Localizations.maybeLocaleOf(dialogContext)?.languageCode == 'zh';
+        Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
     _lastModeChangeTime = DateTime.now();
     _ref
         .read(patchClashConfigProvider.notifier)
