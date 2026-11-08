@@ -3,8 +3,8 @@ import 'package:bett_box/common/ai_config.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Settings entry for AI patrol interpretation (T30, BYOK). Lives in
 /// the application settings list; the patrol page links here too.
@@ -36,13 +36,20 @@ class AiConfigView extends ConsumerStatefulWidget {
 }
 
 class _AiConfigViewState extends ConsumerState<AiConfigView> {
-  // T30 repair round: this page's TextFormFields rendered as one
-  // solid grey block on device — no labels, nothing tappable, no
-  // exception anywhere — while identical fields in dialogs and
-  // sheets rendered fine. The page never validates, so the fields
-  // are plain TextFields now (same controllers, same decorations);
-  // the FormField wrapper was the only layer left that this page
-  // had and every working surface did not.
+  // T30 root cause (2026-11-07, fix15f4/f5 instruments): this page
+  // rendered as one solid grey block because its fields were
+  // Flutter's TextField (via package:flutter/material.dart) while the
+  // rest of the app — including MaterialApp and its localization
+  // delegates — comes from the material_ui fork. Flutter's
+  // TextField._getEffectiveDecoration calls Flutter's
+  // MaterialLocalizations.of, which is absent from the app's scope
+  // (only the fork's MaterialLocalizations is provided), so every
+  // field threw "Null check operator used on a null value" and was
+  // replaced by a 100000px-tall release-grey RenderErrorBox. The
+  // exception never surfaced because FlutterError.onError only dumps
+  // in debug mode. Fix: use material_ui like every other view.
+  // (The earlier TextFormField -> TextField swap was a red herring
+  // and stays only because the page never validates.)
   final _baseUrlController = TextEditingController();
   final _apiKeyController = TextEditingController();
   final _modelController = TextEditingController();
