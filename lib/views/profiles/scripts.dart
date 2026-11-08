@@ -282,12 +282,21 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
           );
         }
         return ScrollEdgeRise(
-          builder: (_, rise) => CommonScrollBar(
+          builder: (context, rise) => CommonScrollBar(
             controller: null,
             child: ListView.separated(
-              padding: const EdgeInsets.all(
-                16,
-              ).copyWith(top: 16 + rise, bottom: 16 + 64),
+              // T67: the trailing 64 clears this page's FAB; when hosted
+              // under the floating bottom bar the FAB rides on top of
+              // the bar reserve, so the reserve adds on top of it.
+              padding: const EdgeInsets.all(16).copyWith(
+                top: 16 + rise,
+                bottom:
+                    16 +
+                    64 +
+                    (FloatingBottomBarScope.has(context)
+                        ? getFloatingBottomBarReserveHeight(context)
+                        : 0),
+              ),
               itemCount: scripts.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, index) {

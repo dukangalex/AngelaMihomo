@@ -48,10 +48,10 @@ const defaultExternalController = '127.0.0.1:9090';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
 double getFloatingBottomBarReserveHeight(BuildContext context) {
-  final viewBottom = max(
-    MediaQuery.viewPaddingOf(context).bottom,
-    MediaQuery.paddingOf(context).bottom,
-  );
+  // viewPadding only (T67): MediaQuery.padding under the floating bar now
+  // carries this reserve itself (broadcast by HomePage), so reading padding
+  // here would feed the reserve back into itself and inflate it.
+  final viewBottom = MediaQuery.viewPaddingOf(context).bottom;
   if (globalState.isAndroidTV) {
     return 132.0 + (viewBottom > 12 ? viewBottom - 12 : 0);
   }
@@ -59,10 +59,7 @@ double getFloatingBottomBarReserveHeight(BuildContext context) {
 }
 
 double getFloatingBottomBarFABReserveHeight(BuildContext context) {
-  final viewBottom = max(
-    MediaQuery.viewPaddingOf(context).bottom,
-    MediaQuery.paddingOf(context).bottom,
-  );
+  final viewBottom = MediaQuery.viewPaddingOf(context).bottom;
   return 84.0 - min(viewBottom, 12.0);
 }
 

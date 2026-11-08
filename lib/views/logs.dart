@@ -737,6 +737,11 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
         );
         final colors = _resolveColors(context.colorScheme, pureBlack);
         final extents = List<double?>.filled(logs.length, null);
+        // T67: CustomScrollView ignores MediaQuery padding, so add the
+        // floating-bar reserve explicitly when hosted under it.
+        final bottomReserve = FloatingBottomBarScope.has(context)
+            ? getFloatingBottomBarReserveHeight(context)
+            : 0.0;
         final slivers = [
           SliverPadding(
             padding: EdgeInsets.only(top: 8),
@@ -771,11 +776,11 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
                 ? Directionality(
                     textDirection: textDirection,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(32, 8, 32, 16),
+                      padding: EdgeInsets.fromLTRB(32, 8, 32, 16 + bottomReserve),
                       child: _buildLevelHint(level, centered: false),
                     ),
                   )
-                : const SizedBox(height: 16),
+                : SizedBox(height: 16 + bottomReserve),
           ),
         ];
         return Stack(
