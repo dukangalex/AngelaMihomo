@@ -51,6 +51,21 @@ void requireSystemExplicitMode(SystemExplicitOptions options, Mode mode) {
 Mode effectiveRuntimeMode(SystemExplicitOptions options, Mode mode) =>
     mode != Mode.rule && options.interceptionEnabled ? Mode.rule : mode;
 
+/// Whether the core-reported mode should overwrite the user's
+/// selected mode in the UI. Never when the core is exactly where the
+/// synthesis puts it: with interception on, global/direct run as rule
+/// under the hood, so a core report of rule is the expected state,
+/// not a mode change (T54 defect 2 — adopting it flipped the UI back
+/// to Rule after every group refresh). A genuine external change
+/// (core mode differs from the expected effective mode) is still
+/// adopted, as before.
+bool shouldAdoptCoreMode({
+  required Mode userMode,
+  required Mode coreMode,
+  required SystemExplicitOptions options,
+}) =>
+    coreMode != effectiveRuntimeMode(options, userMode);
+
 /// The QUIC block (VpnProps.disableQuic) and the system-explicit China
 /// direct routing share one China determination: QUIC to China destinations
 /// is exempt whenever either the VPN-prop China exclusion or the explicit

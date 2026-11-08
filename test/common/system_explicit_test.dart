@@ -64,6 +64,64 @@ void main() {
     );
     expect(effectiveRuntimeMode(options, Mode.rule), Mode.rule);
   });
+  test('T54 defect 2: interception synthesis must not flip the UI mode', () {
+    // The core runs rule under the hood when interception is on, so a
+    // core report of rule is the expected state — adopting it flipped
+    // the UI back to Rule after every group refresh and made
+    // "Global + core running + interception on" unreachable.
+    for (final userMode in [Mode.global, Mode.direct]) {
+      expect(
+        shouldAdoptCoreMode(
+          userMode: userMode,
+          coreMode: Mode.rule,
+          options: SystemExplicitOptions(privacy: true),
+        ),
+        isFalse,
+      );
+      expect(
+        shouldAdoptCoreMode(
+          userMode: userMode,
+          coreMode: Mode.rule,
+          options: SystemExplicitOptions(blockAds: true),
+        ),
+        isFalse,
+      );
+    }
+    // Steady state with nothing enabled: core matches the selection.
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.global,
+        coreMode: Mode.global,
+        options: SystemExplicitOptions(),
+      ),
+      isFalse,
+    );
+    // A genuine external change is still adopted, as before.
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.global,
+        coreMode: Mode.rule,
+        options: SystemExplicitOptions(),
+      ),
+      isTrue,
+    );
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.rule,
+        coreMode: Mode.global,
+        options: SystemExplicitOptions(),
+      ),
+      isTrue,
+    );
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.rule,
+        coreMode: Mode.direct,
+        options: SystemExplicitOptions(privacy: true),
+      ),
+      isTrue,
+    );
+  });
   test('disabled options preserve the selected mode', () {
     for (final mode in Mode.values) {
       expect(

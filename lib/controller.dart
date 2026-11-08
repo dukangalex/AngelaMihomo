@@ -44,7 +44,21 @@ import 'views/profiles/override_profile.dart';
 class AppController {
   int? lastProfileModified;
 
-  final BuildContext context;
+  /// The context captured at construction sits above [MaterialApp]
+  /// (see application.dart initState) and has no [Navigator] ancestor;
+  /// [_initApp] replaces the controller only when the navigator
+  /// context is already available, which is not guaranteed. It must
+  /// never be used for [Navigator.of] / showDialog / theme lookups —
+  /// doing so crashes showDialog with Navigator.of == null
+  /// (T54 defect 1: Rule -> Global with direct exceptions on).
+  final BuildContext _capturedContext;
+
+  /// Dialog/theme context: the navigator's own context, resolved at
+  /// call time. Falls back to the captured context only before the
+  /// first frame, where no dialog can be shown anyway.
+  BuildContext get context =>
+      globalState.navigatorKey.currentState?.context ?? _capturedContext;
+
   final WidgetRef _ref;
   WidgetRef get ref => _ref;
 
@@ -76,7 +90,7 @@ class AppController {
 
   static const _autoBackupFingerprintKey = 'auto_backup_fingerprint';
 
-  AppController(this.context, WidgetRef ref) : _ref = ref;
+  AppController(this._capturedContext, WidgetRef ref) : _ref = ref;
 
   DateTime _lastModeChangeTime = DateTime.fromMillisecondsSinceEpoch(0);
 
@@ -1164,7 +1178,19 @@ class AppController {
       try {
         final activeMode = await clashCore.getMode();
         final currentMode = _ref.read(patchClashConfigProvider).mode;
-        if (activeMode != currentMode) {
+        // T54 defect 2: only adopt the core-reported mode when it
+        // differs from the mode the core is *expected* to run. With
+        // interception on, global/direct run as rule under the hood
+        // (effectiveRuntimeMode), so a core report of rule is the
+        // expected state — writing it back flipped the UI to Rule and
+        // made "Global + core running + interception on" unreachable.
+        // A genuine external change is still adopted, as before.
+        await SystemExplicitStore.instance.ensureLoaded();
+        if (shouldAdoptCoreMode(
+          userMode: currentMode,
+          coreMode: activeMode,
+          options: SystemExplicitStore.instance.value,
+        )) {
           if (DateTime.now().difference(_lastModeChangeTime) >
               const Duration(seconds: 2)) {
             _ref
@@ -2020,18 +2046,25 @@ class AppController {
 
   Future<void> changeMode(Mode mode) async {
     await SystemExplicitStore.instance.ensureLoaded();
-    if (!context.mounted) return;
+    // T54 defect 1: resolve the dialog context from the navigator at
+    // call time. The controller's captured context sits above
+    // MaterialApp (no Navigator ancestor); passing it to showDialog
+    // crashes with Navigator.of == null. Before the first frame there
+    // is no navigator yet — refuse the switch instead of crashing;
+    // the UI keeps showing the old mode, so no false state is shown.
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    if (dialogContext == null || !dialogContext.mounted) return;
     final explicit = SystemExplicitStore.instance.value;
     final currentMode = _ref.read(patchClashConfigProvider).mode;
     if (currentMode == mode) return;
-    final zh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
+    final zh = Localizations.maybeLocaleOf(dialogContext)?.languageCode == 'zh';
     // T54: only the direct-exception class pauses outside rule mode;
     // interception options keep working, so they never trigger this.
     if (currentMode == Mode.rule &&
         mode != Mode.rule &&
         explicit.directExceptionsEnabled) {
       final accepted = await showDialog<bool>(
-        context: context,
+        context: dialogContext,
         builder: (dialogContext) {
           // Liquid glass (T38 full rollout): same modal treatment as
           // CommonDialog — neutral fill, bright rim, specular band.
@@ -2073,10 +2106,11 @@ class AppController {
           );
         },
       );
-      if (accepted != true || !context.mounted) return;
+      if (accepted != true || !dialogContext.mounted) return;
     }
     final oldMode = _ref.read(patchClashConfigProvider).mode;
-    final isZh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
+    final isZh =
+        Localizations.maybeLocaleOf(dialogContext)?.languageCode == 'zh';
     _lastModeChangeTime = DateTime.now();
     _ref
         .read(patchClashConfigProvider.notifier)
