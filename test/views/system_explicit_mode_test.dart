@@ -44,9 +44,22 @@ void main() {
     'global mode asks before enabling a route and cancellation preserves state',
     (tester) async {
       await tester.runAsync(() async {
+        // T30 class: the section's dialog is material_ui's showDialog,
+        // so the pump must use the app's exact delegate list (the
+        // fork's localizations only) — Flutter's MaterialApp with
+        // Flutter's delegates would hide the crash the app hits.
         await tester.pumpWidget(
           ProviderScope(
-            child: MaterialApp(home: Scaffold(body: generateListView([const SystemExplicitSection()]))),
+            child: mui.MaterialApp(
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                ...mui.GlobalMaterialLocalizations.delegates,
+              ],
+              locale: const Locale('en'),
+              home: mui.Scaffold(
+                body: generateListView([const SystemExplicitSection()]),
+              ),
+            ),
           ),
         );
         await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -87,6 +100,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            // T54 defect 1: changeMode resolves its dialog context
+            // from the navigator key, as the production app does
+            // (application.dart) — without it the confirmation dialog
+            // cannot be shown and the switch is refused.
+            navigatorKey: globalState.navigatorKey,
             localizationsDelegates: mui.GlobalMaterialLocalizations.delegates,
             home: Consumer(
               builder: (context, ref, child) {

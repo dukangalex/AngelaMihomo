@@ -9,8 +9,11 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// material_ui, not Flutter's material (T30 class): the app registers
+// only the fork's MaterialLocalizations, so Flutter's showDialog /
+// AlertDialog throw "Null check operator used on a null value" here.
+import 'package:material_ui/material_ui.dart';
 
 /// AI Patrol page (phase 1): runs the local inspection over logs,
 /// subscription, nodes, mode/chain and core/config, and renders the

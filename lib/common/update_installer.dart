@@ -6,7 +6,10 @@ import 'package:bett_box/common/release_updates.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+// material_ui, not Flutter's material (T30 class): the app registers
+// only the fork's MaterialLocalizations, so Flutter's showDialog /
+// AlertDialog throw "Null check operator used on a null value" here.
+import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
 enum InAppUpdateOutcome {
