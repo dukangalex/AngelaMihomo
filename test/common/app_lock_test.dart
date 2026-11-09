@@ -149,4 +149,92 @@ void main() {
       );
     });
   });
+
+  group('T66 biometric availability and fallback', () {
+    test('resolution distinguishes the three failure shapes', () {
+      expect(
+        resolveBiometricAvailability(
+          deviceSupported: false,
+          canCheckBiometrics: false,
+          enrolledCount: 0,
+        ),
+        BiometricAvailability.unsupported,
+      );
+      expect(
+        resolveBiometricAvailability(
+          deviceSupported: true,
+          canCheckBiometrics: true,
+          enrolledCount: 0,
+        ),
+        BiometricAvailability.notEnrolled,
+      );
+      expect(
+        resolveBiometricAvailability(
+          deviceSupported: true,
+          canCheckBiometrics: false,
+          enrolledCount: 0,
+        ),
+        BiometricAvailability.noHardware,
+      );
+      expect(
+        resolveBiometricAvailability(
+          deviceSupported: true,
+          canCheckBiometrics: true,
+          enrolledCount: 1,
+        ),
+        BiometricAvailability.available,
+      );
+    });
+
+    test('unlock is offered only when opted in AND available', () {
+      const on = AppLockConfig(
+        enabled: true,
+        salt: 's',
+        pinHash: 'h',
+        biometricEnabled: true,
+      );
+      expect(
+        biometricUnlockAllowed(
+          config: on,
+          availability: BiometricAvailability.available,
+        ),
+        isTrue,
+      );
+      // Any shortfall falls back to the PIN: not enrolled, no
+      // hardware, unsupported platform, or the user never opted in.
+      for (final availability in [
+        BiometricAvailability.notEnrolled,
+        BiometricAvailability.noHardware,
+        BiometricAvailability.unsupported,
+      ]) {
+        expect(
+          biometricUnlockAllowed(config: on, availability: availability),
+          isFalse,
+        );
+      }
+      expect(
+        biometricUnlockAllowed(
+          config: on.copyWith(biometricEnabled: false),
+          availability: BiometricAvailability.available,
+        ),
+        isFalse,
+      );
+      expect(
+        biometricUnlockAllowed(
+          config: on.copyWith(enabled: false),
+          availability: BiometricAvailability.available,
+        ),
+        isFalse,
+      );
+    });
+
+    test('biometricEnabled round-trips through the store file', () async {
+      await AppLockStore.setPin('1234');
+      final before = await AppLockStore.load();
+      await AppLockStore.save(before.copyWith(biometricEnabled: true));
+      final after = await AppLockStore.load();
+      expect(after.biometricEnabled, isTrue);
+      expect(after.hasPin, isTrue);
+    });
+  });
 }

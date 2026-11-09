@@ -12,6 +12,9 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- App-lock biometrics (T66): system BiometricPrompt only; no
+         biometric data ever leaves the system keystore. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- In-app update only (T56): lets the system installer take over
          a downloaded, SHA-256-verified update package. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />

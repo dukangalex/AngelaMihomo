@@ -6,6 +6,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 
+/// Live biometric capability probe (T66), shared by the lock screen
+/// and the settings page. All platform failures fold into
+/// [BiometricAvailability.unsupported] — the caller then falls back
+/// to the PIN and says why, never to a dead switch.
+Future<BiometricAvailability> probeBiometricAvailability() async {
+  try {
+    final auth = LocalAuthentication();
+    final supported = await auth.isDeviceSupported();
+    if (!supported) return BiometricAvailability.unsupported;
+    final canCheck = await auth.canCheckBiometrics;
+    final enrolled = await auth.getAvailableBiometrics();
+    return resolveBiometricAvailability(
+      deviceSupported: true,
+      canCheckBiometrics: canCheck,
+      enrolledCount: enrolled.length,
+    );
+  } catch (_) {
+    return BiometricAvailability.unsupported;
+  }
+}
+
+String appLockBiometricReason(BiometricAvailability availability) =>
+    switch (availability) {
+      BiometricAvailability.available =>
+        appLocalizations.appLockBiometricUnavailable,
+      BiometricAvailability.notEnrolled =>
+        appLocalizations.appLockBiometricNotEnrolled,
+      BiometricAvailability.noHardware =>
+        appLocalizations.appLockBiometricNoHardware,
+      BiometricAvailability.unsupported =>
+        appLocalizations.appLockBiometricUnsupported,
+    };
+
 /// Numeric PIN pad shared by the lock screen and setup/verify flows.
 class PinPad extends StatelessWidget {
   final int enteredLength;
@@ -113,14 +146,31 @@ class _AppLockScreenState extends State<AppLockScreen> {
   String? _error;
   int _lockedUntilMs = 0;
 
+  /// Live availability, probed once when the lock screen appears
+  /// (T66): the biometric affordance exists only when the device can
+  /// really prompt right now. The gate re-locks on cold start and on
+  /// return from background, and this screen is what it mounts, so
+  /// the same re-lock timing covers biometric unlock too.
+  BiometricAvailability? _biometricAvailability;
+
   @override
   void initState() {
     super.initState();
     _lockedUntilMs = widget.config.lockedUntilMs;
-    // Biometrics are not wired on Android in this build (they need
-    // a FragmentActivity host); never offer or attempt them there.
-    if (widget.config.biometricEnabled && !system.isAndroid) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric());
+    if (widget.config.biometricEnabled) {
+      _probeBiometrics();
+    }
+  }
+
+  Future<void> _probeBiometrics() async {
+    final availability = await probeBiometricAvailability();
+    if (!mounted) return;
+    setState(() => _biometricAvailability = availability);
+    if (biometricUnlockAllowed(
+      config: widget.config,
+      availability: availability,
+    )) {
+      _tryBiometric();
     }
   }
 
@@ -218,7 +268,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       ? _submit
                       : null,
                 ),
-                if (widget.config.biometricEnabled && !system.isAndroid) ...[
+                if (widget.config.biometricEnabled &&
+                    _biometricAvailability ==
+                        BiometricAvailability.available) ...[
                   const SizedBox(height: 8),
                   TextButton.icon(
                     onPressed: _tryBiometric,
@@ -374,6 +426,10 @@ class AppLockSettingsView extends ConsumerStatefulWidget {
 class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
   AppLockConfig? _config;
 
+  /// Probed when the settings page opens (T66): decides whether the
+  /// biometric switch is live, or shown greyed with its reason.
+  BiometricAvailability? _biometricAvailability;
+
   /// Setup/verify sub-flow: 'set' → enter new PIN, 'confirm' → repeat
   /// it, 'verifyDisable' → prove the PIN to turn the lock off.
   String? _flowStep;
@@ -385,6 +441,9 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
   void initState() {
     super.initState();
     _load();
+    probeBiometricAvailability().then((availability) {
+      if (mounted) setState(() => _biometricAvailability = availability);
+    });
   }
 
   Future<void> _load() async {
@@ -553,31 +612,34 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
                           ],
                         ),
                       ),
-                      // No fake switches: on Android biometrics
-                      // are not implemented in this build, so the
-                      // option is not shown there at all.
-                      if (!system.isAndroid)
-                        ListItem(
-                          title: Text(appLocalizations.appLockBiometric),
-                          trailing: Switch(
+                      // No fake switches (T66): the option is
+                      // switchable only when the live probe says the
+                      // device can really prompt; otherwise it is
+                      // greyed and the reason sits right under it.
+                      ListItem(
+                        title: Text(appLocalizations.appLockBiometric),
+                        subtitle:
+                            _biometricAvailability != null &&
+                                _biometricAvailability !=
+                                    BiometricAvailability.available
+                            ? Text(
+                                appLockBiometricReason(
+                                  _biometricAvailability!,
+                                ),
+                              )
+                            : null,
+                        trailing: Switch(
                           value: config.biometricEnabled,
-                          onChanged: (on) async {
-                            if (on) {
-                              final auth = LocalAuthentication();
-                              if (!await auth.isDeviceSupported()) {
-                                if (mounted) {
-                                  globalState.showNotifier(
-                                    appLocalizations.appLockBiometricUnavailable,
+                          onChanged:
+                              _biometricAvailability ==
+                                  BiometricAvailability.available
+                              ? (on) async {
+                                  await AppLockStore.save(
+                                    config.copyWith(biometricEnabled: on),
                                   );
+                                  await _load();
                                 }
-                                return;
-                              }
-                            }
-                            await AppLockStore.save(
-                              config.copyWith(biometricEnabled: on),
-                            );
-                            await _load();
-                          },
+                              : null,
                         ),
                       ),
                     ],

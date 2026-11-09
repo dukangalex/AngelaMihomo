@@ -96,6 +96,52 @@ Duration appLockBackoff(int failedAttempts) {
   return Duration(seconds: seconds > 300 ? 300 : seconds);
 }
 
+/// Why biometrics cannot be offered on this device, if they cannot
+/// (T66). The settings page shows the reason next to the disabled
+/// option instead of a fake switch; the lock screen only attempts
+/// biometrics when this is [available].
+enum BiometricAvailability {
+  available,
+
+  /// The platform cannot run the system prompt at all (no plugin,
+  /// desktop build without support).
+  unsupported,
+
+  /// Hardware exists but nothing is enrolled yet — the user can fix
+  /// this in the system settings.
+  notEnrolled,
+
+  /// No biometric hardware on the device.
+  noHardware,
+}
+
+/// The T66 availability/fallback decision, kept pure for unit tests:
+/// biometrics are offered only when the user enabled them AND the
+/// device can actually prompt. Every other combination falls back
+/// to the PIN, which is always available.
+BiometricAvailability resolveBiometricAvailability({
+  required bool deviceSupported,
+  required bool canCheckBiometrics,
+  required int enrolledCount,
+}) {
+  if (!deviceSupported) return BiometricAvailability.unsupported;
+  if (enrolledCount > 0) return BiometricAvailability.available;
+  return canCheckBiometrics
+      ? BiometricAvailability.notEnrolled
+      : BiometricAvailability.noHardware;
+}
+
+/// Whether the lock screen may offer/attempt a biometric unlock:
+/// the user opted in AND the live availability check passed.
+bool biometricUnlockAllowed({
+  required AppLockConfig config,
+  required BiometricAvailability availability,
+}) =>
+    config.enabled &&
+    config.hasPin &&
+    config.biometricEnabled &&
+    availability == BiometricAvailability.available;
+
 /// The gate's lock decision, kept pure so every entry path is unit
 /// tested: a cold start always locks when a PIN is set; a return
 /// from the background locks once the configured interval has
