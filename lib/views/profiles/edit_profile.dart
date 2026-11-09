@@ -41,6 +41,10 @@ class EditProfileViewState extends State<EditProfileView> {
   late TextEditingController ageSecretKeyController;
   FocusNode? urlFocusNode;
   bool _obscureAgeSecretKey = true;
+  // T73 C3: the new-profile form folds its advanced fields into a
+  // section that starts collapsed. The expanded state is deliberately
+  // not persisted — every fresh form opens clean.
+  bool _advancedExpanded = false;
   String? rawText;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final fileInfoNotifier = ValueNotifier<FileInfo?>(null);
@@ -115,7 +119,16 @@ class EditProfileViewState extends State<EditProfileView> {
   }
 
   Future<void> _handleConfirm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      // A failing field may sit inside the collapsed advanced
+      // section (T73 C3) — unfold it so the error is visible.
+      if (widget.isNew && !_advancedExpanded) {
+        setState(() {
+          _advancedExpanded = true;
+        });
+      }
+      return;
+    }
     final appController = globalState.appController;
     Profile profile = this.profile.copyWith(
       url: urlController.text,
@@ -232,6 +245,11 @@ class EditProfileViewState extends State<EditProfileView> {
       Navigator.of(context).pop();
       if (widget.isNew && widget.context.mounted) {
         Navigator.of(widget.context).pop();
+      }
+      if (widget.isNew) {
+        // T73 C2: a freshly created profile is an import — land on
+        // the dashboard like every other import branch.
+        appController.toDashboardAfterImport();
       }
     }
   }
@@ -359,6 +377,80 @@ class EditProfileViewState extends State<EditProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    // T73 C3: the Age key, update interval, script and auto-update
+    // entries are built once here; the items list below places them
+    // flat on the edit form, or — on the new-profile form — keeps the
+    // auto-update switch on the main layer and folds the rest into
+    // the collapsible advanced section.
+    final ageField = TextFormField(
+      textInputAction: TextInputAction.next,
+      controller: ageSecretKeyController,
+      obscureText: _obscureAgeSecretKey,
+      maxLines: 1,
+      minLines: 1,
+      decoration: InputDecoration(
+        labelText: appLocalizations.ageSecretKeyOptional,
+        hintText: 'AGE-SECRET-KEY-...',
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureAgeSecretKey ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscureAgeSecretKey = !_obscureAgeSecretKey;
+            });
+          },
+        ),
+      ),
+      validator: (String? value) {
+        if (value != null && value.isNotEmpty) {
+          if (!value.startsWith('AGE-SECRET-KEY-')) {
+            return appLocalizations.ageSecretKeyInvalidValidationDesc;
+          }
+        }
+        return null;
+      },
+    );
+    final autoUpdateCard = CommonCard(
+      type: CommonCardType.filled,
+      radius: 16,
+      child: ListItem.switchItem(
+        title: Text(appLocalizations.autoUpdate),
+        delegate: SwitchDelegate<bool>(
+          value: autoUpdate,
+          onChanged: _setAutoUpdate,
+        ),
+      ),
+    );
+    final intervalField = TextFormField(
+      textInputAction: TextInputAction.next,
+      controller: autoUpdateDurationController,
+      decoration: InputDecoration(
+        labelText: appLocalizations.autoUpdateInterval,
+      ),
+      validator: (String? value) {
+        if (value == null || value.isEmpty) {
+          return appLocalizations.profileAutoUpdateIntervalNullValidationDesc;
+        }
+        try {
+          int.parse(value);
+        } catch (_) {
+          return appLocalizations
+              .profileAutoUpdateIntervalInvalidValidationDesc;
+        }
+        return null;
+      },
+    );
+    final scriptCard = CommonCard(
+      type: CommonCardType.filled,
+      radius: 16,
+      child: ListItem(
+        title: Text(appLocalizations.script),
+        subtitle: Text(_scriptSelectionLabel()),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: _handlePickScript,
+      ),
+    );
     final items = [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -406,91 +498,76 @@ class EditProfileViewState extends State<EditProfileView> {
             },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: TextFormField(
-            textInputAction: TextInputAction.next,
-            controller: ageSecretKeyController,
-            obscureText: _obscureAgeSecretKey,
-            maxLines: 1,
-            minLines: 1,
-            decoration: InputDecoration(
-              labelText: appLocalizations.ageSecretKeyOptional,
-              hintText: 'AGE-SECRET-KEY-...',
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureAgeSecretKey
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscureAgeSecretKey = !_obscureAgeSecretKey;
-                  });
-                },
-              ),
-            ),
-            validator: (String? value) {
-              if (value != null && value.isNotEmpty) {
-                if (!value.startsWith('AGE-SECRET-KEY-')) {
-                  return appLocalizations.ageSecretKeyInvalidValidationDesc;
-                }
-              }
-              return null;
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: CommonCard(
-            type: CommonCardType.filled,
-            radius: 16,
-            child: ListItem.switchItem(
-              title: Text(appLocalizations.autoUpdate),
-              delegate: SwitchDelegate<bool>(
-                value: autoUpdate,
-                onChanged: _setAutoUpdate,
-              ),
-            ),
-          ),
-        ),
-        if (autoUpdate)
+        if (widget.isNew) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextFormField(
-              textInputAction: TextInputAction.next,
-              controller: autoUpdateDurationController,
-              decoration: InputDecoration(
-                labelText: appLocalizations.autoUpdateInterval,
-              ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return appLocalizations
-                      .profileAutoUpdateIntervalNullValidationDesc;
-                }
-                try {
-                  int.parse(value);
-                } catch (_) {
-                  return appLocalizations
-                      .profileAutoUpdateIntervalInvalidValidationDesc;
-                }
-                return null;
-              },
+            child: autoUpdateCard,
+          ),
+          // T73 C3: advanced section, collapsed by default. The
+          // fields stay mounted while collapsed (maintainState), so
+          // form validation still covers them; a validation failure
+          // unfolds the section (see _handleConfirm).
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CommonCard(
+                  type: CommonCardType.filled,
+                  radius: 16,
+                  child: ListItem(
+                    title: Text(appLocalizations.advancedSettings),
+                    trailing: Icon(
+                      _advancedExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _advancedExpanded = !_advancedExpanded;
+                      });
+                    },
+                  ),
+                ),
+                Visibility(
+                  visible: _advancedExpanded,
+                  maintainState: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 14),
+                      ageField,
+                      if (autoUpdate) ...[
+                        const SizedBox(height: 14),
+                        intervalField,
+                      ],
+                      const SizedBox(height: 14),
+                      scriptCard,
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: CommonCard(
-            type: CommonCardType.filled,
-            radius: 16,
-            child: ListItem(
-              title: Text(appLocalizations.script),
-              subtitle: Text(_scriptSelectionLabel()),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _handlePickScript,
-            ),
+        ] else ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ageField,
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: autoUpdateCard,
+          ),
+          if (autoUpdate)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: intervalField,
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: scriptCard,
+          ),
+        ],
       ],
       if (!widget.isNew)
         ValueListenableBuilder<FileInfo?>(

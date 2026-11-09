@@ -1736,6 +1736,15 @@ class AppController {
     toPage(PageLabel.profiles);
   }
 
+  /// Uniform close-out for every import branch (T73 C2): a successful
+  /// import lands on the dashboard, where the start control lives.
+  /// Starting stays a deliberate tap by the user — the system VPN
+  /// consent prompt must be the user's own action, so imports never
+  /// auto-start the VPN.
+  void toDashboardAfterImport() {
+    toPage(PageLabel.dashboard);
+  }
+
   void initLink() {
     linkManager.initAppLinksListen((url) async {
       final res = await globalState.showMessage(
@@ -1816,7 +1825,7 @@ class AppController {
           (route) => route.isFirst,
         );
       }
-      toProfiles();
+      toDashboardAfterImport();
       await addProfile(profile);
     } on Object catch (e) {
       await globalState.showMessage(
@@ -1845,7 +1854,7 @@ class AppController {
           (route) => route.isFirst,
         );
       }
-      toProfiles();
+      toDashboardAfterImport();
       await addProfile(profile);
     } on Object catch (e) {
       await globalState.showMessage(
@@ -1908,7 +1917,7 @@ class AppController {
         globalState.navigatorKey.currentState?.popUntil(
           (route) => route.isFirst,
         );
-        toProfiles();
+        toDashboardAfterImport();
       }
     } finally {
       _ref.read(loadingProvider.notifier).value = false;

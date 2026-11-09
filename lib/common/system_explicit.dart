@@ -98,6 +98,20 @@ class SystemExplicitOptions {
     this.blockAds = false,
   });
 
+  /// Defaults when there is no stored record at all (T73 C1): the
+  /// China-adaptation direct-routing trio starts on, so a fresh
+  /// install in China routes domestic traffic directly without the
+  /// user having to know these options exist. The interception class
+  /// (privacy / WebRTC / ads) stays off. A stored record is always
+  /// authoritative — these defaults never override a saved choice.
+  factory SystemExplicitOptions.freshInstall() {
+    return SystemExplicitOptions(
+      chinaDirect: true,
+      chinaPublicDnsDirect: true,
+      lanDirect: true,
+    );
+  }
+
   bool get anyEnabled =>
       privacy ||
       chinaDirect ||
@@ -215,22 +229,34 @@ class SystemExplicitStore {
   static final instance = SystemExplicitStore._();
   static const _key = 'system_explicit_v1';
 
-  SystemExplicitOptions value = SystemExplicitOptions();
+  SystemExplicitOptions value = SystemExplicitOptions.freshInstall();
   Future<void>? _loading;
 
   Future<void> ensureLoaded() {
     return _loading ??= _load();
   }
 
+  /// Resolve the effective options from the raw stored record (T73
+  /// C1). No record (null/empty/unreadable) means the user never saved
+  /// a choice, so the fresh-install defaults apply; any decodable
+  /// record is parsed exactly as stored, untouched.
+  static SystemExplicitOptions optionsFromStored(String? raw) {
+    if (raw == null || raw.isEmpty) {
+      return SystemExplicitOptions.freshInstall();
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return SystemExplicitOptions.fromJson(decoded.cast<String, dynamic>());
+      }
+    } catch (_) {}
+    return SystemExplicitOptions.freshInstall();
+  }
+
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_key);
-      if (raw == null || raw.isEmpty) return;
-      final decoded = jsonDecode(raw);
-      if (decoded is Map) {
-        value = SystemExplicitOptions.fromJson(decoded.cast<String, dynamic>());
-      }
+      value = optionsFromStored(prefs.getString(_key));
     } catch (_) {}
   }
 

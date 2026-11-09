@@ -1,6 +1,7 @@
 import 'package:bett_box/common/system_explicit.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   test(
@@ -319,5 +320,56 @@ void main() {
       rules.indexOf('AND,((NETWORK,UDP),(DST-PORT,3478-3480)),REJECT'),
       lessThan(rules.indexOf('GEOIP,private,DIRECT,no-resolve')),
     );
+  });
+
+  group('fresh-install defaults (T73 C1)', () {
+    void expectFreshDefaults(SystemExplicitOptions o) {
+      expect(o.chinaDirect, isTrue);
+      expect(o.chinaPublicDnsDirect, isTrue);
+      expect(o.lanDirect, isTrue);
+      expect(o.privacy, isFalse);
+      expect(o.blockCommonWebRtc, isFalse);
+      expect(o.blockAds, isFalse);
+    }
+
+    test('no stored record resolves to the direct-routing trio on', () {
+      expectFreshDefaults(SystemExplicitStore.optionsFromStored(null));
+      expectFreshDefaults(SystemExplicitStore.optionsFromStored(''));
+      expectFreshDefaults(SystemExplicitOptions.freshInstall());
+    });
+
+    test('a stored record is parsed exactly as saved', () {
+      // A record with everything off (e.g. the user turned the trio
+      // off) must stay off — defaults never resurrect a saved choice.
+      final allOff = SystemExplicitStore.optionsFromStored(
+        '{"privacy":false,"chinaDirect":false,'
+        '"chinaPublicDnsDirect":false,"lanDirect":false,'
+        '"blockCommonWebRtc":false,"blockAds":false}',
+      );
+      expect(allOff.anyEnabled, isFalse);
+      final partial = SystemExplicitStore.optionsFromStored(
+        '{"privacy":true,"chinaDirect":false,'
+        '"chinaPublicDnsDirect":true,"lanDirect":false,'
+        '"blockCommonWebRtc":false,"blockAds":true}',
+      );
+      expect(partial.privacy, isTrue);
+      expect(partial.chinaDirect, isFalse);
+      expect(partial.chinaPublicDnsDirect, isTrue);
+      expect(partial.lanDirect, isFalse);
+      expect(partial.blockAds, isTrue);
+    });
+
+    test('an unreadable record falls back to fresh-install defaults', () {
+      expectFreshDefaults(SystemExplicitStore.optionsFromStored('{{{'));
+      expectFreshDefaults(SystemExplicitStore.optionsFromStored('[1,2]'));
+    });
+
+    test('store loads fresh-install defaults when nothing is stored',
+        () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      await SystemExplicitStore.instance.ensureLoaded();
+      expectFreshDefaults(SystemExplicitStore.instance.value);
+    });
   });
 }
