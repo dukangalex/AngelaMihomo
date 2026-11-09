@@ -183,8 +183,14 @@ class CommonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Glass-surfaced cards take a larger, softer radius (T38 round 3,
-    // 20–28 band); flat cards keep the stock 20.
-    final actualRadius = radius ?? (GlassScope.isActive(context) ? 24.0 : 20.0);
+    // 20–28 band); flat cards keep the stock 20. Round 6 addendum
+    // (Orville curve language): primary-tier cards round further —
+    // 30 — so the page's main surface carries the softest curve.
+    final actualRadius =
+        radius ??
+        (GlassScope.isActive(context)
+            ? (glassTier == GlassTier.primary ? 30.0 : 24.0)
+            : 20.0);
     var childWidget = child;
 
     if (info != null) {

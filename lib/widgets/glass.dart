@@ -74,6 +74,19 @@ import 'package:material_ui/material_ui.dart';
 /// Every visible page resolves the same four tiers, so the primary/
 /// secondary contrast the home page sets is the contrast everywhere.
 ///
+/// Round 6 addendum — the Orville language layer (user ruling,
+/// 2026-11-09): liquid glass stays the material; the colour/curve
+/// language leans to The Orville's UI — bright, airy, white with
+/// blue-cyan, rounded curves, a soft technological glow. Absorbed
+/// here at the token layer: the colour field and static body hues
+/// shift from the blue/teal/VIOLET family to white + blue-cyan
+/// (violet blooms replaced by azure), the rim light gains an azure
+/// lean, and primary-tier cards take a larger, softer radius
+/// (30 vs 24). The dark theme speaks the same language: deep
+/// space blue-black with blue-cyan glow. Layout density (the airy
+/// spacing) is NOT absorbed here — it is a per-page layout pass,
+/// listed in the T64 round-6 receipt for a later round.
+///
 /// Performance discipline: real-time backdrop blur is only used on fixed or
 /// finite surfaces (bottom navigation bar, dashboard cards, modals). Long
 /// scrolling lists must not opt in. When [GlassEffects.blurEnabled] is
@@ -210,12 +223,20 @@ class GlassTokens {
     // field show through and tint each card where it sits.
     final staticBody = Color.lerp(
       body,
-      isLight ? const Color(0xFFD9E6F5) : const Color(0xFF16233F),
+      // Orville addendum: the light static hue brightens toward
+      // azure-white; the dark hue is already deep field blue.
+      isLight ? const Color(0xFFDFEDF9) : const Color(0xFF16233F),
       isLight ? 0.45 : 0.55,
     )!;
     // Glint dye: the rim colour leans toward the scheme primary so
     // the edge light reads as brightened background, not white paint.
-    final rimBase = Color.lerp(Colors.white, colorScheme.primary, 0.18)!;
+    // Orville addendum: a further lean toward sky azure, so the edge
+    // light sits in the blue-cyan family on both themes.
+    final rimBase = Color.lerp(
+      Color.lerp(Colors.white, colorScheme.primary, 0.18)!,
+      const Color(0xFF7DD3FC),
+      0.15,
+    )!;
     // Dark contour: faint in light (the bright field separates the
     // pane already), stronger in dark where panes need the outline.
     // Round 6: the contour joins the hierarchy — primary panes carry
@@ -667,8 +688,9 @@ class _GlassFieldPainter extends CustomPainter {
     (0.88, 0.04, 0.95, Color(0x4D5EA0FF)),
     // Brand teal, mid left.
     (0.0, 0.36, 0.75, Color(0x2B14B8A6)),
-    // Violet, lower right.
-    (0.98, 0.70, 0.85, Color(0x338B7CF6)),
+    // Azure, lower right (Orville addendum: replaces the round-5
+    // violet bloom — the field now speaks white + blue-cyan only).
+    (0.98, 0.70, 0.85, Color(0x2E60A5FA)),
     // Cyan, bottom left.
     (0.04, 0.98, 0.80, Color(0x2938BDF8)),
   ];
@@ -678,8 +700,9 @@ class _GlassFieldPainter extends CustomPainter {
     (0.90, 0.03, 1.0, Color(0x522563EB)),
     // Teal, mid left.
     (0.0, 0.38, 0.80, Color(0x330D9488)),
-    // Violet, lower right.
-    (0.98, 0.72, 0.90, Color(0x387C3AED)),
+    // Blue, lower right (Orville addendum: replaces violet — deep
+    // space blue-black with blue-cyan glow, same language as light).
+    (0.98, 0.72, 0.90, Color(0x2F3B82F6)),
     // Cyan, bottom left.
     (0.06, 1.0, 0.85, Color(0x260EA5E9)),
   ];
@@ -693,7 +716,10 @@ class _GlassFieldPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: isLight
-            ? const [Color(0xFFFBFCFE), Color(0xFFE9EFF8)]
+            // Orville addendum: the daylight base brightens a step
+            // toward white; the night base is unchanged deep space
+            // blue-black.
+            ? const [Color(0xFFFCFDFE), Color(0xFFEDF3FA)]
             : const [Color(0xFF04060C), Color(0xFF0A1220)],
       ).createShader(rect);
     canvas.drawRect(rect, basePaint);
