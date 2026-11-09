@@ -15,8 +15,17 @@ enum PatrolSeverity { ok, notice, problem }
 /// core traffic failures; [subscriptionFetch] is the app-side
 /// subscription update failure family ("[MissedUpdate] Failed to
 /// update …"), which the field report showed stranded in the log
-/// section with no way to open it (T68).
-enum PatrolLogIssueKind { connection, dns, timeout, rule, subscriptionFetch }
+/// section with no way to open it (T68); [webdavBackup] is the
+/// backup upload family (T69), which the generic connection bucket
+/// used to swallow and misdiagnose as a node problem.
+enum PatrolLogIssueKind {
+  connection,
+  dns,
+  timeout,
+  rule,
+  subscriptionFetch,
+  webdavBackup,
+}
 
 /// One log line, reduced to what classification needs.
 class PatrolLogEntry {
@@ -64,7 +73,13 @@ class PatrolLogIssueGroup {
 /// Anything outside this list is never executed automatically: the
 /// report can only point at it. Each action is low-risk and reversible
 /// or read-only in effect.
-enum PatrolAction { updateSubscription, testNodes, flushDns, reloadConfig }
+enum PatrolAction {
+  updateSubscription,
+  testNodes,
+  flushDns,
+  reloadConfig,
+  retryBackup,
+}
 
 class PatrolLogSection {
   final int totalIssues;
@@ -479,6 +494,16 @@ PatrolLogIssueKind? _classifyPayload(String payload) {
       text.contains('[autoupdate]') ||
       text.contains('[updateprofiles]')) {
     return PatrolLogIssueKind.subscriptionFetch;
+  }
+  // WebDAV backup failures next (T69): the auto-backup path logs
+  // "Auto backup failed: …" and the DAV client's errors name WebDAV
+  // — both carry connection words ("connect", "reset") that would
+  // otherwise land them in the generic connection bucket and get a
+  // node diagnosis for a backup problem.
+  if (text.contains('webdav') ||
+      text.contains('auto backup failed') ||
+      text.contains('backup failed')) {
+    return PatrolLogIssueKind.webdavBackup;
   }
   if (text.contains('dns') ||
       text.contains('no such host') ||

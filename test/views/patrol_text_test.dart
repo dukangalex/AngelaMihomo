@@ -67,4 +67,30 @@ void main() {
       expect(text.toLowerCase(), contains('server itself failed'));
     });
   });
+
+  group('webdav backup wording (T69)', () {
+    setUpAll(() async {
+      await AppLocalizations.load(const Locale('en'));
+    });
+
+    const issue = PatrolIssue(
+      id: 'log.webdavBackup',
+      section: PatrolIssueSection.logs,
+      severity: PatrolSeverity.problem,
+      cause: PatrolCause.webdavBackup,
+      action: PatrolAction.retryBackup,
+    );
+
+    test('title, conclusion and advice name the backup, not nodes', () {
+      expect(patrolIssueTitle(issue).toLowerCase(), contains('webdav'));
+      final conclusion = patrolIssueConclusion(issue).toLowerCase();
+      expect(conclusion, contains('backup'));
+      expect(conclusion, contains('not involved'));
+      expect(
+        patrolActionLabel(PatrolAction.retryBackup).toLowerCase(),
+        contains('backup'),
+      );
+      expect(patrolIssueRepro(issue), isNotNull);
+    });
+  });
 }

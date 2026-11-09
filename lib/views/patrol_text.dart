@@ -22,6 +22,7 @@ String patrolIssueTitle(PatrolIssue issue) => switch (issue.cause) {
   PatrolCause.chainHopDown => appLocalizations.patrolChainHopDown,
   PatrolCause.configInvalid => appLocalizations.patrolConfigInvalid,
   PatrolCause.configUnavailable => appLocalizations.patrolConfigUnavailable,
+  PatrolCause.webdavBackup => appLocalizations.patrolWebdavBackup,
 };
 
 /// The "why" answer for an issue. For fetch failures the stage
@@ -64,6 +65,7 @@ String patrolIssueConclusion(
     PatrolCause.configInvalid => appLocalizations.patrolCauseConfigInvalid,
     PatrolCause.configUnavailable =>
       appLocalizations.patrolCauseConfigUnavailable,
+    PatrolCause.webdavBackup => appLocalizations.patrolCauseWebdavBackup,
     PatrolCause.fetchFailed => appLocalizations.patrolStageUnknown,
   };
 }
@@ -144,6 +146,7 @@ String patrolIssueAdvice(
     PatrolCause.configInvalid => appLocalizations.patrolAdviceConfigInvalid,
     PatrolCause.configUnavailable =>
       appLocalizations.patrolAdviceConfigUnavailable,
+    PatrolCause.webdavBackup => appLocalizations.patrolAdviceWebdavBackup,
     PatrolCause.fetchFailed => appLocalizations.patrolAdviceFetch,
   };
 }
@@ -162,6 +165,7 @@ String? patrolIssueRepro(PatrolIssue issue) => switch (issue.cause) {
   PatrolCause.chainHopDown => appLocalizations.patrolReproNodes,
   PatrolCause.configInvalid ||
   PatrolCause.configUnavailable => appLocalizations.patrolReproConfig,
+  PatrolCause.webdavBackup => appLocalizations.patrolReproWebdav,
   _ => null,
 };
 
@@ -171,6 +175,7 @@ String patrolActionLabel(PatrolAction action) => switch (action) {
   PatrolAction.testNodes => appLocalizations.patrolActionTestNodes,
   PatrolAction.flushDns => appLocalizations.patrolActionFlushDns,
   PatrolAction.reloadConfig => appLocalizations.patrolActionReloadConfig,
+  PatrolAction.retryBackup => appLocalizations.patrolActionRetryBackup,
 };
 
 String patrolOutcomeLabel(String outcome) => switch (outcome) {

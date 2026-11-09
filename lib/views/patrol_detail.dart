@@ -295,6 +295,18 @@ class _PatrolDetailViewState extends ConsumerState<PatrolDetailView> {
       nodeNames: widget.nodeNames,
       probes: _probeResults?.byKind ?? const {},
       measuredStage: _measuredStage,
+      // T69: the local conclusion/advice the user already sees on
+      // this page go in as established facts.
+      localConclusion: patrolIssueConclusion(
+        issue,
+        measuredStage: _measuredStage,
+        measuredHttpStatus: _measuredHttpStatus,
+      ),
+      localAdvice: patrolIssueAdvice(
+        issue,
+        stage: _measuredStage,
+        httpStatus: _measuredHttpStatus,
+      ),
     );
     if (!mounted) return;
     final send = await showDialog<bool>(

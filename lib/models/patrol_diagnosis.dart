@@ -43,6 +43,7 @@ enum PatrolCause {
   chainHopDown,
   configInvalid,
   configUnavailable,
+  webdavBackup,
 }
 
 /// The stage at which a subscription fetch failed, from the network
@@ -285,6 +286,7 @@ List<PatrolIssue> buildPatrolIssues(
       PatrolLogIssueKind.dns => PatrolCause.logDns,
       PatrolLogIssueKind.timeout => PatrolCause.logTimeout,
       PatrolLogIssueKind.rule => PatrolCause.logRule,
+      PatrolLogIssueKind.webdavBackup => PatrolCause.webdavBackup,
       _ => PatrolCause.logConnection,
     };
     issues.add(
@@ -297,6 +299,8 @@ List<PatrolIssue> buildPatrolIssues(
             ? PatrolAction.flushDns
             : kind == PatrolLogIssueKind.rule
             ? PatrolAction.reloadConfig
+            : kind == PatrolLogIssueKind.webdavBackup
+            ? PatrolAction.retryBackup
             : PatrolAction.testNodes,
         facts: [
           PatrolFact.occurrences(
@@ -554,6 +558,10 @@ List<PatrolIssue> buildPatrolIssues(
         section: PatrolIssueSection.core,
         severity: PatrolSeverity.notice,
         cause: PatrolCause.configUnavailable,
+        // T69: the check has not run because applying the profile
+        // is what runs it — reloading IS the on-target fix, and the
+        // verify step re-reads the fresh check result.
+        action: PatrolAction.reloadConfig,
         facts: [coreStateFact()],
       ),
     );
@@ -587,7 +595,12 @@ bool verifyPatrolFix(
     // verification available, and the record says what ran.
     PatrolAction.flushDns => true,
     PatrolAction.reloadConfig =>
-      after.core.input.configCheck != PatrolConfigCheck.failed,
+      after.core.input.configCheck != PatrolConfigCheck.failed &&
+          after.core.input.configCheck != PatrolConfigCheck.unavailable,
+    // The retry itself is the observable: the executor reports
+    // executed only when the DAV upload round-trip succeeded, so
+    // an executed retry IS a verified fix (T69).
+    PatrolAction.retryBackup => true,
   };
 }
 

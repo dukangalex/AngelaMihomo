@@ -37,6 +37,7 @@ String _maskKnownNames(String text, List<String> names) {
 String buildPatrolSummary(
   PatrolReport report, {
   required List<String> nodeNames,
+  List<String> localConclusions = const [],
 }) {
   final lines = <String>[
     'AngelaMihomo AI patrol report (redacted summary)',
@@ -85,6 +86,17 @@ String buildPatrolSummary(
     lines.add(
       '  config error: ${_maskKnownNames(redactLogText(core.input.configError), nodeNames)}',
     );
+  }
+  if (localConclusions.isNotEmpty) {
+    // T69: the app's own diagnoses ride along as established
+    // facts — the AI deepens them, it does not re-decide them.
+    lines.add('');
+    lines.add('local diagnoses (established facts, do not contradict):');
+    for (final conclusion in localConclusions) {
+      lines.add(
+        '- ${_maskKnownNames(redactLogText(conclusion), nodeNames)}',
+      );
+    }
   }
   return lines.join('\n');
 }
@@ -191,20 +203,81 @@ Future<String> _chatCompletion(
   throw StateError('empty AI response');
 }
 
+/// Cleans a model answer for direct display (T69): the result
+/// dialogs render plain text, so a Markdown-flavoured answer used
+/// to show raw `**`, `<br>` and pipe tables to the user. The
+/// prompts already demand plain text; this is the deterministic
+/// net for models that ignore them — `<br>` and block tags become
+/// line breaks, table rows become cell lists, separator rows and
+/// emphasis markers are dropped.
+String sanitizeAiText(String raw) {
+  var text = raw.replaceAll(
+    RegExp(r'<br\s*/?>', caseSensitive: false),
+    '\n',
+  );
+  text = text.replaceAll(
+    RegExp(r'</(p|div|li|tr|h[1-6])>', caseSensitive: false),
+    '\n',
+  );
+  text = text.replaceAll(RegExp(r'<[^>]+>'), '');
+  final lines = <String>[];
+  for (var line in text.split('\n')) {
+    line = line.trim();
+    // Markdown table separator row: only pipes, dashes, colons.
+    if (line.contains('|') &&
+        RegExp(r'^[\|\-: ]+$').hasMatch(line)) {
+      continue;
+    }
+    if (line.contains('|')) {
+      final cells = line
+          .split('|')
+          .map((cell) => cell.trim())
+          .where((cell) => cell.isNotEmpty)
+          .toList();
+      if (cells.isEmpty) continue;
+      line = cells.join(' · ');
+    }
+    line = line
+        .replaceAll('**', '')
+        .replaceAll('__', '')
+        .replaceAll('`', '')
+        .replaceFirst(RegExp(r'^#{1,6}\s+'), '')
+        .trim();
+    if (line.isEmpty && (lines.isEmpty || lines.last.isEmpty)) continue;
+    lines.add(line);
+  }
+  while (lines.isNotEmpty && lines.last.isEmpty) {
+    lines.removeLast();
+  }
+  return lines.join('\n');
+}
+
+const _aiPlainChineseRules =
+    'Reply ONLY in Simplified Chinese, in plain paragraphs and '
+    'short lines: no Markdown, no tables, no HTML tags, no bold '
+    'or heading markers. Any local diagnosis included in the data '
+    'is an established fact: build on it, never contradict it, and '
+    'never suggest what it rules out (for example, when the local '
+    'diagnosis says an HTTP 5xx is the provider\'s server fault, '
+    'do not suggest resetting or replacing the subscription '
+    'link). Be concise and plain-spoken. The data is redacted; '
+    'never ask for unredacted data, credentials or subscription '
+    'URLs.';
+
 /// Sends the (already user-confirmed) redacted summary and returns
 /// the model's plain-language interpretation. Throws on any failure;
 /// the caller shows the error verbatim.
-Future<String> fetchAiInterpretation(AiConfig config, String summary) {
-  return _chatCompletion(
+Future<String> fetchAiInterpretation(AiConfig config, String summary) async {
+  final answer = await _chatCompletion(
     config,
     system:
-        'You are the diagnostic assistant inside a proxy client app. '
-        'Explain the patrol report in plain language: what is wrong, '
-        'the most likely cause, and the concrete next step for each '
-        'problem. Be concise. The report is redacted; never ask for '
-        'unredacted data, credentials or subscription URLs.',
+        'You are the diagnostic assistant inside a proxy client '
+        'app. Explain the patrol report in plain language: what '
+        'is wrong, the most likely cause, and the concrete next '
+        'step for each problem. $_aiPlainChineseRules',
     user: summary,
   );
+  return sanitizeAiText(answer);
 }
 
 /// Builds the redacted per-issue summary for the detail page's AI
@@ -218,6 +291,8 @@ String buildPatrolIssueSummary(
   required List<String> nodeNames,
   Map<PatrolProbeKind, ({bool ok, String detail})> probes = const {},
   PatrolFetchStage? measuredStage,
+  String localConclusion = '',
+  String localAdvice = '',
 }) {
   String clean(String text) =>
       _maskKnownNames(redactLogText(text), nodeNames);
@@ -226,6 +301,21 @@ String buildPatrolIssueSummary(
     'problem: ${issue.id}, severity: ${issue.severity.name}, '
         'local cause: ${issue.cause.name}',
   ];
+  // T69: the app's own conclusion and advice are passed verbatim
+  // (localized, user-visible wording) and marked as established
+  // facts. Field failure mode being fixed: the raw log sample
+  // itself could suggest a remedy ("try resetting the link"), and
+  // with no local conclusion in the prompt the model followed the
+  // log instead of the diagnosis.
+  if (localConclusion.isNotEmpty) {
+    lines.add(
+      'local diagnosis (established fact, do not contradict): '
+      '${clean(localConclusion)}',
+    );
+  }
+  if (localAdvice.isNotEmpty) {
+    lines.add('local advice already given to the user: ${clean(localAdvice)}');
+  }
   if (issue.stage != null) {
     lines.add('recorded failure stage: ${issue.stage!.name}');
   }
@@ -268,18 +358,17 @@ String buildPatrolIssueSummary(
 Future<String> fetchAiIssueInterpretation(
   AiConfig config,
   String summary,
-) {
-  return _chatCompletion(
+) async {
+  final answer = await _chatCompletion(
     config,
     system:
-        'You are the diagnostic assistant inside a proxy client app. '
-        'For this single patrol problem, answer with: (1) the '
-        'possible causes ranked by likelihood, each with the '
+        'You are the diagnostic assistant inside a proxy client '
+        'app. For this single patrol problem, answer with: (1) '
+        'the possible causes ranked by likelihood, each with the '
         'evidence for or against it; (2) the impact scope — what '
         'stops working for the user; (3) concrete next steps the '
-        'user can take. Be concise and plain-spoken. The data is '
-        'redacted; never ask for unredacted data, credentials or '
-        'subscription URLs.',
+        'user can take. $_aiPlainChineseRules',
     user: summary,
   );
+  return sanitizeAiText(answer);
 }

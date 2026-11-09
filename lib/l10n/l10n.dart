@@ -10465,6 +10465,16 @@ class AppLocalizations {
     );
   }
 
+  /// `WebDAV backup failed`
+  String get patrolWebdavBackup {
+    return Intl.message(
+      'WebDAV backup failed',
+      name: 'patrolWebdavBackup',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, one {1 area needs attention} other {{count} areas need attention}}`
   String patrolAttentionNeeded(num count) {
     return Intl.plural(
@@ -10627,6 +10637,16 @@ class AppLocalizations {
     return Intl.message(
       'Reload the configuration',
       name: 'patrolActionReloadConfig',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retry the WebDAV backup`
+  String get patrolActionRetryBackup {
+    return Intl.message(
+      'Retry the WebDAV backup',
+      name: 'patrolActionRetryBackup',
       desc: '',
       args: [],
     );
@@ -11904,6 +11924,16 @@ class AppLocalizations {
     );
   }
 
+  /// `A backup upload to your WebDAV storage failed: the app could not reach the backup server, or the server refused the upload. Your proxy connection and your nodes are not involved in this.`
+  String get patrolCauseWebdavBackup {
+    return Intl.message(
+      'A backup upload to your WebDAV storage failed: the app could not reach the backup server, or the server refused the upload. Your proxy connection and your nodes are not involved in this.',
+      name: 'patrolCauseWebdavBackup',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The fetch never got past your own core: while the core runs, subscription updates go through its local proxy port, and that hop refused or dropped the connection. The internet path was never reached.`
   String get patrolStageProxy {
     return Intl.message(
@@ -12194,6 +12224,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Tap Fix to retry the backup right away. If it keeps failing, check the WebDAV address and account under Backup settings, and the network path to the backup server.`
+  String get patrolAdviceWebdavBackup {
+    return Intl.message(
+      'Tap Fix to retry the backup right away. If it keeps failing, check the WebDAV address and account under Backup settings, and the network path to the backup server.',
+      name: 'patrolAdviceWebdavBackup',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Tap Update on the subscription — if it still fails, the same failure is recorded again.`
   String get patrolReproFetch {
     return Intl.message(
@@ -12229,6 +12269,16 @@ class AppLocalizations {
     return Intl.message(
       'This check re-runs every time the patrol page opens or the service state changes.',
       name: 'patrolReproConfig',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open More, then Backup, and run a manual backup: it uses the same upload path, and the same failure shows up there.`
+  String get patrolReproWebdav {
+    return Intl.message(
+      'Open More, then Backup, and run a manual backup: it uses the same upload path, and the same failure shows up there.',
+      name: 'patrolReproWebdav',
       desc: '',
       args: [],
     );

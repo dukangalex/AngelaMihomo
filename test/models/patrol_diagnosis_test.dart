@@ -426,5 +426,75 @@ void main() {
         isFalse,
       );
     });
+
+    test('webdav backup failure maps to its own cause and fix (T69)', () {
+      final report = reportWith(
+        logs: [
+          entry(
+            'Auto backup failed: DioException [connection error]: '
+            'Connection reset by peer, uri=https://app.koofr.net/dav',
+          ),
+        ],
+      );
+      final issues = buildPatrolIssues(report, coreRunning: false);
+      final backup = issues.where((i) => i.cause == PatrolCause.webdavBackup);
+      expect(backup, hasLength(1));
+      expect(backup.single.action, PatrolAction.retryBackup);
+      expect(
+        issues.where((i) => i.cause == PatrolCause.logConnection),
+        isEmpty,
+      );
+      // An executed retry is the verification (the executor only
+      // reports executed when the DAV upload round-trip succeeded).
+      expect(
+        verifyPatrolFix(
+          PatrolAction.retryBackup,
+          report,
+          report,
+          updateFailed: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('config unavailable carries the reload fix and its verify (T69)', () {
+      const unavailableCore = PatrolCoreInput(
+        versionLabel: 'test',
+        configCheck: PatrolConfigCheck.unavailable,
+      );
+      final before = reportWith(core: unavailableCore);
+      final issues = buildPatrolIssues(before, coreRunning: false);
+      final unavailable = issues.where(
+        (i) => i.cause == PatrolCause.configUnavailable,
+      );
+      expect(unavailable, hasLength(1));
+      expect(unavailable.single.action, PatrolAction.reloadConfig);
+      // Still unavailable after the reload means the check never
+      // ran: not verified. A completed check (passed) verifies.
+      expect(
+        verifyPatrolFix(
+          PatrolAction.reloadConfig,
+          before,
+          before,
+          updateFailed: false,
+        ),
+        isFalse,
+      );
+      final after = reportWith(
+        core: const PatrolCoreInput(
+          versionLabel: 'test',
+          configCheck: PatrolConfigCheck.passed,
+        ),
+      );
+      expect(
+        verifyPatrolFix(
+          PatrolAction.reloadConfig,
+          before,
+          after,
+          updateFailed: false,
+        ),
+        isTrue,
+      );
+    });
   });
 }

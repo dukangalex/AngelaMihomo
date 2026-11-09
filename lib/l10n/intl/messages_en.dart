@@ -1704,6 +1704,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolActionReloadConfig": MessageLookupByLibrary.simpleMessage(
       "Reload the configuration",
     ),
+    "patrolActionRetryBackup": MessageLookupByLibrary.simpleMessage(
+      "Retry the WebDAV backup",
+    ),
     "patrolActionTestNodes": MessageLookupByLibrary.simpleMessage(
       "Retest all nodes",
     ),
@@ -1770,6 +1773,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolAdviceSubStale": MessageLookupByLibrary.simpleMessage(
       "Update the subscription now to refresh the node list.",
     ),
+    "patrolAdviceWebdavBackup": MessageLookupByLibrary.simpleMessage(
+      "Tap Fix to retry the backup right away. If it keeps failing, check the WebDAV address and account under Backup settings, and the network path to the backup server.",
+    ),
     "patrolAllGood": MessageLookupByLibrary.simpleMessage(
       "Everything looks good",
     ),
@@ -1818,6 +1824,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "patrolCauseSubStale": MessageLookupByLibrary.simpleMessage(
       "This subscription has not been refreshed for a long time. Node lists go stale quietly — entries die one by one until little still works.",
+    ),
+    "patrolCauseWebdavBackup": MessageLookupByLibrary.simpleMessage(
+      "A backup upload to your WebDAV storage failed: the app could not reach the backup server, or the server refused the upload. Your proxy connection and your nodes are not involved in this.",
     ),
     "patrolChainHopDown": MessageLookupByLibrary.simpleMessage(
       "One chain hop looks down",
@@ -1964,6 +1973,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolReproNodes": MessageLookupByLibrary.simpleMessage(
       "Run a speed test from the proxies page and compare the counts.",
     ),
+    "patrolReproWebdav": MessageLookupByLibrary.simpleMessage(
+      "Open More, then Backup, and run a manual backup: it uses the same upload path, and the same failure shows up there.",
+    ),
     "patrolSectionCore": MessageLookupByLibrary.simpleMessage("Core & config"),
     "patrolSectionLink": MessageLookupByLibrary.simpleMessage("Mode & chain"),
     "patrolSectionLogs": MessageLookupByLibrary.simpleMessage("Log problems"),
@@ -2034,6 +2046,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "The last update failed",
     ),
     "patrolVersion": MessageLookupByLibrary.simpleMessage("Version"),
+    "patrolWebdavBackup": MessageLookupByLibrary.simpleMessage(
+      "WebDAV backup failed",
+    ),
     "pianoWave": MessageLookupByLibrary.simpleMessage("Piano Wave"),
     "pin": MessageLookupByLibrary.simpleMessage("Pin"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage(

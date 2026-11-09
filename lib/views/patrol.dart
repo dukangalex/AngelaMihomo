@@ -785,7 +785,23 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     if (report.link.input.chainLanding.isNotEmpty) {
       names.add(report.link.input.chainLanding);
     }
-    final summary = buildPatrolSummary(report, nodeNames: names.toList());
+    final issues = buildPatrolIssues(
+      report,
+      coreRunning: ref.read(
+        runTimeProvider.select((state) => state != null),
+      ),
+      subscriptionUrl: ref.read(
+        currentProfileProvider.select((state) => state?.url ?? ''),
+      ),
+    );
+    final summary = buildPatrolSummary(
+      report,
+      nodeNames: names.toList(),
+      // T69: local diagnoses ride along as established facts.
+      localConclusions: [
+        for (final issue in issues) patrolIssueConclusion(issue),
+      ],
+    );
     if (!mounted) return;
     final send = await showDialog<bool>(
       context: context,

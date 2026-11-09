@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:bett_box/clash/clash.dart';
+import 'package:bett_box/common/dav_client.dart';
 import 'package:bett_box/common/path.dart';
 import 'package:bett_box/common/patrol_store.dart';
 import 'package:bett_box/controller.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/views/proxies/common.dart';
 
 /// Outcome of running one whitelist patrol action (T29). Verification
@@ -33,7 +35,9 @@ class PatrolActionResult {
 ///   file snapshot so a bad fetch can be rolled back;
 /// * testNodes → the proxies total delay test (T41);
 /// * flushDns → the core DNS + FakeIP cache flush;
-/// * reloadConfig → the checked full-profile re-apply.
+/// * reloadConfig → the checked full-profile re-apply;
+/// * retryBackup → the WebDAV backup upload, same path as the
+///   backup page (T69).
 ///
 /// High-risk changes (chain structure, subscription source) are NOT
 /// actions: the report points at them and the user does them by hand.
@@ -92,6 +96,27 @@ Future<PatrolActionResult> executePatrolAction(
         executed: applied,
         detail: applied ? '' : 'profile setup did not apply',
       );
+    case PatrolAction.retryBackup:
+      // T69: the on-target fix for a WebDAV backup failure is to
+      // run the backup again through the exact path the backup
+      // page uses — never a node retest. Executed means the DAV
+      // upload round-trip succeeded; anything else reports why.
+      final dav = controller.ref.read(appDAVSettingProvider);
+      if (dav == null) {
+        return const PatrolActionResult(
+          executed: false,
+          detail: 'webdav backup is not configured',
+        );
+      }
+      try {
+        final ok = await controller.backupToWebDAV(DAVClient(dav), dav);
+        return PatrolActionResult(
+          executed: ok,
+          detail: ok ? '' : 'webdav server refused the backup upload',
+        );
+      } catch (error) {
+        return PatrolActionResult(executed: false, detail: '$error');
+      }
   }
 }
 

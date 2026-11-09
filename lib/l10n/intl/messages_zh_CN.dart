@@ -1272,6 +1272,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "清理 DNS 与 FakeIP 缓存",
     ),
     "patrolActionReloadConfig": MessageLookupByLibrary.simpleMessage("重载当前配置"),
+    "patrolActionRetryBackup": MessageLookupByLibrary.simpleMessage(
+      "重试 WebDAV 备份",
+    ),
     "patrolActionTestNodes": MessageLookupByLibrary.simpleMessage("复测全部节点"),
     "patrolActionUpdateSubscription": MessageLookupByLibrary.simpleMessage(
       "立即更新订阅",
@@ -1336,6 +1339,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolAdviceSubStale": MessageLookupByLibrary.simpleMessage(
       "现在就更新一次订阅，把节点列表刷新。",
     ),
+    "patrolAdviceWebdavBackup": MessageLookupByLibrary.simpleMessage(
+      "点「修复」立即重试一次备份。如果反复失败，去「备份」设置里检查 WebDAV 地址和账号，以及到备份服务器的网络路径。",
+    ),
     "patrolAllGood": MessageLookupByLibrary.simpleMessage("一切正常"),
     "patrolAttentionNeeded": m42,
     "patrolCauseChainHopDown": MessageLookupByLibrary.simpleMessage(
@@ -1382,6 +1388,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "patrolCauseSubStale": MessageLookupByLibrary.simpleMessage(
       "这个订阅已经很久没刷新了。节点列表是悄悄变质的：条目一条条死掉，直到几乎没剩能用的。",
+    ),
+    "patrolCauseWebdavBackup": MessageLookupByLibrary.simpleMessage(
+      "向你的 WebDAV 备份存储上传备份失败：应用连不上备份服务器，或者服务器拒绝了这次上传。这件事和你的代理连接、节点都没有关系。",
     ),
     "patrolChainHopDown": MessageLookupByLibrary.simpleMessage("链式有一跳可能已经失效"),
     "patrolChainIncomplete": MessageLookupByLibrary.simpleMessage("入口或出口还没有选齐"),
@@ -1482,6 +1491,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolReproNodes": MessageLookupByLibrary.simpleMessage(
       "在代理页跑一次测速，对一下数目。",
     ),
+    "patrolReproWebdav": MessageLookupByLibrary.simpleMessage(
+      "打开「更多 → 备份」手动备份一次：走的是同一条上传路径，失败的话那边也会报同样的错。",
+    ),
     "patrolSectionCore": MessageLookupByLibrary.simpleMessage("核心与配置"),
     "patrolSectionLink": MessageLookupByLibrary.simpleMessage("模式与链路"),
     "patrolSectionLogs": MessageLookupByLibrary.simpleMessage("日志问题"),
@@ -1524,6 +1536,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolSubStale": MessageLookupByLibrary.simpleMessage("更新已逾期，建议手动更新一次"),
     "patrolSubUpdateFailed": MessageLookupByLibrary.simpleMessage("最近一次更新失败"),
     "patrolVersion": MessageLookupByLibrary.simpleMessage("版本"),
+    "patrolWebdavBackup": MessageLookupByLibrary.simpleMessage("WebDAV 备份失败"),
     "pianoWave": MessageLookupByLibrary.simpleMessage("琴键律动"),
     "pin": MessageLookupByLibrary.simpleMessage("置顶"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage("请绑定 WebDAV"),

@@ -56,6 +56,25 @@ void main() {
       expect(section.groupOf(PatrolLogIssueKind.rule)?.count, 2);
     });
 
+    test('webdav backup failures are their own class (T69)', () {
+      // The field shape: an auto-backup failure whose error text is
+      // full of connection words used to land in the connection
+      // bucket and get diagnosed as a node problem.
+      final section = classifyLogs([
+        entry(
+          'error',
+          'Auto backup failed: DioException [connection error]: '
+              'Connection reset by peer, uri=https://app.koofr.net/dav',
+        ),
+        entry(
+          'error',
+          'WebDAV backup failed: PUT returned 507 Insufficient Storage',
+        ),
+      ]);
+      expect(section.groupOf(PatrolLogIssueKind.webdavBackup)?.count, 2);
+      expect(section.groupOf(PatrolLogIssueKind.connection), isNull);
+    });
+
     test('info and debug entries never count, even with scary words', () {
       final section = classifyLogs([
         entry('info', '[TCP] 192.0.2.1:1234 --> example.com:443 connect ok'),
