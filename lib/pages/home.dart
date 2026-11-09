@@ -304,19 +304,7 @@ class _HomePageState extends State<HomePage> {
                                     : context.colorScheme.onSurfaceVariant,
                                 size: 24,
                               ),
-                              // T29: patrol problem-count badge.
-                              child: item.label == PageLabel.patrol
-                                  ? ValueListenableBuilder<int>(
-                                      valueListenable: patrolAttentionCount,
-                                      builder: (context, count, child) =>
-                                          Badge(
-                                            isLabelVisible: count > 0,
-                                            label: Text('$count'),
-                                            child: child,
-                                          ),
-                                      child: item.icon,
-                                    )
-                                  : item.icon,
+                              child: item.icon,
                             ),
                             const SizedBox(height: 4),
                             Text(

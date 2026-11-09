@@ -172,7 +172,7 @@ void main() {
     expect(_rows, findsNWidgets(2));
   });
 
-  testWidgets('展开行是 AI 巡检入口：跳巡检页且不打开任何外链', (tester) async {
+  testWidgets('展开行动作区无巡检入口（T72 已拆除），且不打开任何外链', (tester) async {
     final urls = <String>[];
     const channel = MethodChannel('plugins.flutter.io/url_launcher');
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
@@ -188,7 +188,7 @@ void main() {
       ),
     );
     // Same harness as _pump, plus a captured WidgetRef so a real
-    // AppController can route the patrol button into observable state.
+    // AppController backs the console under test.
     tester.view.physicalSize = const Size(360, 720);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -225,11 +225,9 @@ void main() {
     await tester.tap(_row('Geodata'));
     await tester.pump();
     expect(find.text('搜索'), findsNothing);
-    expect(find.text('AI 巡检'), findsOneWidget);
-
-    await tester.tap(find.text('AI 巡检'));
-    await tester.pump();
-    expect(container.read(currentPageLabelProvider), PageLabel.patrol);
+    // T72: the patrol feature (and its log-row entry) is removed —
+    // the expanded row keeps copy/filter actions only.
+    expect(find.text('AI 巡检'), findsNothing);
     expect(urls, isEmpty);
   });
 

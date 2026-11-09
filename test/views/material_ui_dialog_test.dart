@@ -15,7 +15,7 @@ void main() {
 
   Future<void> pumpApp(WidgetTester tester, Widget child) async {
     // The app's exact delegate list: AppLocalizations plus only the
-    // fork's GlobalMaterialLocalizations (see ai_config_test.dart).
+    // fork's GlobalMaterialLocalizations.
     // The Scaffold supplies the Material ancestor TextField requires;
     // without it both variants would fail on debugCheckHasMaterial
     // instead of on the localizations lookup under test.

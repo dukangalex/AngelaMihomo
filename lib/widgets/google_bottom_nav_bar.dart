@@ -575,9 +575,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                         }
                                       }
 
-                                      // Shared item content: icon
-                                      // (with the T29 patrol badge on
-                                      // both skins) + label.
+                                      // Shared item content: icon + label.
                                       final itemContent = Column(
                                         mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment:
@@ -588,24 +586,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                               color: itemColor,
                                               size: 22,
                                             ),
-                                            child:
-                                                item.label == PageLabel.patrol
-                                                ? ValueListenableBuilder<int>(
-                                                    valueListenable:
-                                                        patrolAttentionCount,
-                                                    builder:
-                                                        (context, count, child) =>
-                                                            Badge(
-                                                              isLabelVisible:
-                                                                  count > 0,
-                                                              label: Text(
-                                                                '$count',
-                                                              ),
-                                                              child: child,
-                                                            ),
-                                                    child: item.icon,
-                                                  )
-                                                : item.icon,
+                                            child: item.icon,
                                           ),
                                           const SizedBox(height: 2),
                                           Text(

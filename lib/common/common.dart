@@ -21,7 +21,6 @@ export 'launch.dart';
 export 'link.dart';
 export 'lock.dart';
 export 'log_redaction.dart';
-export 'patrol_store.dart';
 export 'control_style.dart';
 export 'update_download.dart';
 export 'update_installer.dart';

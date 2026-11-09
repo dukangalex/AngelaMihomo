@@ -382,13 +382,6 @@ class _LogsViewState extends ConsumerState<LogsView>
                 onPressed: _handleLogLevelSettings,
               ),
               PopupMenuItemData(
-                icon: Icons.health_and_safety_outlined,
-                label: appLocalizations.aiPatrol,
-                onPressed: () {
-                  globalState.appController.toPage(PageLabel.patrol);
-                },
-              ),
-              PopupMenuItemData(
                 icon: Icons.file_copy_outlined,
                 label: appLocalizations.export,
                 onPressed: _handleExport,
@@ -622,7 +615,6 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
       expanded: expanded,
       onTap: () => _toggle(log),
       onCopy: () => _copy(log),
-      onPatrol: () => _openPatrol(),
       onFilter: () => _filterBy(log),
     );
   }
@@ -638,10 +630,6 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
     await Clipboard.setData(ClipboardData(text: log.raw));
     if (!mounted) return;
     context.showNotifier(appLocalizations.copySuccess);
-  }
-
-  void _openPatrol() {
-    globalState.appController.toPage(PageLabel.patrol);
   }
 
   void _filterBy(Log log) {
@@ -874,7 +862,6 @@ class _LogRow extends StatelessWidget {
   final bool expanded;
   final VoidCallback onTap;
   final VoidCallback onCopy;
-  final VoidCallback onPatrol;
   final VoidCallback onFilter;
 
   const _LogRow({
@@ -884,7 +871,6 @@ class _LogRow extends StatelessWidget {
     required this.expanded,
     required this.onTap,
     required this.onCopy,
-    required this.onPatrol,
     required this.onFilter,
   });
 
@@ -964,15 +950,6 @@ class _LogRow extends StatelessWidget {
                     style: buttonStyle,
                     icon: const Icon(Icons.copy_rounded, size: 16),
                     label: Text(appLocalizations.copy),
-                  ),
-                  TextButton.icon(
-                    onPressed: onPatrol,
-                    style: buttonStyle,
-                    icon: const Icon(
-                      Icons.health_and_safety_outlined,
-                      size: 16,
-                    ),
-                    label: Text(appLocalizations.aiPatrol),
                   ),
                   Expanded(
                     child: Align(

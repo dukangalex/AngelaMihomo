@@ -37,15 +37,6 @@ class Navigation {
         builder: (_) =>
             ProfilesView(key: const GlobalObjectKey(PageLabel.profiles)),
       ),
-      // T37: AI Patrol sits after Profiles in the bar
-      // (Home / Proxies / Profiles / AI Patrol / More).
-      NavigationItem(
-        icon: const Icon(Icons.health_and_safety_outlined),
-        label: PageLabel.patrol,
-        builder: (_) =>
-            PatrolView(key: const GlobalObjectKey(PageLabel.patrol)),
-        modes: [NavigationItemMode.mobile, NavigationItemMode.desktop],
-      ),
       NavigationItem(
         icon: Icon(Icons.cable_rounded),
         label: PageLabel.connections,
