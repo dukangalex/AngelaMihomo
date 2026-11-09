@@ -55,9 +55,11 @@ void main() {
       expect(tokens.effectiveFill, tokens.staticFill);
     });
 
-    test('crystal tokens: low blur, clear fill, bright rim (round 2)', () {
+    test('crystal tokens: low blur, clear fill, bright rim (round 4)', () {
       // User direction: crystal-clear (「晶莹剔透」), not milky frost. Lock
-      // the round-2 envelope so tokens cannot drift back to round 1.
+      // the round-4 envelope so tokens cannot drift back to earlier
+      // rounds: round 4 deliberately raises sigma into the 14–16 band so
+      // the backdrop dissolves into light instead of ghosting through.
       for (final brightness in Brightness.values) {
         final scheme = ColorScheme.fromSeed(
           seedColor: const Color(0xFF6750A4),
@@ -65,7 +67,11 @@ void main() {
         );
         for (final kind in GlassKind.values) {
           final tokens = GlassTokens.resolve(scheme, kind);
-          expect(tokens.sigma, lessThanOrEqualTo(12), reason: '$kind sigma');
+          expect(
+            tokens.sigma,
+            inInclusiveRange(13, 17),
+            reason: '$kind sigma',
+          );
           expect(tokens.fill.a, lessThan(0.5), reason: '$kind fill');
           expect(tokens.rim.a, greaterThanOrEqualTo(0.34), reason: '$kind rim');
           expect(
@@ -78,10 +84,12 @@ void main() {
     });
 
     test('neutral tokens: untinted fill, thin body, saturated backdrop '
-        '(round 3)', () {
-      // User direction (round 3): the glass carries no colour of its own —
-      // fill is a neutral gray at theme lightness in the 0.20–0.30 band,
-      // and tint comes from the backdrop, whose saturation is boosted.
+        '(round 4)', () {
+      // User direction (round 3, kept in round 4): the glass carries no
+      // colour of its own — fill is a neutral gray at theme lightness,
+      // thinned further in round 4 to the 0.14–0.20 band (Ultrathin
+      // territory — the backdrop supplies the body), and tint comes from
+      // the backdrop, whose saturation is boosted.
       double chromaOf(Color c) {
         final components = [c.r, c.g, c.b]..sort();
         return components.last - components.first;
@@ -96,7 +104,7 @@ void main() {
           final tokens = GlassTokens.resolve(scheme, kind);
           expect(
             tokens.fill.a,
-            inInclusiveRange(0.20, 0.30),
+            inInclusiveRange(0.14, 0.20),
             reason: '$kind fill alpha',
           );
           expect(
