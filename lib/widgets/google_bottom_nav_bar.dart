@@ -5,7 +5,6 @@ import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/widgets/glass.dart';
-import 'package:bett_box/widgets/keycap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
@@ -215,14 +214,12 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ControlStyle>(
-      valueListenable: controlStyleNotifier,
-      builder: (context, style, _) =>
-          _buildBar(context, style == ControlStyle.keycapFuture),
-    );
+    // T64: the keycap bar skin was retired with the keycap style
+    // (2026-11-08 ruling); the bar is always the glass bar now.
+    return _buildBar(context);
   }
 
-  Widget _buildBar(BuildContext context, bool keycap) {
+  Widget _buildBar(BuildContext context) {
     final enableFeedback = ref.watch(
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
@@ -249,18 +246,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
       GlassKind.navigationBar,
       base: widgetBodyColor,
     );
-    // Keycap skin (T62): the glass layer goes fully transparent and
-    // the tray + keys below carry the visuals instead.
-    final effectiveGlassTokens = keycap
-        ? const GlassTokens(
-            sigma: 0,
-            fill: Colors.transparent,
-            staticFill: Colors.transparent,
-            rim: Colors.transparent,
-            highlightPeak: 0,
-            saturation: 1,
-          )
-        : glassTokens;
+    final effectiveGlassTokens = glassTokens;
     const itemTextStyle = TextStyle(
       fontSize: 10.5,
       fontWeight: FontWeight.w500,
@@ -447,41 +433,22 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                     child: GlassSurface(
                       shape: barShape,
                       tokens: effectiveGlassTokens,
-                      refractionSize: keycap
-                          ? null
-                          : Size(constraints.maxWidth, barHeight),
+                      refractionSize: Size(constraints.maxWidth, barHeight),
                       refractionRadius: 30,
                       child: Container(
                         height: barHeight,
-                        decoration: keycap
-                            ? BoxDecoration(
-                                // The key seat tray: a recessed,
-                                // darker well the keys sit in.
-                                color: Color.lerp(
-                                  colorScheme.surface,
-                                  Colors.black,
-                                  isLight ? 0.07 : 0.30,
-                                ),
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(
-                                  color: colorScheme.outlineVariant
-                                      .withValues(alpha: 0.5),
-                                  width: 0.5,
-                                  strokeAlign: BorderSide.strokeAlignInside,
-                                ),
-                              )
-                            : BoxDecoration(
-                                color: glassTokens.effectiveFill,
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(
-                                  color: glassTokens.rim,
-                                  // 0.5px hairline stroke (Apple kit calibre);
-                                  // the brighter rim light stays in
-                                  // GlassSurface and the pill painter.
-                                  width: 0.5,
-                                  strokeAlign: BorderSide.strokeAlignInside,
-                                ),
-                              ),
+                        decoration: BoxDecoration(
+                          color: glassTokens.effectiveFill,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: glassTokens.rim,
+                            // 0.5px hairline stroke (Apple kit calibre);
+                            // the brighter rim light stays in
+                            // GlassSurface and the pill painter.
+                            width: 0.5,
+                            strokeAlign: BorderSide.strokeAlignInside,
+                          ),
+                        ),
                         child: Stack(
                           alignment: Alignment.centerLeft,
                           children: [
@@ -497,16 +464,10 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                       count: count,
                                       slot: _clampWithResistance,
                                       color: primaryColor,
-                                      baseAlpha: keycap
-                                          ? 0
-                                          : (isLight ? 0.30 : 0.34),
-                                      activeAlpha: keycap
-                                          ? 0
-                                          : (isLight ? 0.38 : 0.42),
+                                      baseAlpha: isLight ? 0.30 : 0.34,
+                                      activeAlpha: isLight ? 0.38 : 0.42,
                                       rimColor: Colors.white.withValues(
-                                        alpha: keycap
-                                            ? 0
-                                            : (isLight ? 0.55 : 0.40),
+                                        alpha: isLight ? 0.55 : 0.40,
                                       ),
                                     ),
                                   ),
@@ -647,67 +608,12 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                             localizedLabels[index],
                                             style: itemTextStyle.copyWith(
                                               color: itemColor,
-                                              shadows:
-                                                  keycap &&
-                                                      index ==
-                                                          widget.selectedIndex
-                                                  ? [
-                                                      Shadow(
-                                                        color: primaryColor
-                                                            .withValues(
-                                                              alpha: 0.8,
-                                                            ),
-                                                        blurRadius: 8,
-                                                      ),
-                                                    ]
-                                                  : null,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ],
                                       );
-                                      if (keycap) {
-                                        // Keycap skin (T62): each item
-                                        // is a physical key — layered
-                                        // seat shadow, edge glow when
-                                        // selected, sinks 3dp while
-                                        // pressed (liftValue), glow
-                                        // strengthening with the sink.
-                                        final sinkPx = isPressed
-                                            ? 3.0 * liftValue
-                                            : 0.0;
-                                        return Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 3,
-                                              vertical: 6,
-                                            ),
-                                            child: Container(
-                                              decoration: keycapFaceDecoration(
-                                                colorScheme,
-                                                selected:
-                                                    index ==
-                                                    widget.selectedIndex,
-                                                pressed01: isPressed
-                                                    ? liftValue
-                                                    : 0,
-                                              ),
-                                              transform:
-                                                  Matrix4.translationValues(
-                                                    0,
-                                                    sinkPx,
-                                                    0,
-                                                  ),
-                                              child: Transform.scale(
-                                                scale: itemScale,
-                                                alignment: Alignment.center,
-                                                child: itemContent,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
                                       return Expanded(
                                         child: Center(
                                           child: Transform.scale(

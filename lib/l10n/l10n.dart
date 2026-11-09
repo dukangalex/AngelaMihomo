@@ -10807,6 +10807,76 @@ class AppLocalizations {
     return Intl.message('Model', name: 'aiModel', desc: '', args: []);
   }
 
+  /// `Fetch model list`
+  String get aiModelFetch {
+    return Intl.message(
+      'Fetch model list',
+      name: 'aiModelFetch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fetching models…`
+  String get aiModelFetching {
+    return Intl.message(
+      'Fetching models…',
+      name: 'aiModelFetching',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} models fetched — pick one below.`
+  String aiModelFetchOk(num count) {
+    return Intl.message(
+      '$count models fetched — pick one below.',
+      name: 'aiModelFetchOk',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Could not fetch the model list. Check the endpoint and key, or type the model name manually.`
+  String get aiModelFetchFailed {
+    return Intl.message(
+      'Could not fetch the model list. Check the endpoint and key, or type the model name manually.',
+      name: 'aiModelFetchFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter manually`
+  String get aiModelManual {
+    return Intl.message(
+      'Enter manually',
+      name: 'aiModelManual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick from list`
+  String get aiModelFromList {
+    return Intl.message(
+      'Pick from list',
+      name: 'aiModelFromList',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fill in the API endpoint first, then fetch the model list.`
+  String get aiModelNeedEndpoint {
+    return Intl.message(
+      'Fill in the API endpoint first, then fetch the model list.',
+      name: 'aiModelNeedEndpoint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Test connection`
   String get aiTestConnection {
     return Intl.message(
@@ -11092,6 +11162,36 @@ class AppLocalizations {
     );
   }
 
+  /// `No fingerprint or face is enrolled on this device yet — add one in the system settings first.`
+  String get appLockBiometricNotEnrolled {
+    return Intl.message(
+      'No fingerprint or face is enrolled on this device yet — add one in the system settings first.',
+      name: 'appLockBiometricNotEnrolled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device has no fingerprint or face hardware.`
+  String get appLockBiometricNoHardware {
+    return Intl.message(
+      'This device has no fingerprint or face hardware.',
+      name: 'appLockBiometricNoHardware',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Biometric unlock is not supported on this platform.`
+  String get appLockBiometricUnsupported {
+    return Intl.message(
+      'Biometric unlock is not supported on this platform.',
+      name: 'appLockBiometricUnsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Unlock with biometrics`
   String get appLockUnlockBiometric {
     return Intl.message(
@@ -11117,16 +11217,6 @@ class AppLocalizations {
     return Intl.message(
       'Liquid glass',
       name: 'controlStyleLiquidGlass',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Keycap · Futuristic`
-  String get controlStyleKeycap {
-    return Intl.message(
-      'Keycap · Futuristic',
-      name: 'controlStyleKeycap',
       desc: '',
       args: [],
     );

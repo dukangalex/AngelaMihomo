@@ -1270,6 +1270,20 @@
   "aiEndpoint": "API endpoint",
   "aiApiKey": "API key",
   "aiModel": "Model",
+  "aiModelFetch": "Fetch model list",
+  "aiModelFetching": "Fetching models…",
+  "aiModelFetchOk": "{count} models fetched — pick one below.",
+  "@aiModelFetchOk": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "aiModelFetchFailed": "Could not fetch the model list. Check the endpoint and key, or type the model name manually.",
+  "aiModelManual": "Enter manually",
+  "aiModelFromList": "Pick from list",
+  "aiModelNeedEndpoint": "Fill in the API endpoint first, then fetch the model list.",
   "aiTestConnection": "Test connection",
   "aiTestOk": "Connection OK",
   "aiTestFailed": "Connection failed",
@@ -1300,10 +1314,12 @@
   "appLockRelock5m": "5 minutes",
   "appLockBiometric": "Use biometrics",
   "appLockBiometricUnavailable": "Biometrics are not available on this device",
+  "appLockBiometricNotEnrolled": "No fingerprint or face is enrolled on this device yet — add one in the system settings first.",
+  "appLockBiometricNoHardware": "This device has no fingerprint or face hardware.",
+  "appLockBiometricUnsupported": "Biometric unlock is not supported on this platform.",
   "appLockUnlockBiometric": "Unlock with biometrics",
   "controlStyle": "Control style",
   "controlStyleLiquidGlass": "Liquid glass",
-  "controlStyleKeycap": "Keycap · Futuristic",
   "chinaPreset": "China adaptation preset",
   "chinaPresetDesc": "One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.",
   "chinaPresetStateOn": "Applied",

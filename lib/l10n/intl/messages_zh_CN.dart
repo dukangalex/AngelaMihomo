@@ -20,135 +20,137 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh_CN';
 
-  static String m0(log) => "分析Angela Mihomo(Mihomo)日志:${log}";
+  static String m0(count) => "已拉取 ${count} 个模型，在下面选一个。";
 
-  static String m1(error) => "自动备份失败：${error}";
+  static String m1(log) => "分析Angela Mihomo(Mihomo)日志:${log}";
 
-  static String m2(hours) => "已按订阅源的建议开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
+  static String m2(error) => "自动备份失败：${error}";
 
-  static String m3(hours) => "已为此订阅开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
+  static String m3(hours) => "已按订阅源的建议开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
 
-  static String m4(value) => "均值 ${value}";
+  static String m4(hours) => "已为此订阅开启自动更新（每 ${hours} 小时）。可在配置设置里调整。";
 
-  static String m5(count) => "${Intl.plural(count, other: '天')}";
+  static String m5(value) => "均值 ${value}";
 
-  static String m6(label) => "确定删除选中的${label}吗？";
+  static String m6(count) => "${Intl.plural(count, other: '天')}";
 
-  static String m7(label) => "确定删除当前${label}吗？";
+  static String m7(label) => "确定删除选中的${label}吗？";
 
-  static String m8(reason) => "Fake-IP · ${reason}：返回真实 IP";
+  static String m8(label) => "确定删除当前${label}吗？";
 
-  static String m9(reason, range) => "Fake-IP · ${reason}：返回 ${range} 段虚拟地址";
+  static String m9(reason) => "Fake-IP · ${reason}：返回真实 IP";
 
-  static String m10(ips) => "命中 Hosts：返回 ${ips}";
+  static String m10(reason, range) => "Fake-IP · ${reason}：返回 ${range} 段虚拟地址";
 
-  static String m11(outbound) => "走「${outbound}」，由节点解析域名";
+  static String m11(ips) => "命中 Hosts：返回 ${ips}";
 
-  static String m12(outbound) => "走「${outbound}」，由节点解析域名，Hosts 不生效";
+  static String m12(outbound) => "走「${outbound}」，由节点解析域名";
 
-  static String m13(label) => "${label}不能为空";
+  static String m13(outbound) => "走「${outbound}」，由节点解析域名，Hosts 不生效";
 
-  static String m14(label) => "${label}当前已存在";
+  static String m14(label) => "${label}不能为空";
 
-  static String m15(count) => "${Intl.plural(count, other: '小时')}";
+  static String m15(label) => "${label}当前已存在";
 
-  static String m16(port) => "端口 ${port} 已被占用，请换一个端口";
+  static String m16(count) => "${Intl.plural(count, other: '小时')}";
 
-  static String m17(code) => "服务器拒绝了本次测试（错误码 ${code}）";
+  static String m17(port) => "端口 ${port} 已被占用，请换一个端口";
 
-  static String m18(lost, total) => "${lost}/${total} 个包";
+  static String m18(code) => "服务器拒绝了本次测试（错误码 ${code}）";
 
-  static String m19(name) => "已扫码：${name}";
+  static String m19(lost, total) => "${lost}/${total} 个包";
 
-  static String m20(value) => "${value} 秒";
+  static String m20(name) => "已扫码：${name}";
 
-  static String m21(port) => "正在监听端口 ${port}";
+  static String m21(value) => "${value} 秒";
 
-  static String m22(count) => "${count} 条流";
+  static String m22(port) => "正在监听端口 ${port}";
 
-  static String m23(count) => "${count}";
+  static String m23(count) => "${count} 条流";
 
-  static String m24(count) => "${count} 字节";
+  static String m24(count) => "${count}";
 
-  static String m25(address) => "来自 ${address}";
+  static String m25(count) => "${count} 字节";
 
-  static String m26(count) => "仅显示最近 ${count} 条，复制结果可查看全部";
+  static String m26(address) => "来自 ${address}";
 
-  static String m27(min, avg, max, jitter) =>
+  static String m27(count) => "仅显示最近 ${count} 条，复制结果可查看全部";
+
+  static String m28(min, avg, max, jitter) =>
       "往返时间：最短 ${min} / 平均 ${avg} / 最长 ${max} / 抖动 ${jitter} ms";
 
-  static String m28(target) => "${target} 的 Ping 统计";
+  static String m29(target) => "${target} 的 Ping 统计";
 
-  static String m29(sent, received, lost, loss) =>
+  static String m30(sent, received, lost, loss) =>
       "已发送 ${sent}，已接收 ${received}，丢失 ${lost}（${loss}% 丢失）";
 
-  static String m30(level) => "${level}模式适合网络调试，日常使用建议关闭";
+  static String m31(level) => "${level}模式适合网络调试，日常使用建议关闭";
 
-  static String m31(done, total, unlocked) =>
+  static String m32(done, total, unlocked) =>
       "已检测 ${done}/${total} · 可用 ${unlocked}";
 
-  static String m32(count) => "${Intl.plural(count, other: '分钟')}";
+  static String m33(count) => "${Intl.plural(count, other: '分钟')}";
 
-  static String m33(count) => "${Intl.plural(count, other: '月')}";
+  static String m34(count) => "${Intl.plural(count, other: '月')}";
 
-  static String m34(count) => "${count} 条";
+  static String m35(count) => "${count} 条";
 
-  static String m35(ip) => "经 ${ip} 匹配";
+  static String m36(ip) => "经 ${ip} 匹配";
 
-  static String m36(count) => "${count} 条新日志";
+  static String m37(count) => "${count} 条新日志";
 
-  static String m37(label) => "暂无${label}";
+  static String m38(label) => "暂无${label}";
 
-  static String m38(min, max) => "请输入 ${min}–${max} 之间的整数";
+  static String m39(min, max) => "请输入 ${min}–${max} 之间的整数";
 
-  static String m39(label) => "${label}必须为数字";
+  static String m40(label) => "${label}必须为数字";
 
-  static String m40(label) => "只看 ${label}";
+  static String m41(label) => "只看 ${label}";
 
-  static String m41(count) => "${count} 处需要留意";
+  static String m42(count) => "${count} 处需要留意";
 
-  static String m42(count) => "命中日志 ${count} 条";
+  static String m43(count) => "命中日志 ${count} 条";
 
-  static String m43(first, last) => "首次 ${first} · 最近 ${last}";
+  static String m44(first, last) => "首次 ${first} · 最近 ${last}";
 
-  static String m44(stage) => "实测定位：失败在${stage}这一步";
-
-  static String m45(status) =>
-      "服务器应答了，但给的是错误状态 ${status}。地址是通的，是服务商那边拒绝提供这份订阅——链接过期、写错或被撤销，答复正是这个样子。";
+  static String m45(stage) => "实测定位：失败在${stage}这一步";
 
   static String m46(status) =>
+      "服务器应答了，但给的是错误状态 ${status}。地址是通的，是服务商那边拒绝提供这份订阅——链接过期、写错或被撤销，答复正是这个样子。";
+
+  static String m47(status) =>
       "是服务商的服务器自己出了故障（状态 ${status}）：链接能通、请求也送到了，是服务器那边把自己的活干砸了。这是对方的故障，不是你的网络问题、也不是链接坏了——通常等一阵再更新就能恢复。";
 
-  static String m47(label) => "${label} 必须在 1024 到 49151 之间，0 为关闭";
+  static String m48(label) => "${label} 必须在 1024 到 49151 之间，0 为关闭";
 
-  static String m48(statusCode) =>
+  static String m49(statusCode) =>
       "配置导入失败，请检查网络状况或尝试重置订阅链接( HTTP错误代码: ${statusCode} )";
 
-  static String m49(index, time) => "第 ${index} 条规则触发解析 · ${time} ms";
+  static String m50(index, time) => "第 ${index} 条规则触发解析 · ${time} ms";
 
-  static String m50(ips) => "命中 Hosts：${ips}";
+  static String m51(ips) => "命中 Hosts：${ips}";
 
-  static String m51(total, index) => "共 ${total} 条规则，命中第 ${index} 条";
+  static String m52(total, index) => "共 ${total} 条规则，命中第 ${index} 条";
 
-  static String m52(total) => "共 ${total} 条规则";
+  static String m53(total) => "共 ${total} 条规则";
 
-  static String m53(count) => "已选择 ${count} 项";
+  static String m54(count) => "已选择 ${count} 项";
 
-  static String m54(count) => "多线程会并发 ${count} 条连接以跑满带宽";
+  static String m55(count) => "多线程会并发 ${count} 条连接以跑满带宽";
 
-  static String m55(provider) => "出站节点可能屏蔽了 ${provider} 测速，可切换测速源或更换出站";
+  static String m56(provider) => "出站节点可能屏蔽了 ${provider} 测速，可切换测速源或更换出站";
 
-  static String m56(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
+  static String m57(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
 
-  static String m57(count) => "${count} 条连接";
+  static String m58(count) => "${count} 条连接";
 
-  static String m58(provider) => "切换到 ${provider}";
+  static String m59(provider) => "切换到 ${provider}";
 
-  static String m59(error) => "无法确认设置已应用到当前配置：${error}";
+  static String m60(error) => "无法确认设置已应用到当前配置：${error}";
 
-  static String m60(label) => "${label}必须为URL";
+  static String m61(label) => "${label}必须为URL";
 
-  static String m61(count) => "${Intl.plural(count, other: '年')}";
+  static String m62(count) => "${Intl.plural(count, other: '年')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -242,6 +244,17 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "aiInterpret": MessageLookupByLibrary.simpleMessage("AI 解读"),
     "aiModel": MessageLookupByLibrary.simpleMessage("模型"),
+    "aiModelFetch": MessageLookupByLibrary.simpleMessage("拉取模型列表"),
+    "aiModelFetchFailed": MessageLookupByLibrary.simpleMessage(
+      "模型列表拉取失败。检查 API 地址与密钥，或手动输入模型名。",
+    ),
+    "aiModelFetchOk": m0,
+    "aiModelFetching": MessageLookupByLibrary.simpleMessage("正在拉取模型…"),
+    "aiModelFromList": MessageLookupByLibrary.simpleMessage("从列表选"),
+    "aiModelManual": MessageLookupByLibrary.simpleMessage("手动输入"),
+    "aiModelNeedEndpoint": MessageLookupByLibrary.simpleMessage(
+      "先填好 API 地址，再拉取模型列表。",
+    ),
     "aiPatrol": MessageLookupByLibrary.simpleMessage("AI 巡检"),
     "aiPreset": MessageLookupByLibrary.simpleMessage("服务商预设"),
     "aiPreviewDesc": MessageLookupByLibrary.simpleMessage(
@@ -266,14 +279,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "alwaysShowTitleBarDesc": MessageLookupByLibrary.simpleMessage(
       "始终显示右上角的标题栏按钮",
     ),
-    "analyzeLogPrompt": m0,
+    "analyzeLogPrompt": m1,
     "app": MessageLookupByLibrary.simpleMessage("应用"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage("分应用代理"),
     "appDesc": MessageLookupByLibrary.simpleMessage("处理应用相关设置"),
     "appLock": MessageLookupByLibrary.simpleMessage("应用锁"),
     "appLockBiometric": MessageLookupByLibrary.simpleMessage("使用生物识别"),
+    "appLockBiometricNoHardware": MessageLookupByLibrary.simpleMessage(
+      "这台设备没有指纹或面部识别硬件。",
+    ),
+    "appLockBiometricNotEnrolled": MessageLookupByLibrary.simpleMessage(
+      "这台设备还没有录入指纹或面部——先去系统设置里录一个。",
+    ),
     "appLockBiometricUnavailable": MessageLookupByLibrary.simpleMessage(
       "此设备没有可用的生物识别",
+    ),
+    "appLockBiometricUnsupported": MessageLookupByLibrary.simpleMessage(
+      "当前平台不支持生物识别解锁。",
     ),
     "appLockConfirmPin": MessageLookupByLibrary.simpleMessage("再次输入 PIN"),
     "appLockDesc": MessageLookupByLibrary.simpleMessage(
@@ -299,7 +321,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "auto": MessageLookupByLibrary.simpleMessage("自动"),
     "autoBackup": MessageLookupByLibrary.simpleMessage("自动备份"),
     "autoBackupDesc": MessageLookupByLibrary.simpleMessage("配置新增或修改后自动备份"),
-    "autoBackupFailed": m1,
+    "autoBackupFailed": m2,
     "autoBackupSuccess": MessageLookupByLibrary.simpleMessage("已自动备份到 WebDAV"),
     "autoCheckUpdate": MessageLookupByLibrary.simpleMessage("自动检查更新"),
     "autoCheckUpdateDesc": MessageLookupByLibrary.simpleMessage("应用启动时自动检查更新"),
@@ -316,8 +338,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("自动吸顶"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("自动更新"),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage("自动更新间隔（分钟）"),
-    "autoUpdateOnImportTip": m2,
-    "autoUpdateOnImportTipDefault": m3,
+    "autoUpdateOnImportTip": m3,
+    "autoUpdateOnImportTipDefault": m4,
     "back": MessageLookupByLibrary.simpleMessage("返回"),
     "backup": MessageLookupByLibrary.simpleMessage("备份"),
     "backupAndRecovery": MessageLookupByLibrary.simpleMessage("备份与恢复"),
@@ -482,7 +504,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "RESTful API 的访问密码",
     ),
     "controlStyle": MessageLookupByLibrary.simpleMessage("控件风格"),
-    "controlStyleKeycap": MessageLookupByLibrary.simpleMessage("按键质感 · 未来感"),
     "controlStyleLiquidGlass": MessageLookupByLibrary.simpleMessage("液态玻璃"),
     "copiedPackageName": MessageLookupByLibrary.simpleMessage("已复制包名"),
     "copiedToClipboard": MessageLookupByLibrary.simpleMessage("已复制到剪贴板"),
@@ -517,9 +538,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "darkIcon": MessageLookupByLibrary.simpleMessage("深色图标"),
     "darkIconDesc": MessageLookupByLibrary.simpleMessage("手动切换深色系桌面 APP 图标"),
     "dashboard": MessageLookupByLibrary.simpleMessage("首页"),
-    "dashboardAverage": m4,
+    "dashboardAverage": m5,
     "dashboardTotal": MessageLookupByLibrary.simpleMessage("合计"),
-    "days": m5,
+    "days": m6,
     "defaultGateway": MessageLookupByLibrary.simpleMessage("网关"),
     "defaultNameserver": MessageLookupByLibrary.simpleMessage("默认域名服务器"),
     "defaultNameserverDesc": MessageLookupByLibrary.simpleMessage(
@@ -532,8 +553,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "delayAnimationDesc": MessageLookupByLibrary.simpleMessage("自定义测试过程中的动画显示"),
     "delaySort": MessageLookupByLibrary.simpleMessage("按延迟排序"),
     "delete": MessageLookupByLibrary.simpleMessage("删除"),
-    "deleteMultipTip": m6,
-    "deleteTip": m7,
+    "deleteMultipTip": m7,
+    "deleteTip": m8,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("删除转发"),
     "desc": MessageLookupByLibrary.simpleMessage(
       "Angela Mihomo 基于强大灵活的 Mihomo 内核深度打造，致力于更好的客户端体验，我们的愿景: Connecting Open Source and AI，Accelerating Innovation",
@@ -576,8 +597,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "同时用跟随规则、系统 DNS 与指定服务器解析，便于发现污染与分流差异",
     ),
     "dnsQueryDesc": MessageLookupByLibrary.simpleMessage("按规则、系统或指定服务器解析域名"),
-    "dnsQueryFakeIpOff": m8,
-    "dnsQueryFakeIpOn": m9,
+    "dnsQueryFakeIpOff": m9,
+    "dnsQueryFakeIpOn": m10,
     "dnsQueryFilterBlackHit": MessageLookupByLibrary.simpleMessage("黑名单已命中"),
     "dnsQueryFilterBlackMiss": MessageLookupByLibrary.simpleMessage("黑名单未命中"),
     "dnsQueryFilterRuleFake": MessageLookupByLibrary.simpleMessage(
@@ -589,7 +610,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsQueryFilterWhiteHit": MessageLookupByLibrary.simpleMessage("白名单已命中"),
     "dnsQueryFilterWhiteMiss": MessageLookupByLibrary.simpleMessage("白名单未命中"),
     "dnsQueryHint": MessageLookupByLibrary.simpleMessage("输入域名"),
-    "dnsQueryHostsHit": m10,
+    "dnsQueryHostsHit": m11,
     "dnsQueryNoRecords": MessageLookupByLibrary.simpleMessage("没有记录"),
     "dnsQueryNormalMode": MessageLookupByLibrary.simpleMessage(
       "Normal：返回真实 IP，规则按 IP 匹配",
@@ -612,8 +633,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsQueryViaDirectHosts": MessageLookupByLibrary.simpleMessage(
       "走 DIRECT，直连 Hosts 地址",
     ),
-    "dnsQueryViaProxy": m11,
-    "dnsQueryViaProxyHosts": m12,
+    "dnsQueryViaProxy": m12,
+    "dnsQueryViaProxyHosts": m13,
     "dnsQueryViaReject": MessageLookupByLibrary.simpleMessage("被规则拒绝"),
     "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS 解析"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("是否要通过"),
@@ -628,7 +649,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "edit": MessageLookupByLibrary.simpleMessage("编辑"),
     "editTunnel": MessageLookupByLibrary.simpleMessage("编辑转发"),
     "editUser": MessageLookupByLibrary.simpleMessage("编辑用户"),
-    "emptyTip": m13,
+    "emptyTip": m14,
     "enableCrashReport": MessageLookupByLibrary.simpleMessage("应用崩溃分析"),
     "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
       "必要时上传应用崩溃日志",
@@ -653,7 +674,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "放行中国 QUIC 流量而非全部禁用",
     ),
     "excludeDesc": MessageLookupByLibrary.simpleMessage("从最近任务中隐藏应用"),
-    "existsTip": m14,
+    "existsTip": m15,
     "exit": MessageLookupByLibrary.simpleMessage("退出"),
     "expand": MessageLookupByLibrary.simpleMessage("标准"),
     "experimental": MessageLookupByLibrary.simpleMessage("Experimental"),
@@ -761,7 +782,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hotkeyManagement": MessageLookupByLibrary.simpleMessage("快捷键管理"),
     "hotkeyManagementDesc": MessageLookupByLibrary.simpleMessage("使用键盘控制应用程序"),
     "hourGlass": MessageLookupByLibrary.simpleMessage("沙漏翻转"),
-    "hours": m15,
+    "hours": m16,
     "httpPortSniffer": MessageLookupByLibrary.simpleMessage("HTTP 端口嗅探"),
     "icmpForwarding": MessageLookupByLibrary.simpleMessage("ICMP转发"),
     "icmpForwardingDesc": MessageLookupByLibrary.simpleMessage(
@@ -823,21 +844,21 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage("测试被中断"),
     "iperfErrorListen": MessageLookupByLibrary.simpleMessage("无法启动服务端"),
-    "iperfErrorPortInUse": m16,
+    "iperfErrorPortInUse": m17,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "通信异常，对方可能不是 iPerf3 服务端",
     ),
     "iperfErrorRefused": MessageLookupByLibrary.simpleMessage(
       "连接被拒绝，请确认对方已启动 iPerf3 服务端",
     ),
-    "iperfErrorServer": m17,
+    "iperfErrorServer": m18,
     "iperfErrorTimeout": MessageLookupByLibrary.simpleMessage("连接超时，请检查地址和网络"),
     "iperfErrorUdp": MessageLookupByLibrary.simpleMessage("UDP 握手失败，可能被防火墙拦截"),
     "iperfErrorUnreachable": MessageLookupByLibrary.simpleMessage("无法连接到服务器"),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
       "如果其他设备连接不上，请在系统防火墙中允许 Angela Mihomo 内核的传入连接。",
     ),
-    "iperfLostPackets": m18,
+    "iperfLostPackets": m19,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(
       "未检测到局域网地址，请确认已连接 Wi-Fi 或有线网络",
     ),
@@ -862,11 +883,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfScanInvalid": MessageLookupByLibrary.simpleMessage(
       "这不是 iPerf3 连接二维码",
     ),
-    "iperfScanned": m19,
-    "iperfSeconds": m20,
+    "iperfScanned": m20,
+    "iperfSeconds": m21,
     "iperfSend": MessageLookupByLibrary.simpleMessage("发送"),
     "iperfServer": MessageLookupByLibrary.simpleMessage("服务端"),
-    "iperfServerListening": m21,
+    "iperfServerListening": m22,
     "iperfServerOff": MessageLookupByLibrary.simpleMessage("服务端未启动"),
     "iperfServerOffHint": MessageLookupByLibrary.simpleMessage(
       "启动后，其他设备扫码或输入本机地址即可连接",
@@ -877,7 +898,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "服务端只在本页面打开时运行，离开页面后会自动停止；运行期间屏幕保持常亮。",
     ),
     "iperfStart": MessageLookupByLibrary.simpleMessage("开始测试"),
-    "iperfStreams": m22,
+    "iperfStreams": m23,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 工具"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
       "测试局域网内设备之间的带宽，兼容官方 iperf3",
@@ -891,7 +912,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("开启后将可以接收 IPv6 流量"),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("允许 IPv6 入站"),
     "isp": MessageLookupByLibrary.simpleMessage("运营商"),
-    "itemsCount": m23,
+    "itemsCount": m24,
     "just": MessageLookupByLibrary.simpleMessage("刚刚"),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage("TCP 保持活动间隔"),
     "keepDockIcon": MessageLookupByLibrary.simpleMessage("常驻DOCK"),
@@ -912,7 +933,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localFile": MessageLookupByLibrary.simpleMessage("本地文件"),
     "localPing": MessageLookupByLibrary.simpleMessage("本地 Ping"),
     "localPingAverage": MessageLookupByLibrary.simpleMessage("平均延迟"),
-    "localPingBytes": m24,
+    "localPingBytes": m25,
     "localPingClosed": MessageLookupByLibrary.simpleMessage("端口关闭"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("次数"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
@@ -927,22 +948,22 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage("无法解析该域名"),
     "localPingFailed": MessageLookupByLibrary.simpleMessage("发送失败"),
-    "localPingFrom": m25,
+    "localPingFrom": m26,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("网关"),
-    "localPingListLimit": m26,
+    "localPingListLimit": m27,
     "localPingMax": MessageLookupByLibrary.simpleMessage("最长"),
     "localPingMin": MessageLookupByLibrary.simpleMessage("最短"),
     "localPingReady": MessageLookupByLibrary.simpleMessage("选择目标后开始 Ping"),
     "localPingReceived": MessageLookupByLibrary.simpleMessage("已接收"),
     "localPingResolving": MessageLookupByLibrary.simpleMessage("正在解析"),
     "localPingResult": MessageLookupByLibrary.simpleMessage("Ping 结果"),
-    "localPingRttSummary": m27,
+    "localPingRttSummary": m28,
     "localPingRunning": MessageLookupByLibrary.simpleMessage("正在 Ping"),
     "localPingSent": MessageLookupByLibrary.simpleMessage("已发送"),
     "localPingSize": MessageLookupByLibrary.simpleMessage("包大小"),
     "localPingStart": MessageLookupByLibrary.simpleMessage("开始 Ping"),
-    "localPingStats": m28,
-    "localPingSummary": m29,
+    "localPingStats": m29,
+    "localPingSummary": m30,
     "localPingTargetHint": MessageLookupByLibrary.simpleMessage("域名或 IP 地址"),
     "localPingTcpTip": MessageLookupByLibrary.simpleMessage(
       "TCP Ping 测量建立连接的耗时；端口关闭时对方会立即拒绝，同样说明主机可达",
@@ -957,7 +978,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "log": MessageLookupByLibrary.simpleMessage("日志"),
     "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜索"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日志等级"),
-    "logLevelDebugHint": m30,
+    "logLevelDebugHint": m31,
     "logcat": MessageLookupByLibrary.simpleMessage("日志捕获"),
     "logcatDesc": MessageLookupByLibrary.simpleMessage("开启后将会显示日志入口"),
     "logs": MessageLookupByLibrary.simpleMessage("日志"),
@@ -979,7 +1000,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("检测"),
     "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage("没有可检测的节点"),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("选择检测范围"),
-    "mediaBatchSummary": m31,
+    "mediaBatchSummary": m32,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("节点批量检测"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("连通性测试"),
     "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
@@ -1019,11 +1040,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "minimize": MessageLookupByLibrary.simpleMessage("最小化"),
     "minimizeOnExit": MessageLookupByLibrary.simpleMessage("退出最小化"),
     "minimizeOnExitDesc": MessageLookupByLibrary.simpleMessage("修改系统默认退出事件"),
-    "minutes": m32,
+    "minutes": m33,
     "mixedPort": MessageLookupByLibrary.simpleMessage("混合端口"),
     "mode": MessageLookupByLibrary.simpleMessage("模式"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("单色"),
-    "months": m33,
+    "months": m34,
     "more": MessageLookupByLibrary.simpleMessage("查看"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("更多 IP 信息"),
     "mrsCopyRawLink": MessageLookupByLibrary.simpleMessage("复制为 GitHub Raw 链接"),
@@ -1040,8 +1061,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
       "开启后，针对域名按当前 DNS 配置解析出 IP 并进行匹配",
     ),
-    "mrsRules": m34,
-    "mrsVia": m35,
+    "mrsRules": m35,
+    "mrsVia": m36,
     "name": MessageLookupByLibrary.simpleMessage("名称"),
     "nameSort": MessageLookupByLibrary.simpleMessage("按名称排序"),
     "nameserver": MessageLookupByLibrary.simpleMessage("域名服务器"),
@@ -1143,7 +1164,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("网络类型"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("中性"),
-    "newLogsCount": m36,
+    "newLogsCount": m37,
     "noAnimation": MessageLookupByLibrary.simpleMessage("默认"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage("未找到备份文件"),
     "noData": MessageLookupByLibrary.simpleMessage("暂无数据"),
@@ -1183,14 +1204,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "ntpStatus": MessageLookupByLibrary.simpleMessage("状态"),
     "ntpStatusDesc": MessageLookupByLibrary.simpleMessage("开启 NTP 时间服务"),
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage("没有配置文件,请先添加配置文件"),
-    "nullTip": m37,
-    "numberRangeInvalid": m38,
-    "numberTip": m39,
+    "nullTip": m38,
+    "numberRangeInvalid": m39,
+    "numberTip": m40,
     "oneColumn": MessageLookupByLibrary.simpleMessage("一列"),
     "onlinePanel": MessageLookupByLibrary.simpleMessage("在线面板"),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("仅图标"),
     "onlyOtherApps": MessageLookupByLibrary.simpleMessage("仅第三方应用"),
-    "onlyShow": m40,
+    "onlyShow": m41,
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage("代理流量统计"),
     "onlyStatisticsProxyDesc": MessageLookupByLibrary.simpleMessage(
       "开启后将只统计代理流量",
@@ -1316,7 +1337,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "现在就更新一次订阅，把节点列表刷新。",
     ),
     "patrolAllGood": MessageLookupByLibrary.simpleMessage("一切正常"),
-    "patrolAttentionNeeded": m41,
+    "patrolAttentionNeeded": m42,
     "patrolCauseChainHopDown": MessageLookupByLibrary.simpleMessage(
       "链式代理的某一跳上次测试是坏的，所以整条双跳路径都不通，哪怕单独看每一边都像没问题。",
     ),
@@ -1398,11 +1419,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolFactHttpStatus": MessageLookupByLibrary.simpleMessage("HTTP 状态码"),
     "patrolFactMode": MessageLookupByLibrary.simpleMessage("模式"),
     "patrolFactNodes": MessageLookupByLibrary.simpleMessage("节点"),
-    "patrolFactOccurrences": m42,
+    "patrolFactOccurrences": m43,
     "patrolFactRecordedError": MessageLookupByLibrary.simpleMessage("记录到的错误"),
     "patrolFactSample": MessageLookupByLibrary.simpleMessage("日志证据"),
     "patrolFactTime": MessageLookupByLibrary.simpleMessage("时间"),
-    "patrolFactWindow": m43,
+    "patrolFactWindow": m44,
     "patrolFix": MessageLookupByLibrary.simpleMessage("修复"),
     "patrolFixApplied": MessageLookupByLibrary.simpleMessage("已修复并通过复验"),
     "patrolFixCancelled": MessageLookupByLibrary.simpleMessage("已取消修复"),
@@ -1422,7 +1443,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolLogDns": MessageLookupByLibrary.simpleMessage("DNS 失败"),
     "patrolLogRule": MessageLookupByLibrary.simpleMessage("规则异常"),
     "patrolLogTimeouts": MessageLookupByLibrary.simpleMessage("超时"),
-    "patrolMeasuredStage": m44,
+    "patrolMeasuredStage": m45,
     "patrolNoProblems": MessageLookupByLibrary.simpleMessage("没有发现问题"),
     "patrolNodesNoData": MessageLookupByLibrary.simpleMessage("暂无测速数据"),
     "patrolNodesSomeDown": MessageLookupByLibrary.simpleMessage("有些节点不可用"),
@@ -1472,8 +1493,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolStageDns": MessageLookupByLibrary.simpleMessage(
       "订阅的域名没能解析出地址。请求死在第一步——连接还没存在就已经结束了。",
     ),
-    "patrolStageHttp": m45,
-    "patrolStageHttpServer": m46,
+    "patrolStageHttp": m46,
+    "patrolStageHttpServer": m47,
     "patrolStageNameBadContent": MessageLookupByLibrary.simpleMessage("返回的内容"),
     "patrolStageNameDns": MessageLookupByLibrary.simpleMessage("DNS 解析"),
     "patrolStageNameHttp": MessageLookupByLibrary.simpleMessage("服务器应答"),
@@ -1520,7 +1541,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "port": MessageLookupByLibrary.simpleMessage("端口"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("请输入不同的端口"),
-    "portTip": m47,
+    "portTip": m48,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("流沙倾注"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage("玉漏凝光"),
     "powerSwitch": MessageLookupByLibrary.simpleMessage("启动开关"),
@@ -1537,7 +1558,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "配置文件已经修改，是否关闭自动更新？",
     ),
-    "profileImportFailed": m48,
+    "profileImportFailed": m49,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入配置名称",
     ),
@@ -1653,14 +1674,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "查看域名或 IP 在内核中的 DNS 与规则匹配过程",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解析"),
-    "routeTraceDnsBy": m49,
+    "routeTraceDnsBy": m50,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage("目标本身是 IP，无需解析"),
     "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
       "匹配过程中无需解析 IP",
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("最终出站"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("输入域名、IP 或网址"),
-    "routeTraceHostsHit": m50,
+    "routeTraceHostsHit": m51,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("目标"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage("直连模式：所有流量直连"),
     "routeTraceModeGlobal": MessageLookupByLibrary.simpleMessage(
@@ -1668,8 +1689,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceNoMatch": MessageLookupByLibrary.simpleMessage("没有规则命中，按直连处理"),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("规则匹配"),
-    "routeTraceRulesSummary": m51,
-    "routeTraceRulesTotal": m52,
+    "routeTraceRulesSummary": m52,
+    "routeTraceRulesTotal": m53,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage("目标不存在，跳过"),
     "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage("PASS 跳过"),
     "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage("不支持 UDP，跳过"),
@@ -1703,7 +1724,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("全选"),
     "selectBackupVersion": MessageLookupByLibrary.simpleMessage("选择备份版本"),
     "selected": MessageLookupByLibrary.simpleMessage("已选择"),
-    "selectedCountTitle": m53,
+    "selectedCountTitle": m54,
     "serviceReady": MessageLookupByLibrary.simpleMessage("服务已就绪"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("服务正在运行中"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -1770,7 +1791,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("连接中"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("连接方式"),
-    "speedTestConnectionsDesc": m54,
+    "speedTestConnectionsDesc": m55,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage("未启动 · 直连测速"),
     "speedTestCredit": MessageLookupByLibrary.simpleMessage(
       "测速服务器由网络上公开的第三方提供，特别感谢 Apple、Cloudflare 以及 Speedtest by Ookla。",
@@ -1778,7 +1799,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestDataUsed": MessageLookupByLibrary.simpleMessage("已用流量"),
     "speedTestDuration": MessageLookupByLibrary.simpleMessage("测试时长"),
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage("测速服务不可用"),
-    "speedTestErrorBlockedDesc": m55,
+    "speedTestErrorBlockedDesc": m56,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "请检查出站是否可用后重试",
     ),
@@ -1811,7 +1832,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 基于 QUIC (UDP)，不可用时依次回退到 HTTP/2、（HTTP/2 不可用时）HTTP/1.1",
     ),
-    "speedTestProtocolFallback": m56,
+    "speedTestProtocolFallback": m57,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("网络质量"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("准备就绪"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("实时速率"),
@@ -1824,8 +1845,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("测速设置"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("单线程"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("开始测速"),
-    "speedTestStreams": m57,
-    "speedTestSwitchProvider": m58,
+    "speedTestStreams": m58,
+    "speedTestSwitchProvider": m59,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "使用系统 DNS 解析",
     ),
@@ -1876,7 +1897,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "设置应用状态待确认",
     ),
-    "systemExplicitApplyUnconfirmed": m59,
+    "systemExplicitApplyUnconfirmed": m60,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("广告拦截"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "默认关闭。按 Mihomo 的 GEOSITE category-ads-all 分类阻断广告域名；仅替换配置中同类广告规则，其它规则保留。",
@@ -2086,7 +2107,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("上传"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("通过 URL 获取配置文件"),
-    "urlTip": m60,
+    "urlTip": m61,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage("脚本覆写开关"),
     "useHosts": MessageLookupByLibrary.simpleMessage("使用Hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系统 Hosts"),
@@ -2123,6 +2144,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "文件系统不支持文件能力（xattr），已回退到 setuid",
     ),
-    "years": m61,
+    "years": m62,
   };
 }

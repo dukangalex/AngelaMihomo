@@ -822,38 +822,19 @@ class _SliderDefaultsM3 extends SliderThemeData {
   double? get trackGap => 6.0;
 }
 
-/// Control style picker (T62): liquid glass (default) or the
-/// futuristic keycap skin, side by side in Appearance. Switching is
-/// instant — the bottom bar and key buttons re-skin in place.
+/// Control style (T62 → T64): the keycap-future option was retired
+/// by the 2026-11-08 visual ruling — liquid glass is the only style,
+/// so the Appearance page states it instead of offering a choice
+/// that no longer exists. A stored keycap value falls back to glass
+/// in [ControlStyleStore.load], without an error.
 class _ControlStyleItem extends StatelessWidget {
   const _ControlStyleItem();
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ControlStyle>(
-      valueListenable: controlStyleNotifier,
-      builder: (context, style, _) {
-        return ListItem(
-          title: Text(appLocalizations.controlStyle),
-          subtitle: Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: Text(appLocalizations.controlStyleLiquidGlass),
-                selected: style == ControlStyle.liquidGlass,
-                onSelected: (_) =>
-                    ControlStyleStore.save(ControlStyle.liquidGlass),
-              ),
-              ChoiceChip(
-                label: Text(appLocalizations.controlStyleKeycap),
-                selected: style == ControlStyle.keycapFuture,
-                onSelected: (_) =>
-                    ControlStyleStore.save(ControlStyle.keycapFuture),
-              ),
-            ],
-          ),
-        );
-      },
+    return ListItem(
+      title: Text(appLocalizations.controlStyle),
+      subtitle: Text(appLocalizations.controlStyleLiquidGlass),
     );
   }
 }

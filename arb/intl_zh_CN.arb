@@ -1270,6 +1270,20 @@
   "aiEndpoint": "API 地址",
   "aiApiKey": "API 密钥",
   "aiModel": "模型",
+  "aiModelFetch": "拉取模型列表",
+  "aiModelFetching": "正在拉取模型…",
+  "aiModelFetchOk": "已拉取 {count} 个模型，在下面选一个。",
+  "@aiModelFetchOk": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "aiModelFetchFailed": "模型列表拉取失败。检查 API 地址与密钥，或手动输入模型名。",
+  "aiModelManual": "手动输入",
+  "aiModelFromList": "从列表选",
+  "aiModelNeedEndpoint": "先填好 API 地址，再拉取模型列表。",
   "aiTestConnection": "测试连接",
   "aiTestOk": "连接正常",
   "aiTestFailed": "连接失败",
@@ -1300,10 +1314,12 @@
   "appLockRelock5m": "5 分钟",
   "appLockBiometric": "使用生物识别",
   "appLockBiometricUnavailable": "此设备没有可用的生物识别",
+  "appLockBiometricNotEnrolled": "这台设备还没有录入指纹或面部——先去系统设置里录一个。",
+  "appLockBiometricNoHardware": "这台设备没有指纹或面部识别硬件。",
+  "appLockBiometricUnsupported": "当前平台不支持生物识别解锁。",
   "appLockUnlockBiometric": "用生物识别解锁",
   "controlStyle": "控件风格",
   "controlStyleLiquidGlass": "液态玻璃",
-  "controlStyleKeycap": "按键质感 · 未来感",
   "chinaPreset": "中国适配预设",
   "chinaPresetDesc": "一键应用面向中国网络环境的推荐组合。只组合本应用已有能力，不新增规则、不新增请求。",
   "chinaPresetStateOn": "已开启",

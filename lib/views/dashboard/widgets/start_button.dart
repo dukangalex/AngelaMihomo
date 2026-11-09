@@ -220,55 +220,32 @@ class _StartButtonState extends ConsumerState<StartButton> {
                 children: [
                   Expanded(
                     child: Center(
-                      // Keycap skin (T62): the start key becomes a
-                      // physical keycap disc — seat shadow, edge
-                      // glow while running, press sink with spring
-                      // return. Glass skin keeps the flat disc.
-                      child: ValueListenableBuilder<ControlStyle>(
-                        valueListenable: controlStyleNotifier,
-                        builder: (context, style, _) {
-                          final disc = Material(
-                            type: MaterialType.transparency,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: onPressed,
-                              onLongPress: onLongPress,
-                              child: SizedBox.square(
-                                dimension: 56,
-                                child: Icon(
-                                  icon,
-                                  size: 30,
-                                  color: colorScheme.primary,
-                                ),
+                      // T64: the keycap disc was retired with the
+                      // keycap style; the start key is the glass disc.
+                      child: AnimatedContainer(
+                        duration: midDuration,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colorScheme.primary.withValues(
+                            alpha: displayStart ? 0.14 : 0.08,
+                          ),
+                        ),
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: onPressed,
+                            onLongPress: onLongPress,
+                            child: SizedBox.square(
+                              dimension: 56,
+                              child: Icon(
+                                icon,
+                                size: 30,
+                                color: colorScheme.primary,
                               ),
                             ),
-                          );
-                          if (style != ControlStyle.keycapFuture) {
-                            return AnimatedContainer(
-                              duration: midDuration,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: colorScheme.primary.withValues(
-                                  alpha: displayStart ? 0.14 : 0.08,
-                                ),
-                              ),
-                              child: disc,
-                            );
-                          }
-                          return KeycapPressable(
-                            builder: (context, pressed01) => Container(
-                              width: 64,
-                              height: 64,
-                              decoration: keycapFaceDecoration(
-                                colorScheme,
-                                selected: displayStart,
-                                pressed01: pressed01,
-                                radius: BorderRadius.circular(32),
-                              ),
-                              child: disc,
-                            ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ),
                   ),

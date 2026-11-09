@@ -446,27 +446,16 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 /// scrolls (T38 liquid glass, phase 1). Round 3: the glows are neutral
 /// gray/white — the glass is untainted, so ambient colour must come from
 /// real content, not from a brand-coloured backdrop painting the cards.
+/// (T64: the keycap ambience variant went away with the keycap style.)
 class _GlassAmbientBackground extends StatelessWidget {
   const _GlassAmbientBackground();
 
   @override
   Widget build(BuildContext context) {
-    // T64 sample: the keycap-future style gets its own ambience —
-    // the same neutral key light, but the fill glow takes the theme
-    // primary (the cyan edge light of the key language) so the slabs
-    // sit in a faintly lit seat instead of a neutral studio.
-    return ValueListenableBuilder<ControlStyle>(
-      valueListenable: controlStyleNotifier,
-      builder: (context, style, _) =>
-          _build(context, style == ControlStyle.keycapFuture),
-    );
-  }
-
-  Widget _build(BuildContext context, bool keycap) {
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final neutral = colorScheme.onSurface;
-    final fill = keycap ? colorScheme.primary : neutral;
+    final fill = neutral;
     // Composition (T38 full rollout): the light moves from two corner
     // glows to one broad key light centred over the header zone plus a
     // smaller fill at the lower right — the cards pick up a different
@@ -489,11 +478,7 @@ class _GlassAmbientBackground extends StatelessWidget {
             bottom: -190,
             right: -140,
             child: _glow(
-              fill.withValues(
-                alpha: keycap
-                    ? (isLight ? 0.12 : 0.16)
-                    : (isLight ? 0.07 : 0.11),
-              ),
+              fill.withValues(alpha: isLight ? 0.07 : 0.11),
               size: 380,
             ),
           ),

@@ -169,50 +169,13 @@ class DashboardTileCard extends StatelessWidget {
     );
     return SizedBox(
       height: getWidgetHeight(context, size.rows),
-      // T64 sample: under the keycap-future style the tile face is a
-      // physical key slab (same primitives as the bottom-bar keys and
-      // the start key) instead of the glass card. Content, layout and
-      // tap targets are identical either way — only the surface
-      // language changes.
-      child: ValueListenableBuilder<ControlStyle>(
-        valueListenable: controlStyleNotifier,
-        builder: (context, style, _) {
-          if (style != ControlStyle.keycapFuture) {
-            return CommonCard(
-              onPressed: onPressed,
-              onLongPress: onLongPress,
-              child: content,
-            );
-          }
-          final scheme = context.colorScheme;
-          if (onPressed == null && onLongPress == null) {
-            return DecoratedBox(
-              decoration: keycapFaceDecoration(
-                scheme,
-                selected: false,
-                pressed01: 0,
-              ),
-              child: content,
-            );
-          }
-          return KeycapPressable(
-            builder: (context, sink) => DecoratedBox(
-              decoration: keycapFaceDecoration(
-                scheme,
-                selected: false,
-                pressed01: sink,
-              ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: onPressed,
-                  onLongPress: onLongPress,
-                  child: content,
-                ),
-              ),
-            ),
-          );
-        },
+      // T64: the keycap tile face was retired with the keycap style
+      // (2026-11-08 ruling); dashboard tiles are glass cards, full
+      // stop — same content, layout and tap targets as before.
+      child: CommonCard(
+        onPressed: onPressed,
+        onLongPress: onLongPress,
+        child: content,
       ),
     );
   }
