@@ -21,6 +21,7 @@ Widget _buildApp({
   required Widget body,
   bool mobile = true,
   bool scrollEdgeFade = true,
+  Color? backgroundColor,
 }) {
   return ProviderScope(
     overrides: [isMobileViewProvider.overrideWith((ref) => mobile)],
@@ -28,6 +29,7 @@ Widget _buildApp({
       home: CommonScaffold(
         title: 'title',
         scrollEdgeFade: scrollEdgeFade,
+        backgroundColor: backgroundColor,
         body: body,
       ),
     ),
@@ -79,7 +81,12 @@ void main() {
   });
 
   testWidgets('纯色背景下只在内容滚离顶部时叠加渐隐，且不改变布局', (tester) async {
-    await tester.pumpWidget(_buildApp(body: _list()));
+    // Round 5: the wedge path now belongs to an explicitly supplied
+    // solid backgroundColor (the mobile default without one is the
+    // glass field — see the field test below).
+    await tester.pumpWidget(
+      _buildApp(body: _list(), backgroundColor: const Color(0xFFF2F2F2)),
+    );
     await tester.pumpAndSettle();
     final appBarBottom = tester.getBottomLeft(find.byType(AppBar)).dy;
     expect(tester.getTopLeft(find.byType(ListView)).dy, appBarBottom);
@@ -99,6 +106,27 @@ void main() {
 
   testWidgets('透明背景下改用内容遮罩，回到顶部后不保留图层', (tester) async {
     await tester.pumpWidget(_buildApp(body: _list(), mobile: false));
+    await tester.pumpAndSettle();
+    expect(_hasMaskLayer(tester), isFalse);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(_overlay(), findsNothing);
+    expect(_hasMaskLayer(tester), isTrue);
+
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(_hasMaskLayer(tester), isFalse);
+  });
+
+  testWidgets('玻璃色场（移动端默认背景）下改用内容遮罩，回到顶部后不保留图层', (
+    tester,
+  ) async {
+    // Round 5: on mobile, a page without an explicit backgroundColor
+    // sits on the glass field — there is no flat colour to wedge over
+    // the top edge, so the fade dissolves the content into the field
+    // (mask path), exactly like the transparent desktop case.
+    await tester.pumpWidget(_buildApp(body: _list(), mobile: true));
     await tester.pumpAndSettle();
     expect(_hasMaskLayer(tester), isFalse);
 
@@ -149,6 +177,9 @@ void main() {
 
     await tester.pumpWidget(
       _buildApp(
+        // Wedge geometry is asserted here, so pin the explicit solid
+        // background that owns the wedge path in round 5.
+        backgroundColor: const Color(0xFFF2F2F2),
         body: ListView.builder(
           padding: const EdgeInsets.only(top: 8),
           itemCount: 100,
@@ -161,7 +192,12 @@ void main() {
     final appBarBottom = tester.getBottomLeft(find.byType(AppBar)).dy;
     final plainTop = tester.getTopLeft(find.text('item 0')).dy;
 
-    await tester.pumpWidget(_buildApp(body: risen()));
+    await tester.pumpWidget(
+      _buildApp(
+        backgroundColor: const Color(0xFFF2F2F2),
+        body: risen(),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(find.text('item 0')).dy, plainTop);
     expect(

@@ -41,6 +41,25 @@ import 'package:material_ui/material_ui.dart';
 /// text from ghosting through cards — bowel 第 5 条）, and the rim
 /// plus specular peak rise so the edge reads as a refraction line.
 ///
+/// Round 5 (T64, user real-device verdict on the round-4 build:
+/// functional pass, glass 「差强人意」 — not passed): on the light
+/// theme the page cards read as flat pale cards, because the app
+/// background was a near-white flat fill — glass with nothing behind
+/// it has nothing to refract. Two fixes, one in the backdrop and one
+/// in the glass itself. (1) Every CommonScaffold page now sits on a
+/// designed colour field ([GlassField]): a static gradient with soft
+/// colour blooms, so every surface has something to refract; dialogs
+/// and the context menu already read as glass in round 4 precisely
+/// because content sat behind them. (2) The glass itself gains edge
+/// definition: the rim and specular peaks rise again, the backdrop
+/// saturation goes to 2.0 so refracted colour actually tints the
+/// surface, static surfaces (list cards) finally paint the specular
+/// sheen and a gradient rim stroke instead of a bare fill, and their
+/// static fill thins (0.78–0.86) so the field tints through — the
+/// field is all soft gradients, so no readable content can ghost
+/// through. Fill alphas stay in the Ultrathin band; nothing goes
+/// back toward the milky frost.
+///
 /// Performance discipline: real-time backdrop blur is only used on fixed or
 /// finite surfaces (bottom navigation bar, dashboard cards, modals). Long
 /// scrolling lists must not opt in. When [GlassEffects.blurEnabled] is
@@ -68,6 +87,7 @@ class GlassTokens {
     required this.rim,
     required this.highlightPeak,
     required this.saturation,
+    required this.contour,
     this.realtime = true,
   });
 
@@ -80,8 +100,20 @@ class GlassTokens {
   /// More opaque fill used when blur is degraded off.
   final Color staticFill;
 
-  /// Bright rim border color (the glass edge highlight).
+  /// Bright rim border color (the glass edge highlight). Round 5
+  /// addendum: the glint is dyed by the palette (lerped toward the
+  /// scheme primary) instead of plain white — the reference fitting
+  /// takes the edge light's colour from the background, not from a
+  /// white overlay.
   final Color rim;
+
+  /// Dark contour line painted just inside the rim, plus the inner
+  /// shadow band under the top edge (round 5 addendum, approximated
+  /// from the reference fitting: a 0.75pt dark contour outside the
+  /// bevel and an inner shadow inside it carry the pane's depth;
+  /// this architecture clips at the shape edge, so the contour lands
+  /// immediately inside the bright rim instead of outside it).
+  final Color contour;
 
   /// Peak alpha of the white specular gradient at the top edge.
   final double highlightPeak;
@@ -128,6 +160,23 @@ class GlassTokens {
     // the caller-supplied base (the nav bar passes its card-matching body
     // colour, which used to carry the theme tint into the glass).
     final body = neutralize(rawBody);
+    // Round 5, static body: blur-off surfaces cannot borrow colour from
+    // the backdrop, so a neutral-grey fill at high alpha reads as a
+    // flat slab (the dark profiles list was the proof). The static
+    // body therefore leans toward the field's own hues — pale steel
+    // blue in light, deep field blue in dark — and thins, letting the
+    // field show through and tint each card where it sits.
+    final staticBody = Color.lerp(
+      body,
+      isLight ? const Color(0xFFD9E6F5) : const Color(0xFF16233F),
+      isLight ? 0.45 : 0.55,
+    )!;
+    // Glint dye: the rim colour leans toward the scheme primary so
+    // the edge light reads as brightened background, not white paint.
+    final rimBase = Color.lerp(Colors.white, colorScheme.primary, 0.18)!;
+    // Dark contour: faint in light (the bright field separates the
+    // pane already), stronger in dark where panes need the outline.
+    final contour = Colors.black.withValues(alpha: isLight ? 0.10 : 0.42);
     return switch (kind) {
       // Round 4 (T64): fill alpha down toward Ultrathin (light 0.28 →
       // 0.16, dark 0.26 → 0.18 — in dark mode the black glass body
@@ -136,34 +185,51 @@ class GlassTokens {
       // ghosting through, rim and specular up for the refraction
       // edge. staticFill stays dense: with blur degraded off there
       // is no backdrop left to borrow body from.
+      // Round 5: rim/highlight rise once more (the edge must read on
+      // a bright field, not just over content). Static surfaces use
+      // [staticBody] instead of the neutral lid (see above): card
+      // 0.72/0.68, dialog 0.80/0.78, nav 0.78 — thin enough for the
+      // field to tint them, dense enough for text contrast.
+      // Round 5 addendum (reference fitting, iOS 27 captures): real
+      // glass frost is LIGHT — a mid-tint toolbar measures sigma
+      // ≈ 6.9; heavy blur is what frosted plastic does. Round 4's
+      // 14–16 band was tuned against busy page content ghosting
+      // through; over the smooth designed field there is nothing to
+      // ghost, so sigma comes back down (nav 11, card 10, dialog 13
+      // — dialogs still float over real content and keep the most),
+      // and saturation settles at 1.6, between the reference model's
+      // 1.4 and round 4's 1.8.
       GlassKind.navigationBar => GlassTokens(
-        sigma: 16,
+        sigma: 11,
         fill: body.withValues(alpha: isLight ? 0.16 : 0.18),
-        staticFill: body.withValues(alpha: 0.94),
-        rim: Colors.white.withValues(alpha: isLight ? 0.9 : 0.5),
-        highlightPeak: isLight ? 0.5 : 0.32,
-        saturation: 1.8,
+        staticFill: staticBody.withValues(alpha: 0.78),
+        rim: rimBase.withValues(alpha: isLight ? 0.98 : 0.58),
+        highlightPeak: isLight ? 0.56 : 0.38,
+        saturation: 1.6,
+        contour: contour,
         realtime: realtime,
       ),
       GlassKind.card => GlassTokens(
-        sigma: 14,
+        sigma: 10,
         fill: body.withValues(alpha: isLight ? 0.15 : 0.17),
-        staticFill: body.withValues(alpha: isLight ? 0.9 : 0.88),
-        rim: Colors.white.withValues(alpha: isLight ? 0.85 : 0.45),
-        highlightPeak: isLight ? 0.42 : 0.26,
-        saturation: 1.8,
+        staticFill: staticBody.withValues(alpha: isLight ? 0.72 : 0.68),
+        rim: rimBase.withValues(alpha: isLight ? 0.95 : 0.55),
+        highlightPeak: isLight ? 0.5 : 0.32,
+        saturation: 1.6,
+        contour: contour,
         realtime: realtime,
       ),
       // Dialogs and modal sheets float over a dimmed barrier, so the fill
       // sits at the dense end of the band for legibility; the barrier
       // itself supplies most of the separation from the page behind.
       GlassKind.dialog => GlassTokens(
-        sigma: 16,
+        sigma: 13,
         fill: body.withValues(alpha: isLight ? 0.18 : 0.19),
-        staticFill: body.withValues(alpha: isLight ? 0.92 : 0.9),
-        rim: Colors.white.withValues(alpha: isLight ? 0.85 : 0.45),
-        highlightPeak: isLight ? 0.42 : 0.26,
-        saturation: 1.8,
+        staticFill: staticBody.withValues(alpha: isLight ? 0.8 : 0.78),
+        rim: rimBase.withValues(alpha: isLight ? 0.95 : 0.55),
+        highlightPeak: isLight ? 0.5 : 0.32,
+        saturation: 1.6,
+        contour: contour,
         realtime: realtime,
       ),
     };
@@ -301,9 +367,11 @@ class GlassScope extends InheritedWidget {
   bool updateShouldNotify(GlassScope oldWidget) => live != oldWidget.live;
 }
 
-/// Clips [child] to [shape], blurs the backdrop behind it and lays a top
-/// specular highlight over it. When blur is degraded off, returns [child]
-/// untouched (the child is expected to paint [GlassTokens.effectiveFill]).
+/// Clips [child] to [shape], blurs the backdrop behind it (live
+/// surfaces only) and lays the specular sheen and rim light over it.
+/// When blur is degraded off the child is expected to paint
+/// [GlassTokens.effectiveFill]; the light layers still apply
+/// (round 5).
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -345,62 +413,251 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!tokens.blur) return child;
+    // Round 5: the decorative glass layers (specular sheen, top rim
+    // light, gradient rim stroke) are painted in BOTH modes — only
+    // the BackdropFilter is live-only. In rounds ≤ 4 a static surface
+    // returned its child untouched, so list cards carried the glass
+    // fill and hairline but none of the light play, which is half of
+    // why they read as flat pale cards on the real device. The
+    // overlays are static gradients — no backdrop sampling, no
+    // per-frame cost beyond the card's own repaint.
+    final content = Stack(
+      children: [
+        child,
+        // Specular sheen: a bright, thin mirror band hugging the top
+        // that dissolves quickly (crystal, not frost).
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0, 0.14, 0.38],
+                  colors: [
+                    Colors.white.withValues(alpha: tokens.highlightPeak),
+                    Colors.white.withValues(
+                      alpha: tokens.highlightPeak * 0.3,
+                    ),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Inner shadow: a soft dark band just under the top edge —
+        // the pane's thickness shadow inside the bevel (reference
+        // fitting). Static gradient, clipped to the shape.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 18,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    tokens.contour.withValues(alpha: tokens.contour.a * 0.55),
+                    tokens.contour.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Gradient rim stroke: a full-perimeter edge light, brightest
+        // at the top and dissolving toward the bottom — the refraction
+        // edge of the pane, with the dark contour line beneath it.
+        // Painted (not a BorderSide) so the stroke itself can carry
+        // the gradient.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _GlassRimPainter(
+                shape: shape,
+                rim: tokens.rim,
+                contour: tokens.contour,
+              ),
+            ),
+          ),
+        ),
+        // Rim light: a crisp bright line along the very top edge,
+        // clipped to the shape so it follows the rounded corners —
+        // the refraction edge of the crystal.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 1.2,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  stops: const [0, 0.5, 1],
+                  colors: [
+                    tokens.rim.withValues(alpha: tokens.rim.a * 0.55),
+                    tokens.rim,
+                    tokens.rim.withValues(alpha: tokens.rim.a * 0.55),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
     return ClipPath(
       clipper: ShapeBorderClipper(shape: shape),
-      child: BackdropFilter(
-        filter: _backdropFilter(),
-        child: Stack(
-          children: [
-            child,
-            // Specular sheen: a bright, thin mirror band hugging the top
-            // that dissolves quickly (crystal, not frost).
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0, 0.14, 0.38],
-                      colors: [
-                        Colors.white.withValues(alpha: tokens.highlightPeak),
-                        Colors.white.withValues(
-                          alpha: tokens.highlightPeak * 0.3,
-                        ),
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Rim light: a crisp bright line along the very top edge,
-            // clipped to the shape so it follows the rounded corners —
-            // the refraction edge of the crystal.
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 1.2,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      stops: const [0, 0.5, 1],
-                      colors: [
-                        tokens.rim.withValues(alpha: tokens.rim.a * 0.55),
-                        tokens.rim,
-                        tokens.rim.withValues(alpha: tokens.rim.a * 0.55),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+      child: tokens.blur
+          ? BackdropFilter(filter: _backdropFilter(), child: content)
+          : content,
+    );
+  }
+}
+
+/// Strokes [shape]'s outline twice: first the dark [contour] line
+/// (wider, so a hairline of it survives inside the bright stroke),
+/// then the rim-light gradient — full rim brightness at the top
+/// edge, dissolving down the sides. The outer halves of both strokes
+/// are clipped away by [GlassSurface]'s ClipPath, leaving clean
+/// inner edge lines.
+class _GlassRimPainter extends CustomPainter {
+  const _GlassRimPainter({
+    required this.shape,
+    required this.rim,
+    required this.contour,
+  });
+
+  final ShapeBorder shape;
+  final Color rim;
+  final Color contour;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final path = shape.getOuterPath(rect);
+    final contourPaint = Paint()
+      ..color = contour
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6;
+    canvas.drawPath(path, contourPaint);
+    final shader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: const [0, 0.35, 1],
+      colors: [
+        rim,
+        rim.withValues(alpha: rim.a * 0.5),
+        rim.withValues(alpha: rim.a * 0.26),
+      ],
+    ).createShader(rect);
+    final paint = Paint()
+      ..shader = shader
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_GlassRimPainter oldDelegate) {
+    return shape != oldDelegate.shape ||
+        rim != oldDelegate.rim ||
+        contour != oldDelegate.contour;
+  }
+}
+
+/// The designed colour field every glass page sits on (round 5).
+///
+/// Glass needs something behind it to refract: over the old flat
+/// near-white scaffold colour the light-theme cards had no backdrop
+/// content at all and collapsed into flat pale cards, while dialogs
+/// floating over real content read as glass immediately. This field
+/// is the missing content — a quiet base gradient with soft colour
+/// blooms in the project's blue/teal/violet family, identical in
+/// spirit across both themes (pale blue-white by day, deep navy-black
+/// by night).
+///
+/// It is strictly static: one CustomPaint inside a RepaintBoundary,
+/// painted once and cached as a layer; scrolling content above it
+/// never repaints it, and it carries no text or sharp shapes, so
+/// nothing readable can ghost through a glass surface (bowel 第 5 条）.
+class GlassField extends StatelessWidget {
+  const GlassField({super.key, required this.brightness});
+
+  final Brightness brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: _GlassFieldPainter(brightness),
+        size: Size.infinite,
       ),
     );
+  }
+}
+
+class _GlassFieldPainter extends CustomPainter {
+  const _GlassFieldPainter(this.brightness);
+
+  final Brightness brightness;
+
+  /// One soft colour bloom: centre and radius as fractions of the
+  /// field's width/height, colour with its peak alpha baked in.
+  static const _lightBlooms = <(double, double, double, Color)>[
+    // Sky blue, top right — the dominant daylight bloom.
+    (0.88, 0.04, 0.95, Color(0x4D5EA0FF)),
+    // Brand teal, mid left.
+    (0.0, 0.36, 0.75, Color(0x2B14B8A6)),
+    // Violet, lower right.
+    (0.98, 0.70, 0.85, Color(0x338B7CF6)),
+    // Cyan, bottom left.
+    (0.04, 0.98, 0.80, Color(0x2938BDF8)),
+  ];
+
+  static const _darkBlooms = <(double, double, double, Color)>[
+    // Deep blue, top right.
+    (0.90, 0.03, 1.0, Color(0x522563EB)),
+    // Teal, mid left.
+    (0.0, 0.38, 0.80, Color(0x330D9488)),
+    // Violet, lower right.
+    (0.98, 0.72, 0.90, Color(0x387C3AED)),
+    // Cyan, bottom left.
+    (0.06, 1.0, 0.85, Color(0x260EA5E9)),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final isLight = brightness == Brightness.light;
+    final basePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: isLight
+            ? const [Color(0xFFFBFCFE), Color(0xFFE9EFF8)]
+            : const [Color(0xFF04060C), Color(0xFF0A1220)],
+      ).createShader(rect);
+    canvas.drawRect(rect, basePaint);
+    for (final (fx, fy, fr, color) in isLight ? _lightBlooms : _darkBlooms) {
+      final circle = Rect.fromCircle(
+        center: Offset(size.width * fx, size.height * fy),
+        radius: size.width * fr,
+      );
+      final paint = Paint()
+        ..shader = RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ).createShader(circle);
+      canvas.drawRect(rect, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GlassFieldPainter oldDelegate) {
+    return brightness != oldDelegate.brightness;
   }
 }

@@ -244,7 +244,10 @@ class CommonCard extends StatelessWidget {
             BoxShadow(
               blurRadius: 10,
               offset: const Offset(0, 2),
-              color: Colors.black.withValues(alpha: isLight ? 0.045 : 0.25),
+              // Round 5: a touch more presence so the pane separates
+              // from the colour field it floats on (light theme only —
+              // the dark shadow was already strong).
+              color: Colors.black.withValues(alpha: isLight ? 0.07 : 0.25),
             ),
           ],
         ),
