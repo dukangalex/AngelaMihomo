@@ -900,6 +900,10 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
         child: CommonCard(
+          // T64 round 6: the patrol overall-status card is this
+          // page's main card — primary tier, same yardstick as the
+          // home page.
+          glassTier: GlassTier.primary,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(

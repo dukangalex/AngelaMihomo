@@ -93,6 +93,7 @@ class CommonCard extends StatelessWidget {
     this.info,
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
+    this.glassTier,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -107,6 +108,13 @@ class CommonCard extends StatelessWidget {
   final double? radius;
   final Clip clipBehavior;
   final bool elevated;
+
+  /// Glass hierarchy tier override (T64 round 6). Null keeps the
+  /// card default — the secondary tier, which recedes. A page's main
+  /// card / main action passes [GlassTier.primary] so it reads
+  /// denser and brighter than the page's secondary cards, matching
+  /// the home page's primary/secondary contrast.
+  final GlassTier? glassTier;
 
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
@@ -209,6 +217,7 @@ class CommonCard extends StatelessWidget {
             context.colorScheme,
             GlassKind.card,
             realtime: GlassScope.isLive(context),
+            tier: glassTier,
           )
         : null;
     Widget card = OutlinedButton(

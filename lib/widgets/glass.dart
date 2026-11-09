@@ -60,6 +60,20 @@ import 'package:material_ui/material_ui.dart';
 /// through. Fill alphas stay in the Ultrathin band; nothing goes
 /// back toward the milky frost.
 ///
+/// Round 6 (T64, user real-device correction of the round-5 build:
+/// 「我要的是有主次差异」 — hierarchy, with the home page as the
+/// yardstick for every page): rounds ≤ 5 read "one material
+/// everywhere" as "the same glass weight everywhere", which is the
+/// misunderstanding this round removes. What is unified is the
+/// hierarchy system ([GlassTier]), not the weight: the primary tier
+/// (a page's main card / current status / main action — the home
+/// page's outbound-mode card, the nav bar's selected pill) is
+/// denser, brighter and refracts harder; the secondary tier (info
+/// cards, section cards, list rows) is thinner, dimmer and recedes;
+/// the bar and dialog tiers sit between, weighted by their role.
+/// Every visible page resolves the same four tiers, so the primary/
+/// secondary contrast the home page sets is the contrast everywhere.
+///
 /// Performance discipline: real-time backdrop blur is only used on fixed or
 /// finite surfaces (bottom navigation bar, dashboard cards, modals). Long
 /// scrolling lists must not opt in. When [GlassEffects.blurEnabled] is
@@ -78,9 +92,23 @@ abstract final class GlassEffects {
 
 enum GlassKind { navigationBar, card, dialog }
 
+/// Hierarchy tier of a glass surface (round 6, T64).
+///
+/// The home page is the yardstick: its main card reads denser and
+/// brighter than its info cards, and every other page must reproduce
+/// that same contrast. [primary] is a page's main card, current
+/// status or main action; [secondary] is everything that supports it
+/// (info cards, section cards, secondary rows) and deliberately
+/// recedes; [bar] is the bottom navigation bar (a persistent chrome
+/// surface between the two, its selected pill leaning primary);
+/// [dialog] is dialogs, popup menus and bottom sheets, which float
+/// over real content and keep the most blur and a near-primary rim.
+enum GlassTier { primary, secondary, bar, dialog }
+
 /// Resolved liquid-glass design tokens for one surface.
 class GlassTokens {
   const GlassTokens({
+    required this.tier,
     required this.sigma,
     required this.fill,
     required this.staticFill,
@@ -90,6 +118,9 @@ class GlassTokens {
     required this.contour,
     this.realtime = true,
   });
+
+  /// Hierarchy tier these tokens were resolved for (round 6).
+  final GlassTier tier;
 
   /// Backdrop blur radius (sigmaX = sigmaY).
   final double sigma;
@@ -145,7 +176,18 @@ class GlassTokens {
     GlassKind kind, {
     Color? base,
     bool realtime = true,
+    GlassTier? tier,
   }) {
+    // Round 6: kinds land on their natural tier (nav bar → bar,
+    // dialog family → dialog, cards → secondary); a surface claims
+    // the primary tier explicitly (CommonCard.glassTier).
+    final effectiveTier =
+        tier ??
+        switch (kind) {
+          GlassKind.navigationBar => GlassTier.bar,
+          GlassKind.card => GlassTier.secondary,
+          GlassKind.dialog => GlassTier.dialog,
+        };
     final isLight = colorScheme.brightness == Brightness.light;
     final rawBody =
         base ??
@@ -176,58 +218,70 @@ class GlassTokens {
     final rimBase = Color.lerp(Colors.white, colorScheme.primary, 0.18)!;
     // Dark contour: faint in light (the bright field separates the
     // pane already), stronger in dark where panes need the outline.
-    final contour = Colors.black.withValues(alpha: isLight ? 0.10 : 0.42);
-    return switch (kind) {
-      // Round 4 (T64): fill alpha down toward Ultrathin (light 0.28 →
-      // 0.16, dark 0.26 → 0.18 — in dark mode the black glass body
-      // itself darkens the backdrop, so it gives back less), sigma
-      // up (11 → 16) so the backdrop dissolves into light instead of
-      // ghosting through, rim and specular up for the refraction
-      // edge. staticFill stays dense: with blur degraded off there
-      // is no backdrop left to borrow body from.
-      // Round 5: rim/highlight rise once more (the edge must read on
-      // a bright field, not just over content). Static surfaces use
-      // [staticBody] instead of the neutral lid (see above): card
-      // 0.72/0.68, dialog 0.80/0.78, nav 0.78 — thin enough for the
-      // field to tint them, dense enough for text contrast.
-      // Round 5 addendum (reference fitting, iOS 27 captures): real
-      // glass frost is LIGHT — a mid-tint toolbar measures sigma
-      // ≈ 6.9; heavy blur is what frosted plastic does. Round 4's
-      // 14–16 band was tuned against busy page content ghosting
-      // through; over the smooth designed field there is nothing to
-      // ghost, so sigma comes back down (nav 11, card 10, dialog 13
-      // — dialogs still float over real content and keep the most),
-      // and saturation settles at 1.6, between the reference model's
-      // 1.4 and round 4's 1.8.
-      GlassKind.navigationBar => GlassTokens(
+    // Round 6: the contour joins the hierarchy — primary panes carry
+    // the strongest outline, secondary panes the faintest.
+    final contour = Colors.black.withValues(
+      alpha: switch (effectiveTier) {
+        GlassTier.primary => isLight ? 0.16 : 0.50,
+        GlassTier.secondary => isLight ? 0.07 : 0.30,
+        GlassTier.bar => isLight ? 0.12 : 0.45,
+        GlassTier.dialog => isLight ? 0.12 : 0.45,
+      },
+    );
+    return switch (effectiveTier) {
+      // Round 6 tier table (fill / staticFill alphas are light/dark).
+      // The gaps between tiers ARE the feature — the round-5 build
+      // failed the user's eye because card and dialog sat within
+      // 0.03 of each other. Primary steps clearly up from the
+      // round-5 card values (fill 0.15–0.17 → 0.30, saturation
+      // 1.6 → 1.9, rim and specular at their highest), secondary
+      // steps clearly down (fill → 0.10/0.12, saturation → 1.35,
+      // dimmest rim and contour) so it recedes behind the primary;
+      // bar and dialog keep round-5-class weight, dialog at the
+      // dense end because it floats over a dimmed barrier and real
+      // content (and keeps the most blur, sigma 13 — the round-5
+      // reference fitting: heavy blur is what frosted plastic does,
+      // so no tier goes back to the round-4 14–16 band).
+      GlassTier.primary => GlassTokens(
+        tier: effectiveTier,
+        sigma: 12,
+        fill: body.withValues(alpha: isLight ? 0.30 : 0.30),
+        staticFill: staticBody.withValues(alpha: isLight ? 0.88 : 0.86),
+        rim: rimBase.withValues(alpha: isLight ? 1.0 : 0.72),
+        highlightPeak: isLight ? 0.68 : 0.50,
+        saturation: 1.9,
+        contour: contour,
+        realtime: realtime,
+      ),
+      GlassTier.secondary => GlassTokens(
+        tier: effectiveTier,
+        sigma: 8,
+        fill: body.withValues(alpha: isLight ? 0.10 : 0.12),
+        staticFill: staticBody.withValues(alpha: isLight ? 0.62 : 0.56),
+        rim: rimBase.withValues(alpha: isLight ? 0.80 : 0.42),
+        highlightPeak: isLight ? 0.36 : 0.22,
+        saturation: 1.35,
+        contour: contour,
+        realtime: realtime,
+      ),
+      GlassTier.bar => GlassTokens(
+        tier: effectiveTier,
         sigma: 11,
-        fill: body.withValues(alpha: isLight ? 0.16 : 0.18),
-        staticFill: staticBody.withValues(alpha: 0.78),
-        rim: rimBase.withValues(alpha: isLight ? 0.98 : 0.58),
-        highlightPeak: isLight ? 0.56 : 0.38,
-        saturation: 1.6,
+        fill: body.withValues(alpha: isLight ? 0.20 : 0.22),
+        staticFill: staticBody.withValues(alpha: 0.80),
+        rim: rimBase.withValues(alpha: isLight ? 1.0 : 0.62),
+        highlightPeak: isLight ? 0.60 : 0.42,
+        saturation: 1.7,
         contour: contour,
         realtime: realtime,
       ),
-      GlassKind.card => GlassTokens(
-        sigma: 10,
-        fill: body.withValues(alpha: isLight ? 0.15 : 0.17),
-        staticFill: staticBody.withValues(alpha: isLight ? 0.72 : 0.68),
-        rim: rimBase.withValues(alpha: isLight ? 0.95 : 0.55),
-        highlightPeak: isLight ? 0.5 : 0.32,
-        saturation: 1.6,
-        contour: contour,
-        realtime: realtime,
-      ),
-      // Dialogs and modal sheets float over a dimmed barrier, so the fill
-      // sits at the dense end of the band for legibility; the barrier
-      // itself supplies most of the separation from the page behind.
-      GlassKind.dialog => GlassTokens(
+      GlassTier.dialog => GlassTokens(
+        tier: effectiveTier,
         sigma: 13,
-        fill: body.withValues(alpha: isLight ? 0.18 : 0.19),
-        staticFill: staticBody.withValues(alpha: isLight ? 0.8 : 0.78),
-        rim: rimBase.withValues(alpha: isLight ? 0.95 : 0.55),
-        highlightPeak: isLight ? 0.5 : 0.32,
+        fill: body.withValues(alpha: isLight ? 0.22 : 0.23),
+        staticFill: staticBody.withValues(alpha: isLight ? 0.84 : 0.82),
+        rim: rimBase.withValues(alpha: isLight ? 0.98 : 0.60),
+        highlightPeak: isLight ? 0.55 : 0.36,
         saturation: 1.6,
         contour: contour,
         realtime: realtime,

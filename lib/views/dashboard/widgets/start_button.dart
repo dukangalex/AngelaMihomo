@@ -308,6 +308,9 @@ class _StartButtonState extends ConsumerState<StartButton> {
     return SizedBox(
       height: getWidgetHeight(context, 1),
       child: CommonCard(
+        // T64 round 6: the power/runtime card is the home page's
+        // current-status + main-action surface — primary tier.
+        glassTier: GlassTier.primary,
         info: Info(
           label: isSmartStopped
               ? appLocalizations.coreSuspended

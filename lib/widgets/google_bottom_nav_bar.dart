@@ -464,10 +464,14 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                       count: count,
                                       slot: _clampWithResistance,
                                       color: primaryColor,
-                                      baseAlpha: isLight ? 0.30 : 0.34,
-                                      activeAlpha: isLight ? 0.38 : 0.42,
+                                      // T64 round 6: the selected pill
+                                      // leans toward the primary tier —
+                                      // denser and brighter than the
+                                      // bar body around it.
+                                      baseAlpha: isLight ? 0.34 : 0.38,
+                                      activeAlpha: isLight ? 0.44 : 0.48,
                                       rimColor: Colors.white.withValues(
-                                        alpha: isLight ? 0.55 : 0.40,
+                                        alpha: isLight ? 0.65 : 0.48,
                                       ),
                                     ),
                                   ),
