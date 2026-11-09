@@ -27,6 +27,20 @@ import 'package:material_ui/material_ui.dart';
 /// card pages (proxies, profiles, connections, tools) via static scopes —
 /// see [GlassScope.live].
 ///
+/// T64 full unification (2026-11-08 ruling: every level — home, sub-pages,
+/// grandchild pages, dialogs, sheets — one glass material, no plain
+/// surfaces mixed in): [GlassScope] is now mounted at the app root by
+/// CommonScaffold, so every page's section cards resolve glass tokens;
+/// pages that already mount their own scope keep their live/static
+/// choice because the nearest scope wins. On top of that, round-4
+/// tuning pursues real glass over the chain.14 milky frost that the
+/// user rejected: the fill's own alpha drops further (Ultrathin
+/// territory — the backdrop supplies the body), the blur sigma rises
+/// so what shows through is a soft luminous field rather than a
+/// readable copy of the content (which is also what keeps scrolling
+/// text from ghosting through cards — bowel 第 5 条）, and the rim
+/// plus specular peak rise so the edge reads as a refraction line.
+///
 /// Performance discipline: real-time backdrop blur is only used on fixed or
 /// finite surfaces (bottom navigation bar, dashboard cards, modals). Long
 /// scrolling lists must not opt in. When [GlassEffects.blurEnabled] is
@@ -115,21 +129,28 @@ class GlassTokens {
     // colour, which used to carry the theme tint into the glass).
     final body = neutralize(rawBody);
     return switch (kind) {
+      // Round 4 (T64): fill alpha down toward Ultrathin (light 0.28 →
+      // 0.16, dark 0.26 → 0.18 — in dark mode the black glass body
+      // itself darkens the backdrop, so it gives back less), sigma
+      // up (11 → 16) so the backdrop dissolves into light instead of
+      // ghosting through, rim and specular up for the refraction
+      // edge. staticFill stays dense: with blur degraded off there
+      // is no backdrop left to borrow body from.
       GlassKind.navigationBar => GlassTokens(
-        sigma: 11,
-        fill: body.withValues(alpha: isLight ? 0.28 : 0.26),
+        sigma: 16,
+        fill: body.withValues(alpha: isLight ? 0.16 : 0.18),
         staticFill: body.withValues(alpha: 0.94),
-        rim: Colors.white.withValues(alpha: isLight ? 0.85 : 0.38),
-        highlightPeak: isLight ? 0.42 : 0.24,
+        rim: Colors.white.withValues(alpha: isLight ? 0.9 : 0.5),
+        highlightPeak: isLight ? 0.5 : 0.32,
         saturation: 1.8,
         realtime: realtime,
       ),
       GlassKind.card => GlassTokens(
-        sigma: 9,
-        fill: body.withValues(alpha: isLight ? 0.27 : 0.25),
+        sigma: 14,
+        fill: body.withValues(alpha: isLight ? 0.15 : 0.17),
         staticFill: body.withValues(alpha: isLight ? 0.9 : 0.88),
-        rim: Colors.white.withValues(alpha: isLight ? 0.8 : 0.34),
-        highlightPeak: isLight ? 0.34 : 0.18,
+        rim: Colors.white.withValues(alpha: isLight ? 0.85 : 0.45),
+        highlightPeak: isLight ? 0.42 : 0.26,
         saturation: 1.8,
         realtime: realtime,
       ),
@@ -137,11 +158,11 @@ class GlassTokens {
       // sits at the dense end of the band for legibility; the barrier
       // itself supplies most of the separation from the page behind.
       GlassKind.dialog => GlassTokens(
-        sigma: 11,
-        fill: body.withValues(alpha: isLight ? 0.29 : 0.27),
+        sigma: 16,
+        fill: body.withValues(alpha: isLight ? 0.18 : 0.19),
         staticFill: body.withValues(alpha: isLight ? 0.92 : 0.9),
-        rim: Colors.white.withValues(alpha: isLight ? 0.8 : 0.34),
-        highlightPeak: isLight ? 0.34 : 0.18,
+        rim: Colors.white.withValues(alpha: isLight ? 0.85 : 0.45),
+        highlightPeak: isLight ? 0.42 : 0.26,
         saturation: 1.8,
         realtime: realtime,
       ),

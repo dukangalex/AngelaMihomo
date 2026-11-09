@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'chip.dart';
+import 'glass.dart';
 import 'text.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
@@ -319,6 +320,15 @@ class CommonScaffoldState extends State<CommonScaffold> {
           widget.title != null ||
           widget.titleWidget != null,
     );
+    // T64 full unification: every page hangs off CommonScaffold, so
+    // the glass scope is mounted here, at the root — section cards
+    // on every page (settings sub-pages, grandchild pages, the AI
+    // and app-lock pages included) resolve the same glass tokens.
+    // Static (live: false): pages are long scrolling lists, and the
+    // rendering discipline forbids per-card backdrop blur there.
+    // Pages that mount their own scope keep it — the nearest scope
+    // wins, so existing live surfaces are untouched.
+    final scopedBody = GlassScope(live: false, child: widget.body);
     final body = SafeArea(
       top: false,
       bottom: false,
@@ -362,9 +372,9 @@ class CommonScaffoldState extends State<CommonScaffold> {
             child: widget.scrollEdgeFade
                 ? _ScrollEdgeFade(
                     backgroundColor: widget.backgroundColor,
-                    child: widget.body,
+                    child: scopedBody,
                   )
-                : widget.body,
+                : scopedBody,
           ),
         ],
       ),
