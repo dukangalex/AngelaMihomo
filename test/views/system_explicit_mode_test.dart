@@ -222,4 +222,49 @@ void main() {
     final roundtrip = SystemExplicitOptions.fromJson(opts.toJson());
     expect(roundtrip.toJson(), opts.toJson());
   });
+  testWidgets(
+    'T70: display layer is gone, functional switches remain',
+    (tester) async {
+      // Global mode with a direct exception and an interception
+      // option on: exactly the state where the two standing
+      // effectiveness notes used to render above the switches.
+      SystemExplicitStore.instance.value = SystemExplicitOptions(
+        chinaDirect: true,
+        blockCommonWebRtc: true,
+      );
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: mui.MaterialApp(
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                ...mui.GlobalMaterialLocalizations.delegates,
+              ],
+              locale: const Locale('en'),
+              home: mui.Scaffold(
+                body: generateListView([const SystemExplicitSection()]),
+              ),
+            ),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump(const Duration(milliseconds: 100));
+      // Removed display layer: recommended-combination card and both
+      // standing effectiveness notes.
+      expect(find.text(appLocalizations.chinaAdaptRecommendTitle), findsNothing);
+      expect(
+        find.text(appLocalizations.systemExplicitExceptionsInactive),
+        findsNothing,
+      );
+      expect(
+        find.text(appLocalizations.systemExplicitInterceptionActive),
+        findsNothing,
+      );
+      // Functional rows stay: the auto-DNS pointer row and the first
+      // switch of the group render as before.
+      expect(find.text(appLocalizations.autoSetSystemDns), findsOneWidget);
+      expect(find.text(appLocalizations.systemExplicitPrivacy), findsOneWidget);
+    },
+  );
 }

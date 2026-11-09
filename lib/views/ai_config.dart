@@ -13,8 +13,10 @@ class AiConfigEntryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // T70: no leading icon — every other row on the application
+    // settings page is icon-less, so the title shares their left
+    // baseline instead of sitting in its own icon column.
     return ListItem(
-      leading: const Icon(Icons.auto_awesome_outlined),
       title: Text(appLocalizations.aiConfigTitle),
       subtitle: Text(appLocalizations.aiConfigDesc),
       trailing: const Icon(Icons.chevron_right),

@@ -122,20 +122,6 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     if (mounted) setState(() => _applyError = '');
   }
 
-  /// The one-tap start for new users (T57's preset goal, kept after
-  /// the toolbox preset card was retired): a pure action that turns
-  /// the three interception options on together. It carries no
-  /// state of its own — the switches below remain the only state.
-  Future<void> _applyRecommended() async {
-    final value = SystemExplicitStore.instance.value;
-    setState(() {
-      value.privacy = true;
-      value.blockCommonWebRtc = true;
-      value.blockAds = true;
-    });
-    await _commit();
-  }
-
   /// Descriptions stay collapsed until the row is tapped, so the page reads
   /// as a compact list of switches; the explanation is one tap away.
   final _expanded = <String>{};
@@ -205,24 +191,21 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
       return const SizedBox.shrink();
     }
     final value = SystemExplicitStore.instance.value;
-    final mode = ref.watch(
-      patchClashConfigProvider.select((state) => state.mode),
-    );
-    final incompatible = !systemExplicitModeCompatible(value, mode);
     return generateSection(
       title: appLocalizations.systemExplicitTitle,
       items: [
-        // Group header (T57 final form): the recommended combination
-        // as a pure action — no state badge, no second state machine;
-        // the switches below are the only state there is.
-        ListItem(
-          title: Text(appLocalizations.chinaAdaptRecommendTitle),
-          subtitle: Text(appLocalizations.chinaAdaptRecommendDesc),
-          trailing: FilledButton.tonal(
-            onPressed: _applyRecommended,
-            child: Text(appLocalizations.chinaAdaptApplyRecommended),
-          ),
-        ),
+        // T70: the group is functional switches only. The display
+        // layer that used to sit here — the recommended-combination
+        // card and the two standing effectiveness notes (direct
+        // exceptions inactive outside rule mode / interception
+        // options active in this mode) — is removed by the user's
+        // call: non-functional items do not belong in the app. The
+        // linkage underneath is untouched: direct exceptions still
+        // apply only in rule mode and interception options still
+        // apply in every mode; the per-option tap-to-expand
+        // descriptions and the apply-error row remain, as does the
+        // rule-mode offer dialog when a direct exception is enabled
+        // outside rule mode.
         // Auto-set system DNS deliberately does NOT move into this
         // group; the note only says where it lives.
         _infoItem(
@@ -230,22 +213,6 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           title: appLocalizations.autoSetSystemDns,
           desc: appLocalizations.chinaAdaptDnsNoteDesc,
         ),
-        // T54: effectiveness is per class and visible on this page —
-        // direct exceptions are the only options that pause outside
-        // rule mode; interception options keep working everywhere.
-        if (incompatible)
-          ListItem(
-            title: Text(appLocalizations.systemExplicitExceptionsInactive),
-            subtitle: Text(
-              appLocalizations.systemExplicitExceptionsInactiveDesc,
-            ),
-          ),
-        if (mode != Mode.rule && value.interceptionEnabled)
-          _infoItem(
-            id: 'interceptionActive',
-            title: appLocalizations.systemExplicitInterceptionActive,
-            desc: appLocalizations.systemExplicitInterceptionActiveDesc,
-          ),
         if (_applyError.isNotEmpty)
           ListItem(
             title: Text(appLocalizations.systemExplicitApplyState),

@@ -405,8 +405,9 @@ class AppLockEntryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // T70: no leading icon — matches the icon-less rows of the
+    // application settings page so the title baseline aligns.
     return ListItem(
-      leading: const Icon(Icons.lock_outline),
       title: Text(appLocalizations.appLock),
       subtitle: Text(appLocalizations.appLockDesc),
       trailing: const Icon(Icons.chevron_right),
