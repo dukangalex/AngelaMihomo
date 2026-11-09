@@ -116,6 +116,44 @@ Dio _aiDio(AiConfig config) {
 String _endpoint(AiConfig config, String path) =>
     '${config.baseUrl.trim().replaceAll(RegExp(r'/+$'), '')}$path';
 
+/// Parses an OpenAI-compatible GET /models response body into the
+/// list of model ids the account may use. Pure function: tolerant of
+/// the shapes providers actually return (a `data` list of objects
+/// with `id`, a bare list, or plain string entries), deduplicates,
+/// sorts, and drops blanks. Anything else yields an empty list,
+/// which the settings page treats as a failed fetch (manual entry
+/// stays available — T65).
+List<String> parseAiModelList(dynamic body) {
+  final raw = body is Map ? body['data'] : body;
+  if (raw is! List) return const [];
+  final ids = <String>{};
+  for (final entry in raw) {
+    final id = entry is Map
+        ? entry['id']?.toString()
+        : entry?.toString();
+    final trimmed = id?.trim() ?? '';
+    if (trimmed.isNotEmpty) ids.add(trimmed);
+  }
+  return ids.toList()..sort();
+}
+
+/// Fetches the provider's model list (GET /models with the user's
+/// key) for the settings-page dropdown (T65). Throws on transport or
+/// HTTP failure; an empty parsed list is also a failure — the caller
+/// falls back to manual entry and says so on the page.
+Future<List<String>> fetchAiModelList(AiConfig config) async {
+  final response = await _aiDio(
+    config,
+  ).get<dynamic>(_endpoint(config, '/models'));
+  final status = response.statusCode ?? 0;
+  if (status < 200 || status >= 300) {
+    throw StateError('models request failed: HTTP $status');
+  }
+  final models = parseAiModelList(response.data);
+  if (models.isEmpty) throw StateError('models list was empty');
+  return models;
+}
+
 /// Connectivity check for the settings page: GET /models.
 Future<bool> testAiConnection(AiConfig config) async {
   try {

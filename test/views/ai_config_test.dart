@@ -66,6 +66,10 @@ void main() {
       expect(find.byType(mui.TextField), findsNWidgets(3));
       expect(find.text(appLocalizations.save), findsOneWidget);
       expect(find.text(appLocalizations.aiTestConnection), findsOneWidget);
+      // T65: the model-list fetch entry is on the page from the
+      // start; the dropdown itself appears only after a fetch.
+      expect(find.text(appLocalizations.aiModelFetch), findsOneWidget);
+      expect(find.byType(mui.DropdownButton<String>), findsNothing);
     },
   );
 }

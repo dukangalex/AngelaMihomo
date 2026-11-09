@@ -58,6 +58,17 @@ class _AiConfigViewState extends ConsumerState<AiConfigView> {
   bool _testing = false;
   String? _testResult;
 
+  // T65: the model field is a dropdown fed by the provider's live
+  // /models list once endpoint + key are in. Manual entry stays as
+  // the fallback (fetch failed, or a model outside the list) and is
+  // remembered per session: a fetched list the current model is not
+  // part of starts in manual mode so nothing the user typed is lost.
+  List<String> _models = const [];
+  bool _manualModel = true;
+  bool _fetchingModels = false;
+  String? _modelsStatus;
+  bool _modelsFailed = false;
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +109,126 @@ class _AiConfigViewState extends ConsumerState<AiConfigView> {
     apiKey: _apiKeyController.text.trim(),
     model: _modelController.text.trim(),
   );
+
+  /// T65 fetch: pull the provider's model list with the endpoint and
+  /// key currently in the fields. Loading / success / failure all
+  /// surface on this page (联动反馈）; failure drops back to manual
+  /// entry, which always stays available.
+  Future<void> _fetchModels() async {
+    final config = _current();
+    if (config.baseUrl.isEmpty) {
+      setState(() {
+        _modelsFailed = true;
+        _modelsStatus = appLocalizations.aiModelNeedEndpoint;
+      });
+      return;
+    }
+    setState(() {
+      _fetchingModels = true;
+      _modelsFailed = false;
+      _modelsStatus = appLocalizations.aiModelFetching;
+    });
+    try {
+      final models = await fetchAiModelList(config);
+      if (!mounted) return;
+      setState(() {
+        _fetchingModels = false;
+        _models = models;
+        _modelsFailed = false;
+        _modelsStatus = appLocalizations.aiModelFetchOk(models.length);
+        // Keep a model the list does not contain visible and
+        // editable instead of silently swapping it for list item 0.
+        _manualModel = !models.contains(_modelController.text.trim());
+        if (!_manualModel) {
+          _modelController.text = _modelController.text.trim();
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _fetchingModels = false;
+        _modelsFailed = true;
+        _manualModel = true;
+        _modelsStatus = appLocalizations.aiModelFetchFailed;
+      });
+    }
+  }
+
+  Widget _modelField(BuildContext context) {
+    final fromList = !_manualModel && _models.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (fromList)
+          InputDecorator(
+            decoration: InputDecoration(
+              labelText: appLocalizations.aiModel,
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _models.contains(_modelController.text)
+                    ? _modelController.text
+                    : null,
+                items: [
+                  for (final model in _models)
+                    DropdownMenuItem(value: model, child: Text(model)),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _modelController.text = value);
+                },
+              ),
+            ),
+          )
+        else
+          TextField(
+            controller: _modelController,
+            decoration: InputDecoration(
+              labelText: appLocalizations.aiModel,
+            ),
+          ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            OutlinedButton(
+              onPressed: _fetchingModels ? null : _fetchModels,
+              child: Text(appLocalizations.aiModelFetch),
+            ),
+            if (_models.isNotEmpty)
+              TextButton(
+                onPressed: () => setState(() {
+                  _manualModel = !_manualModel;
+                  // Returning to the list with an off-list model
+                  // selects nothing rather than a wrong entry.
+                  if (!_manualModel &&
+                      !_models.contains(_modelController.text.trim())) {
+                    _modelController.clear();
+                  }
+                }),
+                child: Text(
+                  fromList
+                      ? appLocalizations.aiModelManual
+                      : appLocalizations.aiModelFromList,
+                ),
+              ),
+            if (_modelsStatus != null)
+              Text(
+                _modelsStatus!,
+                style: TextStyle(
+                  color: _modelsFailed
+                      ? context.colorScheme.error
+                      : context.colorScheme.primary,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Future<void> _save() async {
     await AiConfigStore.save(_current());
@@ -155,6 +286,12 @@ class _AiConfigViewState extends ConsumerState<AiConfigView> {
                               _modelController.text = item.defaultModel;
                             }
                             _testResult = null;
+                            // A different provider means a different
+                            // model list; the old one must not linger.
+                            _models = const [];
+                            _manualModel = true;
+                            _modelsStatus = null;
+                            _modelsFailed = false;
                           });
                         },
                       ),
@@ -180,12 +317,7 @@ class _AiConfigViewState extends ConsumerState<AiConfigView> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: _modelController,
-                  decoration: InputDecoration(
-                    labelText: appLocalizations.aiModel,
-                  ),
-                ),
+                _modelField(context),
                 const SizedBox(height: 16),
                 Row(
                   children: [
