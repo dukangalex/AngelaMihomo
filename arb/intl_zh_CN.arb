@@ -1410,6 +1410,14 @@
       }
     }
   },
+  "patrolStageHttpServer": "是服务商的服务器自己出了故障（状态 {status}）：链接能通、请求也送到了，是服务器那边把自己的活干砸了。这是对方的故障，不是你的网络问题、也不是链接坏了——通常等一阵再更新就能恢复。",
+  "@patrolStageHttpServer": {
+    "placeholders": {
+      "status": {
+        "type": "num"
+      }
+    }
+  },
   "patrolStageTimeout": "拉取开始了，然后一直等到超时也没有回应——路径太堵，或者服务器不响应。",
   "patrolStageBadContent": "地址有应答，但回来的内容是空的或不是一份可用配置，所以这次更新被拒绝，以免覆盖掉还能用的旧配置。",
   "patrolStageUnknown": "记录到的错误信息不足以点名是哪一步坏的。跑一遍下面的实测探测——它会按同一条路径重走，把断点定位出来。",
@@ -1420,6 +1428,7 @@
   "patrolAdviceFetch": "再更新一次订阅——下面的按钮干的就是这件事，更新前会先给旧文件留快照，新文件验不过会自动退回。",
   "patrolAdviceFetchProxy": "先启动（或重启）服务，再更新一次。若核心在运行还失败，跑一遍实测探测看是哪一跳断的。",
   "patrolAdviceFetchHttp": "如果这个状态持续，问题在链接本身：去服务商那里拿一条新订阅链接换上。",
+  "patrolAdviceFetchHttpServer": "对方服务器故障不要换链接——等一阵用下面的按钮再更新一次。长时间不好，再联系服务商。",
   "patrolAdviceFetchTls": "先核对设备时钟——TLS 会拒绝时间偏差过大的设备——再更新一次。若还失败，是服务商的证书有问题。",
   "patrolAdviceSubExpired": "先在服务商处续期，再更新。在那之前节点列表不会刷新。",
   "patrolAdviceSubStale": "现在就更新一次订阅，把节点列表刷新。",

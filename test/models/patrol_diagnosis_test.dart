@@ -97,6 +97,38 @@ void main() {
       expect(formatted.httpStatus, 503);
     });
 
+    test('real-device shapes 2026-11-08 (user phone log)', () {
+      // Verbatim shapes from t68-real-device-log-2026-11-08.log:
+      // the circled subscription failed 14 times in three shapes.
+      // Shape 1: HTTP 502 — the path is fine, the provider's server
+      // failed; it must classify as http/502 (the wording layer maps
+      // 5xx to the server-fault conclusion, never to "bad link").
+      final server = classifyFetchFailure(
+        'Failed to import profile. Please check your network status '
+        'or try resetting the subscription link ( HTTP error code: 502 )',
+      );
+      expect(server.stage, PatrolFetchStage.http);
+      expect(server.httpStatus, 502);
+      // Shape 2: DioException [unknown] wrapping a handshake that was
+      // terminated mid-flight — the stage is TLS, not HTTP.
+      final handshake = classifyFetchFailure(
+        'DioException [unknown]: null\n'
+        'Error: HandshakeException: Connection terminated during '
+        'handshake',
+      );
+      expect(handshake.stage, PatrolFetchStage.tls);
+      expect(handshake.httpStatus, isNull);
+      // Shape 3: connection reset by peer — TCP stage.
+      final reset = classifyFetchFailure(
+        'DioException [connection error]: The connection errored: '
+        'Connection reset by peer This indicates an error which most '
+        'likely cannot be solved by the library.\n'
+        'Error: SocketException: Connection reset by peer (OS Error: '
+        'Connection reset by peer, errno = 104)',
+      );
+      expect(reset.stage, PatrolFetchStage.tcp);
+    });
+
     test('timeouts', () {
       expect(
         classifyFetchFailure(
@@ -339,6 +371,29 @@ void main() {
         }),
         isNull,
       );
+    });
+
+    test('a measured 502 keeps its status for the conclusion', () {
+      // Regression: the measured-stage lookup used to drop the HTTP
+      // status, so a live-measured 502 fell back to the 4xx wording.
+      final measured = measuredDiagnosisFromProbes({
+        PatrolProbeKind.dnsLookup: (ok: true, detail: '1 address'),
+        PatrolProbeKind.tcpConnect: (ok: true, detail: 'reachable'),
+        PatrolProbeKind.directFetch: (ok: false, detail: 'HTTP 502'),
+      });
+      expect(measured?.stage, PatrolFetchStage.http);
+      expect(measured?.httpStatus, 502);
+      // The app-path probe reports the DioException text instead of
+      // a bare "HTTP nnn" detail; the status must survive that too.
+      final viaAppPath = measuredDiagnosisFromProbes({
+        PatrolProbeKind.proxyFetch: (
+          ok: false,
+          detail:
+              'DioException [bad response]: status code of 502',
+        ),
+      });
+      expect(viaAppPath?.stage, PatrolFetchStage.http);
+      expect(viaAppPath?.httpStatus, 502);
     });
   });
 

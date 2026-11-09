@@ -30,11 +30,19 @@ String patrolIssueTitle(PatrolIssue issue) => switch (issue.cause) {
 String patrolIssueConclusion(
   PatrolIssue issue, {
   PatrolFetchStage? measuredStage,
+  int? measuredHttpStatus,
 }) {
   if (issue.cause == PatrolCause.fetchFailed) {
+    // A live probe that measured an HTTP status outranks the
+    // recorded one: it is what the server answers right now.
+    final status =
+        (measuredStage == PatrolFetchStage.http ||
+            measuredStage == null && issue.stage == PatrolFetchStage.http)
+        ? (measuredHttpStatus ?? issue.httpStatus)
+        : issue.httpStatus;
     return patrolStageConclusion(
       measuredStage ?? issue.stage ?? PatrolFetchStage.unknown,
-      issue.httpStatus,
+      status,
     );
   }
   return switch (issue.cause) {
@@ -71,15 +79,22 @@ String patrolStageName(PatrolFetchStage stage) => switch (stage) {
   PatrolFetchStage.unknown => appLocalizations.patrolStageUnknown,
 };
 
+/// A 5xx answer means the provider's server itself failed: the link
+/// was reached and is not at fault, so it gets its own conclusion —
+/// never the 4xx "your link looks wrong" wording.
+bool patrolHttpIsServerError(int? httpStatus) =>
+    httpStatus != null && httpStatus >= 500 && httpStatus < 600;
+
 String patrolStageConclusion(PatrolFetchStage stage, int? httpStatus) =>
     switch (stage) {
       PatrolFetchStage.proxy => appLocalizations.patrolStageProxy,
       PatrolFetchStage.dns => appLocalizations.patrolStageDns,
       PatrolFetchStage.tcp => appLocalizations.patrolStageTcp,
       PatrolFetchStage.tls => appLocalizations.patrolStageTls,
-      PatrolFetchStage.http => appLocalizations.patrolStageHttp(
-        httpStatus ?? 0,
-      ),
+      PatrolFetchStage.http =>
+        patrolHttpIsServerError(httpStatus)
+            ? appLocalizations.patrolStageHttpServer(httpStatus ?? 0)
+            : appLocalizations.patrolStageHttp(httpStatus ?? 0),
       PatrolFetchStage.timeout => appLocalizations.patrolStageTimeout,
       PatrolFetchStage.badContent => appLocalizations.patrolStageBadContent,
       PatrolFetchStage.unknown => appLocalizations.patrolStageUnknown,
@@ -89,12 +104,20 @@ String patrolStageConclusion(PatrolFetchStage stage, int? httpStatus) =>
 /// advice plus the stage-specific extra (start the service for a
 /// proxy-hop failure, replace the link for a server refusal, check
 /// the clock for TLS).
-String patrolIssueAdvice(PatrolIssue issue, {PatrolFetchStage? stage}) {
+String patrolIssueAdvice(
+  PatrolIssue issue, {
+  PatrolFetchStage? stage,
+  int? httpStatus,
+}) {
   if (issue.cause == PatrolCause.fetchFailed) {
     final effective = stage ?? issue.stage ?? PatrolFetchStage.unknown;
+    final status = httpStatus ?? issue.httpStatus;
     final extra = switch (effective) {
       PatrolFetchStage.proxy => appLocalizations.patrolAdviceFetchProxy,
-      PatrolFetchStage.http => appLocalizations.patrolAdviceFetchHttp,
+      PatrolFetchStage.http =>
+        patrolHttpIsServerError(status)
+            ? appLocalizations.patrolAdviceFetchHttpServer
+            : appLocalizations.patrolAdviceFetchHttp,
       PatrolFetchStage.tls => appLocalizations.patrolAdviceFetchTls,
       _ => null,
     };

@@ -348,6 +348,29 @@ void main() {
       expect(section.suggestedAction, PatrolAction.flushDns);
     });
 
+    test('core-canceled dials are self-healed churn, not issues', () {
+      // Verbatim shape from the 2026-11-08 real-device log: the DoT
+      // resolver dial was canceled by the core 192 times in a day,
+      // each time superseded by a successful retry.
+      final section = classifyLogs([
+        for (var i = 0; i < 5; i++)
+          PatrolLogEntry(
+            level: 'warning',
+            payload:
+                '[TCP] dial DIRECT mihomo --> 223.5.5.5:853 error: '
+                'dial tcp 223.5.5.5:853: operation was canceled',
+            time: DateTime(2026),
+          ),
+        PatrolLogEntry(
+          level: 'error',
+          payload: 'dial tcp 1.2.3.4:443: connect: connection refused',
+          time: DateTime(2026),
+        ),
+      ]);
+      expect(section.transientSkipped, 5);
+      expect(section.totalIssues, 1);
+    });
+
     test('sections suggest their whitelist action', () {
       final stale = evaluateSubscription(
         const PatrolSubscriptionInput(

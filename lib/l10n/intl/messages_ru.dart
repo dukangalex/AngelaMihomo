@@ -112,41 +112,41 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(label) => "Только ${label}";
 
-  static String m46(label) =>
+  static String m47(label) =>
       "${label} должен быть от 1024 до 49151, 0 для отключения";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "Не удалось импортировать профиль. Проверьте состояние сети или попробуйте сбросить ссылку подписки ( код ошибки HTTP: ${statusCode} )";
 
-  static String m48(index, time) => "Разрешено правилом #${index} · ${time} мс";
+  static String m49(index, time) => "Разрешено правилом #${index} · ${time} мс";
 
-  static String m49(ips) => "Совпадение в hosts: ${ips}";
+  static String m50(ips) => "Совпадение в hosts: ${ips}";
 
-  static String m50(total, index) => "Правил: ${total}, совпало #${index}";
+  static String m51(total, index) => "Правил: ${total}, совпало #${index}";
 
-  static String m51(total) => "Правил: ${total}";
+  static String m52(total) => "Правил: ${total}";
 
-  static String m52(count) => "Выбрано: ${count}";
+  static String m53(count) => "Выбрано: ${count}";
 
-  static String m53(count) =>
+  static String m54(count) =>
       "Несколько — ${count} параллельных соединений для полной загрузки канала";
 
-  static String m54(provider) =>
+  static String m55(provider) =>
       "Выход может блокировать тесты ${provider}. Смените источник теста или выход.";
 
-  static String m55(protocol, fallback) =>
+  static String m56(protocol, fallback) =>
       "${protocol} недоступен, используется ${fallback}";
 
-  static String m56(count) => "Соединений: ${count}";
+  static String m57(count) => "Соединений: ${count}";
 
-  static String m57(provider) => "Переключить на ${provider}";
+  static String m58(provider) => "Переключить на ${provider}";
 
-  static String m58(error) =>
+  static String m59(error) =>
       "Could not confirm these settings were applied to the current profile: ${error}";
 
-  static String m59(label) => "${label} должен быть URL";
+  static String m60(label) => "${label} должен быть URL";
 
-  static String m60(count) =>
+  static String m61(count) =>
       "${Intl.plural(count, one: 'год', few: 'года', many: 'лет', other: 'лет')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -1764,7 +1764,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Введите разные порты",
     ),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("Сыплющиеся часы"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage(
       "Точные песочные часы",
@@ -1791,7 +1791,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Конфигурация изменена. Отключить автообновление?",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите имя профиля",
     ),
@@ -1955,7 +1955,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "DNS и сопоставление правил в ядре для домена или IP",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("Разрешение DNS"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage(
       "Цель — IP, разрешение не требуется",
     ),
@@ -1964,7 +1964,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("Итоговый выход"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("Домен, IP или URL"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("Цель"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
       "Прямой режим: весь трафик напрямую",
@@ -1978,8 +1978,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeTraceRules": MessageLookupByLibrary.simpleMessage(
       "Сопоставление правил",
     ),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage(
       "Пропущено: цель не найдена",
     ),
@@ -2036,7 +2036,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Выберите версию резервной копии",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("Служба готова"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("Служба запущена"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -2135,7 +2135,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("Подключение"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("Соединения"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage(
       "Не запущен · Прямой тест",
     ),
@@ -2147,7 +2147,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage(
       "Тест скорости недоступен",
     ),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "Проверьте доступность выхода и повторите.",
     ),
@@ -2190,7 +2190,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 работает поверх QUIC (UDP); если он недоступен — откат на HTTP/2, а если недоступен и HTTP/2 — на HTTP/1.1",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("Качество сети"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("Готово"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage(
@@ -2209,8 +2209,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("Одно"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("Начать тест"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "Разрешать через системный DNS",
     ),
@@ -2279,7 +2279,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "Settings application unconfirmed",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("Block ads"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Rejects ad domains via the Mihomo GEOSITE category-ads-all category. Replaces only same-category ad rules in the profile; unrelated rules remain.",
@@ -2557,7 +2557,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Отправка"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "Глобальное переопределение",
     ),
@@ -2612,6 +2612,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "Файловая система не поддерживает file capabilities (xattr), выполнен откат на setuid",
     ),
-    "years": m60,
+    "years": m61,
   };
 }

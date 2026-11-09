@@ -110,41 +110,41 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(label) => "فقط ${label}";
 
-  static String m46(label) =>
+  static String m47(label) =>
       "${label} باید بین ۱۰۲۴ تا ۴۹۱۵۱ باشد (۰ برای غیرفعال)";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "خطا در دریافت پروفایل. لطفاً شبکه خود را بررسی کرده یا لینک را ریست کنید ( کد خطا: ${statusCode} )";
 
-  static String m48(index, time) => "تفکیک با قانون #${index} · ${time} ms";
+  static String m49(index, time) => "تفکیک با قانون #${index} · ${time} ms";
 
-  static String m49(ips) => "تطبیق Hosts: ${ips}";
+  static String m50(ips) => "تطبیق Hosts: ${ips}";
 
-  static String m50(total, index) => "${total} قانون، تطبیق با #${index}";
+  static String m51(total, index) => "${total} قانون، تطبیق با #${index}";
 
-  static String m51(total) => "${total} قانون";
+  static String m52(total) => "${total} قانون";
 
-  static String m52(count) => "${count} مورد انتخاب شده";
+  static String m53(count) => "${count} مورد انتخاب شده";
 
-  static String m53(count) =>
+  static String m54(count) =>
       "حالت چندرشته از ${count} اتصال موازی برای اشباع پهنای باند استفاده می‌کند";
 
-  static String m54(provider) =>
+  static String m55(provider) =>
       "ممکن است خروجی تست سرعت ${provider} را مسدود کند. منبع تست یا خروجی را تغییر دهید.";
 
-  static String m55(protocol, fallback) =>
+  static String m56(protocol, fallback) =>
       "${protocol} در دسترس نیست، به ${fallback} بازگشت";
 
-  static String m56(count) => "${count} اتصال";
+  static String m57(count) => "${count} اتصال";
 
-  static String m57(provider) => "تغییر به ${provider}";
+  static String m58(provider) => "تغییر به ${provider}";
 
-  static String m58(error) =>
+  static String m59(error) =>
       "Could not confirm these settings were applied to the current profile: ${error}";
 
-  static String m59(label) => "${label} باید یک URL معتبر باشد";
+  static String m60(label) => "${label} باید یک URL معتبر باشد";
 
-  static String m60(count) => "${Intl.plural(count, other: '# سال')}";
+  static String m61(count) => "${Intl.plural(count, other: '# سال')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1733,7 +1733,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "لطفاً پورت غیرتکراری وارد کنید",
     ),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("ساعت شنی روان"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage(
       "ساعت شنی ظریف",
@@ -1760,7 +1760,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "پروفایل تغییر یافته است. آیا بروزرسانی خودکار غیرفعال شود؟",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "لطفاً نام پروفایل را وارد کنید",
     ),
@@ -1928,7 +1928,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "روند DNS و تطبیق قوانین دامنه یا IP در هسته",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("تفکیک DNS"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage(
       "هدف IP است و نیازی به تفکیک نیست",
     ),
@@ -1937,7 +1937,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("خروجی نهایی"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("دامنه، IP یا آدرس"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("هدف"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
       "حالت مستقیم: همه ترافیک مستقیم",
@@ -1949,8 +1949,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "هیچ قانونی تطبیق نیافت؛ DIRECT استفاده می‌شود",
     ),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("تطبیق قوانین"),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage(
       "رد شد؛ مقصد پیدا نشد",
     ),
@@ -2007,7 +2007,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "انتخاب نسخه پشتیبان",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("انتخاب شده"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("سرویس آماده است"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage(
       "سرویس در حال اجرا است",
@@ -2100,7 +2100,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("در حال اتصال"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("اتصالات"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage(
       "فعال نیست · تست مستقیم",
     ),
@@ -2112,7 +2112,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage(
       "تست سرعت در دسترس نیست",
     ),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "در دسترس بودن خروجی را بررسی و دوباره تلاش کنید.",
     ),
@@ -2155,7 +2155,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 روی QUIC (UDP) اجرا می‌شود؛ اگر در دسترس نباشد به HTTP/2 و اگر HTTP/2 هم نباشد به HTTP/1.1 بازمی‌گردد",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("کیفیت شبکه"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("آماده"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("سرعت لحظه‌ای"),
@@ -2168,8 +2168,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("تنظیمات تست"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("تک‌رشته"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("شروع تست"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "تفکیک با DNS سیستم",
     ),
@@ -2234,7 +2234,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "Settings application unconfirmed",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("Block ads"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Rejects ad domains via the Mihomo GEOSITE category-ads-all category. Replaces only same-category ad rules in the profile; unrelated rules remain.",
@@ -2504,7 +2504,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "دریافت پروفایل از طریق آدرس URL",
     ),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "استفاده از اسکریپت اورراید سراسری",
     ),
@@ -2555,6 +2555,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "سیستم فایل از قابلیت‌های فایل (xattr) پشتیبانی نمی‌کند؛ به setuid بازگشت داده شد",
     ),
-    "years": m60,
+    "years": m61,
   };
 }

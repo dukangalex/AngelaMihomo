@@ -11864,6 +11864,16 @@ class AppLocalizations {
     );
   }
 
+  /// `The provider's server itself failed (status {status}): the link was reached and the request arrived, but the server broke its side of the job. That is an outage on their end, not your network and not your link — it usually clears on its own if you wait and update again later.`
+  String patrolStageHttpServer(num status) {
+    return Intl.message(
+      'The provider\'s server itself failed (status $status): the link was reached and the request arrived, but the server broke its side of the job. That is an outage on their end, not your network and not your link — it usually clears on its own if you wait and update again later.',
+      name: 'patrolStageHttpServer',
+      desc: '',
+      args: [status],
+    );
+  }
+
   /// `The fetch started and then stalled until it timed out. Nothing came back in time — a congested path or an unresponsive server.`
   String get patrolStageTimeout {
     return Intl.message(
@@ -11959,6 +11969,16 @@ class AppLocalizations {
     return Intl.message(
       'If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.',
       name: 'patrolAdviceFetchHttp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do not replace your link for a server-side failure — wait and use the update button below to retry later. Only if it stays broken for a long while is it worth contacting the provider.`
+  String get patrolAdviceFetchHttpServer {
+    return Intl.message(
+      'Do not replace your link for a server-side failure — wait and use the update button below to retry later. Only if it stays broken for a long while is it worth contacting the provider.',
+      name: 'patrolAdviceFetchHttpServer',
       desc: '',
       args: [],
     );

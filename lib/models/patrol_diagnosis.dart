@@ -68,7 +68,9 @@ enum PatrolFetchStage { proxy, dns, tcp, tls, http, timeout, badContent, unknown
   }
   final statusMatch =
       RegExp(r'status code of (\d{3})').firstMatch(text) ??
-      RegExp(r'error code:?\s*\(?\s*(\d{3})').firstMatch(text);
+      RegExp(r'error code:?\s*\(?\s*(\d{3})').firstMatch(text) ??
+      // Probe outcomes report a bare measured status ("HTTP 502").
+      RegExp(r'^http (\d{3})$').firstMatch(text.trim());
   if (statusMatch != null) {
     return (
       stage: PatrolFetchStage.http,
@@ -596,23 +598,43 @@ bool verifyPatrolFix(
 /// every probe passed (the failure no longer reproduces live).
 PatrolFetchStage? measuredStageFromProbes(
   Map<PatrolProbeKind, ({bool ok, String detail})> outcomes,
+) => measuredDiagnosisFromProbes(outcomes)?.stage;
+
+/// Like [measuredStageFromProbes], but also carries the HTTP status
+/// a failed fetch probe measured, so the conclusion can name it
+/// (a measured 502 must read as a server fault, with its code).
+({PatrolFetchStage stage, int? httpStatus})? measuredDiagnosisFromProbes(
+  Map<PatrolProbeKind, ({bool ok, String detail})> outcomes,
 ) {
   bool? ok(PatrolProbeKind kind) => outcomes[kind]?.ok;
-  if (ok(PatrolProbeKind.proxyPort) == false) return PatrolFetchStage.proxy;
-  if (ok(PatrolProbeKind.dnsLookup) == false) return PatrolFetchStage.dns;
-  if (ok(PatrolProbeKind.tcpConnect) == false) return PatrolFetchStage.tcp;
-  if (ok(PatrolProbeKind.tlsHandshake) == false) return PatrolFetchStage.tls;
+  ({PatrolFetchStage stage, int? httpStatus})? wrap(
+    ({PatrolFetchStage stage, int? httpStatus}) classified,
+  ) => classified.stage == PatrolFetchStage.unknown ? null : classified;
+  if (ok(PatrolProbeKind.proxyPort) == false) {
+    return (stage: PatrolFetchStage.proxy, httpStatus: null);
+  }
+  if (ok(PatrolProbeKind.dnsLookup) == false) {
+    return (stage: PatrolFetchStage.dns, httpStatus: null);
+  }
+  if (ok(PatrolProbeKind.tcpConnect) == false) {
+    return (stage: PatrolFetchStage.tcp, httpStatus: null);
+  }
+  if (ok(PatrolProbeKind.tlsHandshake) == false) {
+    return (stage: PatrolFetchStage.tls, httpStatus: null);
+  }
   final direct = outcomes[PatrolProbeKind.directFetch];
   if (direct != null && !direct.ok) {
-    return classifyFetchFailure(direct.detail).stage;
+    return wrap(classifyFetchFailure(direct.detail));
   }
   final proxy = outcomes[PatrolProbeKind.proxyFetch];
   if (proxy != null && !proxy.ok) {
-    final stage = classifyFetchFailure(proxy.detail).stage;
+    final classified = classifyFetchFailure(proxy.detail);
     // A proxied fetch that fails while the direct path works is a
     // proxy-path failure regardless of the wrapped error's shape.
-    if (direct?.ok ?? false) return PatrolFetchStage.proxy;
-    return stage;
+    if (direct?.ok ?? false) {
+      return (stage: PatrolFetchStage.proxy, httpStatus: null);
+    }
+    return wrap(classified);
   }
   return null;
 }

@@ -1410,6 +1410,14 @@
       }
     }
   },
+  "patrolStageHttpServer": "The provider's server itself failed (status {status}): the link was reached and the request arrived, but the server broke its side of the job. That is an outage on their end, not your network and not your link — it usually clears on its own if you wait and update again later.",
+  "@patrolStageHttpServer": {
+    "placeholders": {
+      "status": {
+        "type": "num"
+      }
+    }
+  },
   "patrolStageTimeout": "The fetch started and then stalled until it timed out. Nothing came back in time — a congested path or an unresponsive server.",
   "patrolStageBadContent": "The address answered, but what came back was empty or not a usable configuration, so the update was refused to protect the working profile.",
   "patrolStageUnknown": "The recorded error does not carry enough detail to name the failing step. Run the live probes below — they re-walk the same path and pin down where it breaks.",
@@ -1420,6 +1428,7 @@
   "patrolAdviceFetch": "Update the subscription again — the button below does exactly that, with the previous file kept as a snapshot in case the new one does not verify.",
   "patrolAdviceFetchProxy": "Start (or restart) the service, then update again. If the core is running and it still fails, run the live probes to see which hop breaks.",
   "patrolAdviceFetchHttp": "If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.",
+  "patrolAdviceFetchHttpServer": "Do not replace your link for a server-side failure — wait and use the update button below to retry later. Only if it stays broken for a long while is it worth contacting the provider.",
   "patrolAdviceFetchTls": "Check the device clock first — TLS rejects skewed time — then update again. If it persists, the provider's certificate is at fault.",
   "patrolAdviceSubExpired": "Renew the subscription with your provider, then update. The node list will not refresh until then.",
   "patrolAdviceSubStale": "Update the subscription now to refresh the node list.",

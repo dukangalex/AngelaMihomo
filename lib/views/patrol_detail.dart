@@ -81,6 +81,14 @@ class _PatrolDetailViewState extends ConsumerState<PatrolDetailView> {
     return measuredStageFromProbes(results.byKind);
   }
 
+  /// The HTTP status a failed fetch probe measured live, if any —
+  /// feeds the conclusion so a measured 502 reads as a server fault.
+  int? get _measuredHttpStatus {
+    final results = _probeResults;
+    if (results == null) return null;
+    return measuredDiagnosisFromProbes(results.byKind)?.httpStatus;
+  }
+
   bool get _probesAllOk =>
       _probeResults != null &&
       _probeResults!.values.every((o) => o.ok) &&
@@ -551,7 +559,11 @@ class _PatrolDetailViewState extends ConsumerState<PatrolDetailView> {
           ),
           _bodyText(
             context,
-            patrolIssueConclusion(issue, measuredStage: measured),
+            patrolIssueConclusion(
+              issue,
+              measuredStage: measured,
+              measuredHttpStatus: _measuredHttpStatus,
+            ),
           ),
           // 凭什么 — evidence, then live probes.
           _sectionTitle(context, appLocalizations.patrolDetailBasis),
@@ -565,7 +577,11 @@ class _PatrolDetailViewState extends ConsumerState<PatrolDetailView> {
           _sectionTitle(context, appLocalizations.patrolDetailAdvice),
           _bodyText(
             context,
-            patrolIssueAdvice(issue, stage: measured),
+            patrolIssueAdvice(
+              issue,
+              stage: measured,
+              httpStatus: _measuredHttpStatus,
+            ),
           ),
           if (action != null)
             ListItem(

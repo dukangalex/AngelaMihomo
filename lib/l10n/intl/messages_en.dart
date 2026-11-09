@@ -128,41 +128,44 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m45(status) =>
       "The server answered, but with error status ${status}. The address was reached; the provider side refused to serve the subscription. An expired, wrong or revoked link answers exactly like this.";
 
-  static String m46(label) =>
+  static String m46(status) =>
+      "The provider\'s server itself failed (status ${status}): the link was reached and the request arrived, but the server broke its side of the job. That is an outage on their end, not your network and not your link — it usually clears on its own if you wait and update again later.";
+
+  static String m47(label) =>
       "${label} must be between 1024 and 49151, 0 to disable";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "Failed to import profile. Please check your network status or try resetting the subscription link ( HTTP error code: ${statusCode} )";
 
-  static String m48(index, time) => "Resolved by rule #${index} · ${time} ms";
+  static String m49(index, time) => "Resolved by rule #${index} · ${time} ms";
 
-  static String m49(ips) => "Hosts hit: ${ips}";
+  static String m50(ips) => "Hosts hit: ${ips}";
 
-  static String m50(total, index) => "${total} rules, matched #${index}";
+  static String m51(total, index) => "${total} rules, matched #${index}";
 
-  static String m51(total) => "${total} rules";
+  static String m52(total) => "${total} rules";
 
-  static String m52(count) => "${count} items selected";
+  static String m53(count) => "${count} items selected";
 
-  static String m53(count) =>
+  static String m54(count) =>
       "Multi uses ${count} parallel connections to saturate bandwidth";
 
-  static String m54(provider) =>
+  static String m55(provider) =>
       "The outbound may be blocking ${provider} speed tests. Switch the test source or the outbound.";
 
-  static String m55(protocol, fallback) =>
+  static String m56(protocol, fallback) =>
       "${protocol} unavailable, fell back to ${fallback}";
 
-  static String m56(count) => "${count} connections";
+  static String m57(count) => "${count} connections";
 
-  static String m57(provider) => "Switch to ${provider}";
+  static String m58(provider) => "Switch to ${provider}";
 
-  static String m58(error) =>
+  static String m59(error) =>
       "Could not confirm these settings were applied to the current profile: ${error}";
 
-  static String m59(label) => "${label} must be a URL";
+  static String m60(label) => "${label} must be a URL";
 
-  static String m60(count) =>
+  static String m61(count) =>
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -1706,6 +1709,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "patrolAdviceFetchHttp": MessageLookupByLibrary.simpleMessage(
       "If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.",
     ),
+    "patrolAdviceFetchHttpServer": MessageLookupByLibrary.simpleMessage(
+      "Do not replace your link for a server-side failure — wait and use the update button below to retry later. Only if it stays broken for a long while is it worth contacting the provider.",
+    ),
     "patrolAdviceFetchProxy": MessageLookupByLibrary.simpleMessage(
       "Start (or restart) the service, then update again. If the core is running and it still fails, run the live probes to see which hop breaks.",
     ),
@@ -1953,6 +1959,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The subscription\'s domain name could not be resolved to an address. The request died at the very first step, before any connection existed.",
     ),
     "patrolStageHttp": m45,
+    "patrolStageHttpServer": m46,
     "patrolStageNameBadContent": MessageLookupByLibrary.simpleMessage(
       "the returned content",
     ),
@@ -2035,7 +2042,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage(
       "Pouring Hourglass",
     ),
@@ -2060,7 +2067,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Profile modified. Disable auto-update?",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),
@@ -2225,7 +2232,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "See how the core resolves and matches a domain or IP",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS Resolution"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage(
       "The target is an IP, no resolution needed",
     ),
@@ -2234,7 +2241,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("Final Outbound"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("Domain, IP or URL"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("Target"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
       "Direct mode: all traffic goes direct",
@@ -2246,8 +2253,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "No rule matched, using DIRECT",
     ),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("Rule Matching"),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage(
       "Skipped, target not found",
     ),
@@ -2307,7 +2314,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Select Backup Version",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("Service Ready"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("Service Running"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -2400,7 +2407,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("Connecting"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("Connections"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage(
       "Not started · Direct test",
     ),
@@ -2412,7 +2419,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage(
       "Speed test unavailable",
     ),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "Check whether the outbound is available, then retry.",
     ),
@@ -2457,7 +2464,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 runs over QUIC (UDP); if unavailable it falls back to HTTP/2, and to HTTP/1.1 if HTTP/2 is unavailable too",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("Network Quality"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("Ready"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage(
@@ -2476,8 +2483,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("Single"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("Start Test"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "Resolve with System DNS",
     ),
@@ -2542,7 +2549,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "Settings application unconfirmed",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("Block ads"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Rejects ad domains via the Mihomo GEOSITE category-ads-all category. Replaces only same-category ad rules in the profile; unrelated rules remain.",
@@ -2800,7 +2807,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Upload"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Get profile via URL"),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "Script Override",
     ),
@@ -2849,6 +2856,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "The filesystem does not support file capabilities, falling back to setuid",
     ),
-    "years": m60,
+    "years": m61,
   };
 }

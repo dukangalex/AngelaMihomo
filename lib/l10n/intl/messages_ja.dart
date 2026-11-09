@@ -104,39 +104,39 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(label) => "${label} のみ表示";
 
-  static String m46(label) => "${label} は1024〜49151の範囲で指定してください（0で無効）";
+  static String m47(label) => "${label} は1024〜49151の範囲で指定してください（0で無効）";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "プロファイルのインポートに失敗しました。通信状態を確認するかURLをリセットしてください ( HTTPエラーコード: ${statusCode} )";
 
-  static String m48(index, time) => "ルール #${index} で解決 · ${time} ms";
+  static String m49(index, time) => "ルール #${index} で解決 · ${time} ms";
 
-  static String m49(ips) => "Hosts に一致: ${ips}";
+  static String m50(ips) => "Hosts に一致: ${ips}";
 
-  static String m50(total, index) => "全 ${total} 件中 #${index} に一致";
+  static String m51(total, index) => "全 ${total} 件中 #${index} に一致";
 
-  static String m51(total) => "全 ${total} 件のルール";
+  static String m52(total) => "全 ${total} 件のルール";
 
-  static String m52(count) => "${count} 件選択中";
+  static String m53(count) => "${count} 件選択中";
 
-  static String m53(count) => "マルチは ${count} 本の並列接続で帯域を使い切ります";
+  static String m54(count) => "マルチは ${count} 本の並列接続で帯域を使い切ります";
 
-  static String m54(provider) =>
+  static String m55(provider) =>
       "アウトバウンドが ${provider} の速度テストをブロックしている可能性があります。測定元またはアウトバウンドを変更してください。";
 
-  static String m55(protocol, fallback) =>
+  static String m56(protocol, fallback) =>
       "${protocol} が利用できないため ${fallback} に切り替えました";
 
-  static String m56(count) => "${count} 接続";
+  static String m57(count) => "${count} 接続";
 
-  static String m57(provider) => "${provider} に切り替え";
+  static String m58(provider) => "${provider} に切り替え";
 
-  static String m58(error) =>
+  static String m59(error) =>
       "Could not confirm these settings were applied to the current profile: ${error}";
 
-  static String m59(label) => "${label} は有効なURLである必要があります";
+  static String m60(label) => "${label} は有効なURLである必要があります";
 
-  static String m60(count) => "${Intl.plural(count, other: '年')}";
+  static String m61(count) => "${Intl.plural(count, other: '年')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1453,7 +1453,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "重複しないポート番号を入力してください",
     ),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("ポーリングアワーグラス"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage(
       "リファインドグラス",
@@ -1472,7 +1472,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "プロファイルが変更されました。自動更新をオフにしますか？",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "設定名を入力してください",
     ),
@@ -1594,7 +1594,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "ドメインや IP のコア内 DNS・ルール照合を確認",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解決"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage(
       "ターゲットは IP のため解決不要",
     ),
@@ -1603,7 +1603,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("最終アウトバウンド"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("ドメイン、IP または URL"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("ターゲット"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
       "ダイレクトモード: すべて直接接続",
@@ -1615,8 +1615,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "一致するルールがなく DIRECT を使用",
     ),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("ルール照合"),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage(
       "ターゲットがないためスキップ",
     ),
@@ -1661,7 +1661,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "バックアップバージョンの選択",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("サービス準備完了"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("サービス稼働中"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -1740,7 +1740,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("接続中"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("接続方式"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage("未起動・直接接続で測定"),
     "speedTestCredit": MessageLookupByLibrary.simpleMessage(
       "速度テストサーバーは公開されている第三者によって提供されています。Apple、Cloudflare、Speedtest by Ookla に感謝します。",
@@ -1750,7 +1750,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage(
       "速度テストを利用できません",
     ),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "アウトバウンドが利用可能か確認してから再試行してください。",
     ),
@@ -1787,7 +1787,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 は QUIC (UDP) を使用し、使えない場合は HTTP/2 に、HTTP/2 も使えない場合は HTTP/1.1 に切り替えます",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("ネットワーク品質"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("準備完了"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("リアルタイム速度"),
@@ -1800,8 +1800,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("測定設定"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("シングル"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("測定開始"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "システム DNS で解決",
     ),
@@ -1860,7 +1860,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "Settings application unconfirmed",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("Block ads"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Rejects ad domains via the Mihomo GEOSITE category-ads-all category. Replaces only same-category ad rules in the profile; unrelated rules remain.",
@@ -2102,7 +2102,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("送信"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLから設定を取得"),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "グローバルスクリプトオーバーライドを使用",
     ),
@@ -2143,6 +2143,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "ファイルシステムがファイルケーパビリティ（xattr）に対応していないため、setuid にフォールバックしました",
     ),
-    "years": m60,
+    "years": m61,
   };
 }

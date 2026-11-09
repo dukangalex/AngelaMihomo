@@ -104,36 +104,36 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(label) => "只看 ${label}";
 
-  static String m46(label) => "${label} 必須在 1024 到 49151 之間，0 為關閉";
+  static String m47(label) => "${label} 必須在 1024 到 49151 之間，0 為關閉";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "配置導入失敗，請檢查網路狀況或嘗試重置訂閱連結( HTTP錯誤代碼: ${statusCode} )";
 
-  static String m48(index, time) => "第 ${index} 條規則觸發解析 · ${time} ms";
+  static String m49(index, time) => "第 ${index} 條規則觸發解析 · ${time} ms";
 
-  static String m49(ips) => "命中 Hosts：${ips}";
+  static String m50(ips) => "命中 Hosts：${ips}";
 
-  static String m50(total, index) => "共 ${total} 條規則，命中第 ${index} 條";
+  static String m51(total, index) => "共 ${total} 條規則，命中第 ${index} 條";
 
-  static String m51(total) => "共 ${total} 條規則";
+  static String m52(total) => "共 ${total} 條規則";
 
-  static String m52(count) => "已選擇 ${count} 項";
+  static String m53(count) => "已選擇 ${count} 項";
 
-  static String m53(count) => "多執行緒會並行 ${count} 條連線以跑滿頻寬";
+  static String m54(count) => "多執行緒會並行 ${count} 條連線以跑滿頻寬";
 
-  static String m54(provider) => "出站節點可能封鎖了 ${provider} 測速，可切換測速源或更換出站";
+  static String m55(provider) => "出站節點可能封鎖了 ${provider} 測速，可切換測速源或更換出站";
 
-  static String m55(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
+  static String m56(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
 
-  static String m56(count) => "${count} 條連線";
+  static String m57(count) => "${count} 條連線";
 
-  static String m57(provider) => "切換到 ${provider}";
+  static String m58(provider) => "切換到 ${provider}";
 
-  static String m58(error) => "无法确认设置已应用到当前配置：${error}";
+  static String m59(error) => "无法确认设置已应用到当前配置：${error}";
 
-  static String m59(label) => "${label}必須為 URL";
+  static String m60(label) => "${label}必須為 URL";
 
-  static String m60(count) => "${Intl.plural(count, other: '年')}";
+  static String m61(count) => "${Intl.plural(count, other: '年')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1321,7 +1321,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "port": MessageLookupByLibrary.simpleMessage("連接埠"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("請輸入不同的連接埠"),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("流沙傾注"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage("玉漏凝光"),
     "powerSwitch": MessageLookupByLibrary.simpleMessage("啟動開關"),
@@ -1338,7 +1338,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "設定檔已經修改，是否關閉自動更新？",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "請輸入配置名稱",
     ),
@@ -1450,14 +1450,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "檢視網域或 IP 在核心中的 DNS 與規則比對過程",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解析"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage("目標本身是 IP，無需解析"),
     "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
       "比對過程中無需解析 IP",
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("最終出站"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("輸入網域、IP 或網址"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("目標"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage("直連模式：所有流量直連"),
     "routeTraceModeGlobal": MessageLookupByLibrary.simpleMessage(
@@ -1465,8 +1465,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceNoMatch": MessageLookupByLibrary.simpleMessage("沒有規則命中，以直連處理"),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("規則比對"),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage("目標不存在，略過"),
     "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage("PASS 略過"),
     "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage("不支援 UDP，略過"),
@@ -1500,7 +1500,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("全選"),
     "selectBackupVersion": MessageLookupByLibrary.simpleMessage("選擇備份版本"),
     "selected": MessageLookupByLibrary.simpleMessage("已選擇"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("服務已就緒"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("服務正在執行中"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -1567,7 +1567,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("連線中"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("連線方式"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage("未啟動 · 直連測速"),
     "speedTestCredit": MessageLookupByLibrary.simpleMessage(
       "測速伺服器由網路上公開的第三方提供，特別感謝 Apple、Cloudflare 以及 Speedtest by Ookla。",
@@ -1575,7 +1575,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestDataUsed": MessageLookupByLibrary.simpleMessage("已用流量"),
     "speedTestDuration": MessageLookupByLibrary.simpleMessage("測試時長"),
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage("測速服務不可用"),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "請檢查出站是否可用後重試",
     ),
@@ -1608,7 +1608,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 基於 QUIC (UDP)，不可用時依次回退到 HTTP/2、（HTTP/2 不可用時）HTTP/1.1",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("網路品質"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("準備就緒"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("即時速率"),
@@ -1621,8 +1621,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("測速設定"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("單執行緒"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("開始測速"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "使用系統 DNS 解析",
     ),
@@ -1673,7 +1673,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "设置应用状态待确认",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("广告拦截"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "默认关闭。按 Mihomo 的 GEOSITE category-ads-all 分类阻断广告域名；仅替换配置中同类广告规则，其它规则保留。",
@@ -1887,7 +1887,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("上傳"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("透過 URL 獲取設定檔"),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage("指令碼覆寫開關"),
     "useHosts": MessageLookupByLibrary.simpleMessage("使用 Hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系統 Hosts"),
@@ -1924,6 +1924,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "檔案系統不支援檔案能力（xattr），已回退到 setuid",
     ),
-    "years": m60,
+    "years": m61,
   };
 }

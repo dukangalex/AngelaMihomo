@@ -409,7 +409,16 @@ class PatrolReport {
 /// them once buried every real problem under noise (field report:
 /// 171 accumulated copies). Matched before classification, at any
 /// level, and reported separately as [PatrolLogSection.transientSkipped].
-const patrolTransientSignatures = ['transitioning'];
+const patrolTransientSignatures = [
+  'transitioning',
+  // A dial the core itself canceled — superseded by a retry or a
+  // config reload (field evidence 2026-11-08: 192 copies in one day
+  // for the DoT resolver address, each followed by a successful
+  // retry). "重试后自愈" churn, not a failure; counting it would
+  // bury real connection problems under noise.
+  'operation was canceled',
+  'operation was cancelled',
+];
 
 bool isTransientLogNoise(String payload) {
   final text = payload.toLowerCase();

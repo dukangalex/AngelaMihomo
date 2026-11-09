@@ -104,39 +104,39 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(label) => "${label}만 보기";
 
-  static String m46(label) => "${label} 항목은 1024~49151 사이여야 합니다 (0은 비활성화)";
+  static String m47(label) => "${label} 항목은 1024~49151 사이여야 합니다 (0은 비활성화)";
 
-  static String m47(statusCode) =>
+  static String m48(statusCode) =>
       "프로필 가져오기에 실패했습니다. 네트워크 상태를 확인하거나 구독 링크를 재설정해 보세요 ( HTTP 오류 코드: ${statusCode} )";
 
-  static String m48(index, time) => "규칙 #${index}에서 확인 · ${time} ms";
+  static String m49(index, time) => "규칙 #${index}에서 확인 · ${time} ms";
 
-  static String m49(ips) => "Hosts 일치: ${ips}";
+  static String m50(ips) => "Hosts 일치: ${ips}";
 
-  static String m50(total, index) => "총 ${total}개 규칙 중 #${index} 일치";
+  static String m51(total, index) => "총 ${total}개 규칙 중 #${index} 일치";
 
-  static String m51(total) => "총 ${total}개 규칙";
+  static String m52(total) => "총 ${total}개 규칙";
 
-  static String m52(count) => "${count}개 선택됨";
+  static String m53(count) => "${count}개 선택됨";
 
-  static String m53(count) => "다중은 ${count}개의 병렬 연결로 대역폭을 채웁니다";
+  static String m54(count) => "다중은 ${count}개의 병렬 연결로 대역폭을 채웁니다";
 
-  static String m54(provider) =>
+  static String m55(provider) =>
       "아웃바운드가 ${provider} 속도 테스트를 차단하고 있을 수 있습니다. 측정 소스나 아웃바운드를 바꿔 보세요.";
 
-  static String m55(protocol, fallback) =>
+  static String m56(protocol, fallback) =>
       "${protocol}를 사용할 수 없어 ${fallback}로 전환했습니다";
 
-  static String m56(count) => "${count}개 연결";
+  static String m57(count) => "${count}개 연결";
 
-  static String m57(provider) => "${provider}(으)로 전환";
+  static String m58(provider) => "${provider}(으)로 전환";
 
-  static String m58(error) =>
+  static String m59(error) =>
       "Could not confirm these settings were applied to the current profile: ${error}";
 
-  static String m59(label) => "${label} 항목은 올바른 URL이어야 합니다";
+  static String m60(label) => "${label} 항목은 올바른 URL이어야 합니다";
 
-  static String m60(count) => "${Intl.plural(count, other: '#년')}";
+  static String m61(count) => "${Intl.plural(count, other: '#년')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1461,7 +1461,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "중복되지 않는 포트를 입력하세요",
     ),
-    "portTip": m46,
+    "portTip": m47,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("흐르는 모래시계"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage("정밀 모래시계"),
     "powerSwitch": MessageLookupByLibrary.simpleMessage("전원 스위치"),
@@ -1478,7 +1478,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "프로필이 수정되었습니다. 자동 업데이트를 끄시겠습니까?",
     ),
-    "profileImportFailed": m47,
+    "profileImportFailed": m48,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "프로필 이름을 입력하세요",
     ),
@@ -1602,14 +1602,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "도메인/IP의 코어 내 DNS 및 규칙 매칭 확인",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 확인"),
-    "routeTraceDnsBy": m48,
+    "routeTraceDnsBy": m49,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage("대상이 IP이므로 확인 불필요"),
     "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
       "매칭 중 IP 확인이 필요하지 않았습니다",
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("최종 아웃바운드"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("도메인, IP 또는 URL"),
-    "routeTraceHostsHit": m49,
+    "routeTraceHostsHit": m50,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("대상"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
       "다이렉트 모드: 모든 트래픽 직접 연결",
@@ -1621,8 +1621,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "일치하는 규칙이 없어 DIRECT 사용",
     ),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("규칙 매칭"),
-    "routeTraceRulesSummary": m50,
-    "routeTraceRulesTotal": m51,
+    "routeTraceRulesSummary": m51,
+    "routeTraceRulesTotal": m52,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage("대상이 없어 건너뜀"),
     "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage("PASS로 건너뜀"),
     "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage("UDP 미지원으로 건너뜀"),
@@ -1659,7 +1659,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("전체 선택"),
     "selectBackupVersion": MessageLookupByLibrary.simpleMessage("백업 버전 선택"),
     "selected": MessageLookupByLibrary.simpleMessage("선택됨"),
-    "selectedCountTitle": m52,
+    "selectedCountTitle": m53,
     "serviceReady": MessageLookupByLibrary.simpleMessage("서비스 준비 완료"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("서비스 실행 중"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -1734,7 +1734,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("연결 중"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("연결 방식"),
-    "speedTestConnectionsDesc": m53,
+    "speedTestConnectionsDesc": m54,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage(
       "미실행 · 직접 연결 측정",
     ),
@@ -1746,7 +1746,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage(
       "속도 테스트를 사용할 수 없음",
     ),
-    "speedTestErrorBlockedDesc": m54,
+    "speedTestErrorBlockedDesc": m55,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "아웃바운드를 사용할 수 있는지 확인한 후 다시 시도하세요.",
     ),
@@ -1785,7 +1785,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3는 QUIC(UDP)를 사용하며, 사용할 수 없으면 HTTP/2로, HTTP/2도 안 되면 HTTP/1.1로 전환합니다",
     ),
-    "speedTestProtocolFallback": m55,
+    "speedTestProtocolFallback": m56,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("네트워크 품질"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("준비 완료"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("실시간 속도"),
@@ -1798,8 +1798,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("측정 설정"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("단일"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("측정 시작"),
-    "speedTestStreams": m56,
-    "speedTestSwitchProvider": m57,
+    "speedTestStreams": m57,
+    "speedTestSwitchProvider": m58,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "시스템 DNS로 확인",
     ),
@@ -1856,7 +1856,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "Settings application unconfirmed",
     ),
-    "systemExplicitApplyUnconfirmed": m58,
+    "systemExplicitApplyUnconfirmed": m59,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("Block ads"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Rejects ad domains via the Mihomo GEOSITE category-ads-all category. Replaces only same-category ad rules in the profile; unrelated rules remain.",
@@ -2100,7 +2100,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("업로드"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URL 주소로 프로필 가져오기"),
-    "urlTip": m59,
+    "urlTip": m60,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "글로벌 스크립트 오버라이드 사용",
     ),
@@ -2141,6 +2141,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "파일 시스템이 파일 capability(xattr)를 지원하지 않아 setuid로 대체했습니다",
     ),
-    "years": m60,
+    "years": m61,
   };
 }
