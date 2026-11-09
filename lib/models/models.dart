@@ -8,6 +8,7 @@ export 'selector.dart';
 export 'widget.dart';
 export 'media_unlock.dart';
 export 'patrol.dart';
+export 'patrol_diagnosis.dart';
 export 'speed_test.dart';
 export 'stun_test.dart';
 export 'iperf.dart';

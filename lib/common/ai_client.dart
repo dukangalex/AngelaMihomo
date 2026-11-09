@@ -4,6 +4,7 @@ import 'package:bett_box/common/ai_config.dart';
 import 'package:bett_box/common/http.dart';
 import 'package:bett_box/common/log_redaction.dart';
 import 'package:bett_box/models/patrol.dart';
+import 'package:bett_box/models/patrol_diagnosis.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 
@@ -128,25 +129,18 @@ Future<bool> testAiConnection(AiConfig config) async {
   }
 }
 
-/// Sends the (already user-confirmed) redacted summary and returns
-/// the model's plain-language interpretation. Throws on any failure;
-/// the caller shows the error verbatim.
-Future<String> fetchAiInterpretation(AiConfig config, String summary) async {
+Future<String> _chatCompletion(
+  AiConfig config, {
+  required String system,
+  required String user,
+}) async {
   final response = await _aiDio(config).post<Map<String, dynamic>>(
     _endpoint(config, '/chat/completions'),
     data: {
       'model': config.model.trim(),
       'messages': [
-        {
-          'role': 'system',
-          'content':
-              'You are the diagnostic assistant inside a proxy client app. '
-              'Explain the patrol report in plain language: what is wrong, '
-              'the most likely cause, and the concrete next step for each '
-              'problem. Be concise. The report is redacted; never ask for '
-              'unredacted data, credentials or subscription URLs.',
-        },
-        {'role': 'user', 'content': summary},
+        {'role': 'system', 'content': system},
+        {'role': 'user', 'content': user},
       ],
     },
   );
@@ -157,4 +151,97 @@ Future<String> fetchAiInterpretation(AiConfig config, String summary) async {
     if (content is String && content.trim().isNotEmpty) return content.trim();
   }
   throw StateError('empty AI response');
+}
+
+/// Sends the (already user-confirmed) redacted summary and returns
+/// the model's plain-language interpretation. Throws on any failure;
+/// the caller shows the error verbatim.
+Future<String> fetchAiInterpretation(AiConfig config, String summary) {
+  return _chatCompletion(
+    config,
+    system:
+        'You are the diagnostic assistant inside a proxy client app. '
+        'Explain the patrol report in plain language: what is wrong, '
+        'the most likely cause, and the concrete next step for each '
+        'problem. Be concise. The report is redacted; never ask for '
+        'unredacted data, credentials or subscription URLs.',
+    user: summary,
+  );
+}
+
+/// Builds the redacted per-issue summary for the detail page's AI
+/// layer (T68): the local diagnosis (cause, stage, evidence, probe
+/// outcomes) is the input — the AI strengthens the reasoning, it
+/// does not replace it. Same redaction discipline as the report
+/// summary; the subscription URL itself is never included, only its
+/// host is named by the facts, and known names are masked.
+String buildPatrolIssueSummary(
+  PatrolIssue issue, {
+  required List<String> nodeNames,
+  Map<PatrolProbeKind, ({bool ok, String detail})> probes = const {},
+  PatrolFetchStage? measuredStage,
+}) {
+  String clean(String text) =>
+      _maskKnownNames(redactLogText(text), nodeNames);
+  final lines = <String>[
+    'AngelaMihomo AI patrol — single problem diagnosis (redacted)',
+    'problem: ${issue.id}, severity: ${issue.severity.name}, '
+        'local cause: ${issue.cause.name}',
+  ];
+  if (issue.stage != null) {
+    lines.add('recorded failure stage: ${issue.stage!.name}');
+  }
+  if (issue.httpStatus != null) {
+    lines.add('HTTP status: ${issue.httpStatus}');
+  }
+  if (measuredStage != null) {
+    lines.add('measured failure stage (live probes): ${measuredStage.name}');
+  }
+  lines.add('evidence:');
+  for (final fact in issue.facts) {
+    switch (fact.kind) {
+      case PatrolFactKind.occurrences:
+        lines.add('- matched ${fact.count} log entries');
+      case PatrolFactKind.state:
+        lines.add('- ${fact.label!.name}: ${fact.value}');
+      case PatrolFactKind.sample:
+      case PatrolFactKind.recordedError:
+        lines.add('- ${clean(fact.text)}');
+    }
+  }
+  if (probes.isNotEmpty) {
+    lines.add('live probe results:');
+    for (final entry in probes.entries) {
+      lines.add(
+        '- ${entry.key.name}: ${entry.value.ok ? 'ok' : 'FAILED'}'
+        '${entry.value.detail.isEmpty ? '' : ' (${clean(entry.value.detail)})'}',
+      );
+    }
+  }
+  if (issue.rawInfo.isNotEmpty) {
+    lines.add('raw info (redacted): ${clean(issue.rawInfo)}');
+  }
+  return lines.join('\n');
+}
+
+/// Per-issue AI interpretation (T68): possible causes ranked by
+/// likelihood, the impact scope, and concrete next steps. Throws on
+/// any failure; the caller shows the error verbatim.
+Future<String> fetchAiIssueInterpretation(
+  AiConfig config,
+  String summary,
+) {
+  return _chatCompletion(
+    config,
+    system:
+        'You are the diagnostic assistant inside a proxy client app. '
+        'For this single patrol problem, answer with: (1) the '
+        'possible causes ranked by likelihood, each with the '
+        'evidence for or against it; (2) the impact scope — what '
+        'stops working for the user; (3) concrete next steps the '
+        'user can take. Be concise and plain-spoken. The data is '
+        'redacted; never ask for unredacted data, credentials or '
+        'subscription URLs.',
+    user: summary,
+  );
 }

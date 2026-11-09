@@ -1665,198 +1665,6 @@ class AppLocalizations {
     return Intl.message('AI Search', name: 'logAiSearch', desc: '', args: []);
   }
 
-  /// `AI Patrol`
-  String get aiPatrol {
-    return Intl.message('AI Patrol', name: 'aiPatrol', desc: '', args: []);
-  }
-
-  /// `Everything looks good`
-  String get patrolAllGood {
-    return Intl.message('Everything looks good', name: 'patrolAllGood', desc: '', args: []);
-  }
-
-  /// `Recheck`
-  String get patrolRecheck {
-    return Intl.message('Recheck', name: 'patrolRecheck', desc: '', args: []);
-  }
-
-  /// `No problems found`
-  String get patrolNoProblems {
-    return Intl.message('No problems found', name: 'patrolNoProblems', desc: '', args: []);
-  }
-
-  /// `Log problems`
-  String get patrolSectionLogs {
-    return Intl.message('Log problems', name: 'patrolSectionLogs', desc: '', args: []);
-  }
-
-  /// `Connection failures`
-  String get patrolLogConnection {
-    return Intl.message('Connection failures', name: 'patrolLogConnection', desc: '', args: []);
-  }
-
-  /// `DNS failures`
-  String get patrolLogDns {
-    return Intl.message('DNS failures', name: 'patrolLogDns', desc: '', args: []);
-  }
-
-  /// `Timeouts`
-  String get patrolLogTimeouts {
-    return Intl.message('Timeouts', name: 'patrolLogTimeouts', desc: '', args: []);
-  }
-
-  /// `Rule problems`
-  String get patrolLogRule {
-    return Intl.message('Rule problems', name: 'patrolLogRule', desc: '', args: []);
-  }
-
-  /// `Subscription`
-  String get patrolSectionSubscription {
-    return Intl.message('Subscription', name: 'patrolSectionSubscription', desc: '', args: []);
-  }
-
-  /// `No profile selected`
-  String get patrolSubNoProfile {
-    return Intl.message('No profile selected', name: 'patrolSubNoProfile', desc: '', args: []);
-  }
-
-  /// `Last updated`
-  String get patrolSubLastUpdated {
-    return Intl.message('Last updated', name: 'patrolSubLastUpdated', desc: '', args: []);
-  }
-
-  /// `Never updated`
-  String get patrolSubNeverUpdated {
-    return Intl.message('Never updated', name: 'patrolSubNeverUpdated', desc: '', args: []);
-  }
-
-  /// `Update overdue — refresh it manually once`
-  String get patrolSubStale {
-    return Intl.message('Update overdue — refresh it manually once', name: 'patrolSubStale', desc: '', args: []);
-  }
-
-  /// `Subscription expired`
-  String get patrolSubExpired {
-    return Intl.message('Subscription expired', name: 'patrolSubExpired', desc: '', args: []);
-  }
-
-  /// `The last update failed`
-  String get patrolSubUpdateFailed {
-    return Intl.message('The last update failed', name: 'patrolSubUpdateFailed', desc: '', args: []);
-  }
-
-  /// `Node health`
-  String get patrolSectionNodes {
-    return Intl.message('Node health', name: 'patrolSectionNodes', desc: '', args: []);
-  }
-
-  /// `Working`
-  String get patrolNodesWorking {
-    return Intl.message('Working', name: 'patrolNodesWorking', desc: '', args: []);
-  }
-
-  /// `Unavailable`
-  String get patrolNodesUnavailable {
-    return Intl.message('Unavailable', name: 'patrolNodesUnavailable', desc: '', args: []);
-  }
-
-  /// `Untested`
-  String get patrolNodesUntested {
-    return Intl.message('Untested', name: 'patrolNodesUntested', desc: '', args: []);
-  }
-
-  /// `No speed-test data yet`
-  String get patrolNodesNoData {
-    return Intl.message('No speed-test data yet', name: 'patrolNodesNoData', desc: '', args: []);
-  }
-
-  /// `Most nodes are unreachable — likely a network or subscription problem, not a single bad node`
-  String get patrolNodesWidespread {
-    return Intl.message('Most nodes are unreachable — likely a network or subscription problem, not a single bad node', name: 'patrolNodesWidespread', desc: '', args: []);
-  }
-
-  /// `Some nodes are unavailable`
-  String get patrolNodesSomeDown {
-    return Intl.message('Some nodes are unavailable', name: 'patrolNodesSomeDown', desc: '', args: []);
-  }
-
-  /// `Mode & chain`
-  String get patrolSectionLink {
-    return Intl.message('Mode & chain', name: 'patrolSectionLink', desc: '', args: []);
-  }
-
-  /// `Chain proxy is off`
-  String get patrolChainOff {
-    return Intl.message('Chain proxy is off', name: 'patrolChainOff', desc: '', args: []);
-  }
-
-  /// `Chain proxy is on`
-  String get patrolChainOn {
-    return Intl.message('Chain proxy is on', name: 'patrolChainOn', desc: '', args: []);
-  }
-
-  /// `Entry or exit is not selected yet`
-  String get patrolChainIncomplete {
-    return Intl.message('Entry or exit is not selected yet', name: 'patrolChainIncomplete', desc: '', args: []);
-  }
-
-  /// `One chain hop looks down`
-  String get patrolChainHopDown {
-    return Intl.message('One chain hop looks down', name: 'patrolChainHopDown', desc: '', args: []);
-  }
-
-  /// `Core & config`
-  String get patrolSectionCore {
-    return Intl.message('Core & config', name: 'patrolSectionCore', desc: '', args: []);
-  }
-
-  /// `Version`
-  String get patrolVersion {
-    return Intl.message('Version', name: 'patrolVersion', desc: '', args: []);
-  }
-
-  /// `Config check passed`
-  String get patrolConfigValid {
-    return Intl.message('Config check passed', name: 'patrolConfigValid', desc: '', args: []);
-  }
-
-  /// `Config check failed`
-  String get patrolConfigInvalid {
-    return Intl.message('Config check failed', name: 'patrolConfigInvalid', desc: '', args: []);
-  }
-
-  /// `Checking config…`
-  String get patrolConfigChecking {
-    return Intl.message('Checking config…', name: 'patrolConfigChecking', desc: '', args: []);
-  }
-
-  /// `Start the service to run the full config check`
-  String get patrolConfigUnavailable {
-    return Intl.message('Start the service to run the full config check', name: 'patrolConfigUnavailable', desc: '', args: []);
-  }
-
-  /// `{count, plural, one{1 area needs attention} other{{count} areas need attention}}`
-  String patrolAttentionNeeded(num count) {
-    return Intl.plural(
-      count,
-      one: '1 area needs attention',
-      other: '$count areas need attention',
-      name: 'patrolAttentionNeeded',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `Couldn't switch to the new profile, so the previous profile was restored`
-  String get profileSwitchFailedRollback {
-    return Intl.message('Couldn\'t switch to the new profile, so the previous profile was restored', name: 'profileSwitchFailedRollback', desc: '', args: []);
-  }
-
-  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
-  String get profileSwitchFailed {
-    return Intl.message('Couldn\'t switch profiles. The current profile is unchanged; check it and try again', name: 'profileSwitchFailed', desc: '', args: []);
-  }
-
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);
@@ -6102,6 +5910,7 @@ class AppLocalizations {
     );
   }
 
+  /// `Do Not Use a Script`
   String get scriptNotUsed {
     return Intl.message(
       'Do Not Use a Script',
@@ -6111,6 +5920,7 @@ class AppLocalizations {
     );
   }
 
+  /// `Follow Global Script`
   String get followGlobalScript {
     return Intl.message(
       'Follow Global Script',
@@ -10320,11 +10130,368 @@ class AppLocalizations {
     );
   }
 
-  /// `China adaptation`
+  /// `System options`
   String get systemExplicitTitle {
     return Intl.message(
-      'China adaptation',
+      'System options',
       name: 'systemExplicitTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AI Patrol`
+  String get aiPatrol {
+    return Intl.message('AI Patrol', name: 'aiPatrol', desc: '', args: []);
+  }
+
+  /// `Everything looks good`
+  String get patrolAllGood {
+    return Intl.message(
+      'Everything looks good',
+      name: 'patrolAllGood',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recheck`
+  String get patrolRecheck {
+    return Intl.message('Recheck', name: 'patrolRecheck', desc: '', args: []);
+  }
+
+  /// `No problems found`
+  String get patrolNoProblems {
+    return Intl.message(
+      'No problems found',
+      name: 'patrolNoProblems',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Log problems`
+  String get patrolSectionLogs {
+    return Intl.message(
+      'Log problems',
+      name: 'patrolSectionLogs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection failures`
+  String get patrolLogConnection {
+    return Intl.message(
+      'Connection failures',
+      name: 'patrolLogConnection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS failures`
+  String get patrolLogDns {
+    return Intl.message(
+      'DNS failures',
+      name: 'patrolLogDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Timeouts`
+  String get patrolLogTimeouts {
+    return Intl.message(
+      'Timeouts',
+      name: 'patrolLogTimeouts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rule problems`
+  String get patrolLogRule {
+    return Intl.message(
+      'Rule problems',
+      name: 'patrolLogRule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription`
+  String get patrolSectionSubscription {
+    return Intl.message(
+      'Subscription',
+      name: 'patrolSectionSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No profile selected`
+  String get patrolSubNoProfile {
+    return Intl.message(
+      'No profile selected',
+      name: 'patrolSubNoProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last updated`
+  String get patrolSubLastUpdated {
+    return Intl.message(
+      'Last updated',
+      name: 'patrolSubLastUpdated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Never updated`
+  String get patrolSubNeverUpdated {
+    return Intl.message(
+      'Never updated',
+      name: 'patrolSubNeverUpdated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update overdue — refresh it manually once`
+  String get patrolSubStale {
+    return Intl.message(
+      'Update overdue — refresh it manually once',
+      name: 'patrolSubStale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription expired`
+  String get patrolSubExpired {
+    return Intl.message(
+      'Subscription expired',
+      name: 'patrolSubExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The last update failed`
+  String get patrolSubUpdateFailed {
+    return Intl.message(
+      'The last update failed',
+      name: 'patrolSubUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node health`
+  String get patrolSectionNodes {
+    return Intl.message(
+      'Node health',
+      name: 'patrolSectionNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Working`
+  String get patrolNodesWorking {
+    return Intl.message(
+      'Working',
+      name: 'patrolNodesWorking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unavailable`
+  String get patrolNodesUnavailable {
+    return Intl.message(
+      'Unavailable',
+      name: 'patrolNodesUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Untested`
+  String get patrolNodesUntested {
+    return Intl.message(
+      'Untested',
+      name: 'patrolNodesUntested',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No speed-test data yet`
+  String get patrolNodesNoData {
+    return Intl.message(
+      'No speed-test data yet',
+      name: 'patrolNodesNoData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Most nodes are unreachable — likely a network or subscription problem, not a single bad node`
+  String get patrolNodesWidespread {
+    return Intl.message(
+      'Most nodes are unreachable — likely a network or subscription problem, not a single bad node',
+      name: 'patrolNodesWidespread',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Some nodes are unavailable`
+  String get patrolNodesSomeDown {
+    return Intl.message(
+      'Some nodes are unavailable',
+      name: 'patrolNodesSomeDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mode & chain`
+  String get patrolSectionLink {
+    return Intl.message(
+      'Mode & chain',
+      name: 'patrolSectionLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chain proxy is off`
+  String get patrolChainOff {
+    return Intl.message(
+      'Chain proxy is off',
+      name: 'patrolChainOff',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chain proxy is on`
+  String get patrolChainOn {
+    return Intl.message(
+      'Chain proxy is on',
+      name: 'patrolChainOn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Entry or exit is not selected yet`
+  String get patrolChainIncomplete {
+    return Intl.message(
+      'Entry or exit is not selected yet',
+      name: 'patrolChainIncomplete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One chain hop looks down`
+  String get patrolChainHopDown {
+    return Intl.message(
+      'One chain hop looks down',
+      name: 'patrolChainHopDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Core & config`
+  String get patrolSectionCore {
+    return Intl.message(
+      'Core & config',
+      name: 'patrolSectionCore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Version`
+  String get patrolVersion {
+    return Intl.message('Version', name: 'patrolVersion', desc: '', args: []);
+  }
+
+  /// `Config check passed`
+  String get patrolConfigValid {
+    return Intl.message(
+      'Config check passed',
+      name: 'patrolConfigValid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Config check failed`
+  String get patrolConfigInvalid {
+    return Intl.message(
+      'Config check failed',
+      name: 'patrolConfigInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking config…`
+  String get patrolConfigChecking {
+    return Intl.message(
+      'Checking config…',
+      name: 'patrolConfigChecking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start the service to run the full config check`
+  String get patrolConfigUnavailable {
+    return Intl.message(
+      'Start the service to run the full config check',
+      name: 'patrolConfigUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, one {1 area needs attention} other {{count} areas need attention}}`
+  String patrolAttentionNeeded(num count) {
+    return Intl.plural(
+      count,
+      one: '1 area needs attention',
+      other: '$count areas need attention',
+      name: 'patrolAttentionNeeded',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Couldn't switch to the new profile, so the previous profile was restored`
+  String get profileSwitchFailedRollback {
+    return Intl.message(
+      'Couldn\'t switch to the new profile, so the previous profile was restored',
+      name: 'profileSwitchFailedRollback',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
+  String get profileSwitchFailed {
+    return Intl.message(
+      'Couldn\'t switch profiles. The current profile is unchanged; check it and try again',
+      name: 'profileSwitchFailed',
       desc: '',
       args: [],
     );
@@ -10332,21 +10499,86 @@ class AppLocalizations {
 
   /// `Mihomo core version`
   String get mihomoCoreVersion {
-    return Intl.message('Mihomo core version', name: 'mihomoCoreVersion', desc: '', args: []);
+    return Intl.message(
+      'Mihomo core version',
+      name: 'mihomoCoreVersion',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Test all groups`
   String get testAllDelay {
-    return Intl.message('Test all groups', name: 'testAllDelay', desc: '', args: []);
+    return Intl.message(
+      'Test all groups',
+      name: 'testAllDelay',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Not tested`
   String get proxyDelayNotTested {
-    return Intl.message('Not tested', name: 'proxyDelayNotTested', desc: '', args: []);
+    return Intl.message(
+      'Not tested',
+      name: 'proxyDelayNotTested',
+      desc: '',
+      args: [],
+    );
   }
 
-  /// `Auto-update is on for this subscription (every $hours h, as suggested by the provider). You can change it in the profile settings.`
-  String autoUpdateOnImportTip(num hours) {
+  /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
+  String get systemExplicitDirectExceptionModeDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.',
+      name: 'systemExplicitDirectExceptionModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct exceptions are not active in this mode`
+  String get systemExplicitExceptionsInactive {
+    return Intl.message(
+      'Direct exceptions are not active in this mode',
+      name: 'systemExplicitExceptionsInactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.`
+  String get systemExplicitExceptionsInactiveDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.',
+      name: 'systemExplicitExceptionsInactiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Interception is active in this mode`
+  String get systemExplicitInterceptionActive {
+    return Intl.message(
+      'Interception is active in this mode',
+      name: 'systemExplicitInterceptionActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy, WebRTC and ad blocking keep working in global/direct mode.`
+  String get systemExplicitInterceptionActiveDesc {
+    return Intl.message(
+      'Privacy, WebRTC and ad blocking keep working in global/direct mode.',
+      name: 'systemExplicitInterceptionActiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto-update is on for this subscription (every {hours} h, as suggested by the provider). You can change it in the profile settings.`
+  String autoUpdateOnImportTip(Object hours) {
     return Intl.message(
       'Auto-update is on for this subscription (every $hours h, as suggested by the provider). You can change it in the profile settings.',
       name: 'autoUpdateOnImportTip',
@@ -10355,42 +10587,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.`
-  String autoUpdateOnImportTipDefault(num hours) {
-    return Intl.message(
-      'Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.',
-      name: 'autoUpdateOnImportTipDefault',
-      desc: '',
-      args: [hours],
-    );
-  }
-
-  /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
-  String get systemExplicitDirectExceptionModeDesc {
-    return Intl.message('China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.', name: 'systemExplicitDirectExceptionModeDesc', desc: '', args: []);
-  }
-
-  /// `Direct exceptions are not active in this mode`
-  String get systemExplicitExceptionsInactive {
-    return Intl.message('Direct exceptions are not active in this mode', name: 'systemExplicitExceptionsInactive', desc: '', args: []);
-  }
-
-  /// `China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.`
-  String get systemExplicitExceptionsInactiveDesc {
-    return Intl.message('China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.', name: 'systemExplicitExceptionsInactiveDesc', desc: '', args: []);
-  }
-
-  /// `Interception is active in this mode`
-  String get systemExplicitInterceptionActive {
-    return Intl.message('Interception is active in this mode', name: 'systemExplicitInterceptionActive', desc: '', args: []);
-  }
-
-  /// `Privacy, WebRTC and ad blocking keep working in global/direct mode.`
-  String get systemExplicitInterceptionActiveDesc {
-    return Intl.message('Privacy, WebRTC and ad blocking keep working in global/direct mode.', name: 'systemExplicitInterceptionActiveDesc', desc: '', args: []);
-  }
-
-
   /// `Fix`
   String get patrolFix {
     return Intl.message('Fix', name: 'patrolFix', desc: '', args: []);
@@ -10398,72 +10594,122 @@ class AppLocalizations {
 
   /// `Update the subscription now`
   String get patrolActionUpdateSubscription {
-    return Intl.message('Update the subscription now', name: 'patrolActionUpdateSubscription', desc: '', args: []);
+    return Intl.message(
+      'Update the subscription now',
+      name: 'patrolActionUpdateSubscription',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Retest all nodes`
   String get patrolActionTestNodes {
-    return Intl.message('Retest all nodes', name: 'patrolActionTestNodes', desc: '', args: []);
+    return Intl.message(
+      'Retest all nodes',
+      name: 'patrolActionTestNodes',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Flush DNS and FakeIP caches`
   String get patrolActionFlushDns {
-    return Intl.message('Flush DNS and FakeIP caches', name: 'patrolActionFlushDns', desc: '', args: []);
+    return Intl.message(
+      'Flush DNS and FakeIP caches',
+      name: 'patrolActionFlushDns',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Reload the configuration`
   String get patrolActionReloadConfig {
-    return Intl.message('Reload the configuration', name: 'patrolActionReloadConfig', desc: '', args: []);
+    return Intl.message(
+      'Reload the configuration',
+      name: 'patrolActionReloadConfig',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Run this fix?`
   String get patrolFixConfirmTitle {
-    return Intl.message('Run this fix?', name: 'patrolFixConfirmTitle', desc: '', args: []);
+    return Intl.message(
+      'Run this fix?',
+      name: 'patrolFixConfirmTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.`
   String get patrolFixConfirmDesc {
-    return Intl.message('The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.', name: 'patrolFixConfirmDesc', desc: '', args: []);
+    return Intl.message(
+      'The patrol report is rebuilt right after to verify the result. If a subscription update does not verify, the previous profile file is restored automatically.',
+      name: 'patrolFixConfirmDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Don't ask again this session (low-risk fixes only)`
   String get patrolFixTrustSession {
-    return Intl.message('Don\'t ask again this session (low-risk fixes only)', name: 'patrolFixTrustSession', desc: '', args: []);
+    return Intl.message(
+      'Don\'t ask again this session (low-risk fixes only)',
+      name: 'patrolFixTrustSession',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Fix applied and verified`
   String get patrolFixApplied {
-    return Intl.message('Fix applied and verified', name: 'patrolFixApplied', desc: '', args: []);
+    return Intl.message(
+      'Fix applied and verified',
+      name: 'patrolFixApplied',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Fix did not verify — previous state restored`
   String get patrolFixRolledBack {
-    return Intl.message('Fix did not verify — previous state restored', name: 'patrolFixRolledBack', desc: '', args: []);
+    return Intl.message(
+      'Fix did not verify — previous state restored',
+      name: 'patrolFixRolledBack',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The fix did not go through`
   String get patrolFixFailed {
-    return Intl.message('The fix did not go through', name: 'patrolFixFailed', desc: '', args: []);
-  }
-
-  /// `Running the fix and re-checking…`
-  String get patrolFixRunning {
-    return Intl.message('Running the fix and re-checking…', name: 'patrolFixRunning', desc: '', args: []);
-  }
-
-  /// `Fix cancelled — nothing was changed`
-  String get patrolFixCancelled {
-    return Intl.message('Fix cancelled — nothing was changed', name: 'patrolFixCancelled', desc: '', args: []);
+    return Intl.message(
+      'The fix did not go through',
+      name: 'patrolFixFailed',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Repair history`
   String get patrolRecords {
-    return Intl.message('Repair history', name: 'patrolRecords', desc: '', args: []);
+    return Intl.message(
+      'Repair history',
+      name: 'patrolRecords',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `No repairs yet`
   String get patrolRecordsEmpty {
-    return Intl.message('No repairs yet', name: 'patrolRecordsEmpty', desc: '', args: []);
+    return Intl.message(
+      'No repairs yet',
+      name: 'patrolRecordsEmpty',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Undo`
@@ -10473,24 +10719,43 @@ class AppLocalizations {
 
   /// `Applied`
   String get patrolOutcomeApplied {
-    return Intl.message('Applied', name: 'patrolOutcomeApplied', desc: '', args: []);
+    return Intl.message(
+      'Applied',
+      name: 'patrolOutcomeApplied',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Rolled back`
   String get patrolOutcomeRolledBack {
-    return Intl.message('Rolled back', name: 'patrolOutcomeRolledBack', desc: '', args: []);
+    return Intl.message(
+      'Rolled back',
+      name: 'patrolOutcomeRolledBack',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Failed`
   String get patrolOutcomeFailed {
-    return Intl.message('Failed', name: 'patrolOutcomeFailed', desc: '', args: []);
+    return Intl.message(
+      'Failed',
+      name: 'patrolOutcomeFailed',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Undone`
   String get patrolOutcomeUndone {
-    return Intl.message('Undone', name: 'patrolOutcomeUndone', desc: '', args: []);
+    return Intl.message(
+      'Undone',
+      name: 'patrolOutcomeUndone',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `Saved`
   String get saveSuccess {
@@ -10499,17 +10764,32 @@ class AppLocalizations {
 
   /// `AI interpretation (BYOK)`
   String get aiConfigTitle {
-    return Intl.message('AI interpretation (BYOK)', name: 'aiConfigTitle', desc: '', args: []);
+    return Intl.message(
+      'AI interpretation (BYOK)',
+      name: 'aiConfigTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.`
   String get aiConfigDesc {
-    return Intl.message('Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.', name: 'aiConfigDesc', desc: '', args: []);
+    return Intl.message(
+      'Optional. Bring your own API key and the patrol page gains an AI interpretation of its report. With no key configured, patrol works fully on-device and nothing is ever sent anywhere.',
+      name: 'aiConfigDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Provider preset`
   String get aiPreset {
-    return Intl.message('Provider preset', name: 'aiPreset', desc: '', args: []);
+    return Intl.message(
+      'Provider preset',
+      name: 'aiPreset',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `API endpoint`
@@ -10529,7 +10809,12 @@ class AppLocalizations {
 
   /// `Test connection`
   String get aiTestConnection {
-    return Intl.message('Test connection', name: 'aiTestConnection', desc: '', args: []);
+    return Intl.message(
+      'Test connection',
+      name: 'aiTestConnection',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Connection OK`
@@ -10539,42 +10824,82 @@ class AppLocalizations {
 
   /// `Connection failed`
   String get aiTestFailed {
-    return Intl.message('Connection failed', name: 'aiTestFailed', desc: '', args: []);
+    return Intl.message(
+      'Connection failed',
+      name: 'aiTestFailed',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Get an API key`
   String get aiGroqGuideTitle {
-    return Intl.message('Get an API key', name: 'aiGroqGuideTitle', desc: '', args: []);
+    return Intl.message(
+      'Get an API key',
+      name: 'aiGroqGuideTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.`
   String get aiGuideSteps {
-    return Intl.message('1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.', name: 'aiGuideSteps', desc: '', args: []);
+    return Intl.message(
+      '1. Open the provider console and sign up (Groq is free and needs no card). 2. Create an API key — it is shown only once, copy it right away. 3. If the provider offers Zero Data Retention (Groq does), turn it on in the console. 4. Paste the key above. The key is stored only on this device and is never included in backups.',
+      name: 'aiGuideSteps',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Open key console`
   String get aiGetKey {
-    return Intl.message('Open key console', name: 'aiGetKey', desc: '', args: []);
+    return Intl.message(
+      'Open key console',
+      name: 'aiGetKey',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Zero-retention settings`
   String get aiZdrSettings {
-    return Intl.message('Zero-retention settings', name: 'aiZdrSettings', desc: '', args: []);
+    return Intl.message(
+      'Zero-retention settings',
+      name: 'aiZdrSettings',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `AI interpretation`
   String get aiInterpret {
-    return Intl.message('AI interpretation', name: 'aiInterpret', desc: '', args: []);
+    return Intl.message(
+      'AI interpretation',
+      name: 'aiInterpret',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Send this to the AI?`
   String get aiPreviewTitle {
-    return Intl.message('Send this to the AI?', name: 'aiPreviewTitle', desc: '', args: []);
+    return Intl.message(
+      'Send this to the AI?',
+      name: 'aiPreviewTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `This is the exact text that will be sent. Node names, addresses and credentials are masked.`
   String get aiPreviewDesc {
-    return Intl.message('This is the exact text that will be sent. Node names, addresses and credentials are masked.', name: 'aiPreviewDesc', desc: '', args: []);
+    return Intl.message(
+      'This is the exact text that will be sent. Node names, addresses and credentials are masked.',
+      name: 'aiPreviewDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Send`
@@ -10584,19 +10909,33 @@ class AppLocalizations {
 
   /// `Asking the AI…`
   String get aiThinking {
-    return Intl.message('Asking the AI…', name: 'aiThinking', desc: '', args: []);
+    return Intl.message(
+      'Asking the AI…',
+      name: 'aiThinking',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `AI interpretation`
   String get aiResultTitle {
-    return Intl.message('AI interpretation', name: 'aiResultTitle', desc: '', args: []);
+    return Intl.message(
+      'AI interpretation',
+      name: 'aiResultTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `AI request failed`
   String get aiError {
-    return Intl.message('AI request failed', name: 'aiError', desc: '', args: []);
+    return Intl.message(
+      'AI request failed',
+      name: 'aiError',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `App lock`
   String get appLock {
@@ -10605,194 +10944,1255 @@ class AppLocalizations {
 
   /// `Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.`
   String get appLockDesc {
-    return Intl.message('Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.', name: 'appLockDesc', desc: '', args: []);
+    return Intl.message(
+      'Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.',
+      name: 'appLockDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Enter PIN`
   String get appLockEnterPin {
-    return Intl.message('Enter PIN', name: 'appLockEnterPin', desc: '', args: []);
+    return Intl.message(
+      'Enter PIN',
+      name: 'appLockEnterPin',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Set a PIN (4-6 digits)`
   String get appLockSetPin {
-    return Intl.message('Set a PIN (4-6 digits)', name: 'appLockSetPin', desc: '', args: []);
+    return Intl.message(
+      'Set a PIN (4-6 digits)',
+      name: 'appLockSetPin',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Enter the PIN again`
   String get appLockConfirmPin {
-    return Intl.message('Enter the PIN again', name: 'appLockConfirmPin', desc: '', args: []);
+    return Intl.message(
+      'Enter the PIN again',
+      name: 'appLockConfirmPin',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The two PINs do not match`
   String get appLockPinMismatch {
-    return Intl.message('The two PINs do not match', name: 'appLockPinMismatch', desc: '', args: []);
+    return Intl.message(
+      'The two PINs do not match',
+      name: 'appLockPinMismatch',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Wrong PIN`
   String get appLockWrongPin {
-    return Intl.message('Wrong PIN', name: 'appLockWrongPin', desc: '', args: []);
+    return Intl.message(
+      'Wrong PIN',
+      name: 'appLockWrongPin',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Too many attempts. Wait a while and try again.`
   String get appLockWait {
-    return Intl.message('Too many attempts. Wait a while and try again.', name: 'appLockWait', desc: '', args: []);
+    return Intl.message(
+      'Too many attempts. Wait a while and try again.',
+      name: 'appLockWait',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.`
   String get appLockNoRecovery {
-    return Intl.message('There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.', name: 'appLockNoRecovery', desc: '', args: []);
+    return Intl.message(
+      'There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.',
+      name: 'appLockNoRecovery',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Re-lock after leaving`
   String get appLockRelock {
-    return Intl.message('Re-lock after leaving', name: 'appLockRelock', desc: '', args: []);
+    return Intl.message(
+      'Re-lock after leaving',
+      name: 'appLockRelock',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Immediately`
   String get appLockRelockImmediate {
-    return Intl.message('Immediately', name: 'appLockRelockImmediate', desc: '', args: []);
+    return Intl.message(
+      'Immediately',
+      name: 'appLockRelockImmediate',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `30 seconds`
   String get appLockRelock30s {
-    return Intl.message('30 seconds', name: 'appLockRelock30s', desc: '', args: []);
+    return Intl.message(
+      '30 seconds',
+      name: 'appLockRelock30s',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `1 minute`
   String get appLockRelock1m {
-    return Intl.message('1 minute', name: 'appLockRelock1m', desc: '', args: []);
+    return Intl.message(
+      '1 minute',
+      name: 'appLockRelock1m',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `5 minutes`
   String get appLockRelock5m {
-    return Intl.message('5 minutes', name: 'appLockRelock5m', desc: '', args: []);
+    return Intl.message(
+      '5 minutes',
+      name: 'appLockRelock5m',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Use biometrics`
   String get appLockBiometric {
-    return Intl.message('Use biometrics', name: 'appLockBiometric', desc: '', args: []);
+    return Intl.message(
+      'Use biometrics',
+      name: 'appLockBiometric',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Biometrics are not available on this device`
   String get appLockBiometricUnavailable {
-    return Intl.message('Biometrics are not available on this device', name: 'appLockBiometricUnavailable', desc: '', args: []);
+    return Intl.message(
+      'Biometrics are not available on this device',
+      name: 'appLockBiometricUnavailable',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Unlock with biometrics`
   String get appLockUnlockBiometric {
-    return Intl.message('Unlock with biometrics', name: 'appLockUnlockBiometric', desc: '', args: []);
+    return Intl.message(
+      'Unlock with biometrics',
+      name: 'appLockUnlockBiometric',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `Control style`
   String get controlStyle {
-    return Intl.message('Control style', name: 'controlStyle', desc: '', args: []);
+    return Intl.message(
+      'Control style',
+      name: 'controlStyle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Liquid glass`
   String get controlStyleLiquidGlass {
-    return Intl.message('Liquid glass', name: 'controlStyleLiquidGlass', desc: '', args: []);
+    return Intl.message(
+      'Liquid glass',
+      name: 'controlStyleLiquidGlass',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Keycap · Futuristic`
   String get controlStyleKeycap {
-    return Intl.message('Keycap · Futuristic', name: 'controlStyleKeycap', desc: '', args: []);
+    return Intl.message(
+      'Keycap · Futuristic',
+      name: 'controlStyleKeycap',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `China adaptation preset`
-  String get chinaAdaptApplyRecommended {
-    return Intl.message('Turn on recommended', name: 'chinaAdaptApplyRecommended', desc: '', args: []);
-  }
-
-  String get chinaAdaptDnsNoteDesc {
-    return Intl.message('That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system\'s DNS, not the DNS inside your profile, and does nothing on Android.', name: 'chinaAdaptDnsNoteDesc', desc: '', args: []);
-  }
-
-  String get chinaAdaptRecommendDesc {
-    return Intl.message('For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.', name: 'chinaAdaptRecommendDesc', desc: '', args: []);
-  }
-
-  String get chinaAdaptRecommendTitle {
-    return Intl.message('Recommended combination', name: 'chinaAdaptRecommendTitle', desc: '', args: []);
-  }
-
   String get chinaPreset {
-    return Intl.message('China adaptation preset', name: 'chinaPreset', desc: '', args: []);
+    return Intl.message(
+      'China adaptation preset',
+      name: 'chinaPreset',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.`
   String get chinaPresetDesc {
-    return Intl.message('One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.', name: 'chinaPresetDesc', desc: '', args: []);
+    return Intl.message(
+      'One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.',
+      name: 'chinaPresetDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Applied`
   String get chinaPresetStateOn {
-    return Intl.message('Applied', name: 'chinaPresetStateOn', desc: '', args: []);
+    return Intl.message(
+      'Applied',
+      name: 'chinaPresetStateOn',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Not applied`
   String get chinaPresetStateOff {
-    return Intl.message('Not applied', name: 'chinaPresetStateOff', desc: '', args: []);
+    return Intl.message(
+      'Not applied',
+      name: 'chinaPresetStateOff',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Customized`
   String get chinaPresetStateCustomized {
-    return Intl.message('Customized', name: 'chinaPresetStateCustomized', desc: '', args: []);
+    return Intl.message(
+      'Customized',
+      name: 'chinaPresetStateCustomized',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Apply preset`
   String get chinaPresetApply {
-    return Intl.message('Apply preset', name: 'chinaPresetApply', desc: '', args: []);
+    return Intl.message(
+      'Apply preset',
+      name: 'chinaPresetApply',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Restore defaults`
   String get chinaPresetReset {
-    return Intl.message('Restore defaults', name: 'chinaPresetReset', desc: '', args: []);
+    return Intl.message(
+      'Restore defaults',
+      name: 'chinaPresetReset',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `No installer for this device was found in this release. Opening the release page instead.`
   String get updateNoMatchingAsset {
-    return Intl.message('No installer for this device was found in this release. Opening the release page instead.', name: 'updateNoMatchingAsset', desc: '', args: []);
+    return Intl.message(
+      'No installer for this device was found in this release. Opening the release page instead.',
+      name: 'updateNoMatchingAsset',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.`
   String get updateSumsMissing {
-    return Intl.message('This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.', name: 'updateSumsMissing', desc: '', args: []);
+    return Intl.message(
+      'This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.',
+      name: 'updateSumsMissing',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.`
   String get updateChecksumMismatch {
-    return Intl.message('The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.', name: 'updateChecksumMismatch', desc: '', args: []);
+    return Intl.message(
+      'The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.',
+      name: 'updateChecksumMismatch',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The installer is starting. The app will close so the update can replace its files.`
   String get updateInstallLaunch {
-    return Intl.message('The installer is starting. The app will close so the update can replace its files.', name: 'updateInstallLaunch', desc: '', args: []);
+    return Intl.message(
+      'The installer is starting. The app will close so the update can replace its files.',
+      name: 'updateInstallLaunch',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Downloading update`
   String get updateProgressTitle {
-    return Intl.message('Downloading update', name: 'updateProgressTitle', desc: '', args: []);
+    return Intl.message(
+      'Downloading update',
+      name: 'updateProgressTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.`
   String get updateInstallPermissionNote {
-    return Intl.message('Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones\' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release\'s SHA256SUMS.', name: 'updateInstallPermissionNote', desc: '', args: []);
+    return Intl.message(
+      'Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones\' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release\'s SHA256SUMS.',
+      name: 'updateInstallPermissionNote',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `In-app install is not available on this platform yet; opening the release page.`
   String get updateDesktopNote {
-    return Intl.message('In-app install is not available on this platform yet; opening the release page.', name: 'updateDesktopNote', desc: '', args: []);
+    return Intl.message(
+      'In-app install is not available on this platform yet; opening the release page.',
+      name: 'updateDesktopNote',
+      desc: '',
+      args: [],
+    );
   }
-
 
   /// `The core is not running, so this download goes direct instead of through the local proxy.`
   String get updateDirectNote {
-    return Intl.message('The core is not running, so this download goes direct instead of through the local proxy.', name: 'updateDirectNote', desc: '', args: []);
+    return Intl.message(
+      'The core is not running, so this download goes direct instead of through the local proxy.',
+      name: 'updateDirectNote',
+      desc: '',
+      args: [],
+    );
   }
 
+  /// `Why it happened`
+  String get patrolDetailWhy {
+    return Intl.message(
+      'Why it happened',
+      name: 'patrolDetailWhy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What this is based on`
+  String get patrolDetailBasis {
+    return Intl.message(
+      'What this is based on',
+      name: 'patrolDetailBasis',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What to do`
+  String get patrolDetailAdvice {
+    return Intl.message(
+      'What to do',
+      name: 'patrolDetailAdvice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Raw info`
+  String get patrolDetailRaw {
+    return Intl.message(
+      'Raw info',
+      name: 'patrolDetailRaw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AI deep-dive`
+  String get patrolDetailAi {
+    return Intl.message(
+      'AI deep-dive',
+      name: 'patrolDetailAi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send this problem's redacted diagnosis to your configured AI for ranked causes, impact and next steps. The local diagnosis above stays fully usable without it.`
+  String get patrolDetailAiDesc {
+    return Intl.message(
+      'Send this problem\'s redacted diagnosis to your configured AI for ranked causes, impact and next steps. The local diagnosis above stays fully usable without it.',
+      name: 'patrolDetailAiDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Live probes`
+  String get patrolDetailProbes {
+    return Intl.message(
+      'Live probes',
+      name: 'patrolDetailProbes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Re-walks the exact path a subscription update takes, step by step, right now — measured, not guessed.`
+  String get patrolDetailProbesDesc {
+    return Intl.message(
+      'Re-walks the exact path a subscription update takes, step by step, right now — measured, not guessed.',
+      name: 'patrolDetailProbesDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Run live probes`
+  String get patrolDetailRunProbes {
+    return Intl.message(
+      'Run live probes',
+      name: 'patrolDetailRunProbes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Probing…`
+  String get patrolDetailProbing {
+    return Intl.message(
+      'Probing…',
+      name: 'patrolDetailProbing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirmed by live probes just now`
+  String get patrolDetailMeasured {
+    return Intl.message(
+      'Confirmed by live probes just now',
+      name: 'patrolDetailMeasured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every probe passed just now — the failure no longer reproduces. Updating again should work.`
+  String get patrolDetailProbesAllOk {
+    return Intl.message(
+      'Every probe passed just now — the failure no longer reproduces. Updating again should work.',
+      name: 'patrolDetailProbesAllOk',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check it yourself`
+  String get patrolDetailRepro {
+    return Intl.message(
+      'Check it yourself',
+      name: 'patrolDetailRepro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, one {1 matching log entry} other {{count} matching log entries}}`
+  String patrolFactOccurrences(num count) {
+    return Intl.plural(
+      count,
+      one: '1 matching log entry',
+      other: '$count matching log entries',
+      name: 'patrolFactOccurrences',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `First {first} · latest {last}`
+  String patrolFactWindow(String first, String last) {
+    return Intl.message(
+      'First $first · latest $last',
+      name: 'patrolFactWindow',
+      desc: '',
+      args: [first, last],
+    );
+  }
+
+  /// `Mode`
+  String get patrolFactMode {
+    return Intl.message('Mode', name: 'patrolFactMode', desc: '', args: []);
+  }
+
+  /// `Core`
+  String get patrolFactCore {
+    return Intl.message('Core', name: 'patrolFactCore', desc: '', args: []);
+  }
+
+  /// `Running`
+  String get patrolFactCoreRunning {
+    return Intl.message(
+      'Running',
+      name: 'patrolFactCoreRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stopped`
+  String get patrolFactCoreStopped {
+    return Intl.message(
+      'Stopped',
+      name: 'patrolFactCoreStopped',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes`
+  String get patrolFactNodes {
+    return Intl.message('Nodes', name: 'patrolFactNodes', desc: '', args: []);
+  }
+
+  /// `Subscription host`
+  String get patrolFactHost {
+    return Intl.message(
+      'Subscription host',
+      name: 'patrolFactHost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time`
+  String get patrolFactTime {
+    return Intl.message('Time', name: 'patrolFactTime', desc: '', args: []);
+  }
+
+  /// `HTTP status`
+  String get patrolFactHttpStatus {
+    return Intl.message(
+      'HTTP status',
+      name: 'patrolFactHttpStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recorded error`
+  String get patrolFactRecordedError {
+    return Intl.message(
+      'Recorded error',
+      name: 'patrolFactRecordedError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Log evidence`
+  String get patrolFactSample {
+    return Intl.message(
+      'Log evidence',
+      name: 'patrolFactSample',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Core proxy port`
+  String get patrolProbeProxyPort {
+    return Intl.message(
+      'Core proxy port',
+      name: 'patrolProbeProxyPort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS resolution`
+  String get patrolProbeDns {
+    return Intl.message(
+      'DNS resolution',
+      name: 'patrolProbeDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP connection`
+  String get patrolProbeTcp {
+    return Intl.message(
+      'TCP connection',
+      name: 'patrolProbeTcp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TLS handshake`
+  String get patrolProbeTls {
+    return Intl.message(
+      'TLS handshake',
+      name: 'patrolProbeTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct fetch`
+  String get patrolProbeDirect {
+    return Intl.message(
+      'Direct fetch',
+      name: 'patrolProbeDirect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fetch the way the app does`
+  String get patrolProbeProxy {
+    return Intl.message(
+      'Fetch the way the app does',
+      name: 'patrolProbeProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not run — an earlier step already failed`
+  String get patrolProbeSkipped {
+    return Intl.message(
+      'Not run — an earlier step already failed',
+      name: 'patrolProbeSkipped',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `the core proxy hop`
+  String get patrolStageNameProxy {
+    return Intl.message(
+      'the core proxy hop',
+      name: 'patrolStageNameProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS resolution`
+  String get patrolStageNameDns {
+    return Intl.message(
+      'DNS resolution',
+      name: 'patrolStageNameDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `the connection`
+  String get patrolStageNameTcp {
+    return Intl.message(
+      'the connection',
+      name: 'patrolStageNameTcp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `the TLS handshake`
+  String get patrolStageNameTls {
+    return Intl.message(
+      'the TLS handshake',
+      name: 'patrolStageNameTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `the server's answer`
+  String get patrolStageNameHttp {
+    return Intl.message(
+      'the server\'s answer',
+      name: 'patrolStageNameHttp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `waiting for an answer`
+  String get patrolStageNameTimeout {
+    return Intl.message(
+      'waiting for an answer',
+      name: 'patrolStageNameTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `the returned content`
+  String get patrolStageNameBadContent {
+    return Intl.message(
+      'the returned content',
+      name: 'patrolStageNameBadContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Live probes put the failure at: {stage}`
+  String patrolMeasuredStage(String stage) {
+    return Intl.message(
+      'Live probes put the failure at: $stage',
+      name: 'patrolMeasuredStage',
+      desc: '',
+      args: [stage],
+    );
+  }
+
+  /// `Connections are failing while dialing out. Several in a row usually mean the network path or the chosen nodes — not the sites themselves.`
+  String get patrolCauseLogConnection {
+    return Intl.message(
+      'Connections are failing while dialing out. Several in a row usually mean the network path or the chosen nodes — not the sites themselves.',
+      name: 'patrolCauseLogConnection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name lookups are failing: the app asks for a site's address and gets no answer. Until DNS answers, nothing downstream can connect.`
+  String get patrolCauseLogDns {
+    return Intl.message(
+      'Name lookups are failing: the app asks for a site\'s address and gets no answer. Until DNS answers, nothing downstream can connect.',
+      name: 'patrolCauseLogDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connections start but never finish in time — the path is too slow or congested, or the far end is not responding.`
+  String get patrolCauseLogTimeout {
+    return Intl.message(
+      'Connections start but never finish in time — the path is too slow or congested, or the far end is not responding.',
+      name: 'patrolCauseLogTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rule data (rule sets, geo data) is failing to load or apply, so traffic that depends on those rules cannot be routed as configured.`
+  String get patrolCauseLogRule {
+    return Intl.message(
+      'Rule data (rule sets, geo data) is failing to load or apply, so traffic that depends on those rules cannot be routed as configured.',
+      name: 'patrolCauseLogRule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The subscription itself has expired at the provider, so updates stop and the node list freezes as it was.`
+  String get patrolCauseSubExpired {
+    return Intl.message(
+      'The subscription itself has expired at the provider, so updates stop and the node list freezes as it was.',
+      name: 'patrolCauseSubExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This subscription has not been refreshed for a long time. Node lists go stale quietly — entries die one by one until little still works.`
+  String get patrolCauseSubStale {
+    return Intl.message(
+      'This subscription has not been refreshed for a long time. Node lists go stale quietly — entries die one by one until little still works.',
+      name: 'patrolCauseSubStale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This subscription has never been updated successfully, so there is no usable node list from it yet.`
+  String get patrolCauseSubNever {
+    return Intl.message(
+      'This subscription has never been updated successfully, so there is no usable node list from it yet.',
+      name: 'patrolCauseSubNever',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No subscription is selected, so there is nothing to check, update or fix yet.`
+  String get patrolCauseSubNoProfile {
+    return Intl.message(
+      'No subscription is selected, so there is nothing to check, update or fix yet.',
+      name: 'patrolCauseSubNoProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No node has been speed-tested yet, so there is no evidence any of them works.`
+  String get patrolCauseNodesNoData {
+    return Intl.message(
+      'No node has been speed-tested yet, so there is no evidence any of them works.',
+      name: 'patrolCauseNodesNoData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Some nodes failed their last speed test. The rest still work — this is single-node trouble, not an outage.`
+  String get patrolCauseNodesSomeDown {
+    return Intl.message(
+      'Some nodes failed their last speed test. The rest still work — this is single-node trouble, not an outage.',
+      name: 'patrolCauseNodesSomeDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Most tested nodes are down at once. Single nodes do not fail in packs — this points at the device network, the core, or the subscription itself.`
+  String get patrolCauseNodesWidespread {
+    return Intl.message(
+      'Most tested nodes are down at once. Single nodes do not fail in packs — this points at the device network, the core, or the subscription itself.',
+      name: 'patrolCauseNodesWidespread',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chain proxy is switched on but an entry or exit hop is not chosen, so the chain cannot carry any traffic.`
+  String get patrolCauseChainIncomplete {
+    return Intl.message(
+      'Chain proxy is switched on but an entry or exit hop is not chosen, so the chain cannot carry any traffic.',
+      name: 'patrolCauseChainIncomplete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One hop of the chain proxy failed its last test, so the whole two-hop path is down even if each side looks fine on its own.`
+  String get patrolCauseChainHopDown {
+    return Intl.message(
+      'One hop of the chain proxy failed its last test, so the whole two-hop path is down even if each side looks fine on its own.',
+      name: 'patrolCauseChainHopDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The core rejected the current configuration. The exact complaint is in the evidence below; until it validates, this config cannot run as-is.`
+  String get patrolCauseConfigInvalid {
+    return Intl.message(
+      'The core rejected the current configuration. The exact complaint is in the evidence below; until it validates, this config cannot run as-is.',
+      name: 'patrolCauseConfigInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The full config check needs the service running, so it has not run yet. Nothing says the config is broken — it is simply unchecked.`
+  String get patrolCauseConfigUnavailable {
+    return Intl.message(
+      'The full config check needs the service running, so it has not run yet. Nothing says the config is broken — it is simply unchecked.',
+      name: 'patrolCauseConfigUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The fetch never got past your own core: while the core runs, subscription updates go through its local proxy port, and that hop refused or dropped the connection. The internet path was never reached.`
+  String get patrolStageProxy {
+    return Intl.message(
+      'The fetch never got past your own core: while the core runs, subscription updates go through its local proxy port, and that hop refused or dropped the connection. The internet path was never reached.',
+      name: 'patrolStageProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The subscription's domain name could not be resolved to an address. The request died at the very first step, before any connection existed.`
+  String get patrolStageDns {
+    return Intl.message(
+      'The subscription\'s domain name could not be resolved to an address. The request died at the very first step, before any connection existed.',
+      name: 'patrolStageDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The name resolved, but the server would not accept a connection — refused, reset, or unreachable at the network level.`
+  String get patrolStageTcp {
+    return Intl.message(
+      'The name resolved, but the server would not accept a connection — refused, reset, or unreachable at the network level.',
+      name: 'patrolStageTcp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The connection opened, but the secure (TLS) handshake failed — the certificate or the encrypted greeting was rejected.`
+  String get patrolStageTls {
+    return Intl.message(
+      'The connection opened, but the secure (TLS) handshake failed — the certificate or the encrypted greeting was rejected.',
+      name: 'patrolStageTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The server answered, but with error status {status}. The address was reached; the provider side refused to serve the subscription. An expired, wrong or revoked link answers exactly like this.`
+  String patrolStageHttp(num status) {
+    return Intl.message(
+      'The server answered, but with error status $status. The address was reached; the provider side refused to serve the subscription. An expired, wrong or revoked link answers exactly like this.',
+      name: 'patrolStageHttp',
+      desc: '',
+      args: [status],
+    );
+  }
+
+  /// `The fetch started and then stalled until it timed out. Nothing came back in time — a congested path or an unresponsive server.`
+  String get patrolStageTimeout {
+    return Intl.message(
+      'The fetch started and then stalled until it timed out. Nothing came back in time — a congested path or an unresponsive server.',
+      name: 'patrolStageTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The address answered, but what came back was empty or not a usable configuration, so the update was refused to protect the working profile.`
+  String get patrolStageBadContent {
+    return Intl.message(
+      'The address answered, but what came back was empty or not a usable configuration, so the update was refused to protect the working profile.',
+      name: 'patrolStageBadContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The recorded error does not carry enough detail to name the failing step. Run the live probes below — they re-walk the same path and pin down where it breaks.`
+  String get patrolStageUnknown {
+    return Intl.message(
+      'The recorded error does not carry enough detail to name the failing step. Run the live probes below — they re-walk the same path and pin down where it breaks.',
+      name: 'patrolStageUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retest all nodes to separate dead nodes from a bad path. If most fail too, check the device network itself.`
+  String get patrolAdviceLogConnection {
+    return Intl.message(
+      'Retest all nodes to separate dead nodes from a bad path. If most fail too, check the device network itself.',
+      name: 'patrolAdviceLogConnection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Flush the DNS and FakeIP caches, then try again. If lookups still fail, the probes on this page show whether DNS answers at all.`
+  String get patrolAdviceLogDns {
+    return Intl.message(
+      'Flush the DNS and FakeIP caches, then try again. If lookups still fail, the probes on this page show whether DNS answers at all.',
+      name: 'patrolAdviceLogDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retest all nodes and prefer a responsive one. Timeouts on every node point at the local network, not the nodes.`
+  String get patrolAdviceLogTimeout {
+    return Intl.message(
+      'Retest all nodes and prefer a responsive one. Timeouts on every node point at the local network, not the nodes.',
+      name: 'patrolAdviceLogTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reload the configuration so rule data is fetched and applied again.`
+  String get patrolAdviceLogRule {
+    return Intl.message(
+      'Reload the configuration so rule data is fetched and applied again.',
+      name: 'patrolAdviceLogRule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update the subscription again — the button below does exactly that, with the previous file kept as a snapshot in case the new one does not verify.`
+  String get patrolAdviceFetch {
+    return Intl.message(
+      'Update the subscription again — the button below does exactly that, with the previous file kept as a snapshot in case the new one does not verify.',
+      name: 'patrolAdviceFetch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start (or restart) the service, then update again. If the core is running and it still fails, run the live probes to see which hop breaks.`
+  String get patrolAdviceFetchProxy {
+    return Intl.message(
+      'Start (or restart) the service, then update again. If the core is running and it still fails, run the live probes to see which hop breaks.',
+      name: 'patrolAdviceFetchProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.`
+  String get patrolAdviceFetchHttp {
+    return Intl.message(
+      'If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.',
+      name: 'patrolAdviceFetchHttp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the device clock first — TLS rejects skewed time — then update again. If it persists, the provider's certificate is at fault.`
+  String get patrolAdviceFetchTls {
+    return Intl.message(
+      'Check the device clock first — TLS rejects skewed time — then update again. If it persists, the provider\'s certificate is at fault.',
+      name: 'patrolAdviceFetchTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Renew the subscription with your provider, then update. The node list will not refresh until then.`
+  String get patrolAdviceSubExpired {
+    return Intl.message(
+      'Renew the subscription with your provider, then update. The node list will not refresh until then.',
+      name: 'patrolAdviceSubExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update the subscription now to refresh the node list.`
+  String get patrolAdviceSubStale {
+    return Intl.message(
+      'Update the subscription now to refresh the node list.',
+      name: 'patrolAdviceSubStale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update the subscription now. If it fails, this page shows exactly where.`
+  String get patrolAdviceSubNever {
+    return Intl.message(
+      'Update the subscription now. If it fails, this page shows exactly where.',
+      name: 'patrolAdviceSubNever',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add or select a subscription on the profiles page first.`
+  String get patrolAdviceSubNoProfile {
+    return Intl.message(
+      'Add or select a subscription on the profiles page first.',
+      name: 'patrolAdviceSubNoProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retest all nodes to get a first health reading.`
+  String get patrolAdviceNodesNoData {
+    return Intl.message(
+      'Retest all nodes to get a first health reading.',
+      name: 'patrolAdviceNodesNoData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retest all nodes and keep using the working ones. Dead entries usually recover, or are replaced on the next subscription update.`
+  String get patrolAdviceNodesSomeDown {
+    return Intl.message(
+      'Retest all nodes and keep using the working ones. Dead entries usually recover, or are replaced on the next subscription update.',
+      name: 'patrolAdviceNodesSomeDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the device network and that the core is running, then retest. If the list itself went stale, updating the subscription helps too.`
+  String get patrolAdviceNodesWidespread {
+    return Intl.message(
+      'Check the device network and that the core is running, then retest. If the list itself went stale, updating the subscription helps too.',
+      name: 'patrolAdviceNodesWidespread',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the chain proxy settings and choose both the entry and the exit hop — that choice is yours, so patrol does not pick for you.`
+  String get patrolAdviceChainIncomplete {
+    return Intl.message(
+      'Open the chain proxy settings and choose both the entry and the exit hop — that choice is yours, so patrol does not pick for you.',
+      name: 'patrolAdviceChainIncomplete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retest all nodes. If the hop stays down, pick a different hop in the chain proxy settings.`
+  String get patrolAdviceChainHopDown {
+    return Intl.message(
+      'Retest all nodes. If the hop stays down, pick a different hop in the chain proxy settings.',
+      name: 'patrolAdviceChainHopDown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reload the configuration. If you did not edit it by hand, re-update the subscription to fetch a clean copy.`
+  String get patrolAdviceConfigInvalid {
+    return Intl.message(
+      'Reload the configuration. If you did not edit it by hand, re-update the subscription to fetch a clean copy.',
+      name: 'patrolAdviceConfigInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start the service, then come back — the check runs by itself.`
+  String get patrolAdviceConfigUnavailable {
+    return Intl.message(
+      'Start the service, then come back — the check runs by itself.',
+      name: 'patrolAdviceConfigUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap Update on the subscription — if it still fails, the same failure is recorded again.`
+  String get patrolReproFetch {
+    return Intl.message(
+      'Tap Update on the subscription — if it still fails, the same failure is recorded again.',
+      name: 'patrolReproFetch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use any failing node once and matching lines appear under Logs.`
+  String get patrolReproLogs {
+    return Intl.message(
+      'Use any failing node once and matching lines appear under Logs.',
+      name: 'patrolReproLogs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Run a speed test from the proxies page and compare the counts.`
+  String get patrolReproNodes {
+    return Intl.message(
+      'Run a speed test from the proxies page and compare the counts.',
+      name: 'patrolReproNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This check re-runs every time the patrol page opens or the service state changes.`
+  String get patrolReproConfig {
+    return Intl.message(
+      'This check re-runs every time the patrol page opens or the service state changes.',
+      name: 'patrolReproConfig',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fix running…`
+  String get patrolFixRunning {
+    return Intl.message(
+      'Fix running…',
+      name: 'patrolFixRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fix cancelled`
+  String get patrolFixCancelled {
+    return Intl.message(
+      'Fix cancelled',
+      name: 'patrolFixCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto-update is on for this subscription (every {hours} h). You can change it in the profile settings.`
+  String autoUpdateOnImportTipDefault(num hours) {
+    return Intl.message(
+      'Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.',
+      name: 'autoUpdateOnImportTipDefault',
+      desc: '',
+      args: [hours],
+    );
+  }
+
+  /// `Recommended combination`
+  String get chinaAdaptRecommendTitle {
+    return Intl.message(
+      'Recommended combination',
+      name: 'chinaAdaptRecommendTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.`
+  String get chinaAdaptRecommendDesc {
+    return Intl.message(
+      'For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.',
+      name: 'chinaAdaptRecommendDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on recommended`
+  String get chinaAdaptApplyRecommended {
+    return Intl.message(
+      'Turn on recommended',
+      name: 'chinaAdaptApplyRecommended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system's DNS, not the DNS inside your profile, and does nothing on Android.`
+  String get chinaAdaptDnsNoteDesc {
+    return Intl.message(
+      'That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system\'s DNS, not the DNS inside your profile, and does nothing on Android.',
+      name: 'chinaAdaptDnsNoteDesc',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

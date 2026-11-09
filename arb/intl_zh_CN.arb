@@ -1227,7 +1227,13 @@
   "patrolConfigChecking": "正在校验配置…",
   "patrolConfigUnavailable": "启动服务后才能做完整配置校验",
   "patrolAttentionNeeded": "{count} 处需要留意",
-  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}},
+  "@patrolAttentionNeeded": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
   "profileSwitchFailedRollback": "新配置切换失败，已切回原来的配置",
   "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试",
   "mihomoCoreVersion": "Mihomo 内核版本",
@@ -1312,5 +1318,136 @@
   "updateProgressTitle": "正在下载更新",
   "updateInstallPermissionNote": "Android 可能会要求允许本应用安装应用（REQUEST_INSTALL_PACKAGES 权限，仅用于更新）。部分手机的安全扫描会对自更新给出风险提示——本文件只有在 SHA-256 与发布页 SHA256SUMS 一致后才会交给安装器。",
   "updateDesktopNote": "此平台暂不支持应用内安装，改为打开版本发布页。",
-  "updateDirectNote": "核心未运行，本次下载将直连（不走本地代理）。"
+  "updateDirectNote": "核心未运行，本次下载将直连（不走本地代理）。",
+  "patrolDetailWhy": "为什么",
+  "patrolDetailBasis": "凭什么",
+  "patrolDetailAdvice": "怎么办",
+  "patrolDetailRaw": "原始信息",
+  "patrolDetailAi": "AI 解读补强",
+  "patrolDetailAiDesc": "把这条问题的脱敏诊断发给你已配置的 AI，给出按可能性排序的成因、影响范围和处理建议。不发也完全不影响上面的本地诊断。",
+  "patrolDetailProbes": "实测探测",
+  "patrolDetailProbesDesc": "按订阅更新真实走的路径逐步重走一遍，全是实测，不靠猜。",
+  "patrolDetailRunProbes": "开始实测",
+  "patrolDetailProbing": "正在实测…",
+  "patrolDetailMeasured": "刚刚实测确认",
+  "patrolDetailProbesAllOk": "刚才全部探测都通过了——这个故障现在复现不了，再更新一次应该就能成功。",
+  "patrolDetailRepro": "自己核对",
+  "patrolFactOccurrences": "命中日志 {count} 条",
+  "@patrolFactOccurrences": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "patrolFactWindow": "首次 {first} · 最近 {last}",
+  "@patrolFactWindow": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "patrolFactMode": "模式",
+  "patrolFactCore": "核心",
+  "patrolFactCoreRunning": "运行中",
+  "patrolFactCoreStopped": "未运行",
+  "patrolFactNodes": "节点",
+  "patrolFactHost": "订阅域名",
+  "patrolFactTime": "时间",
+  "patrolFactHttpStatus": "HTTP 状态码",
+  "patrolFactRecordedError": "记录到的错误",
+  "patrolFactSample": "日志证据",
+  "patrolProbeProxyPort": "核心代理端口",
+  "patrolProbeDns": "DNS 解析",
+  "patrolProbeTcp": "TCP 连接",
+  "patrolProbeTls": "TLS 握手",
+  "patrolProbeDirect": "直连拉取",
+  "patrolProbeProxy": "按 App 的路径拉取",
+  "patrolProbeSkipped": "没有执行——前面的环节已经失败",
+  "patrolStageNameProxy": "核心代理这一跳",
+  "patrolStageNameDns": "DNS 解析",
+  "patrolStageNameTcp": "建立连接",
+  "patrolStageNameTls": "TLS 握手",
+  "patrolStageNameHttp": "服务器应答",
+  "patrolStageNameTimeout": "等待应答",
+  "patrolStageNameBadContent": "返回的内容",
+  "patrolMeasuredStage": "实测定位：失败在{stage}这一步",
+  "@patrolMeasuredStage": {
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "patrolCauseLogConnection": "出站连接在拨号阶段就失败了。连续多条一起出现时，通常是网络路径或所选节点的问题，不是目标网站本身。",
+  "patrolCauseLogDns": "域名解析在失败：App 问一个网站的地址，却得不到回答。DNS 不通，后面所有连接都无从谈起。",
+  "patrolCauseLogTimeout": "连接开始了，却始终等不到回应直到超时——路径太慢、太堵，或者对端根本不响应。",
+  "patrolCauseLogRule": "规则数据（规则集、地理数据）加载或生效失败，依赖这些规则的流量没法按配置分流。",
+  "patrolCauseSubExpired": "订阅本身在服务商那边已经到期，更新被停掉，节点列表就冻结在最后一次成功的样子。",
+  "patrolCauseSubStale": "这个订阅已经很久没刷新了。节点列表是悄悄变质的：条目一条条死掉，直到几乎没剩能用的。",
+  "patrolCauseSubNever": "这个订阅从来没有更新成功过，所以它还没有一份可用的节点列表。",
+  "patrolCauseSubNoProfile": "还没有选中任何订阅，所以也没有什么可检查、可更新的。",
+  "patrolCauseNodesNoData": "还没有节点被测速过，所以没有任何证据能说明哪个节点是好的。",
+  "patrolCauseNodesSomeDown": "一部分节点上次测速失败，其余的还正常——这是单个节点的问题，不是整体断网。",
+  "patrolCauseNodesWidespread": "大多数被测节点同时不可用。单个节点不会成群地坏——问题多半在设备网络、核心，或者订阅本身。",
+  "patrolCauseChainIncomplete": "链式代理开着，但入口或出口还没选，整条链没法承载任何流量。",
+  "patrolCauseChainHopDown": "链式代理的某一跳上次测试是坏的，所以整条双跳路径都不通，哪怕单独看每一边都像没问题。",
+  "patrolCauseConfigInvalid": "核心拒绝了当前配置。具体卡在哪一条，证据里有原文；在校验通过之前，这份配置没法照现状运行。",
+  "patrolCauseConfigUnavailable": "完整配置校验需要服务先运行起来，所以现在还没跑。没有任何迹象说配置是坏的——只是还没验过。",
+  "patrolStageProxy": "这次拉取根本没走出你自己的核心：核心运行时，订阅更新要经过它的本地代理端口，而这一跳拒绝或断开了连接。外面的网络路径压根没走到。",
+  "patrolStageDns": "订阅的域名没能解析出地址。请求死在第一步——连接还没存在就已经结束了。",
+  "patrolStageTcp": "域名解析出来了，但服务器不接受连接——被拒绝、被重置，或者网络层根本不可达。",
+  "patrolStageTls": "连接通了，但安全握手（TLS）失败——证书或加密协商被拒绝了。",
+  "patrolStageHttp": "服务器应答了，但给的是错误状态 {status}。地址是通的，是服务商那边拒绝提供这份订阅——链接过期、写错或被撤销，答复正是这个样子。",
+  "@patrolStageHttp": {
+    "placeholders": {
+      "status": {
+        "type": "num"
+      }
+    }
+  },
+  "patrolStageTimeout": "拉取开始了，然后一直等到超时也没有回应——路径太堵，或者服务器不响应。",
+  "patrolStageBadContent": "地址有应答，但回来的内容是空的或不是一份可用配置，所以这次更新被拒绝，以免覆盖掉还能用的旧配置。",
+  "patrolStageUnknown": "记录到的错误信息不足以点名是哪一步坏的。跑一遍下面的实测探测——它会按同一条路径重走，把断点定位出来。",
+  "patrolAdviceLogConnection": "重新测速全部节点，把死节点和坏路径分开看。如果大多数都失败，检查设备网络本身。",
+  "patrolAdviceLogDns": "先清一次 DNS 与 FakeIP 缓存再试。若解析还是失败，本页的实测探测能看出 DNS 到底答不答话。",
+  "patrolAdviceLogTimeout": "重新测速全部节点，优先选响应快的。如果每个节点都超时，问题在本地网络，不在节点。",
+  "patrolAdviceLogRule": "重新加载一次配置，让规则数据重新拉取并生效。",
+  "patrolAdviceFetch": "再更新一次订阅——下面的按钮干的就是这件事，更新前会先给旧文件留快照，新文件验不过会自动退回。",
+  "patrolAdviceFetchProxy": "先启动（或重启）服务，再更新一次。若核心在运行还失败，跑一遍实测探测看是哪一跳断的。",
+  "patrolAdviceFetchHttp": "如果这个状态持续，问题在链接本身：去服务商那里拿一条新订阅链接换上。",
+  "patrolAdviceFetchTls": "先核对设备时钟——TLS 会拒绝时间偏差过大的设备——再更新一次。若还失败，是服务商的证书有问题。",
+  "patrolAdviceSubExpired": "先在服务商处续期，再更新。在那之前节点列表不会刷新。",
+  "patrolAdviceSubStale": "现在就更新一次订阅，把节点列表刷新。",
+  "patrolAdviceSubNever": "现在更新一次订阅。如果失败，这一页会写清卡在哪一步。",
+  "patrolAdviceSubNoProfile": "先去订阅页添加或选择一个订阅。",
+  "patrolAdviceNodesNoData": "测速全部节点，拿到第一份健康底数。",
+  "patrolAdviceNodesSomeDown": "重新测速全部节点，继续用还活着的。死掉的条目通常会自己恢复，或在下次订阅更新时被换掉。",
+  "patrolAdviceNodesWidespread": "先确认设备网络正常、核心在运行，再测速。如果列表本身过期了，更新一次订阅也有帮助。",
+  "patrolAdviceChainIncomplete": "打开链式代理设置，把入口和出口都选好——这个选择是你的，巡检不替你选。",
+  "patrolAdviceChainHopDown": "重新测速全部节点。如果那一跳还是坏的，去链式代理设置里换一跳。",
+  "patrolAdviceConfigInvalid": "重新加载一次配置。如果配置不是你手改的，重新更新一次订阅，拿一份干净的回来。",
+  "patrolAdviceConfigUnavailable": "启动服务后回来——校验会自己跑。",
+  "patrolReproFetch": "在订阅上点一次更新——如果还失败，同样的失败会再次被记录下来。",
+  "patrolReproLogs": "用出问题的节点连一次，日志页里就会出现对应的行。",
+  "patrolReproNodes": "在代理页跑一次测速，对一下数目。",
+  "patrolReproConfig": "每次打开巡检页或服务状态变化，这个校验都会重跑。",
+  "patrolFixRunning": "正在修复…",
+  "patrolFixCancelled": "已取消修复",
+  "autoUpdateOnImportTipDefault": "已为此订阅开启自动更新（每 {hours} 小时）。可在配置设置里调整。",
+  "@autoUpdateOnImportTipDefault": {
+    "placeholders": {
+      "hours": {
+        "type": "num"
+      }
+    }
+  },
+  "chinaAdaptRecommendTitle": "推荐组合",
+  "chinaAdaptRecommendDesc": "面向中国网络环境，推荐组合是本组的三项拦截开关：防隐私、阻断 WebRTC/STUN/TURN、广告拦截。一键开启作为起点，每项仍可单独调整。",
+  "chinaAdaptApplyRecommended": "开启推荐组合",
+  "chinaAdaptDnsNoteDesc": "该开关不在本组：在「设置 → 网络」中，仅在桌面端（macOS/Linux）生效，改的是操作系统的系统 DNS，不动配置内的 DNS，在 Android 上不生效。"
 }

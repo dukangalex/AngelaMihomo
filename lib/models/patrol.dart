@@ -11,8 +11,12 @@ library;
 /// How much a patrol section needs the user's attention.
 enum PatrolSeverity { ok, notice, problem }
 
-/// The four log problem classes from the patrol spec.
-enum PatrolLogIssueKind { connection, dns, timeout, rule }
+/// The log problem classes from the patrol spec. The first four are
+/// core traffic failures; [subscriptionFetch] is the app-side
+/// subscription update failure family ("[MissedUpdate] Failed to
+/// update …"), which the field report showed stranded in the log
+/// section with no way to open it (T68).
+enum PatrolLogIssueKind { connection, dns, timeout, rule, subscriptionFetch }
 
 /// One log line, reduced to what classification needs.
 class PatrolLogEntry {
@@ -36,10 +40,23 @@ class PatrolLogIssueGroup {
   /// oldest-first, matching the app log buffer).
   final String? sample;
 
+  /// Up to the three most recent payloads, oldest-first: the
+  /// diagnosis layer shows them as checkable evidence (T68), not
+  /// just the single latest line.
+  final List<String> samples;
+
+  /// Time of the first and most recent entry in this group, when the
+  /// caller supplied timestamps.
+  final DateTime? firstAt;
+  final DateTime? lastAt;
+
   const PatrolLogIssueGroup({
     required this.kind,
     required this.count,
     this.sample,
+    this.samples = const [],
+    this.firstAt,
+    this.lastAt,
   });
 }
 
@@ -71,11 +88,15 @@ class PatrolLogSection {
 
   PatrolLogIssueGroup? groupOf(PatrolLogIssueKind kind) => groups[kind];
 
-  /// DNS noise points at the cache first, rule problems at a reload,
-  /// everything else at a fresh node test (which separates a transient
-  /// blip from a dead node).
+  /// A failed subscription fetch points at the update itself, DNS
+  /// noise at the cache first, rule problems at a reload, everything
+  /// else at a fresh node test (which separates a transient blip
+  /// from a dead node).
   PatrolAction? get suggestedAction {
     if (!hasIssues) return null;
+    if (groups.containsKey(PatrolLogIssueKind.subscriptionFetch)) {
+      return PatrolAction.updateSubscription;
+    }
     if (groups.containsKey(PatrolLogIssueKind.dns)) {
       return PatrolAction.flushDns;
     }
@@ -107,6 +128,11 @@ class PatrolSubscriptionInput {
   /// transiently), so the report stays silent about it.
   final bool? lastUpdateFailed;
 
+  /// The recorded error text of the most recent failed update (from
+  /// PatrolStore), fed to the diagnosis layer so the failure can be
+  /// classified by stage instead of displayed raw (T68).
+  final String lastUpdateError;
+
   const PatrolSubscriptionInput({
     required this.hasProfile,
     required this.isRemote,
@@ -115,6 +141,7 @@ class PatrolSubscriptionInput {
     this.autoUpdateDuration = Duration.zero,
     this.expiresAt,
     this.lastUpdateFailed,
+    this.lastUpdateError = '',
   });
 }
 
@@ -391,7 +418,9 @@ bool isTransientLogNoise(String payload) {
 
 PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
   final counts = <PatrolLogIssueKind, int>{};
-  final samples = <PatrolLogIssueKind, String>{};
+  final samples = <PatrolLogIssueKind, List<String>>{};
+  final firstAt = <PatrolLogIssueKind, DateTime>{};
+  final lastAt = <PatrolLogIssueKind, DateTime>{};
   var total = 0;
   var transientSkipped = 0;
   for (final entry in entries) {
@@ -404,7 +433,11 @@ PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
     if (kind == null) continue;
     total++;
     counts[kind] = (counts[kind] ?? 0) + 1;
-    samples[kind] = entry.payload;
+    final list = samples.putIfAbsent(kind, () => []);
+    list.add(entry.payload);
+    if (list.length > 3) list.removeAt(0);
+    firstAt.putIfAbsent(kind, () => entry.time);
+    lastAt[kind] = entry.time;
   }
   return PatrolLogSection(
     totalIssues: total,
@@ -415,7 +448,10 @@ PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
           kind: PatrolLogIssueGroup(
             kind: kind,
             count: counts[kind]!,
-            sample: samples[kind],
+            sample: samples[kind]!.isEmpty ? null : samples[kind]!.last,
+            samples: List.unmodifiable(samples[kind]!),
+            firstAt: firstAt[kind],
+            lastAt: lastAt[kind],
           ),
     },
   );
@@ -423,6 +459,18 @@ PatrolLogSection classifyLogs(List<PatrolLogEntry> entries) {
 
 PatrolLogIssueKind? _classifyPayload(String payload) {
   final text = payload.toLowerCase();
+  // Subscription update failures first: the app-side fetch family
+  // ("[MissedUpdate] Failed to update …: DioException …"). These
+  // lines carry the fetch error verbatim, and the generic classes
+  // below would misfile them by whatever word the error happens to
+  // contain (T68: the field instance sat in the log section as a
+  // dead one-line display).
+  if (text.contains('failed to update') ||
+      text.contains('[missedupdate]') ||
+      text.contains('[autoupdate]') ||
+      text.contains('[updateprofiles]')) {
+    return PatrolLogIssueKind.subscriptionFetch;
+  }
   if (text.contains('dns') ||
       text.contains('no such host') ||
       text.contains('name resolution') ||

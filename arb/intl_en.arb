@@ -1227,7 +1227,13 @@
   "patrolConfigChecking": "Checking config…",
   "patrolConfigUnavailable": "Start the service to run the full config check",
   "patrolAttentionNeeded": "{count, plural, one {1 area needs attention} other {{count} areas need attention}}",
-  "@patrolAttentionNeeded": {"placeholders": {"count": {"type": "num"}}},
+  "@patrolAttentionNeeded": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
   "profileSwitchFailedRollback": "Couldn't switch to the new profile, so the previous profile was restored",
   "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again",
   "mihomoCoreVersion": "Mihomo core version",
@@ -1312,5 +1318,136 @@
   "updateProgressTitle": "Downloading update",
   "updateInstallPermissionNote": "Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.",
   "updateDesktopNote": "In-app install is not available on this platform yet; opening the release page.",
-  "updateDirectNote": "The core is not running, so this download goes direct instead of through the local proxy."
+  "updateDirectNote": "The core is not running, so this download goes direct instead of through the local proxy.",
+  "patrolDetailWhy": "Why it happened",
+  "patrolDetailBasis": "What this is based on",
+  "patrolDetailAdvice": "What to do",
+  "patrolDetailRaw": "Raw info",
+  "patrolDetailAi": "AI deep-dive",
+  "patrolDetailAiDesc": "Send this problem's redacted diagnosis to your configured AI for ranked causes, impact and next steps. The local diagnosis above stays fully usable without it.",
+  "patrolDetailProbes": "Live probes",
+  "patrolDetailProbesDesc": "Re-walks the exact path a subscription update takes, step by step, right now — measured, not guessed.",
+  "patrolDetailRunProbes": "Run live probes",
+  "patrolDetailProbing": "Probing…",
+  "patrolDetailMeasured": "Confirmed by live probes just now",
+  "patrolDetailProbesAllOk": "Every probe passed just now — the failure no longer reproduces. Updating again should work.",
+  "patrolDetailRepro": "Check it yourself",
+  "patrolFactOccurrences": "{count, plural, one {1 matching log entry} other {{count} matching log entries}}",
+  "@patrolFactOccurrences": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "patrolFactWindow": "First {first} · latest {last}",
+  "@patrolFactWindow": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "patrolFactMode": "Mode",
+  "patrolFactCore": "Core",
+  "patrolFactCoreRunning": "Running",
+  "patrolFactCoreStopped": "Stopped",
+  "patrolFactNodes": "Nodes",
+  "patrolFactHost": "Subscription host",
+  "patrolFactTime": "Time",
+  "patrolFactHttpStatus": "HTTP status",
+  "patrolFactRecordedError": "Recorded error",
+  "patrolFactSample": "Log evidence",
+  "patrolProbeProxyPort": "Core proxy port",
+  "patrolProbeDns": "DNS resolution",
+  "patrolProbeTcp": "TCP connection",
+  "patrolProbeTls": "TLS handshake",
+  "patrolProbeDirect": "Direct fetch",
+  "patrolProbeProxy": "Fetch the way the app does",
+  "patrolProbeSkipped": "Not run — an earlier step already failed",
+  "patrolStageNameProxy": "the core proxy hop",
+  "patrolStageNameDns": "DNS resolution",
+  "patrolStageNameTcp": "the connection",
+  "patrolStageNameTls": "the TLS handshake",
+  "patrolStageNameHttp": "the server's answer",
+  "patrolStageNameTimeout": "waiting for an answer",
+  "patrolStageNameBadContent": "the returned content",
+  "patrolMeasuredStage": "Live probes put the failure at: {stage}",
+  "@patrolMeasuredStage": {
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "patrolCauseLogConnection": "Connections are failing while dialing out. Several in a row usually mean the network path or the chosen nodes — not the sites themselves.",
+  "patrolCauseLogDns": "Name lookups are failing: the app asks for a site's address and gets no answer. Until DNS answers, nothing downstream can connect.",
+  "patrolCauseLogTimeout": "Connections start but never finish in time — the path is too slow or congested, or the far end is not responding.",
+  "patrolCauseLogRule": "Rule data (rule sets, geo data) is failing to load or apply, so traffic that depends on those rules cannot be routed as configured.",
+  "patrolCauseSubExpired": "The subscription itself has expired at the provider, so updates stop and the node list freezes as it was.",
+  "patrolCauseSubStale": "This subscription has not been refreshed for a long time. Node lists go stale quietly — entries die one by one until little still works.",
+  "patrolCauseSubNever": "This subscription has never been updated successfully, so there is no usable node list from it yet.",
+  "patrolCauseSubNoProfile": "No subscription is selected, so there is nothing to check, update or fix yet.",
+  "patrolCauseNodesNoData": "No node has been speed-tested yet, so there is no evidence any of them works.",
+  "patrolCauseNodesSomeDown": "Some nodes failed their last speed test. The rest still work — this is single-node trouble, not an outage.",
+  "patrolCauseNodesWidespread": "Most tested nodes are down at once. Single nodes do not fail in packs — this points at the device network, the core, or the subscription itself.",
+  "patrolCauseChainIncomplete": "Chain proxy is switched on but an entry or exit hop is not chosen, so the chain cannot carry any traffic.",
+  "patrolCauseChainHopDown": "One hop of the chain proxy failed its last test, so the whole two-hop path is down even if each side looks fine on its own.",
+  "patrolCauseConfigInvalid": "The core rejected the current configuration. The exact complaint is in the evidence below; until it validates, this config cannot run as-is.",
+  "patrolCauseConfigUnavailable": "The full config check needs the service running, so it has not run yet. Nothing says the config is broken — it is simply unchecked.",
+  "patrolStageProxy": "The fetch never got past your own core: while the core runs, subscription updates go through its local proxy port, and that hop refused or dropped the connection. The internet path was never reached.",
+  "patrolStageDns": "The subscription's domain name could not be resolved to an address. The request died at the very first step, before any connection existed.",
+  "patrolStageTcp": "The name resolved, but the server would not accept a connection — refused, reset, or unreachable at the network level.",
+  "patrolStageTls": "The connection opened, but the secure (TLS) handshake failed — the certificate or the encrypted greeting was rejected.",
+  "patrolStageHttp": "The server answered, but with error status {status}. The address was reached; the provider side refused to serve the subscription. An expired, wrong or revoked link answers exactly like this.",
+  "@patrolStageHttp": {
+    "placeholders": {
+      "status": {
+        "type": "num"
+      }
+    }
+  },
+  "patrolStageTimeout": "The fetch started and then stalled until it timed out. Nothing came back in time — a congested path or an unresponsive server.",
+  "patrolStageBadContent": "The address answered, but what came back was empty or not a usable configuration, so the update was refused to protect the working profile.",
+  "patrolStageUnknown": "The recorded error does not carry enough detail to name the failing step. Run the live probes below — they re-walk the same path and pin down where it breaks.",
+  "patrolAdviceLogConnection": "Retest all nodes to separate dead nodes from a bad path. If most fail too, check the device network itself.",
+  "patrolAdviceLogDns": "Flush the DNS and FakeIP caches, then try again. If lookups still fail, the probes on this page show whether DNS answers at all.",
+  "patrolAdviceLogTimeout": "Retest all nodes and prefer a responsive one. Timeouts on every node point at the local network, not the nodes.",
+  "patrolAdviceLogRule": "Reload the configuration so rule data is fetched and applied again.",
+  "patrolAdviceFetch": "Update the subscription again — the button below does exactly that, with the previous file kept as a snapshot in case the new one does not verify.",
+  "patrolAdviceFetchProxy": "Start (or restart) the service, then update again. If the core is running and it still fails, run the live probes to see which hop breaks.",
+  "patrolAdviceFetchHttp": "If the status persists, the link itself is the problem: get a fresh subscription link from your provider and replace it.",
+  "patrolAdviceFetchTls": "Check the device clock first — TLS rejects skewed time — then update again. If it persists, the provider's certificate is at fault.",
+  "patrolAdviceSubExpired": "Renew the subscription with your provider, then update. The node list will not refresh until then.",
+  "patrolAdviceSubStale": "Update the subscription now to refresh the node list.",
+  "patrolAdviceSubNever": "Update the subscription now. If it fails, this page shows exactly where.",
+  "patrolAdviceSubNoProfile": "Add or select a subscription on the profiles page first.",
+  "patrolAdviceNodesNoData": "Retest all nodes to get a first health reading.",
+  "patrolAdviceNodesSomeDown": "Retest all nodes and keep using the working ones. Dead entries usually recover, or are replaced on the next subscription update.",
+  "patrolAdviceNodesWidespread": "Check the device network and that the core is running, then retest. If the list itself went stale, updating the subscription helps too.",
+  "patrolAdviceChainIncomplete": "Open the chain proxy settings and choose both the entry and the exit hop — that choice is yours, so patrol does not pick for you.",
+  "patrolAdviceChainHopDown": "Retest all nodes. If the hop stays down, pick a different hop in the chain proxy settings.",
+  "patrolAdviceConfigInvalid": "Reload the configuration. If you did not edit it by hand, re-update the subscription to fetch a clean copy.",
+  "patrolAdviceConfigUnavailable": "Start the service, then come back — the check runs by itself.",
+  "patrolReproFetch": "Tap Update on the subscription — if it still fails, the same failure is recorded again.",
+  "patrolReproLogs": "Use any failing node once and matching lines appear under Logs.",
+  "patrolReproNodes": "Run a speed test from the proxies page and compare the counts.",
+  "patrolReproConfig": "This check re-runs every time the patrol page opens or the service state changes.",
+  "patrolFixRunning": "Fix running…",
+  "patrolFixCancelled": "Fix cancelled",
+  "autoUpdateOnImportTipDefault": "Auto-update is on for this subscription (every {hours} h). You can change it in the profile settings.",
+  "@autoUpdateOnImportTipDefault": {
+    "placeholders": {
+      "hours": {
+        "type": "num"
+      }
+    }
+  },
+  "chinaAdaptRecommendTitle": "Recommended combination",
+  "chinaAdaptRecommendDesc": "For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.",
+  "chinaAdaptApplyRecommended": "Turn on recommended",
+  "chinaAdaptDnsNoteDesc": "That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system's DNS, not the DNS inside your profile, and does nothing on Android."
 }

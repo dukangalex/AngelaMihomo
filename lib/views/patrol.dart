@@ -4,6 +4,8 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/patrol_actions.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/views/ai_config.dart';
+import 'package:bett_box/views/patrol_detail.dart';
+import 'package:bett_box/views/patrol_text.dart';
 import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
@@ -90,6 +92,11 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   bool _updateFailed = false;
   String _failureProfileId = '';
 
+  /// The recorded error text behind [_updateFailed], fed to the
+  /// diagnosis layer (T68) so the failure is classified by stage
+  /// instead of displayed raw.
+  String _updateError = '';
+
   /// "Fix all low-risk items without asking" lasts for this page
   /// session only (spec: 本次全权修复）. It is never persisted.
   bool _sessionTrust = false;
@@ -116,6 +123,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     if (profileId == null) {
       _failureProfileId = '';
       _updateFailed = false;
+      _updateError = '';
       return;
     }
     final failure = await PatrolStore.updateFailureFor(profileId);
@@ -123,6 +131,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     setState(() {
       _failureProfileId = profileId;
       _updateFailed = failure != null;
+      _updateError = failure?.error ?? '';
     });
   }
 
@@ -290,6 +299,9 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
         lastUpdateFailed: profile != null && _failureProfileId == profile.id
             ? _updateFailed
             : null,
+        lastUpdateError: profile != null && _failureProfileId == profile.id
+            ? _updateError
+            : '',
       ),
       nodes: nodeSamples,
       link: PatrolLinkInput(
@@ -334,70 +346,100 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     return [ListHeader(title: title), ...items];
   }
 
-  List<Widget> _logItems(BuildContext context, PatrolLogSection section) {
-    if (!section.hasIssues) {
-      return [
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.ok),
-          title: Text(appLocalizations.patrolNoProblems),
-        ),
-      ];
-    }
-    final labels = {
-      PatrolLogIssueKind.connection: appLocalizations.patrolLogConnection,
-      PatrolLogIssueKind.dns: appLocalizations.patrolLogDns,
-      PatrolLogIssueKind.timeout: appLocalizations.patrolLogTimeouts,
-      PatrolLogIssueKind.rule: appLocalizations.patrolLogRule,
-    };
+  /// One tappable row per diagnosable issue (T68): the row names
+  /// the problem and its plain-language cause in one line — never a
+  /// raw error string — and opens the detail page that answers the
+  /// three patrol questions (why / on what evidence / what to do).
+  Widget _issueItem(BuildContext context, PatrolIssue issue) {
+    return ListItem(
+      leading: _severityIcon(context, issue.severity),
+      title: Text(patrolIssueTitle(issue)),
+      subtitle: Text(
+        patrolIssueConclusion(issue),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _openIssue(issue),
+    );
+  }
+
+  List<Widget> _issueItems(
+    BuildContext context,
+    List<PatrolIssue> issues,
+    PatrolIssueSection section,
+  ) {
     return [
-      for (final kind in PatrolLogIssueKind.values)
-        if (section.groupOf(kind) != null)
-          ListItem(
-            leading: _severityIcon(context, PatrolSeverity.problem),
-            title: Text(labels[kind]!),
-            trailing: Text('${section.groupOf(kind)!.count}'),
-            subtitle: section.groupOf(kind)!.sample == null
-                ? null
-                : Text(
-                    section.groupOf(kind)!.sample!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-          ),
+      for (final issue in issues)
+        if (issue.section == section) _issueItem(context, issue),
+    ];
+  }
+
+  Future<void> _openIssue(PatrolIssue issue) async {
+    final profile = ref.read(currentProfileProvider);
+    final names = <String>{};
+    for (final group in ref.read(groupsProvider)) {
+      for (final proxy in group.all) {
+        names.add(proxy.name);
+      }
+    }
+    final chain = _reportFrom(
+      logs: ref.read(logsProvider).list,
+      profile: profile,
+      groups: ref.read(groupsProvider),
+      delayMap: ref.read(delayDataSourceProvider),
+      mode: ref.read(patchClashConfigProvider).mode,
+    ).link.input;
+    if (chain.chainEntry.isNotEmpty) names.add(chain.chainEntry);
+    if (chain.chainLanding.isNotEmpty) names.add(chain.chainLanding);
+    await BaseNavigator.push(
+      context,
+      PatrolDetailView(
+        issue: issue,
+        profile: profile,
+        aiConfig: _aiConfig,
+        nodeNames: names.toList(),
+        coreRunning: ref.read(runTimeProvider) != null,
+        proxyPort: ref.read(patchClashConfigProvider).mixedPort,
+        readReport: _readReport,
+        refreshConfigCheck: _runConfigCheck,
+        reloadUpdateFailure: _loadUpdateFailure,
+      ),
+    );
+    if (mounted) {
+      _loadUpdateFailure();
+      setState(() {});
+    }
+  }
+
+  List<Widget> _logItems(
+    BuildContext context,
+    PatrolLogSection section,
+    List<PatrolIssue> issues,
+  ) {
+    final rows = _issueItems(context, issues, PatrolIssueSection.logs);
+    if (rows.isNotEmpty) return rows;
+    return [
+      ListItem(
+        leading: _severityIcon(context, PatrolSeverity.ok),
+        title: Text(appLocalizations.patrolNoProblems),
+      ),
     ];
   }
 
   List<Widget> _subscriptionItems(
     BuildContext context,
     PatrolSubscriptionSection section,
+    List<PatrolIssue> issues,
   ) {
     final input = section.input;
     if (!input.hasProfile) {
-      return [
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.notice),
-          title: Text(appLocalizations.patrolSubNoProfile),
-        ),
-      ];
+      return _issueItems(context, issues, PatrolIssueSection.subscription);
     }
-    final items = <Widget>[];
-    if (section.isExpired) {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolSubExpired),
-        ),
-      );
-    }
-    if (section.lastUpdateFailed) {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolSubUpdateFailed),
-        ),
-      );
-    }
-    items.add(
+    // Diagnosis rows first (expired / stale / never / a fetch
+    // failure homed here), then the informational last-updated row.
+    return [
+      ..._issueItems(context, issues, PatrolIssueSection.subscription),
       ListItem(
         leading: section.neverUpdated
             ? _severityIcon(context, PatrolSeverity.notice)
@@ -409,52 +451,33 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
               : input.lastUpdateDate!.lastUpdateTimeDesc,
         ),
       ),
-    );
-    if (section.isStale) {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.notice),
-          title: Text(appLocalizations.patrolSubStale),
-        ),
-      );
-    }
-    return items;
+    ];
   }
 
-  List<Widget> _nodeItems(BuildContext context, PatrolNodeSection section) {
-    if (section.total == 0 || section.tested == 0) {
-      return [
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.notice),
-          title: Text(appLocalizations.patrolNodesNoData),
-        ),
-      ];
-    }
+  List<Widget> _nodeItems(
+    BuildContext context,
+    PatrolNodeSection section,
+    List<PatrolIssue> issues,
+  ) {
+    final rows = _issueItems(context, issues, PatrolIssueSection.nodes);
+    if (rows.isNotEmpty) return rows;
     final counts =
         '${appLocalizations.patrolNodesWorking} ${section.alive}'
         ' · ${appLocalizations.patrolNodesUnavailable} ${section.dead}'
         ' · ${appLocalizations.patrolNodesUntested} ${section.untested}';
-    if (section.widespreadOutage) {
-      return [
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolNodesWidespread),
-          subtitle: Text(counts),
-        ),
-      ];
-    }
     return [
       ListItem(
         leading: _severityIcon(context, section.severity),
         title: Text(counts),
-        subtitle: section.dead > 0
-            ? Text(appLocalizations.patrolNodesSomeDown)
-            : null,
       ),
     ];
   }
 
-  List<Widget> _linkItems(BuildContext context, PatrolLinkSection section) {
+  List<Widget> _linkItems(
+    BuildContext context,
+    PatrolLinkSection section,
+    List<PatrolIssue> issues,
+  ) {
     final input = section.input;
     final modeLabel = switch (input.mode) {
       'global' => appLocalizations.global,
@@ -480,25 +503,15 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
         subtitle: Text('${input.chainEntry} → ${input.chainLanding}'),
       ),
     );
-    if (section.chainIncomplete) {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolChainIncomplete),
-        ),
-      );
-    } else if (section.chainHopDown) {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolChainHopDown),
-        ),
-      );
-    }
+    items.addAll(_issueItems(context, issues, PatrolIssueSection.link));
     return items;
   }
 
-  List<Widget> _coreItems(BuildContext context, PatrolCoreSection section) {
+  List<Widget> _coreItems(
+    BuildContext context,
+    PatrolCoreSection section,
+    List<PatrolIssue> issues,
+  ) {
     final items = <Widget>[
       ListItem(
         title: Text(appLocalizations.patrolVersion),
@@ -514,28 +527,10 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
           title: Text(appLocalizations.patrolConfigValid),
         ),
       );
-    } else if (section.input.configCheck == PatrolConfigCheck.unavailable) {
-      // Not a pass and not a failure: the check could not run yet.
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.notice),
-          title: Text(appLocalizations.patrolConfigUnavailable),
-        ),
-      );
     } else {
-      items.add(
-        ListItem(
-          leading: _severityIcon(context, PatrolSeverity.problem),
-          title: Text(appLocalizations.patrolConfigInvalid),
-          subtitle: section.input.configError.isEmpty
-              ? null
-              : Text(
-                  section.input.configError,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-        ),
-      );
+      // Failed and unavailable are diagnosable issues now (T68):
+      // tappable rows into the detail page, no raw error on the list.
+      items.addAll(_issueItems(context, issues, PatrolIssueSection.core));
     }
     return items;
   }
@@ -662,23 +657,12 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     PatrolReport before,
     PatrolReport after,
   ) {
-    return switch (action) {
-      PatrolAction.updateSubscription =>
-        after.subscription.severity != PatrolSeverity.problem && !_updateFailed,
-      // A retest verifies when it strictly improves the picture: fewer
-      // dead nodes, first data where there was none, a chain hop back,
-      // or the section fully healthy.
-      PatrolAction.testNodes =>
-        after.nodes.dead < before.nodes.dead ||
-            (before.nodes.tested == 0 && after.nodes.tested > 0) ||
-            after.nodes.severity == PatrolSeverity.ok ||
-            (before.link.chainHopDown && !after.link.chainHopDown),
-      // A cache flush has no direct observable; execution is the
-      // verification available, and the record says what ran.
-      PatrolAction.flushDns => true,
-      PatrolAction.reloadConfig =>
-        after.core.input.configCheck != PatrolConfigCheck.failed,
-    };
+    return verifyPatrolFix(
+      action,
+      before,
+      after,
+      updateFailed: _updateFailed,
+    );
   }
 
   /// One authorized fix run: snapshot → whitelist action → rebuild
@@ -950,6 +934,15 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
   @override
   Widget build(BuildContext context) {
     final report = _buildReport();
+    final issues = buildPatrolIssues(
+      report,
+      coreRunning: ref.watch(
+        runTimeProvider.select((state) => state != null),
+      ),
+      subscriptionUrl: ref.watch(
+        currentProfileProvider.select((state) => state?.url ?? ''),
+      ),
+    );
     // Keep the navigation badge on the full report's problem count.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       patrolAttentionCount.value = report.problemCount;
@@ -996,7 +989,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             context,
             appLocalizations.patrolSectionLogs,
             _withAction(
-              _logItems(context, report.logs),
+              _logItems(context, report.logs, issues),
               report.logs.suggestedAction,
               report.logs.severity,
             ),
@@ -1005,7 +998,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             context,
             appLocalizations.patrolSectionSubscription,
             _withAction(
-              _subscriptionItems(context, report.subscription),
+              _subscriptionItems(context, report.subscription, issues),
               report.subscription.suggestedAction,
               report.subscription.severity,
             ),
@@ -1014,7 +1007,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             context,
             appLocalizations.patrolSectionNodes,
             _withAction(
-              _nodeItems(context, report.nodes),
+              _nodeItems(context, report.nodes, issues),
               report.nodes.suggestedAction,
               report.nodes.severity,
             ),
@@ -1023,7 +1016,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             context,
             appLocalizations.patrolSectionLink,
             _withAction(
-              _linkItems(context, report.link),
+              _linkItems(context, report.link, issues),
               report.link.suggestedAction,
               report.link.severity,
             ),
@@ -1032,7 +1025,7 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
             context,
             appLocalizations.patrolSectionCore,
             _withAction(
-              _coreItems(context, report.core),
+              _coreItems(context, report.core, issues),
               report.core.suggestedAction,
               report.core.severity,
             ),
@@ -1042,21 +1035,6 @@ class _PatrolViewState extends ConsumerState<PatrolView> {
     );
   }
 }
-
-String patrolActionLabel(PatrolAction action) => switch (action) {
-  PatrolAction.updateSubscription =>
-    appLocalizations.patrolActionUpdateSubscription,
-  PatrolAction.testNodes => appLocalizations.patrolActionTestNodes,
-  PatrolAction.flushDns => appLocalizations.patrolActionFlushDns,
-  PatrolAction.reloadConfig => appLocalizations.patrolActionReloadConfig,
-};
-
-String patrolOutcomeLabel(String outcome) => switch (outcome) {
-  'applied' => appLocalizations.patrolOutcomeApplied,
-  'failedRolledBack' => appLocalizations.patrolOutcomeRolledBack,
-  'undone' => appLocalizations.patrolOutcomeUndone,
-  _ => appLocalizations.patrolOutcomeFailed,
-};
 
 /// Repair history (T29): every fix attempt with its outcome, and a
 /// manual undo for subscription updates that kept their snapshot.
