@@ -418,6 +418,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "Request battery optimization whitelist",
     ),
     "bind": MessageLookupByLibrary.simpleMessage("Bind"),
+    "bindAddress": MessageLookupByLibrary.simpleMessage("Bind address"),
+    "bindAddressInfo": MessageLookupByLibrary.simpleMessage(
+      "Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.",
+    ),
+    "bindAllInterfaces": MessageLookupByLibrary.simpleMessage("All interfaces"),
+    "bindThisDeviceOnly": MessageLookupByLibrary.simpleMessage(
+      "This device only",
+    ),
     "blacklist": MessageLookupByLibrary.simpleMessage("Blacklist"),
     "blacklistMode": MessageLookupByLibrary.simpleMessage("Blacklist Mode"),
     "blockComment": MessageLookupByLibrary.simpleMessage("Comment"),
@@ -949,10 +957,20 @@ class MessageLookup extends MessageLookupByLibrary {
       "Generate from private key",
     ),
     "generateSecret": MessageLookupByLibrary.simpleMessage("Generate"),
+    "geoAutoUpdate": MessageLookupByLibrary.simpleMessage("Geo auto update"),
+    "geoAutoUpdateInfo": MessageLookupByLibrary.simpleMessage(
+      "Update Geo rule data automatically on a schedule, so routing decisions do not go stale.",
+    ),
     "geoBuiltInResources": MessageLookupByLibrary.simpleMessage(
       "GEO Built-in Resources",
     ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
+    "geoUpdateInterval": MessageLookupByLibrary.simpleMessage(
+      "Geo update interval",
+    ),
+    "geoUpdateIntervalInfo": MessageLookupByLibrary.simpleMessage(
+      "How often Geo data is updated automatically, in hours.",
+    ),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "Use GEO low memory loader",
@@ -1026,6 +1044,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "installTime": MessageLookupByLibrary.simpleMessage("Install Time"),
     "intelligentSelected": MessageLookupByLibrary.simpleMessage("Smart Select"),
+    "interfaceName": MessageLookupByLibrary.simpleMessage("Outbound interface"),
+    "interfaceNameInfo": MessageLookupByLibrary.simpleMessage(
+      "Force traffic out through a specific network interface. Only needed on multi-NIC computers.",
+    ),
     "internet": MessageLookupByLibrary.simpleMessage("Internet"),
     "interval": MessageLookupByLibrary.simpleMessage("Interval"),
     "intranetAndGateway": MessageLookupByLibrary.simpleMessage("LAN & Gateway"),
@@ -1169,6 +1191,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "isp": MessageLookupByLibrary.simpleMessage("ISP"),
     "itemsCount": m23,
     "just": MessageLookupByLibrary.simpleMessage("Just now"),
+    "keepAliveIdleDesc": MessageLookupByLibrary.simpleMessage(
+      "Keep-alive idle",
+    ),
+    "keepAliveIdleInfo": MessageLookupByLibrary.simpleMessage(
+      "How long a connection stays idle before keep-alive probes start.",
+    ),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage(
       "TCP keep-alive interval",
     ),
@@ -1177,6 +1205,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "Keep the app icon in the Dock",
     ),
     "key": MessageLookupByLibrary.simpleMessage("Key"),
+    "lanAllowedIps": MessageLookupByLibrary.simpleMessage("LAN allowed IPs"),
+    "lanAllowedIpsInfo": MessageLookupByLibrary.simpleMessage(
+      "Only IPs in this list may connect in and use the proxy over the LAN.",
+    ),
+    "lanDisallowedIps": MessageLookupByLibrary.simpleMessage("LAN blocked IPs"),
+    "lanDisallowedIpsInfo": MessageLookupByLibrary.simpleMessage(
+      "IPs in this list are refused. The blocked list wins over the allowed list.",
+    ),
     "lanSharing": MessageLookupByLibrary.simpleMessage("LAN Sharing"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "lastEdit": MessageLookupByLibrary.simpleMessage("Last edited"),
@@ -1535,6 +1571,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Current proxy group cannot be selected.",
     ),
+    "notSet": MessageLookupByLibrary.simpleMessage("Not set"),
     "notUnlocked": MessageLookupByLibrary.simpleMessage("Not Unlocked"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "High Priority",
@@ -1547,6 +1584,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ntp": MessageLookupByLibrary.simpleMessage("NTP"),
     "ntpDesc": MessageLookupByLibrary.simpleMessage("Use NTP time service"),
+    "ntpDialerProxy": MessageLookupByLibrary.simpleMessage("NTP dialer proxy"),
+    "ntpDialerProxyInfo": MessageLookupByLibrary.simpleMessage(
+      "Route time-sync traffic through a proxy, for when direct time sync is interfered with.",
+    ),
     "ntpInterval": MessageLookupByLibrary.simpleMessage("Update Interval"),
     "ntpPort": MessageLookupByLibrary.simpleMessage("Port"),
     "ntpServer": MessageLookupByLibrary.simpleMessage("Server"),
@@ -1667,6 +1708,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please enter a different port",
     ),
     "portTip": m41,
+    "portWhitelist": MessageLookupByLibrary.simpleMessage("Port whitelist"),
+    "portWhitelistInfo": MessageLookupByLibrary.simpleMessage(
+      "Only traffic on these ports is sniffed and identified.",
+    ),
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage(
       "Pouring Hourglass",
     ),
@@ -1740,6 +1785,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyProviders": MessageLookupByLibrary.simpleMessage("Proxy Providers"),
     "proxyProvidersCount": MessageLookupByLibrary.simpleMessage(
       "Proxy Providers",
+    ),
+    "proxyServerNameserverPolicy": MessageLookupByLibrary.simpleMessage(
+      "Proxy server nameserver policy",
+    ),
+    "proxyServerNameserverPolicyInfo": MessageLookupByLibrary.simpleMessage(
+      "Decides which DNS servers resolve proxy server hostnames, separately from normal domains.",
     ),
     "pulse": MessageLookupByLibrary.simpleMessage("Pulse"),
     "pulsingGrid": MessageLookupByLibrary.simpleMessage("Pulsing Grid"),
@@ -1980,6 +2031,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start in the background",
     ),
     "size": MessageLookupByLibrary.simpleMessage("Size"),
+    "skipAuthPrefixes": MessageLookupByLibrary.simpleMessage(
+      "Skip-auth IP ranges",
+    ),
+    "skipAuthPrefixesInfo": MessageLookupByLibrary.simpleMessage(
+      "Source IPs in this list can connect without a username and password.",
+    ),
     "skipDomain": MessageLookupByLibrary.simpleMessage("Skip Domain"),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage(
       "Skip Destination IP",
@@ -2145,6 +2202,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "stop": MessageLookupByLibrary.simpleMessage("Stop"),
     "stopVpn": MessageLookupByLibrary.simpleMessage("Stopping..."),
+    "storeFakeIp": MessageLookupByLibrary.simpleMessage(
+      "Keep Fake-IP mappings",
+    ),
+    "storeFakeIpInfo": MessageLookupByLibrary.simpleMessage(
+      "Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.",
+    ),
     "storeFix": MessageLookupByLibrary.simpleMessage("Store Fix"),
     "storeFixDesc": MessageLookupByLibrary.simpleMessage(
       "Fix Play Store download issues",

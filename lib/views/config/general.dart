@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
@@ -187,6 +189,328 @@ class KeepAliveIntervalItem extends ConsumerWidget {
               .updateState(
                 (state) => state.copyWith(keepAliveInterval: intValue),
               );
+        },
+      ),
+    );
+  }
+}
+
+class KeepAliveIdleItem extends ConsumerWidget {
+  const KeepAliveIdleItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final keepAliveIdle = ref.watch(
+      patchClashConfigProvider.select((state) => state.keepAliveIdle),
+    );
+    return ListItem.input(
+      leading: const Icon(Icons.timer_outlined),
+      title: InfoTitle(
+        text: appLocalizations.keepAliveIdleDesc,
+        info: appLocalizations.keepAliveIdleInfo,
+      ),
+      subtitle: Text('$keepAliveIdle ${appLocalizations.seconds}'),
+      delegate: InputDelegate(
+        title: appLocalizations.keepAliveIdleDesc,
+        suffixText: appLocalizations.seconds,
+        resetValue: '$defaultKeepAliveIdle',
+        value: '$keepAliveIdle',
+        validator: (String? value) {
+          if (value == null || value.isEmpty) {
+            return appLocalizations.emptyTip(appLocalizations.interval);
+          }
+          final intValue = int.tryParse(value);
+          if (intValue == null) {
+            return appLocalizations.numberTip(appLocalizations.interval);
+          }
+          return null;
+        },
+        onChanged: (String? value) {
+          if (value == null) {
+            return;
+          }
+          final intValue = int.parse(value);
+          ref
+              .read(patchClashConfigProvider.notifier)
+              .updateState((state) => state.copyWith(keepAliveIdle: intValue));
+        },
+      ),
+    );
+  }
+}
+
+class BindAddressItem extends ConsumerWidget {
+  const BindAddressItem({super.key});
+
+  static const _customMarker = '__CUSTOM_BIND_ADDRESS__';
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final bindAddress = ref.watch(
+      patchClashConfigProvider.select((state) => state.bindAddress),
+    );
+    final isPreset =
+        bindAddress == defaultBindAddress || bindAddress == '127.0.0.1';
+    final options = [defaultBindAddress, '127.0.0.1', _customMarker];
+    return ListItem<String>.options(
+      leading: const Icon(Icons.settings_ethernet_outlined),
+      title: InfoTitle(
+        text: appLocalizations.bindAddress,
+        info: appLocalizations.bindAddressInfo,
+      ),
+      subtitle: Text(
+        bindAddress == defaultBindAddress
+            ? appLocalizations.bindAllInterfaces
+            : bindAddress == '127.0.0.1'
+            ? appLocalizations.bindThisDeviceOnly
+            : bindAddress,
+      ),
+      delegate: OptionsDelegate<String>(
+        title: appLocalizations.bindAddress,
+        options: options,
+        value: isPreset ? bindAddress : _customMarker,
+        textBuilder: (value) {
+          return switch (value) {
+            defaultBindAddress => appLocalizations.bindAllInterfaces,
+            '127.0.0.1' => appLocalizations.bindThisDeviceOnly,
+            _ => appLocalizations.custom,
+          };
+        },
+        onChanged: (String? value) async {
+          if (value == null) {
+            return;
+          }
+          final notifier = ref.read(patchClashConfigProvider.notifier);
+          if (value == _customMarker) {
+            final custom = await globalState.showCommonDialog<String>(
+              child: InputDialog(
+                title: appLocalizations.bindAddress,
+                value: isPreset ? '' : bindAddress,
+                validator: (input) {
+                  if (input == null || input.trim().isEmpty) {
+                    return appLocalizations.emptyTip(
+                      appLocalizations.bindAddress,
+                    );
+                  }
+                  return null;
+                },
+              ),
+            );
+            if (custom != null && custom.trim().isNotEmpty) {
+              notifier.updateState(
+                (state) => state.copyWith(bindAddress: custom.trim()),
+              );
+            }
+          } else {
+            notifier.updateState(
+              (state) => state.copyWith(bindAddress: value),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class LanAllowedIpsItem extends StatelessWidget {
+  const LanAllowedIpsItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.next(
+      leading: const Icon(Icons.verified_user_outlined),
+      title: InfoTitle(
+        text: appLocalizations.lanAllowedIps,
+        info: appLocalizations.lanAllowedIpsInfo,
+      ),
+      delegate: NextDelegate(
+        blur: false,
+        title: appLocalizations.lanAllowedIps,
+        widget: Consumer(
+          builder: (_, ref, _) {
+            final items = ref.watch(
+              patchClashConfigProvider.select((state) => state.lanAllowedIps),
+            );
+            return ListInputPage(
+              title: appLocalizations.lanAllowedIps,
+              items: items,
+              titleBuilder: (item) => Text(item),
+              onChange: (items) {
+                ref
+                    .read(patchClashConfigProvider.notifier)
+                    .updateState(
+                      (state) =>
+                          state.copyWith(lanAllowedIps: List.from(items)),
+                    );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class LanDisallowedIpsItem extends StatelessWidget {
+  const LanDisallowedIpsItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.next(
+      leading: const Icon(Icons.block_outlined),
+      title: InfoTitle(
+        text: appLocalizations.lanDisallowedIps,
+        info: appLocalizations.lanDisallowedIpsInfo,
+      ),
+      delegate: NextDelegate(
+        blur: false,
+        title: appLocalizations.lanDisallowedIps,
+        widget: Consumer(
+          builder: (_, ref, _) {
+            final items = ref.watch(
+              patchClashConfigProvider.select(
+                (state) => state.lanDisallowedIps,
+              ),
+            );
+            return ListInputPage(
+              title: appLocalizations.lanDisallowedIps,
+              items: items,
+              titleBuilder: (item) => Text(item),
+              onChange: (items) {
+                ref
+                    .read(patchClashConfigProvider.notifier)
+                    .updateState(
+                      (state) =>
+                          state.copyWith(lanDisallowedIps: List.from(items)),
+                    );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class StoreFakeIpItem extends ConsumerWidget {
+  const StoreFakeIpItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final storeFakeIp = ref.watch(
+      patchClashConfigProvider.select((state) => state.storeFakeIp),
+    );
+    return ListItem.switchItem(
+      leading: const Icon(Icons.bookmark_outline),
+      title: InfoTitle(
+        text: appLocalizations.storeFakeIp,
+        info: appLocalizations.storeFakeIpInfo,
+      ),
+      delegate: SwitchDelegate(
+        value: storeFakeIp,
+        onChanged: (bool value) async {
+          ref
+              .read(patchClashConfigProvider.notifier)
+              .updateState((state) => state.copyWith(storeFakeIp: value));
+        },
+      ),
+    );
+  }
+}
+
+class InterfaceNameItem extends ConsumerStatefulWidget {
+  const InterfaceNameItem({super.key});
+
+  @override
+  ConsumerState<InterfaceNameItem> createState() => _InterfaceNameItemState();
+}
+
+class _InterfaceNameItemState extends ConsumerState<InterfaceNameItem> {
+  static const _customMarker = '__CUSTOM_INTERFACE__';
+  List<String> _interfaceNames = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterfaces();
+  }
+
+  Future<void> _loadInterfaces() async {
+    try {
+      final interfaces = await NetworkInterface.list(
+        includeLoopback: false,
+        type: InternetAddressType.any,
+      );
+      final names = interfaces.map((item) => item.name).toSet().toList()
+        ..sort();
+      if (mounted) {
+        setState(() {
+          _interfaceNames = names;
+        });
+      }
+    } catch (_) {
+      // Enumeration is best-effort; the custom entry still allows typing a
+      // name by hand when listing fails.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final interfaceName = ref.watch(
+      patchClashConfigProvider.select((state) => state.interfaceName),
+    );
+    final current = interfaceName ?? '';
+    final isPreset = current.isEmpty || _interfaceNames.contains(current);
+    final options = ['', ..._interfaceNames, _customMarker];
+    return ListItem<String>.options(
+      leading: const Icon(Icons.lan_outlined),
+      title: InfoTitle(
+        text: appLocalizations.interfaceName,
+        info: appLocalizations.interfaceNameInfo,
+      ),
+      subtitle: Text(current.isEmpty ? appLocalizations.notSet : current),
+      delegate: OptionsDelegate<String>(
+        title: appLocalizations.interfaceName,
+        options: options,
+        value: isPreset ? current : _customMarker,
+        textBuilder: (value) {
+          return switch (value) {
+            '' => appLocalizations.notSet,
+            _customMarker => appLocalizations.custom,
+            _ => value,
+          };
+        },
+        onChanged: (String? value) async {
+          if (value == null) {
+            return;
+          }
+          final notifier = ref.read(patchClashConfigProvider.notifier);
+          if (value == _customMarker) {
+            final custom = await globalState.showCommonDialog<String>(
+              child: InputDialog(
+                title: appLocalizations.interfaceName,
+                value: isPreset ? '' : current,
+                validator: (input) {
+                  if (input == null || input.trim().isEmpty) {
+                    return appLocalizations.emptyTip(
+                      appLocalizations.interfaceName,
+                    );
+                  }
+                  return null;
+                },
+              ),
+            );
+            if (custom != null && custom.trim().isNotEmpty) {
+              notifier.updateState(
+                (state) => state.copyWith(interfaceName: custom.trim()),
+              );
+            }
+          } else {
+            notifier.updateState(
+              (state) =>
+                  state.copyWith(interfaceName: value.isEmpty ? null : value),
+            );
+          }
         },
       ),
     );
@@ -674,13 +998,19 @@ List<Widget> get generalItems => generateSection(
     const LogLevelItem(),
     const UaItem(),
     if (system.isDesktop) const KeepAliveIntervalItem(),
+    if (system.isDesktop) const KeepAliveIdleItem(),
     const TestUrlItem(),
     const PortItem(),
     const Ipv6Item(),
     const AllowLanItem(),
+    const BindAddressItem(),
+    const LanAllowedIpsItem(),
+    const LanDisallowedIpsItem(),
     const UnifiedDelayItem(),
     const FindProcessItem(),
     const TcpConcurrentItem(),
+    const StoreFakeIpItem(),
+    if (system.isDesktop) const InterfaceNameItem(),
     const ExternalControllerItem(),
   ],
 );

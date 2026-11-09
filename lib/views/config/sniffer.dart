@@ -362,6 +362,44 @@ class _SnifferPortDialogState extends State<_SnifferPortDialog> {
   }
 }
 
+class PortWhitelistWidget extends StatelessWidget {
+  const PortWhitelistWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.next(
+      title: InfoTitle(
+        text: appLocalizations.portWhitelist,
+        info: appLocalizations.portWhitelistInfo,
+      ),
+      delegate: NextDelegate(
+        blur: false,
+        title: appLocalizations.portWhitelist,
+        widget: Consumer(
+          builder: (_, ref, _) {
+            final port = ref.watch(
+              patchClashConfigProvider.select((state) => state.sniffer.port),
+            );
+            return ListInputPage(
+              title: appLocalizations.portWhitelist,
+              items: port,
+              titleBuilder: (item) => Text(item),
+              onChange: (items) {
+                ref
+                    .read(patchClashConfigProvider.notifier)
+                    .updateState(
+                      (state) =>
+                          state.copyWith.sniffer(port: List.from(items)),
+                    );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class ForceDomainWidget extends ConsumerWidget {
   const ForceDomainWidget({super.key});
 
@@ -524,6 +562,7 @@ final snifferItems = <Widget>[
       HttpPortSnifferItem(),
       TlsPortSnifferItem(),
       QuicPortSnifferItem(),
+      PortWhitelistWidget(),
       ForceDomainWidget(),
       SkipDomainWidget(),
       SkipSrcAddressWidget(),

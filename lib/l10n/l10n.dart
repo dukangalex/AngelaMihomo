@@ -10699,6 +10699,271 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Keep-alive idle`
+  String get keepAliveIdleDesc {
+    return Intl.message(
+      'Keep-alive idle',
+      name: 'keepAliveIdleDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How long a connection stays idle before keep-alive probes start.`
+  String get keepAliveIdleInfo {
+    return Intl.message(
+      'How long a connection stays idle before keep-alive probes start.',
+      name: 'keepAliveIdleInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo auto update`
+  String get geoAutoUpdate {
+    return Intl.message(
+      'Geo auto update',
+      name: 'geoAutoUpdate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update Geo rule data automatically on a schedule, so routing decisions do not go stale.`
+  String get geoAutoUpdateInfo {
+    return Intl.message(
+      'Update Geo rule data automatically on a schedule, so routing decisions do not go stale.',
+      name: 'geoAutoUpdateInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo update interval`
+  String get geoUpdateInterval {
+    return Intl.message(
+      'Geo update interval',
+      name: 'geoUpdateInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How often Geo data is updated automatically, in hours.`
+  String get geoUpdateIntervalInfo {
+    return Intl.message(
+      'How often Geo data is updated automatically, in hours.',
+      name: 'geoUpdateIntervalInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep Fake-IP mappings`
+  String get storeFakeIp {
+    return Intl.message(
+      'Keep Fake-IP mappings',
+      name: 'storeFakeIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.`
+  String get storeFakeIpInfo {
+    return Intl.message(
+      'Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.',
+      name: 'storeFakeIpInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bind address`
+  String get bindAddress {
+    return Intl.message(
+      'Bind address',
+      name: 'bindAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.`
+  String get bindAddressInfo {
+    return Intl.message(
+      'Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.',
+      name: 'bindAddressInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All interfaces`
+  String get bindAllInterfaces {
+    return Intl.message(
+      'All interfaces',
+      name: 'bindAllInterfaces',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device only`
+  String get bindThisDeviceOnly {
+    return Intl.message(
+      'This device only',
+      name: 'bindThisDeviceOnly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LAN allowed IPs`
+  String get lanAllowedIps {
+    return Intl.message(
+      'LAN allowed IPs',
+      name: 'lanAllowedIps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only IPs in this list may connect in and use the proxy over the LAN.`
+  String get lanAllowedIpsInfo {
+    return Intl.message(
+      'Only IPs in this list may connect in and use the proxy over the LAN.',
+      name: 'lanAllowedIpsInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LAN blocked IPs`
+  String get lanDisallowedIps {
+    return Intl.message(
+      'LAN blocked IPs',
+      name: 'lanDisallowedIps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IPs in this list are refused. The blocked list wins over the allowed list.`
+  String get lanDisallowedIpsInfo {
+    return Intl.message(
+      'IPs in this list are refused. The blocked list wins over the allowed list.',
+      name: 'lanDisallowedIpsInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Skip-auth IP ranges`
+  String get skipAuthPrefixes {
+    return Intl.message(
+      'Skip-auth IP ranges',
+      name: 'skipAuthPrefixes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Source IPs in this list can connect without a username and password.`
+  String get skipAuthPrefixesInfo {
+    return Intl.message(
+      'Source IPs in this list can connect without a username and password.',
+      name: 'skipAuthPrefixesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Port whitelist`
+  String get portWhitelist {
+    return Intl.message(
+      'Port whitelist',
+      name: 'portWhitelist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only traffic on these ports is sniffed and identified.`
+  String get portWhitelistInfo {
+    return Intl.message(
+      'Only traffic on these ports is sniffed and identified.',
+      name: 'portWhitelistInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy server nameserver policy`
+  String get proxyServerNameserverPolicy {
+    return Intl.message(
+      'Proxy server nameserver policy',
+      name: 'proxyServerNameserverPolicy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Decides which DNS servers resolve proxy server hostnames, separately from normal domains.`
+  String get proxyServerNameserverPolicyInfo {
+    return Intl.message(
+      'Decides which DNS servers resolve proxy server hostnames, separately from normal domains.',
+      name: 'proxyServerNameserverPolicyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `NTP dialer proxy`
+  String get ntpDialerProxy {
+    return Intl.message(
+      'NTP dialer proxy',
+      name: 'ntpDialerProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Route time-sync traffic through a proxy, for when direct time sync is interfered with.`
+  String get ntpDialerProxyInfo {
+    return Intl.message(
+      'Route time-sync traffic through a proxy, for when direct time sync is interfered with.',
+      name: 'ntpDialerProxyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outbound interface`
+  String get interfaceName {
+    return Intl.message(
+      'Outbound interface',
+      name: 'interfaceName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Force traffic out through a specific network interface. Only needed on multi-NIC computers.`
+  String get interfaceNameInfo {
+    return Intl.message(
+      'Force traffic out through a specific network interface. Only needed on multi-NIC computers.',
+      name: 'interfaceNameInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not set`
+  String get notSet {
+    return Intl.message('Not set', name: 'notSet', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

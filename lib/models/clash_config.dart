@@ -21,6 +21,12 @@ const defaultGeoXUrl = GeoXUrl();
 
 const defaultMixedPort = 7890;
 const defaultKeepAliveInterval = 30;
+// Mihomo wiki (config/general): keep-alive-idle defaults to 15 seconds.
+const defaultKeepAliveIdle = 15;
+// Mihomo DefaultRawConfig: geo-update-interval defaults to 24 (hours),
+// bind-address defaults to '*' (all interfaces).
+const defaultGeoUpdateInterval = 24;
+const defaultBindAddress = '*';
 const defaultSkipAuthPrefixes = ['127.0.0.1/8', '::1/128'];
 
 const defaultBypassPrivateRouteAddress = [
@@ -418,6 +424,9 @@ abstract class Dns with _$Dns {
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
+    @Default({})
+    @JsonKey(name: 'proxy-server-nameserver-policy')
+    Map<String, String> proxyServerNameserverPolicy,
     @Default(['1.1.1.1']) List<String> nameserver,
     @Default([]) List<String> fallback,
     @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
@@ -464,6 +473,7 @@ abstract class Ntp with _$Ntp {
     @Default('time.apple.com') String server,
     @Default(123) int port,
     @Default(60) int interval,
+    @JsonKey(name: 'dialer-proxy') String? dialerProxy,
   }) = _Ntp;
 
   factory Ntp.fromJson(Map<String, Object?> json) => _$NtpFromJson(json);
@@ -741,6 +751,24 @@ abstract class ClashConfig with _$ClashConfig {
     @Default(defaultKeepAliveInterval)
     @JsonKey(name: 'keep-alive-interval')
     int keepAliveInterval,
+    @Default(defaultKeepAliveIdle)
+    @JsonKey(name: 'keep-alive-idle')
+    int keepAliveIdle,
+    @Default(false) @JsonKey(name: 'geo-auto-update') bool geoAutoUpdate,
+    @Default(defaultGeoUpdateInterval)
+    @JsonKey(name: 'geo-update-interval')
+    int geoUpdateInterval,
+    @Default(defaultBindAddress)
+    @JsonKey(name: 'bind-address')
+    String bindAddress,
+    @Default([]) @JsonKey(name: 'lan-allowed-ips') List<String> lanAllowedIps,
+    @Default([])
+    @JsonKey(name: 'lan-disallowed-ips')
+    List<String> lanDisallowedIps,
+    // Kernel home for this flag is profile.store-fake-ip; the flat field is
+    // app-side storage only, state.dart emits it under 'profile'.
+    @Default(false) @JsonKey(name: 'store-fake-ip') bool storeFakeIp,
+    @JsonKey(name: 'interface-name') String? interfaceName,
     @Default(true) @JsonKey(name: 'unified-delay') bool unifiedDelay,
     @Default(true) @JsonKey(name: 'tcp-concurrent') bool tcpConcurrent,
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,

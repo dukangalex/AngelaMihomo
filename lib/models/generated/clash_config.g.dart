@@ -304,6 +304,11 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
         'geosite:private': 'system',
         '*': 'system',
       },
+  proxyServerNameserverPolicy:
+      (json['proxy-server-nameserver-policy'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ) ??
+      const {},
   nameserver:
       (json['nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -349,6 +354,7 @@ Map<String, dynamic> _$DnsToJson(_Dns instance) => <String, dynamic>{
   'fake-ip-filter': instance.fakeIpFilter,
   'fake-ip-ttl': instance.fakeIpTtl,
   'nameserver-policy': instance.nameserverPolicy,
+  'proxy-server-nameserver-policy': instance.proxyServerNameserverPolicy,
   'nameserver': instance.nameserver,
   'fallback': instance.fallback,
   'proxy-server-nameserver': instance.proxyServerNameserver,
@@ -382,6 +388,7 @@ _Ntp _$NtpFromJson(Map<String, dynamic> json) => _Ntp(
   server: json['server'] as String? ?? 'time.apple.com',
   port: (json['port'] as num?)?.toInt() ?? 123,
   interval: (json['interval'] as num?)?.toInt() ?? 60,
+  dialerProxy: json['dialer-proxy'] as String?,
 );
 
 Map<String, dynamic> _$NtpToJson(_Ntp instance) => <String, dynamic>{
@@ -390,6 +397,7 @@ Map<String, dynamic> _$NtpToJson(_Ntp instance) => <String, dynamic>{
   'server': instance.server,
   'port': instance.port,
   'interval': instance.interval,
+  'dialer-proxy': instance.dialerProxy,
 };
 
 _Experimental _$ExperimentalFromJson(Map<String, dynamic> json) =>
@@ -495,6 +503,25 @@ _ClashConfig _$ClashConfigFromJson(Map<String, dynamic> json) => _ClashConfig(
   keepAliveInterval:
       (json['keep-alive-interval'] as num?)?.toInt() ??
       defaultKeepAliveInterval,
+  keepAliveIdle:
+      (json['keep-alive-idle'] as num?)?.toInt() ?? defaultKeepAliveIdle,
+  geoAutoUpdate: json['geo-auto-update'] as bool? ?? false,
+  geoUpdateInterval:
+      (json['geo-update-interval'] as num?)?.toInt() ??
+      defaultGeoUpdateInterval,
+  bindAddress: json['bind-address'] as String? ?? defaultBindAddress,
+  lanAllowedIps:
+      (json['lan-allowed-ips'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  lanDisallowedIps:
+      (json['lan-disallowed-ips'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  storeFakeIp: json['store-fake-ip'] as bool? ?? false,
+  interfaceName: json['interface-name'] as String?,
   unifiedDelay: json['unified-delay'] as bool? ?? true,
   tcpConcurrent: json['tcp-concurrent'] as bool? ?? true,
   tun: json['tun'] == null
@@ -565,6 +592,14 @@ Map<String, dynamic> _$ClashConfigToJson(_ClashConfig instance) =>
       'ipv6': instance.ipv6,
       'find-process-mode': _$FindProcessModeEnumMap[instance.findProcessMode]!,
       'keep-alive-interval': instance.keepAliveInterval,
+      'keep-alive-idle': instance.keepAliveIdle,
+      'geo-auto-update': instance.geoAutoUpdate,
+      'geo-update-interval': instance.geoUpdateInterval,
+      'bind-address': instance.bindAddress,
+      'lan-allowed-ips': instance.lanAllowedIps,
+      'lan-disallowed-ips': instance.lanDisallowedIps,
+      'store-fake-ip': instance.storeFakeIp,
+      'interface-name': instance.interfaceName,
       'unified-delay': instance.unifiedDelay,
       'tcp-concurrent': instance.tcpConcurrent,
       'tun': instance.tun,

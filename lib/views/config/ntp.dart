@@ -1,3 +1,4 @@
+import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
@@ -228,6 +229,106 @@ class NtpIntervalItem extends ConsumerWidget {
   }
 }
 
+class NtpDialerProxyItem extends ConsumerStatefulWidget {
+  const NtpDialerProxyItem({super.key});
+
+  @override
+  ConsumerState<NtpDialerProxyItem> createState() => _NtpDialerProxyItemState();
+}
+
+class _NtpDialerProxyItemState extends ConsumerState<NtpDialerProxyItem> {
+  static const _customMarker = '__CUSTOM_DIALER_PROXY__';
+  List<String> _choices = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChoices();
+  }
+
+  Future<void> _loadChoices() async {
+    try {
+      final groups = await clashCore.getProxiesGroups();
+      final names = <String>{};
+      for (final group in groups) {
+        names.add(group.name);
+        for (final proxy in group.all) {
+          names.add(proxy.name);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _choices = names.toList();
+        });
+      }
+    } catch (_) {
+      // Core not running yet: only the custom entry remains available, the
+      // user can still type a proxy or group name by hand.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dialerProxy = ref.watch(
+      patchClashConfigProvider.select((state) => state.ntp.dialerProxy),
+    );
+    final current = dialerProxy ?? '';
+    final isPreset = current.isEmpty || _choices.contains(current);
+    final options = ['', ..._choices, _customMarker];
+    return ListItem<String>.options(
+      title: InfoTitle(
+        text: appLocalizations.ntpDialerProxy,
+        info: appLocalizations.ntpDialerProxyInfo,
+      ),
+      subtitle: Text(current.isEmpty ? appLocalizations.notSet : current),
+      delegate: OptionsDelegate<String>(
+        title: appLocalizations.ntpDialerProxy,
+        options: options,
+        value: isPreset ? current : _customMarker,
+        textBuilder: (value) {
+          return switch (value) {
+            '' => appLocalizations.notSet,
+            _customMarker => appLocalizations.custom,
+            _ => value,
+          };
+        },
+        onChanged: (String? value) async {
+          if (value == null) {
+            return;
+          }
+          final notifier = ref.read(patchClashConfigProvider.notifier);
+          if (value == _customMarker) {
+            final custom = await globalState.showCommonDialog<String>(
+              child: InputDialog(
+                title: appLocalizations.ntpDialerProxy,
+                value: isPreset ? '' : current,
+                validator: (input) {
+                  if (input == null || input.trim().isEmpty) {
+                    return appLocalizations.emptyTip(
+                      appLocalizations.ntpDialerProxy,
+                    );
+                  }
+                  return null;
+                },
+              ),
+            );
+            if (custom != null && custom.trim().isNotEmpty) {
+              notifier.updateState(
+                (state) => state.copyWith.ntp(dialerProxy: custom.trim()),
+              );
+            }
+          } else {
+            notifier.updateState(
+              (state) =>
+                  state.copyWith.ntp(dialerProxy: value.isEmpty ? null : value),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
 final ntpItems = <Widget>[
   ...generateSection(items: const [OverrideNtpItem()]),
   ...generateSection(
@@ -238,6 +339,7 @@ final ntpItems = <Widget>[
       const NtpServerItem(),
       const NtpPortItem(),
       const NtpIntervalItem(),
+      const NtpDialerProxyItem(),
     ],
   ),
 ];

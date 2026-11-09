@@ -1014,6 +1014,17 @@ class GlobalState {
       'ipv6': patchConfig.ipv6,
       'log-level': patchConfig.logLevel.name,
       'keep-alive-interval': patchConfig.keepAliveInterval,
+      'keep-alive-idle': patchConfig.keepAliveIdle,
+      'geo-auto-update': patchConfig.geoAutoUpdate,
+      'geo-update-interval': patchConfig.geoUpdateInterval,
+      'bind-address': patchConfig.bindAddress,
+      'lan-allowed-ips': patchConfig.lanAllowedIps,
+      'lan-disallowed-ips': patchConfig.lanDisallowedIps,
+      'profile': {'store-fake-ip': patchConfig.storeFakeIp},
+      if (system.isDesktop &&
+          patchConfig.interfaceName != null &&
+          patchConfig.interfaceName!.isNotEmpty)
+        'interface-name': patchConfig.interfaceName,
       'mixed-port': patchConfig.mixedPort,
       'port': patchConfig.port,
       'socks-port': patchConfig.socksPort,
@@ -1085,6 +1096,10 @@ class GlobalState {
         ...dns.toJson(),
         'nameserver-policy': {
           for (final entry in dns.nameserverPolicy.entries)
+            entry.key: entry.value.splitByMultipleSeparators,
+        },
+        'proxy-server-nameserver-policy': {
+          for (final entry in dns.proxyServerNameserverPolicy.entries)
             entry.key: entry.value.splitByMultipleSeparators,
         },
       },

@@ -12,6 +12,7 @@ export 'float_layout.dart';
 export 'editable_grid.dart';
 export 'grid.dart';
 export 'icon.dart';
+export 'info_hint.dart';
 export 'input.dart';
 export 'keep_scope.dart';
 export 'line_chart.dart';

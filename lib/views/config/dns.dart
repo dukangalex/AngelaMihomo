@@ -560,6 +560,48 @@ class NameserverPolicyItem extends StatelessWidget {
   }
 }
 
+class ProxyServerNameserverPolicyItem extends StatelessWidget {
+  const ProxyServerNameserverPolicyItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.next(
+      title: InfoTitle(
+        text: appLocalizations.proxyServerNameserverPolicy,
+        info: appLocalizations.proxyServerNameserverPolicyInfo,
+      ),
+      delegate: NextDelegate(
+        blur: false,
+        title: appLocalizations.proxyServerNameserverPolicy,
+        widget: Consumer(
+          builder: (_, ref, _) {
+            final policy = ref.watch(
+              patchClashConfigProvider.select(
+                (state) => state.dns.proxyServerNameserverPolicy,
+              ),
+            );
+            return MapInputPage(
+              title: appLocalizations.proxyServerNameserverPolicy,
+              map: policy,
+              titleBuilder: (item) => Text(item.key),
+              subtitleBuilder: (item) => Text(item.value),
+              onChange: (value) {
+                ref
+                    .read(patchClashConfigProvider.notifier)
+                    .updateState(
+                      (state) => state.copyWith.dns(
+                        proxyServerNameserverPolicy: value,
+                      ),
+                    );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class ProxyServerNameserverItem extends StatelessWidget {
   const ProxyServerNameserverItem({super.key});
 
@@ -895,6 +937,7 @@ final dnsItems = <Widget>[
       FakeIpTtlItem(),
       DefaultNameserverItem(),
       NameserverPolicyItem(),
+      ProxyServerNameserverPolicyItem(),
       NameserverItem(),
       FallbackItem(),
       ProxyServerNameserverItem(),
