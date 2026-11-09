@@ -123,7 +123,9 @@ abstract class ProxyGroup with _$ProxyGroup {
     @JsonKey(fromJson: _parseInt) int? timeout,
     @JsonKey(name: 'max-failed-times', fromJson: _parseInt) int? maxFailedTimes,
     String? filter,
-    @JsonKey(name: 'expected-filter') String? excludeFilter,
+    // 内核字段名为 exclude-filter（GroupCommonOption）；曾误写 expected-filter，
+    // 导致解析时该过滤被静默丢弃（T75 第 0 步实证，回归测试在 test/models）。
+    @JsonKey(name: 'exclude-filter') String? excludeFilter,
     @JsonKey(name: 'exclude-type') String? excludeType,
     @JsonKey(name: 'expected-status') dynamic expectedStatus,
     @JsonKey(fromJson: _parseBool) bool? hidden,

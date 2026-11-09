@@ -789,7 +789,7 @@ final class SortedGroupProxiesProvider
 }
 
 String _$sortedGroupProxiesHash() =>
-    r'1bd3bcbd085a31091125c00dac75dba27f7bfd03';
+    r'a0cbf26d56c09b2e215529b54dd14dcce3194132';
 
 final class SortedGroupProxiesFamily extends $Family
     with
