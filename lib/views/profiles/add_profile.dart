@@ -1,4 +1,5 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/import_normalize.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/pages/scan.dart';
@@ -65,6 +66,13 @@ class AddProfileView extends StatelessWidget {
       }
 
       if (!text.isUrl) {
+        // T73: the clipboard often carries node info rather than a
+        // subscription URL — import it as content instead of
+        // dead-ending with a "must be a URL" tip.
+        if (ImportNormalize.hasImportableContent(text)) {
+          await globalState.appController.addProfileFromContent(text);
+          return;
+        }
         if (context.mounted) {
           context.showSnackBar(
             appLocalizations.urlTip(appLocalizations.clipboard),
@@ -93,12 +101,18 @@ class AddProfileView extends StatelessWidget {
       );
       return;
     }
-    final url = await BaseNavigator.push(context, const ScanPage());
-    if (url != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleAddProfileFormURL(url);
-      });
+    final scanned = await BaseNavigator.push(context, const ScanPage());
+    if (scanned == null) return;
+    // T73: node QR codes carry share links, not subscription URLs —
+    // import them as content instead of opening a URL form whose
+    // validation would reject them.
+    if (!scanned.isUrl && ImportNormalize.hasImportableContent(scanned)) {
+      await globalState.appController.addProfileFromContent(scanned);
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleAddProfileFormURL(scanned);
+    });
   }
 
   Future<void> _toAdd() async {

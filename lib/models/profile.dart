@@ -248,7 +248,7 @@ extension ProfileExtension on Profile {
           setup: setup.copyWith(profilePath: tempFile.path),
         );
         if (message.isNotEmpty) {
-          throw message;
+          throw ProfileImportFailure(message);
         }
       }
       try {
@@ -345,10 +345,10 @@ extension ProfileExtension on Profile {
           if (patchedMessage.isEmpty) {
             content = patched;
           } else {
-            throw message;
+            throw ProfileImportFailure(message);
           }
         } else {
-          throw message;
+          throw ProfileImportFailure(message);
         }
       }
     }
@@ -390,10 +390,10 @@ extension ProfileExtension on Profile {
         if (patchedMessage.isEmpty) {
           content = patched;
         } else {
-          throw message;
+          throw ProfileImportFailure(message);
         }
       } else {
-        throw message;
+        throw ProfileImportFailure(message);
       }
     }
     await _writeFile(content);

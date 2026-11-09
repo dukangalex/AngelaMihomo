@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/import_normalize.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/pages/editor.dart';
@@ -135,7 +136,19 @@ class EditProfileViewState extends State<EditProfileView> {
       final ref = appController.ref;
       ref.read(loadingProvider.notifier).value = true;
       try {
-        final updatedProfile = await profile.update();
+        // T73: pasted node content (share links and friends) is saved
+        // as a file profile; only real URLs are fetched.
+        final updatedProfile =
+            !profile.url.isUrl &&
+                ImportNormalize.hasImportableContent(profile.url)
+            ? await profile
+                  .copyWith(
+                    url: '',
+                    label:
+                        profile.label ?? appLocalizations.contentImportLabel,
+                  )
+                  .saveFile(utf8.encode(profile.url))
+            : await profile.update();
         await appController.addProfile(updatedProfile);
         // T50: say it on this page — a freshly imported subscription
         // auto-updates by default, and the user should not have to dig
@@ -165,7 +178,7 @@ class EditProfileViewState extends State<EditProfileView> {
         if (mounted) {
           await globalState.showMessage(
             title: appLocalizations.tip,
-            message: TextSpan(text: e.formatError),
+            message: TextSpan(text: e.formatProfileImportError),
             cancelable: false,
           );
         }
@@ -380,6 +393,13 @@ class EditProfileViewState extends State<EditProfileView> {
                 return appLocalizations.profileUrlNullValidationDesc;
               }
               if (!value.isUrl) {
+                // T73: on the new-profile form a pasted batch of node
+                // links is valid input too — it is imported as file
+                // content on save instead of being rejected here.
+                if (widget.isNew &&
+                    ImportNormalize.hasImportableContent(value)) {
+                  return null;
+                }
                 return appLocalizations.profileUrlInvalidValidationDesc;
               }
               return null;

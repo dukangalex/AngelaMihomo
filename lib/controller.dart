@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:bett_box/clash/clash.dart';
+import 'package:bett_box/common/import_normalize.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/helper/helper.dart';
 
@@ -253,6 +254,14 @@ class AppController {
     final currentProfile = _ref.read(currentProfileProvider);
     if (currentProfile == null) {
       commonPrint.warn('Fast start aborted: No active profile configured.');
+      // T73: never let the start switch feel broken — with no profile
+      // there is nothing to start, so say what to do instead of
+      // silently doing nothing.
+      await globalState.showMessage(
+        title: appLocalizations.tip,
+        message: TextSpan(text: appLocalizations.nullProfileDesc),
+        cancelable: false,
+      );
       return;
     }
 
@@ -1812,7 +1821,36 @@ class AppController {
     } on Object catch (e) {
       await globalState.showMessage(
         title: appLocalizations.add,
-        message: TextSpan(text: e.formatError),
+        message: TextSpan(text: e.formatProfileImportError),
+        cancelable: false,
+      );
+    } finally {
+      _ref.read(loadingProvider.notifier).value = false;
+    }
+  }
+
+  /// Imports node info carried as raw content (share links, batched
+  /// links, base64 subscriptions, sing-box / Xray JSON, pasted YAML)
+  /// from the clipboard, a scan, or a QR image (T73). The content goes
+  /// through the same saveFile pipeline as a picked file, so it lands
+  /// as a file profile without ever asking for a URL.
+  Future<void> addProfileFromContent(String content, {String? label}) async {
+    _ref.read(loadingProvider.notifier).value = true;
+    try {
+      final profile = await Profile.normal(
+        label: label ?? appLocalizations.contentImportLabel,
+      ).saveFile(utf8.encode(content));
+      if (globalState.navigatorKey.currentState?.canPop() ?? false) {
+        globalState.navigatorKey.currentState?.popUntil(
+          (route) => route.isFirst,
+        );
+      }
+      toProfiles();
+      await addProfile(profile);
+    } on Object catch (e) {
+      await globalState.showMessage(
+        title: appLocalizations.add,
+        message: TextSpan(text: e.formatProfileImportError),
         cancelable: false,
       );
     } finally {
@@ -1860,7 +1898,7 @@ class AppController {
           if (!context.mounted) break;
           await globalState.showMessage(
             title: '${platformFile.name} (${appLocalizations.add})',
-            message: TextSpan(text: e.formatError),
+            message: TextSpan(text: e.formatProfileImportError),
             cancelable: false,
           );
         }
@@ -1878,9 +1916,23 @@ class AppController {
   }
 
   Future<void> addProfileFormQrCode() async {
-    final url = await safeRun(picker.pickerConfigQRCode);
-    if (url == null) return;
-    addProfileFormURL(url);
+    final content = await safeRun(picker.pickerConfigQRCode);
+    if (content == null) return;
+    if (content.isUrl) {
+      addProfileFormURL(content);
+      return;
+    }
+    // T73: a QR image can just as well carry node links — route those
+    // through the content import instead of rejecting them as non-URL.
+    if (ImportNormalize.hasImportableContent(content)) {
+      await addProfileFromContent(content);
+      return;
+    }
+    await globalState.showMessage(
+      title: appLocalizations.add,
+      message: TextSpan(text: appLocalizations.pleaseUploadValidQrcode),
+      cancelable: false,
+    );
   }
 
   void updateViewSize(Size size) {

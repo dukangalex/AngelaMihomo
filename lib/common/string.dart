@@ -89,10 +89,50 @@ extension StringExtensionSafe on String? {
   }
 }
 
+/// A profile-content validation failure whose [rawMessage] is the core's
+/// own (technical, unlocalized) wording. Import paths surface it through
+/// [ObjectExtension.formatProfileImportError], which swaps the raw text
+/// for a plain-language explanation (T73); the raw text stays available
+/// for logs via toString().
+class ProfileImportFailure implements Exception {
+  final String rawMessage;
+
+  const ProfileImportFailure(this.rawMessage);
+
+  @override
+  String toString() => rawMessage;
+}
+
 extension ObjectExtension on Object {
   String get formatError => _format(isLog: false);
 
   String get formatErrorLog => _format(isLog: true);
+
+  /// Error text for the profile import / update paths only (T73): a
+  /// novice must never be handed a raw DioException dump or the core's
+  /// validation wording. Network-layer failures (no HTTP response ever
+  /// arrived) and unparseable content each get a plain-language message
+  /// with a next step; HTTP status failures keep the existing localized
+  /// wording via [_format]; anything else falls through unchanged.
+  String get formatProfileImportError {
+    if (this is ProfileImportFailure) {
+      return appLocalizations.profileImportInvalidContent;
+    }
+    final errorStr = toString();
+    if (errorStr.contains('DioException')) {
+      final mapped = _format(isLog: false);
+      if (mapped != errorStr) return mapped;
+      if (errorStr.contains('timeout') ||
+          errorStr.contains('connection error') ||
+          errorStr.contains('connectionError') ||
+          errorStr.contains('unknown') ||
+          errorStr.contains('certificate') ||
+          errorStr.contains('handshake')) {
+        return appLocalizations.profileImportNetworkFailed;
+      }
+    }
+    return _format(isLog: false);
+  }
 
   String _format({required bool isLog}) {
     final errorStr = toString();

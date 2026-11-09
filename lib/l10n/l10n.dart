@@ -5940,6 +5940,36 @@ class AppLocalizations {
     );
   }
 
+  /// `Import failed: the network is unreachable or the subscription service is temporarily unavailable. Check your connection and try again`
+  String get profileImportNetworkFailed {
+    return Intl.message(
+      'Import failed: the network is unreachable or the subscription service is temporarily unavailable. Check your connection and try again',
+      name: 'profileImportNetworkFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import failed: the content is not recognized or is corrupted. Make sure you copied the complete subscription link or node info, then try again`
+  String get profileImportInvalidContent {
+    return Intl.message(
+      'Import failed: the content is not recognized or is corrupted. Make sure you copied the complete subscription link or node info, then try again',
+      name: 'profileImportInvalidContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Imported profile`
+  String get contentImportLabel {
+    return Intl.message(
+      'Imported profile',
+      name: 'contentImportLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Authorized`
   String get authorized {
     return Intl.message('Authorized', name: 'authorized', desc: '', args: []);

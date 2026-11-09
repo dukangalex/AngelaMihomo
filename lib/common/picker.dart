@@ -79,7 +79,18 @@ class Picker {
     if (xFile == null) {
       return null;
     }
-    return decodeProfileUrlFromQrImage(xFile.path);
+    return decodeProfileContentFromQrImage(xFile.path);
+  }
+
+  /// Raw QR payload for the import flow (T73): the caller decides
+  /// whether it is a subscription URL or importable node content, so
+  /// this only rejects images with no QR code at all.
+  Future<String?> decodeProfileContentFromQrImage(String path) async {
+    final result = await _decodeQrCodeImage(path);
+    if (result == null || result.isEmpty) {
+      throw appLocalizations.pleaseUploadValidQrcode;
+    }
+    return result;
   }
 
   Future<String?> decodeProfileUrlFromQrImage(String path) async {

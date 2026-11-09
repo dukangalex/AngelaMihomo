@@ -443,6 +443,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectivity": MessageLookupByLibrary.simpleMessage("连通性："),
     "contactMe": MessageLookupByLibrary.simpleMessage("联系我"),
     "content": MessageLookupByLibrary.simpleMessage("内容"),
+    "contentImportLabel": MessageLookupByLibrary.simpleMessage("导入的配置"),
     "contentScheme": MessageLookupByLibrary.simpleMessage("内容主题"),
     "continent": MessageLookupByLibrary.simpleMessage("大洲"),
     "controlSecret": MessageLookupByLibrary.simpleMessage("控制密码"),
@@ -1249,6 +1250,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "配置文件已经修改，是否关闭自动更新？",
     ),
     "profileImportFailed": m42,
+    "profileImportInvalidContent": MessageLookupByLibrary.simpleMessage(
+      "导入失败：内容无法识别或已损坏。请确认复制的是完整的订阅链接或节点信息后重试",
+    ),
+    "profileImportNetworkFailed": MessageLookupByLibrary.simpleMessage(
+      "配置导入失败：网络连接不通，或订阅服务暂时不可用。请检查网络后重试",
+    ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入配置名称",
     ),

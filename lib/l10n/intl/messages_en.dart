@@ -603,6 +603,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectivity": MessageLookupByLibrary.simpleMessage("Connectivity:"),
     "contactMe": MessageLookupByLibrary.simpleMessage("Contact Me"),
     "content": MessageLookupByLibrary.simpleMessage("Content"),
+    "contentImportLabel": MessageLookupByLibrary.simpleMessage(
+      "Imported profile",
+    ),
     "contentScheme": MessageLookupByLibrary.simpleMessage("Content"),
     "continent": MessageLookupByLibrary.simpleMessage("Continent"),
     "controlSecret": MessageLookupByLibrary.simpleMessage("Control Secret"),
@@ -1689,6 +1692,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Profile modified. Disable auto-update?",
     ),
     "profileImportFailed": m42,
+    "profileImportInvalidContent": MessageLookupByLibrary.simpleMessage(
+      "Import failed: the content is not recognized or is corrupted. Make sure you copied the complete subscription link or node info, then try again",
+    ),
+    "profileImportNetworkFailed": MessageLookupByLibrary.simpleMessage(
+      "Import failed: the network is unreachable or the subscription service is temporarily unavailable. Check your connection and try again",
+    ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),
