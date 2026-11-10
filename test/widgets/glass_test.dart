@@ -69,13 +69,17 @@ void main() {
       // TIER. Rounds ≤ 5 floored every surface at rim ≥ 0.5 /
       // highlight ≥ 0.30, which is precisely what flattened the
       // hierarchy the user rejected — the secondary tier must be
-      // ALLOWED to recede (rim floor 0.40, highlight floor 0.20),
-      // while primary/bar/dialog keep the round-5 floors, and the
-      // primary contour ceiling rises to 0.55 because the primary
-      // pane carries the strongest outline (dark 0.50).
+      // ALLOWED to recede, while primary/bar/dialog keep the
+      // round-5 floors, and the primary contour ceiling rises to
+      // 0.55 because the primary pane carries the strongest
+      // outline (dark 0.50).
+      // Round 7 change: the secondary tier goes quieter still, so
+      // its rim floor drops 0.40 → 0.35 (the dark rim now resolves
+      // to 0.38 — the floor still guards a visible hairline of
+      // edge light); its highlight floor stays 0.20.
       const floors = <GlassTier, (double rim, double highlight)>{
         GlassTier.primary: (0.5, 0.30),
-        GlassTier.secondary: (0.40, 0.20),
+        GlassTier.secondary: (0.35, 0.20),
         GlassTier.bar: (0.5, 0.30),
         GlassTier.dialog: (0.5, 0.30),
       };
@@ -112,8 +116,7 @@ void main() {
       }
     });
 
-    test('hierarchy tiers: primary clearly outweighs secondary (round 6)',
-        () {
+    test('hierarchy tiers: primary clearly outweighs secondary (round 6)', () {
       // The round-6 feature itself, locked: on every axis the user
       // can perceive — fill density, static density, rim light,
       // specular peak, backdrop saturation — the primary tier must
@@ -162,6 +165,32 @@ void main() {
           greaterThan(secondary.contour.a),
           reason: 'contour gap $brightness',
         );
+        // Round 7 structural lock: the glow is a TIER property, not
+        // a parameter delta — the primary tier carries coloured
+        // ambient glow shadows (blue-cyan light thrown under the
+        // pane) and NO other tier carries any. A drift that hands
+        // the glow to every card (or drops it from primary)
+        // reintroduces the single-weight page by construction.
+        expect(
+          primary.glowShadows,
+          isNotEmpty,
+          reason: 'primary must glow $brightness',
+        );
+        for (final shadow in primary.glowShadows) {
+          expect(
+            shadow.color.b,
+            greaterThan(shadow.color.r),
+            reason: 'glow must be blue-cyan, not neutral $brightness',
+          );
+          expect(shadow.blurRadius, greaterThanOrEqualTo(16));
+        }
+        expect(
+          secondary.glowShadows,
+          isEmpty,
+          reason: 'secondary must not glow $brightness',
+        );
+        expect(bar.glowShadows, isEmpty, reason: 'bar tokens no glow');
+        expect(dialog.glowShadows, isEmpty, reason: 'dialog tokens no glow');
         // Bar and dialog between the two on fill density.
         expect(bar.fill.a, greaterThan(secondary.fill.a));
         expect(bar.fill.a, lessThan(primary.fill.a));
@@ -184,7 +213,7 @@ void main() {
     });
 
     test('neutral tokens: untinted fill, tiered body and saturation '
-        '(round 6)', () {
+        '(rounds 6-7)', () {
       // User direction (round 3, kept since): the glass carries no
       // colour of its own — fill is a neutral gray at theme
       // lightness, and tint comes from the backdrop, whose
@@ -194,10 +223,16 @@ void main() {
       // design values — the bands were the flatness. Each tier's
       // fill alpha and saturation are locked to their design value
       // (±0.02) so a tier cannot silently drift toward its neighbour;
-      // neutrality (chroma ≤ 0.03) still holds for every tier.
+      // neutrality (chroma ≤ 0.03) held for every tier.
+      // Round 7 change: neutrality now holds for every tier EXCEPT
+      // primary. Two device rounds proved a neutral primary cannot
+      // outweigh neutral neighbours by alpha alone, so the primary
+      // fill is deliberately DYED blue-cyan — the assertion flips
+      // for that tier: chroma must EXCEED the neutral ceiling and
+      // blue must dominate. The other tiers keep the neutral lock.
       const design = <GlassTier, (double light, double dark, double sat)>{
-        GlassTier.primary: (0.30, 0.30, 1.9),
-        GlassTier.secondary: (0.10, 0.12, 1.35),
+        GlassTier.primary: (0.40, 0.38, 1.9),
+        GlassTier.secondary: (0.06, 0.08, 1.15),
         GlassTier.bar: (0.20, 0.22, 1.7),
         GlassTier.dialog: (0.22, 0.23, 1.6),
       };
@@ -224,11 +259,31 @@ void main() {
             closeTo(isLight ? lightA : darkA, 0.02),
             reason: '$tier fill alpha',
           );
-          expect(
-            chromaOf(tokens.fill),
-            lessThanOrEqualTo(0.03),
-            reason: '$tier fill must be neutral',
-          );
+          if (tier == GlassTier.primary) {
+            // Round 7: the primary fill is dyed blue-cyan on
+            // purpose (see the group comment above).
+            expect(
+              chromaOf(tokens.fill),
+              greaterThan(0.03),
+              reason: 'primary fill must be dyed, not neutral',
+            );
+            expect(
+              tokens.fill.b,
+              greaterThanOrEqualTo(tokens.fill.r),
+              reason: 'primary fill must lean blue',
+            );
+            expect(
+              tokens.fill.b,
+              greaterThanOrEqualTo(tokens.fill.g),
+              reason: 'primary fill must lean blue-cyan',
+            );
+          } else {
+            expect(
+              chromaOf(tokens.fill),
+              lessThanOrEqualTo(0.03),
+              reason: '$tier fill must be neutral',
+            );
+          }
           expect(tokens.saturation, sat, reason: '$tier saturation');
         }
         // Caller-supplied bases (the nav bar passes its card-matching body
@@ -275,17 +330,20 @@ void main() {
       expect(find.byType(CommonCard), findsOneWidget);
     });
 
-    test('static tokens paint the static fill (round 6 tiers)', () {
+    test('static tokens paint the static fill (rounds 6-7 tiers)', () {
       // Round 6 change: the round-5 single static band (0.66–0.82)
       // becomes per-tier bands. Static surfaces are where most list
       // cards live, so the hierarchy must survive with blur off:
       // primary stays near the old dense lid (0.84–0.90, it is a
       // page's main surface and must hold its own over the field),
-      // secondary drops to 0.52–0.66 (receding is the point; the
-      // floor still guards text legibility), bar/dialog between.
+      // secondary drops (receding is the point; the floor still
+      // guards text legibility), bar/dialog between.
+      // Round 7 change: the secondary static body thins again
+      // (0.62/0.56 → 0.56/0.50) as the tier goes quiet, so its band
+      // drops to 0.48–0.58; primary keeps its dyed dense lid.
       const bands = <GlassTier, (double lo, double hi)>{
         GlassTier.primary: (0.84, 0.90),
-        GlassTier.secondary: (0.52, 0.66),
+        GlassTier.secondary: (0.48, 0.58),
         GlassTier.bar: (0.78, 0.82),
         GlassTier.dialog: (0.80, 0.86),
       };
@@ -333,9 +391,7 @@ void main() {
         ),
       );
       expect(find.byType(GlassSurface), findsOneWidget);
-      final surface = tester.widget<GlassSurface>(
-        find.byType(GlassSurface),
-      );
+      final surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
       expect(surface.tokens.tier, GlassTier.primary);
       await tester.pumpWidget(
         _wrap(
@@ -347,6 +403,27 @@ void main() {
         find.byType(GlassSurface),
       );
       expect(secondarySurface.tokens.tier, GlassTier.secondary);
+    });
+
+    testWidgets('selected CommonCard resolves primary with glow (round 7)', (
+      tester,
+    ) async {
+      // Round 7 wiring lock: a selected card is a primary-semantic
+      // surface (the profiles page's current profile) — under glass
+      // it must resolve the primary tier and carry the glow shadows,
+      // not sit at secondary weight under a flat container fill.
+      await tester.pumpWidget(
+        _wrap(
+          const CommonCard(
+            isSelected: true,
+            child: SizedBox(width: 120, height: 60),
+          ),
+          glass: true,
+        ),
+      );
+      final surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
+      expect(surface.tokens.tier, GlassTier.primary);
+      expect(surface.tokens.glowShadows, isNotEmpty);
     });
 
     testWidgets('glass field paints in both brightnesses (round 5)', (

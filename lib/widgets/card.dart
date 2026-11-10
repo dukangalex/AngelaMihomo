@@ -163,6 +163,24 @@ class CommonCard extends StatelessWidget {
   }) {
     final colorScheme = context.colorScheme;
     if (isSelected) {
+      if (glass != null) {
+        // Round 7: a selected card is a primary-semantic surface
+        // (the profiles page's current profile above all). Under
+        // glass it no longer paints the flat secondaryContainer
+        // slab — the round-6 device photos showed exactly that
+        // slab reading as a plain pale card — it blends the
+        // container tint with the primary tier's dyed glass fill,
+        // keeping the selection identity while joining the glass.
+        // The blend leans further into the glass fill for primary
+        // (0.7): in static scopes (the profiles list) the pale static
+        // fill would otherwise be washed out by the container color
+        // and the selected card would fall back to a flat tint.
+        return Color.lerp(
+          colorScheme.secondaryContainer,
+          glass.effectiveFill,
+          glass.tier == GlassTier.primary ? 0.7 : 0.45,
+        );
+      }
       return type == CommonCardType.filled
           ? colorScheme.secondaryContainer.opacity80
           : colorScheme.secondaryContainer;
@@ -182,6 +200,11 @@ class CommonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Round 7: the effective tier — an explicitly claimed tier
+    // wins; a selected card (the page's current choice, a
+    // primary-semantic surface) resolves as primary when the
+    // caller claimed no tier of its own.
+    final effectiveTier = glassTier ?? (isSelected ? GlassTier.primary : null);
     // Glass-surfaced cards take a larger, softer radius (T38 round 3,
     // 20–28 band); flat cards keep the stock 20. Round 6 addendum
     // (Orville curve language): primary-tier cards round further —
@@ -189,7 +212,7 @@ class CommonCard extends StatelessWidget {
     final actualRadius =
         radius ??
         (GlassScope.isActive(context)
-            ? (glassTier == GlassTier.primary ? 30.0 : 24.0)
+            ? (effectiveTier == GlassTier.primary ? 30.0 : 24.0)
             : 20.0);
     var childWidget = child;
 
@@ -223,7 +246,7 @@ class CommonCard extends StatelessWidget {
             context.colorScheme,
             GlassKind.card,
             realtime: GlassScope.isLive(context),
-            tier: glassTier,
+            tier: effectiveTier,
           )
         : null;
     Widget card = OutlinedButton(
@@ -264,6 +287,10 @@ class CommonCard extends StatelessWidget {
               // the dark shadow was already strong).
               color: Colors.black.withValues(alpha: isLight ? 0.07 : 0.25),
             ),
+            // Round 7: the primary tier's coloured ambient glow
+            // rides under the neutral shadow — only primary tokens
+            // carry glow shadows, so every other card is untouched.
+            if (glass != null) ...glass.glowShadows,
           ],
         ),
         child: card,

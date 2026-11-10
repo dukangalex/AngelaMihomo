@@ -304,7 +304,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     // up from 12 to 16 so card groups breathe as distinct bands instead of
     // one tight mosaic; content and tile order are user data and stay
     // untouched.
-    final spacing = 16.mAp;
+    // Round 7 (Orville spaciousness): the home grid opens one more
+    // notch, 16 → 20, with the page margin below going 20 → 24 —
+    // numbers only, home page only; the looser field is what lets
+    // the primary tier's glow shadows land without crowding the
+    // neighbouring panes.
+    final spacing = 20.mAp;
     final sizes = ref.watch(
       appSettingProvider.select(
         (state) => system.isAndroid
@@ -371,10 +376,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   ),
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(
-                      20,
-                      20 + rise,
-                      20,
-                      20 + bottomReserve,
+                      24,
+                      24 + rise,
+                      24,
+                      24 + bottomReserve,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

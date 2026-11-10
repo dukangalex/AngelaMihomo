@@ -130,6 +130,7 @@ class GlassTokens {
     required this.saturation,
     required this.contour,
     this.realtime = true,
+    this.glowShadows = const [],
   });
 
   /// Hierarchy tier these tokens were resolved for (round 6).
@@ -171,6 +172,16 @@ class GlassTokens {
   /// `realtime: false`: they keep the neutral fill, bright rim and larger
   /// radius of the glass language but paint [staticFill] and never blur.
   final bool realtime;
+
+  /// Coloured ambient glow shadows painted UNDER the surface
+  /// (round 7). Only the primary tier carries them: two layers of
+  /// soft blue-cyan light that lift the page's main surface off the
+  /// field, so the hierarchy is carried by the primary stepping
+  /// forward — not by every tier pushing harder. All other tiers
+  /// resolve to an empty list. The shadows live on the tokens
+  /// (outside [GlassSurface]'s clip) and are consumed by the card
+  /// decoration that wraps the surface.
+  final List<BoxShadow> glowShadows;
 
   bool get blur => GlassEffects.blurEnabled && realtime;
 
@@ -237,51 +248,108 @@ class GlassTokens {
       const Color(0xFF7DD3FC),
       0.15,
     )!;
+    // Round 7 primary bodies: the main surface is the ONE dyed pane
+    // on the page. Rounds 3–6 kept every fill neutral and tried to
+    // separate the tiers by alpha alone; two real-device rounds
+    // showed the primary card still weighing the same as its
+    // neighbours. The primary fill body now leans into azure (pale
+    // sky in light, deep field azure in dark) and its rim leans
+    // further into bright cyan, so the main card is blue-cyan glass,
+    // not a denser slice of the same grey glass.
+    final fillBody = effectiveTier == GlassTier.primary
+        ? Color.lerp(
+            body,
+            isLight ? const Color(0xFF8EC9F2) : const Color(0xFF17456E),
+            isLight ? 0.45 : 0.50,
+          )!
+        : body;
+    final staticBodyPrimary = Color.lerp(
+      body,
+      isLight ? const Color(0xFF8EC9F2) : const Color(0xFF1B3A5F),
+      isLight ? 0.72 : 0.60,
+    )!;
+    final rimPrimary = Color.lerp(rimBase, const Color(0xFF38E0F8), 0.35)!;
+    // Round 7 primary glow: a wide, soft blue-cyan ambient shadow
+    // plus a nearer lift — the coloured light the main card throws
+    // onto the field beneath it (the Orville "soft tech glow").
+    final glowShadows = effectiveTier == GlassTier.primary
+        ? <BoxShadow>[
+            BoxShadow(
+              color: const Color(
+                0xFF38BDF8,
+              ).withValues(alpha: isLight ? 0.22 : 0.20),
+              blurRadius: 36,
+              offset: const Offset(0, 14),
+            ),
+            BoxShadow(
+              color: const Color(
+                0xFF38BDF8,
+              ).withValues(alpha: isLight ? 0.20 : 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ]
+        : const <BoxShadow>[];
     // Dark contour: faint in light (the bright field separates the
     // pane already), stronger in dark where panes need the outline.
     // Round 6: the contour joins the hierarchy — primary panes carry
     // the strongest outline, secondary panes the faintest.
+    // Round 7: the secondary contour thins further (a hairline only)
+    // as the tier goes quiet.
     final contour = Colors.black.withValues(
       alpha: switch (effectiveTier) {
         GlassTier.primary => isLight ? 0.16 : 0.50,
-        GlassTier.secondary => isLight ? 0.07 : 0.30,
+        GlassTier.secondary => isLight ? 0.06 : 0.26,
         GlassTier.bar => isLight ? 0.12 : 0.45,
         GlassTier.dialog => isLight ? 0.12 : 0.45,
       },
     );
     return switch (effectiveTier) {
-      // Round 6 tier table (fill / staticFill alphas are light/dark).
-      // The gaps between tiers ARE the feature — the round-5 build
+      // Tier table (fill / staticFill alphas are light/dark). The
+      // gaps between tiers ARE the feature — the round-5 build
       // failed the user's eye because card and dialog sat within
-      // 0.03 of each other. Primary steps clearly up from the
-      // round-5 card values (fill 0.15–0.17 → 0.30, saturation
-      // 1.6 → 1.9, rim and specular at their highest), secondary
-      // steps clearly down (fill → 0.10/0.12, saturation → 1.35,
-      // dimmest rim and contour) so it recedes behind the primary;
-      // bar and dialog keep round-5-class weight, dialog at the
-      // dense end because it floats over a dimmed barrier and real
-      // content (and keeps the most blur, sigma 13 — the round-5
-      // reference fitting: heavy blur is what frosted plastic does,
-      // so no tier goes back to the round-4 14–16 band).
+      // 0.03 of each other. Round 6 separated the tiers by alpha
+      // and saturation alone and the real device still read the
+      // primary card at near-secondary weight, so round 7 changes
+      // the structure, not the deltas: the primary tier is dyed
+      // blue-cyan and carries coloured glow shadows (per-tier
+      // values in the branches below), the secondary tier goes
+      // quieter still; bar and dialog keep their round-6 weight,
+      // dialog at the dense end because it floats over a dimmed
+      // barrier and real content (and keeps the most blur,
+      // sigma 13 — the round-5 reference fitting: heavy blur is
+      // what frosted plastic does, so no tier goes back to the
+      // round-4 14–16 band).
+      // Round 7 primary: dyed azure body (see fillBody above), a
+      // brighter cyan rim, the highest specular, and the glow
+      // shadows no other tier carries. The fill also steps up
+      // (0.30 → 0.40/0.38): denser AND coloured, not just denser.
       GlassTier.primary => GlassTokens(
         tier: effectiveTier,
         sigma: 12,
-        fill: body.withValues(alpha: isLight ? 0.30 : 0.30),
-        staticFill: staticBody.withValues(alpha: isLight ? 0.88 : 0.86),
-        rim: rimBase.withValues(alpha: isLight ? 1.0 : 0.72),
-        highlightPeak: isLight ? 0.68 : 0.50,
+        fill: fillBody.withValues(alpha: isLight ? 0.40 : 0.38),
+        staticFill: staticBodyPrimary.withValues(alpha: isLight ? 0.88 : 0.86),
+        rim: rimPrimary.withValues(alpha: isLight ? 1.0 : 0.85),
+        highlightPeak: isLight ? 0.72 : 0.55,
         saturation: 1.9,
         contour: contour,
         realtime: realtime,
+        glowShadows: glowShadows,
       ),
+      // Round 7 secondary goes quiet: thinner fill (0.10/0.12 →
+      // 0.06/0.08), less backdrop saturation (1.35 → 1.15), dimmer
+      // rim and specular, thinner static body. The tier contrast
+      // must come from the primary stepping forward, not from the
+      // secondary also pushing — a quiet secondary is what lets
+      // the primary glow read at all.
       GlassTier.secondary => GlassTokens(
         tier: effectiveTier,
         sigma: 8,
-        fill: body.withValues(alpha: isLight ? 0.10 : 0.12),
-        staticFill: staticBody.withValues(alpha: isLight ? 0.62 : 0.56),
-        rim: rimBase.withValues(alpha: isLight ? 0.80 : 0.42),
-        highlightPeak: isLight ? 0.36 : 0.22,
-        saturation: 1.35,
+        fill: body.withValues(alpha: isLight ? 0.06 : 0.08),
+        staticFill: staticBody.withValues(alpha: isLight ? 0.56 : 0.50),
+        rim: rimBase.withValues(alpha: isLight ? 0.65 : 0.38),
+        highlightPeak: isLight ? 0.28 : 0.20,
+        saturation: 1.15,
         contour: contour,
         realtime: realtime,
       ),
@@ -511,9 +579,7 @@ class GlassSurface extends StatelessWidget {
                   stops: const [0, 0.14, 0.38],
                   colors: [
                     Colors.white.withValues(alpha: tokens.highlightPeak),
-                    Colors.white.withValues(
-                      alpha: tokens.highlightPeak * 0.3,
-                    ),
+                    Colors.white.withValues(alpha: tokens.highlightPeak * 0.3),
                     Colors.white.withValues(alpha: 0),
                   ],
                 ),
@@ -686,6 +752,12 @@ class _GlassFieldPainter extends CustomPainter {
   static const _lightBlooms = <(double, double, double, Color)>[
     // Sky blue, top right — the dominant daylight bloom.
     (0.88, 0.04, 0.95, Color(0x4D5EA0FF)),
+    // Sky halo, top centre (round 7): a broad azure wash across
+    // the whole top of the field, so the upper glass surfaces
+    // always have colour behind them to refract — in round 6 the
+    // blooms sat in the corners and the middle of the page still
+    // faded to near-white.
+    (0.5, -0.02, 1.15, Color(0x5956B4FF)),
     // Brand teal, mid left.
     (0.0, 0.36, 0.75, Color(0x2B14B8A6)),
     // Azure, lower right (Orville addendum: replaces the round-5
@@ -698,6 +770,10 @@ class _GlassFieldPainter extends CustomPainter {
   static const _darkBlooms = <(double, double, double, Color)>[
     // Deep blue, top right.
     (0.90, 0.03, 1.0, Color(0x522563EB)),
+    // Cyan glow, top centre (round 7): the night field's crown
+    // light — deep space blue-black below, blue-cyan glow above,
+    // the same top-weighted language as the light theme.
+    (0.5, -0.02, 1.15, Color(0x4038BDF8)),
     // Teal, mid left.
     (0.0, 0.38, 0.80, Color(0x330D9488)),
     // Blue, lower right (Orville addendum: replaces violet — deep
@@ -734,6 +810,34 @@ class _GlassFieldPainter extends CustomPainter {
         ).createShader(circle);
       canvas.drawRect(rect, paint);
     }
+    // Horizon band (round 7): one subtle horizontal band of light
+    // across the upper field — the bright "horizon line" the
+    // Orville bridge views carry — peaking around a fifth of the
+    // height and dissolving both ways, so the glass in the top
+    // half of the page always sits over luminous colour while the
+    // lower half stays clean and fades out. A soft gradient rect,
+    // no edge, nothing that could ghost through a pane as a shape.
+    final bandRect = Rect.fromLTRB(
+      0,
+      size.height * 0.06,
+      size.width,
+      size.height * 0.38,
+    );
+    final bandPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        stops: const [0, 0.45, 1],
+        colors: [
+          (isLight ? const Color(0xFFCDE9FF) : const Color(0xFF7DD3FC))
+              .withValues(alpha: 0),
+          (isLight ? const Color(0xFFCDE9FF) : const Color(0xFF7DD3FC))
+              .withValues(alpha: isLight ? 0.38 : 0.16),
+          (isLight ? const Color(0xFFCDE9FF) : const Color(0xFF7DD3FC))
+              .withValues(alpha: 0),
+        ],
+      ).createShader(bandRect);
+    canvas.drawRect(bandRect, bandPaint);
   }
 
   @override
