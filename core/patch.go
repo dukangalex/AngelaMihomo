@@ -1008,7 +1008,10 @@ func patchProxyGroups(raw *config.RawConfig, params *PatchParams) {
 				}
 				useList, useIsList := use.([]any)
 				if len(filtered) == 0 && (!hasUse || (useIsList && len(useList) == 0)) {
-					filtered = append(filtered, "DIRECT")
+					// T86 fail-closed: a group emptied by the node
+					// exclusion filter must refuse traffic, never
+					// silently turn into a direct connection.
+					filtered = append(filtered, "REJECT")
 				}
 				group["proxies"] = filtered
 			}
