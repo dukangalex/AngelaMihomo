@@ -308,6 +308,42 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
     );
   }
 
+  /// T84: the health-check URL row opens the shared
+  /// [TestUrlPickerDialog] — the same preset list and picker widget as
+  /// the global test-URL setting. Only the save semantics differ: the
+  /// selection is committed as this group's override diff (and picking
+  /// the subscription's own value again removes the override, via
+  /// [_commit]'s diff). No global-only controls (e.g. the "override
+  /// config" switch) appear here.
+  Widget _urlRow({
+    required String label,
+    required String info,
+    required String value,
+    required String subscriptionValue,
+    required bool overridden,
+    required ValueChanged<String> onChanged,
+    required VoidCallback onReset,
+  }) {
+    return ListItem(
+      title: InfoTitle(text: label, info: info),
+      subtitle: Text(value.isEmpty ? appLocalizations.notSet : value),
+      trailing: overridden ? _overrideTag(onReset) : null,
+      onTap: () async {
+        await globalState.showCommonDialog(
+          child: TestUrlPickerDialog(
+            title: label,
+            currentUrl: value,
+            fieldLabel: label,
+            customResetValue: subscriptionValue.isEmpty
+                ? null
+                : subscriptionValue,
+            onSelected: onChanged,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _nameRow({
     required String label,
     required String info,
@@ -380,10 +416,11 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
           title: appLocalizations.groupSectionHealthCheck,
           isFirst: !_scriptActive,
           items: [
-            _textRow(
+            _urlRow(
               label: appLocalizations.groupParamUrl,
               info: appLocalizations.groupParamUrlInfo,
               value: values.url,
+              subscriptionValue: subscription.url,
               overridden: values.url != subscription.url,
               onChanged: (v) => _commit(values.copyWith(url: v)),
               onReset: () =>

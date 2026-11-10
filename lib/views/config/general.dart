@@ -572,91 +572,52 @@ class _TestUrlDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final overrideTestUrl = ref.watch(overrideTestUrlProvider);
-    final isPresetUrl = presetTestUrls.contains(currentUrl);
+    // Notifier objects stay valid after this dialog is popped, which the
+    // shared picker's custom-URL path relies on: it reports the
+    // selection after dismissing itself to show the input dialog.
+    final settingNotifier = ref.read(appSettingProvider.notifier);
+    final overrideNotifier = ref.read(overrideTestUrlProvider.notifier);
 
-    return CommonDialog(
+    void handleSelected(String url) {
+      settingNotifier.updateState((state) => state.copyWith(testUrl: url));
+      // `overrideTestUrl` is the watched value from this build; toggling
+      // the switch rebuilds this dialog and refreshes the closure, and
+      // the notifier exposes no readable `value` getter.
+      if (overrideTestUrl) {
+        globalState.appController.applyProfileDebounce(silence: true);
+      }
+    }
+
+    // T84: the picker body is the shared TestUrlPickerDialog (also used
+    // by the group editor's health-check URL row). The global context
+    // only adds its "override config" switch as the header and its own
+    // save semantics (global testUrl + conditional re-apply).
+    return TestUrlPickerDialog(
       title: appLocalizations.testUrl,
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 14),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Override switch
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  appLocalizations.overrideTestUrl,
-                  style: context.textTheme.bodyMedium,
-                ),
-                Switch(
-                  value: overrideTestUrl,
-                  onChanged: (bool value) async {
-                    ref.read(overrideTestUrlProvider.notifier).value = value;
-                    globalState.appController.applyProfileDebounce(
-                      silence: true,
-                    );
-                  },
-                ),
-              ],
+      currentUrl: currentUrl,
+      fieldLabel: appLocalizations.testUrl,
+      customResetValue: defaultTestUrl,
+      onSelected: handleSelected,
+      header: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              appLocalizations.overrideTestUrl,
+              style: context.textTheme.bodyMedium,
             ),
-          ),
-          const SizedBox(height: 8),
-          // URL list
-          for (final url in presetTestUrls)
-            OptionItem(
-              text: url,
-              selected: currentUrl == url,
-              onTap: () async {
-                ref
-                    .read(appSettingProvider.notifier)
-                    .updateState((state) => state.copyWith(testUrl: url));
-                if (ref.read(overrideTestUrlProvider)) {
-                  globalState.appController.applyProfileDebounce(silence: true);
-                }
-                if (context.mounted) {
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
+            Switch(
+              value: overrideTestUrl,
+              onChanged: (bool value) async {
+                overrideNotifier.value = value;
+                globalState.appController.applyProfileDebounce(
+                  silence: true,
+                );
               },
             ),
-          OptionItem(
-            text: appLocalizations.customUrl,
-            selected: !isPresetUrl,
-            onTap: () async {
-              final notifier = ref.read(appSettingProvider.notifier);
-              final overrideTestUrl = ref.read(overrideTestUrlProvider);
-              Navigator.of(context, rootNavigator: true).pop();
-              final customUrl = await globalState.showCommonDialog<String>(
-                child: InputDialog(
-                  title: appLocalizations.customUrl,
-                  value: isPresetUrl ? '' : currentUrl,
-                  resetValue: defaultTestUrl,
-                  validator: (String? inputValue) {
-                    if (inputValue == null || inputValue.isEmpty) {
-                      return appLocalizations.emptyTip(
-                        appLocalizations.testUrl,
-                      );
-                    }
-                    if (!inputValue.isHttpUrl) {
-                      return appLocalizations.urlTip(appLocalizations.testUrl);
-                    }
-                    return null;
-                  },
-                ),
-              );
-
-              if (customUrl != null) {
-                notifier.updateState(
-                  (state) => state.copyWith(testUrl: customUrl),
-                );
-                if (overrideTestUrl) {
-                  globalState.appController.applyProfileDebounce(silence: true);
-                }
-              }
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
