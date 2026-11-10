@@ -1034,8 +1034,18 @@ class GlobalState {
       'geo-auto-update': patchConfig.geoAutoUpdate,
       'geo-update-interval': patchConfig.geoUpdateInterval,
       'bind-address': patchConfig.bindAddress,
-      'lan-allowed-ips': patchConfig.lanAllowedIps,
-      'lan-disallowed-ips': patchConfig.lanDisallowedIps,
+      // T79: never send empty LAN lists. An explicit empty
+      // lan-allowed-ips overwrites the kernel's allow-all default in
+      // applyPatch, and the vendored listener gate then drops every
+      // inbound connection (which silently killed subscription
+      // updates through the mixed port). Same guard as
+      // skip-auth-prefixes below: unset means "do not override".
+      'lan-allowed-ips': patchConfig.lanAllowedIps.isNotEmpty
+          ? patchConfig.lanAllowedIps
+          : null,
+      'lan-disallowed-ips': patchConfig.lanDisallowedIps.isNotEmpty
+          ? patchConfig.lanDisallowedIps
+          : null,
       'profile': {'store-fake-ip': patchConfig.storeFakeIp},
       if (system.isDesktop &&
           patchConfig.interfaceName != null &&
