@@ -24,7 +24,7 @@
 | L1 | Script | The user script's result over the subscription (bridge scripted-config channel), applied above L0 and before the App patch. |
 | L2 | App settings section takeover | The App model's (ClashConfig) dns / ntp / sniffer / experimental sections take over **wholesale**: when the App section is sent, the subscription section plays no part. General scalars likewise come from the App model. There are no gate flags. |
 | L3 | Profile-level overrides | Overrides belonging to the current profile only: policy-group editor overrides (group-overrides), node exclude filters, etc. |
-| L4 | China-adaptation derivation | System-explicit options (interception switches) derive the runtime mode and rule tail: with any interception item on, mode is forced to rule with a synthesized MATCH tail. Mode may only be derived in this layer. |
+| L4 | China-adaptation derivation | System-explicit options (interception switches) derive the runtime mode and rule tail: with any interception item on, mode is forced to rule with a synthesized MATCH tail. Mode may only be derived in this layer. In rule mode with chinaDirect on, the China-routing invariant also applies (T87): the China-direct rules always precede every routable profile rule, and the final MATCH must resolve to a group that carries a proxy choice — a bridge-side tail guard rewrites or appends it when the MATCH is missing or points at a builtin action, a direct-only group, or a disabled group; a valid profile MATCH is kept verbatim. |
 | L5 | Generation guards | Final validity checks and clamping (port conflicts, empty-value fallback, invalid-item removal). Guards only; no new semantics. |
 | L6 | Bridge normalization | Platform normalization just before handing the config to the kernel (registry in §6). Runs last, never writes back; App-side stored values are unchanged. |
 
@@ -50,6 +50,7 @@ state back.
 | 12 | L6 platform transforms run last | They only affect the copy handed to the kernel, never the App model or the subscription. |
 | 13 | Hot-update projection ⊆ setup parameters, same source | Hot-update (UpdateParams) fields carry the same values as setup; fields outside the projection take effect at the timing annotated per §7 (batch 3, P-5). |
 | 14 | Defaults are defined only in the App model | Bridge base defaults only fill keys absent from the model JSON (unreachable when the model serializes fully); no second default site (batch 3, R-5). |
+| 15 | China-direct rules > every routable profile rule; MATCH tail guard > an unqualified profile MATCH | Rule mode with chinaDirect on only (T87): same-category profile rules are replaced and other categories sort after the China-direct pair; when the MATCH target carries no proxy choice (builtin action / direct-only group / disabled group) or MATCH is missing, the tail guard rewrites/appends the first proxy-carrying group. LAN/private direct routing is an address property and is out of scope. |
 
 ## 4. Section takeover and the inheritance migration (batch 3)
 

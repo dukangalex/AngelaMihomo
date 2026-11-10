@@ -240,6 +240,25 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 		}
 	}
 
+	// T87: China-routing invariant (rule mode, China adaptation on).
+	// When the system-explicit rule set carries the China-direct pair,
+	// the assembled rule list must end at a proxy choice: the kernel
+	// falls back to DIRECT for any connection no rule matches
+	// (tunnel match()), so a subscription that omits MATCH, points it
+	// at DIRECT, or routes it through a disabled/direct-only group
+	// would silently send non-China traffic direct. The China-direct
+	// rules themselves already sit ahead of every surviving profile
+	// rule via replaceExplicitRuleCategories; only the tail needs a
+	// guard, and it runs last so it sees the final group universe and
+	// the disabled-group retargeting above.
+	if chinaDirectArmed(params.SystemExplicitRules) {
+		disabledNames := make(map[string]bool, len(params.DisabledGroups))
+		for _, name := range params.DisabledGroups {
+			disabledNames[name] = true
+		}
+		rules = enforceChinaRoutingTail(rules, raw, disabledNames)
+	}
+
 	global := ""
 	if params.SelectGlobal {
 		global = selectGlobalTarget(raw.ProxyGroup, rules)
@@ -1950,6 +1969,107 @@ func patchProxies(raw *config.RawConfig) {
 			realityOpts["short-id"] = strconv.FormatUint(shortId, 10)
 		}
 	}
+}
+
+// chinaDirectArmed reports whether the system-explicit additions
+// carry the China-direct pair (GEOSITE geolocation-cn + GEOIP CN,
+// both to DIRECT). The pair is only emitted for rule mode with the
+// chinaDirect option on (direct exceptions are never emitted for the
+// synthesized global/direct modes), so its presence is the exact
+// condition under which the T87 invariant is in force.
+func chinaDirectArmed(additions []string) bool {
+	site, ip := false, false
+	for _, rule := range additions {
+		parsed := parseRule(rule)
+		if !parsed.hasTarget || !strings.EqualFold(parsed.target, "DIRECT") {
+			continue
+		}
+		switch {
+		case parsed.action == "GEOSITE" && strings.EqualFold(parsed.content, "geolocation-cn"):
+			site = true
+		case parsed.action == "GEOIP" && strings.EqualFold(parsed.content, "CN"):
+			ip = true
+		}
+	}
+	return site && ip
+}
+
+// enforceChinaRoutingTail guarantees the first MATCH rule of the
+// assembled list resolves to a proxy choice. A MATCH whose target
+// already carries a proxy choice is kept verbatim (the subscription's
+// own tail is authoritative when it satisfies the invariant); a MATCH
+// pointing at a builtin action (DIRECT/REJECT/PASS/...), at a group
+// that carries no proxy choice, or no MATCH at all is rewritten /
+// appended with the first proxy-carrying group in configuration
+// order — the same "first eligible group is the main selector"
+// convention the chain patch uses (T85). When no group carries a
+// proxy choice there is nothing lawful to point at and the list is
+// left untouched. Rules after the first MATCH are unreachable and
+// irrelevant to the guarantee.
+func enforceChinaRoutingTail(rules []string, raw *config.RawConfig, disabled map[string]bool) []string {
+	idx := newProxyChoiceIndex(raw, raw.ProxyGroup)
+	target := ""
+	for _, group := range raw.ProxyGroup {
+		name, ok := groupName(group)
+		if ok && !disabled[name] && idx.carriesProxyChoice(group) {
+			target = name
+			break
+		}
+	}
+	if target == "" {
+		return rules
+	}
+	for i, rule := range rules {
+		parsed := parseRule(rule)
+		if parsed.action != "MATCH" {
+			continue
+		}
+		if matchTargetCarriesProxy(parsed.target, idx, disabled) {
+			return rules
+		}
+		rules[i] = "MATCH," + target
+		return rules
+	}
+	return append(rules, "MATCH,"+target)
+}
+
+// matchTargetCarriesProxy classifies a MATCH target. Builtin actions
+// never qualify; a group qualifies when it carries a proxy choice
+// (T85 predicate — a selector whose members are all direct is a
+// direct route wearing a group's name); a leaf proxy qualifies when
+// its type is not direct-capable. The kernel-synthesized GLOBAL
+// (absent from the raw group list) qualifies when any real group
+// carries a proxy choice. Unknown names follow the chain predicate's
+// standing assumption: they resolve against proxy providers at
+// runtime and count as proxy evidence.
+func matchTargetCarriesProxy(target string, idx *proxyChoiceIndex, disabled map[string]bool) bool {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return false
+	}
+	for _, name := range protectedProxyNames {
+		if target == name {
+			return false
+		}
+	}
+	if disabled[target] {
+		return false
+	}
+	if group, isGroup := idx.groups[target]; isGroup {
+		return idx.carriesProxyChoice(group)
+	}
+	if typ, isProxy := idx.proxyTypes[target]; isProxy {
+		return typ != "direct" && typ != "pass" && typ != "compatible"
+	}
+	if target == "GLOBAL" {
+		for _, group := range idx.groups {
+			if idx.carriesProxyChoice(group) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }
 
 func selectGlobalTarget(groups []map[string]any, rules []string) string {
