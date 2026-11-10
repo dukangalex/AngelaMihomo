@@ -99,6 +99,7 @@ flutter:
   uses-material-design: true
   shaders:
     - shaders/nav_refraction.frag
+    - shaders/glass_edge_refraction.frag
   assets:
     - assets/data/
     - assets/fonts/

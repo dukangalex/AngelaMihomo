@@ -2,6 +2,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
 import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/glass_prototype.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -94,6 +95,7 @@ class CommonCard extends StatelessWidget {
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
     this.glassTier,
+    this.shaderGlass = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -115,6 +117,15 @@ class CommonCard extends StatelessWidget {
   /// denser and brighter than the page's secondary cards, matching
   /// the home page's primary/secondary contrast.
   final GlassTier? glassTier;
+
+  /// T83 prototype opt-in: render this card's glass through the
+  /// shader edge-refraction prototype surface ([PrototypeGlassSurface])
+  /// instead of [GlassSurface] — a clear face with refraction only in
+  /// the bevel band. Only the home page's main status card opts in;
+  /// every other surface keeps the production glass, and the
+  /// prototype surface itself falls back to [GlassSurface] whenever
+  /// the shader path is unavailable.
+  final bool shaderGlass;
 
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
@@ -249,6 +260,10 @@ class CommonCard extends StatelessWidget {
             tier: effectiveTier,
           )
         : null;
+    // T83 prototype: the opted-in card paints no fill of its own —
+    // the prototype surface supplies the pane body (the shader's
+    // backdrop sample, or the fallback fill layer).
+    final useShaderGlass = shaderGlass && glass != null && !isSelected;
     Widget card = OutlinedButton(
       onLongPress: onLongPress,
       clipBehavior: clipBehavior,
@@ -258,7 +273,9 @@ class CommonCard extends StatelessWidget {
         iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
         iconSize: WidgetStateProperty.all(20),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states, glass: glass),
+          (states) => useShaderGlass
+              ? Colors.transparent
+              : getBackgroundColor(context, states, glass: glass),
         ),
         side: WidgetStateProperty.resolveWith(
           (states) => getBorderSide(context, states, glass: glass),
@@ -271,7 +288,14 @@ class CommonCard extends StatelessWidget {
     );
 
     if (glass != null) {
-      card = GlassSurface(shape: shape, tokens: glass, child: card);
+      card = useShaderGlass
+          ? PrototypeGlassSurface(
+              shape: shape,
+              tokens: glass,
+              radius: actualRadius,
+              child: card,
+            )
+          : GlassSurface(shape: shape, tokens: glass, child: card);
     }
 
     if (elevated) {

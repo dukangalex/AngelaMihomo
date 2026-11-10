@@ -27,6 +27,9 @@ class OutboundMode extends StatelessWidget {
             // tier — the yardstick every other page's hierarchy is
             // measured against.
             glassTier: GlassTier.primary,
+            // T83 prototype: the home main status card is the one
+            // surface rendered by the shader edge-refraction glass.
+            shaderGlass: true,
             info: Info(
               label: appLocalizations.outboundMode,
               iconData: Icons.call_split_sharp,
@@ -122,6 +125,8 @@ class OutboundModeV2 extends StatelessWidget {
       child: CommonCard(
         // T64 round 6: primary tier — see OutboundMode above.
         glassTier: GlassTier.primary,
+        // T83 prototype: shader edge-refraction glass — see above.
+        shaderGlass: true,
         padding: EdgeInsets.zero,
         child: Column(
           children: [
