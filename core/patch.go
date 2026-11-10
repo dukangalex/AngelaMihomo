@@ -504,7 +504,11 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 			applyDnsNodeOverride(raw, &original, hostOrder)
 		}
 	}
-	raw.DNS.FallbackFilter.GeoSite = []string{}
+	// T81 S-1: fallback-filter.geosite used to be zeroed here
+	// unconditionally, silently discarding whatever the subscription
+	// or the settings model wrote. The field now takes effect exactly
+	// as its single surviving writer (SUB, or SET when the DNS section
+	// is taken over) specifies.
 
 	if !patchForAndroid {
 		return nil

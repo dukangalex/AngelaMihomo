@@ -269,6 +269,79 @@ func TestApplyPatchDnsInjection(t *testing.T) {
 	}
 }
 
+// T81 S-1 regression: patchDns used to zero dns.fallback-filter.geosite
+// unconditionally, so neither the subscription's nor the settings
+// model's value ever took effect. The field must survive the patch in
+// both DNS ownership modes. On the pre-fix code both cases fail (the
+// list comes back empty).
+func TestApplyPatchDnsFallbackFilterGeoSiteSurvives(t *testing.T) {
+	// Subscription-owned DNS (enabled, no override): SUB value wins.
+	sub := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback: ['8.8.8.8'], fallback-filter: {geosite: ['gfw']}}\n")
+	if _, err := applyPatch(sub, patchParams(t, `{}`)); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(sub.DNS.FallbackFilter.GeoSite, []string{"gfw"}) {
+		t.Errorf("subscription geosite should survive: %v", sub.DNS.FallbackFilter.GeoSite)
+	}
+
+	// Settings-owned DNS (override on): the model's geosite wins.
+	dns, _ := json.Marshal(map[string]any{
+		"enable":          true,
+		"nameserver":      []string{"1.1.1.1"},
+		"fallback-filter": map[string]any{"geosite": []string{"cn"}},
+	})
+	params := patchParams(t, `{}`)
+	params.Dns = dns
+	params.OverrideDns = true
+	overridden := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback-filter: {geosite: ['gfw']}}\n")
+	if _, err := applyPatch(overridden, params); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(overridden.DNS.FallbackFilter.GeoSite, []string{"cn"}) {
+		t.Errorf("settings geosite should survive takeover: %v", overridden.DNS.FallbackFilter.GeoSite)
+	}
+}
+
+// T81 C-2 regression: with override-test-url on (the default), the
+// bridge rewrote every group's url to the App test address AFTER
+// applyGroupOverrides, silently stomping a url the user set explicitly
+// in the group editor. Explicit editor urls must win; groups without
+// one keep following the App test address. On the pre-fix code the
+// first assertion fails (Main's url comes back as the App test URL).
+func TestPrepareSetupGroupOverrideURLWinsOverTestURL(t *testing.T) {
+	dir := t.TempDir()
+	profile := filepath.Join(dir, "profile.yaml")
+	content := "proxies:\n  - {name: A, type: ss, server: a.example.com, port: 1, cipher: aes-128-gcm, password: p}\n" +
+		"proxy-groups:\n" +
+		"  - {name: Main, type: url-test, proxies: [A], url: 'https://sub.example.com/204', interval: 300}\n" +
+		"  - {name: Other, type: url-test, proxies: [A], url: 'https://sub.example.com/other', interval: 300}\n" +
+		"rules:\n  - MATCH,Main\n"
+	if err := os.WriteFile(profile, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	setup := defaultSetupParams()
+	setup.ProfilePath = profile
+	setup.OverrideTestUrl = true
+	setup.TestURL = "https://app.example.com/test"
+	setup.Patch = patchParams(t, `{"group-overrides":{"Main":{"url":"https://editor.example.com/health"}}}`)
+	prepared, err := prepareSetup(setup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	urls := map[string]string{}
+	for _, group := range prepared.rawCfg.ProxyGroup {
+		name, _ := group["name"].(string)
+		url, _ := group["url"].(string)
+		urls[name] = url
+	}
+	if urls["Main"] != "https://editor.example.com/health" {
+		t.Errorf("explicit editor url must win over the App test url: got %q", urls["Main"])
+	}
+	if urls["Other"] != "https://app.example.com/test" {
+		t.Errorf("group without an explicit url keeps the App test url: got %q", urls["Other"])
+	}
+}
+
 func TestPrepareSetupReuse(t *testing.T) {
 	dir := t.TempDir()
 	profile := filepath.Join(dir, "profile.yaml")

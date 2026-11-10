@@ -505,7 +505,26 @@ func prepareSetup(params *SetupParams) (*preparedSetup, error) {
 	}
 
 	if params.OverrideTestUrl && rawCfg.ProxyGroup != nil {
+		// T81 C-2: a group whose url the user set explicitly in the
+		// group editor (group-overrides) keeps that url. The global
+		// test-url rewrite used to run after applyGroupOverrides and
+		// silently stomped the editor's value under the default-on
+		// "override test url" switch, so the edited url never took
+		// effect. Groups without an explicit override follow the App
+		// test address exactly as before.
+		var explicitURL map[string]bool
+		if params.Patch != nil && len(params.Patch.GroupOverrides) > 0 {
+			explicitURL = make(map[string]bool, len(params.Patch.GroupOverrides))
+			for name, patch := range params.Patch.GroupOverrides {
+				if _, ok := patch["url"]; ok {
+					explicitURL[name] = true
+				}
+			}
+		}
 		for _, group := range rawCfg.ProxyGroup {
+			if name, _ := group["name"].(string); explicitURL[name] {
+				continue
+			}
 			group["url"] = params.TestURL
 		}
 	}

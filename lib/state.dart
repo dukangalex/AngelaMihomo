@@ -1046,7 +1046,16 @@ class GlobalState {
       'lan-disallowed-ips': patchConfig.lanDisallowedIps.isNotEmpty
           ? patchConfig.lanDisallowedIps
           : null,
-      'profile': {'store-fake-ip': patchConfig.storeFakeIp},
+      // T81 R-1a: store-selected is explicitly off so the kernel
+      // cachefile never persists group selections. The App's
+      // Profile.selectedMap is the single authority for selections
+      // (ForceSet after every setup); with the kernel cache also
+      // storing, the two could fork — selections made in an external
+      // controller were silently resurrected/reverted across setups.
+      'profile': {
+        'store-fake-ip': patchConfig.storeFakeIp,
+        'store-selected': false,
+      },
       if (system.isDesktop &&
           patchConfig.interfaceName != null &&
           patchConfig.interfaceName!.isNotEmpty)

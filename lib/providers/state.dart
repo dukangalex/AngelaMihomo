@@ -178,7 +178,16 @@ UpdateParams updateParams(Ref ref) {
         ),
         allowLan: state.allowLan,
         findProcessMode: state.findProcessMode,
-        mode: state.mode,
+        // T81 C-1: the hot-update channel must never send the user's
+        // literal mode. Setup derives the core's run mode through
+        // effectiveRuntimeMode (interception on + global/direct runs
+        // as rule with a synthesized MATCH tail); sending the literal
+        // value here flipped the core back and silently disabled the
+        // interception rules until the next full setup.
+        mode: effectiveRuntimeMode(
+          SystemExplicitStore.instance.value,
+          state.mode,
+        ),
         logLevel: state.logLevel,
         ipv6: state.ipv6,
         tcpConcurrent: state.tcpConcurrent,
