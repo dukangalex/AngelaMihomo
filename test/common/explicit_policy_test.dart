@@ -63,4 +63,57 @@ void main() {
       expect(membersOf(raw, 'Singapore').last, explicitChainGroup);
     });
   });
+
+  group('applyChainPolicy traffic attribute match (T85)', () {
+    Map<String, dynamic> profile() => {
+      'proxies': [
+        {'name': 'Entry', 'type': 'ss'},
+        {'name': 'NodeA', 'type': 'ss'},
+        {'name': 'DirectA', 'type': 'direct'},
+        {'name': 'DirectB', 'type': 'direct'},
+      ],
+      'proxy-groups': [
+        {
+          'name': 'DirectGroup',
+          'type': 'select',
+          'proxies': ['DirectA', 'DirectB'],
+        },
+        {
+          'name': 'Main',
+          'type': 'select',
+          'proxies': ['NodeA'],
+        },
+        {
+          'name': 'AdBlock',
+          'type': 'select',
+          'proxies': ['REJECT', 'REJECT-DROP', 'PASS'],
+        },
+        {
+          'name': 'Mixed',
+          'type': 'select',
+          'proxies': ['DirectA', 'NodeA'],
+        },
+      ],
+    };
+
+    List<dynamic> membersOf(Map<String, dynamic> raw, String name) {
+      final groups = raw['proxy-groups'] as List;
+      final group = groups.firstWhere((g) => g['name'] == name);
+      return group['proxies'] as List;
+    }
+
+    test('direct-only and action-only selectors receive no chain', () {
+      final raw = profile();
+      applyChainPolicy(raw, entry: 'Entry', landing: 'ProviderLanding');
+      // DirectGroup sits first but is not proxy-carrying: it stays
+      // untouched and does not count as the main selector, so Main
+      // takes the prepend treatment instead.
+      expect(membersOf(raw, 'DirectGroup'), ['DirectA', 'DirectB']);
+      expect(membersOf(raw, 'Main').first, explicitChainGroup);
+      expect(membersOf(raw, 'AdBlock'), ['REJECT', 'REJECT-DROP', 'PASS']);
+      // A mixed group carries a proxy choice, so it receives the
+      // chain as a trailing option; its direct member stays.
+      expect(membersOf(raw, 'Mixed'), ['DirectA', 'NodeA', explicitChainGroup]);
+    });
+  });
 }

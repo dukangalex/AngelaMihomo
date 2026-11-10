@@ -1042,6 +1042,86 @@ func patchProxyGroups(raw *config.RawConfig, params *PatchParams) {
 
 const explicitChainGroup = "链式落地"
 
+// proxyChoiceIndex answers whether a group carries a proxy choice
+// (T85): at least one reachable member must be able to route traffic
+// through a real proxy — a proxy node whose type is not direct-capable,
+// a nested group that itself carries a proxy choice, or a provider
+// source (use / include-all*) whose runtime members are proxies.
+// Builtin actions (DIRECT, REJECT, REJECT-DROP, COMPATIBLE, PASS) and
+// direct-type adapters never count. Provider node names do not appear
+// in the raw config, so an otherwise unknown member name counts as
+// proxy evidence. The chain landing is a proxy choice, so only groups
+// passing this test may receive it: direct-only selectors (the direct
+// group) and action-only selectors (ad-block groups) must not offer a
+// chain for traffic that never proxies, and — symmetrically — the
+// chain synthesis itself never contributes a direct option anywhere.
+type proxyChoiceIndex struct {
+	proxyTypes map[string]string
+	groups     map[string]map[string]any
+}
+
+func newProxyChoiceIndex(raw *config.RawConfig, groups []map[string]any) *proxyChoiceIndex {
+	idx := &proxyChoiceIndex{
+		proxyTypes: make(map[string]string),
+		groups:     make(map[string]map[string]any),
+	}
+	for _, proxy := range raw.Proxy {
+		if name, _ := proxy["name"].(string); name != "" {
+			idx.proxyTypes[name] = strings.ToLower(fmt.Sprint(proxy["type"]))
+		}
+	}
+	for _, group := range groups {
+		if name, _ := group["name"].(string); name != "" {
+			idx.groups[name] = group
+		}
+	}
+	return idx
+}
+
+func (idx *proxyChoiceIndex) carriesProxyChoice(group map[string]any) bool {
+	return idx.carries(group, map[string]bool{})
+}
+
+func (idx *proxyChoiceIndex) carries(group map[string]any, visiting map[string]bool) bool {
+	if group == nil {
+		return false
+	}
+	if hasGroupSource(group) {
+		return true
+	}
+	for _, member := range anyStrings(group["proxies"]) {
+		name, ok := member.(string)
+		if !ok || name == "" {
+			continue
+		}
+		switch name {
+		case "DIRECT", "REJECT", "REJECT-DROP", "COMPATIBLE", "PASS":
+			continue
+		}
+		if child, isGroup := idx.groups[name]; isGroup {
+			if visiting[name] {
+				continue
+			}
+			visiting[name] = true
+			found := idx.carries(child, visiting)
+			delete(visiting, name)
+			if found {
+				return true
+			}
+			continue
+		}
+		if typ, isProxy := idx.proxyTypes[name]; isProxy {
+			if typ != "direct" && typ != "pass" && typ != "compatible" {
+				return true
+			}
+			continue
+		}
+		// Unknown names resolve against proxy providers at runtime.
+		return true
+	}
+	return false
+}
+
 // floorChainHealthCheck aligns health-check parameters on the runtime
 // copy of a chain entry group with the subscription converter's chain
 // parameters (2026-10-29 alignment, user directive): a 60-second
@@ -1368,36 +1448,54 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 			}
 			visit(entry)
 		}
-		selectors := 0
-		for _, group := range originalGroups {
-			if group == nil {
-				continue
+		choice := newProxyChoiceIndex(raw, raw.ProxyGroup)
+		// T85: group options must match the group's traffic attribute
+		// in both directions. Only a selector that carries a proxy
+		// choice receives the chain landing; direct-only and
+		// action-only selectors (the direct group, ad-block groups)
+		// never do, and the first eligible selector is the main
+		// selector. If no selector carries a proxy choice at all,
+		// fall back to the unrestricted sweep so an exotic profile
+		// keeps the chain reachable somewhere instead of failing.
+		inject := func(eligibleOnly bool) int {
+			injected := 0
+			selectors := 0
+			for _, group := range originalGroups {
+				if group == nil {
+					continue
+				}
+				groupType, _ := group["type"].(string)
+				groupName, _ := group["name"].(string)
+				if groupType != "select" || entryGroups[groupName] {
+					continue
+				}
+				if eligibleOnly && !choice.carriesProxyChoice(group) {
+					continue
+				}
+				selectors++
+				// T40: region groups keep only their own region's
+				// nodes — the chain landing is not a region node
+				// and must not be appended there. The main selector
+				// (first) is exempt so its behaviour never changes.
+				if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+					continue
+				}
+				members := anyStrings(group["proxies"])
+				if selectors == 1 {
+					// The main selector lists the chain first so it
+					// is the default choice once a chain is
+					// configured; other selectors keep the chain as
+					// an extra option at the end without hijacking
+					// their own defaults.
+					group["proxies"] = append([]any{chainGroup}, members...)
+				} else {
+					group["proxies"] = append(members, chainGroup)
+				}
+				injected++
 			}
-			groupType, _ := group["type"].(string)
-			groupName, _ := group["name"].(string)
-			if groupType != "select" || entryGroups[groupName] {
-				continue
-			}
-			selectors++
-			// T40: region groups keep only their own region's nodes —
-			// the chain landing is not a region node and must not be
-			// appended there. The main selector (first) is exempt so
-			// its behaviour never changes.
-			if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
-				continue
-			}
-			members := anyStrings(group["proxies"])
-			if selectors == 1 {
-				// The main selector lists the chain first so it is the
-				// default choice once a chain is configured; other
-				// selectors keep the chain as an extra option at the end
-				// without hijacking their own defaults.
-				group["proxies"] = append([]any{chainGroup}, members...)
-			} else {
-				group["proxies"] = append(members, chainGroup)
-			}
+			return injected
 		}
-		if selectors == 0 {
+		if inject(true) == 0 && inject(false) == 0 {
 			return fmt.Errorf("the active profile has no manual selector to expose the chain")
 		}
 		return nil
@@ -1558,37 +1656,54 @@ func patchLegacyChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) err
 	}
 	chainGroup := uniqueName(explicitChainGroup)
 	raw.ProxyGroup = append(raw.ProxyGroup, providerGroup(chainGroup, landing, false))
-	selectors := 0
-	for _, group := range originalGroups {
-		if groupType, _ := group["type"].(string); groupType != "select" {
-			continue
-		}
-		var members []any
-		switch old := group["proxies"].(type) {
-		case nil:
-		case []any:
-			members = append(members, old...)
-		case []string:
-			for _, value := range old {
-				members = append(members, value)
+	choice := newProxyChoiceIndex(raw, raw.ProxyGroup)
+	// T85: same traffic-attribute match as the cross-profile path —
+	// direct-only and action-only selectors never receive the chain
+	// landing, and the first eligible selector is the main selector.
+	// If no selector carries a proxy choice at all, fall back to the
+	// unrestricted sweep so the chain stays reachable somewhere.
+	inject := func(eligibleOnly bool) int {
+		injected := 0
+		selectors := 0
+		for _, group := range originalGroups {
+			if groupType, _ := group["type"].(string); groupType != "select" {
+				continue
 			}
+			if eligibleOnly && !choice.carriesProxyChoice(group) {
+				continue
+			}
+			var members []any
+			switch old := group["proxies"].(type) {
+			case nil:
+			case []any:
+				members = append(members, old...)
+			case []string:
+				for _, value := range old {
+					members = append(members, value)
+				}
+			}
+			selectors++
+			// T40: skip region groups (see patchChainPolicy); the
+			// main selector still takes the chain first.
+			if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+				continue
+			}
+			if selectors == 1 {
+				// The main selector lists the chain first so it is
+				// the default choice once a chain is configured;
+				// other selectors keep the chain as an extra option
+				// at the end without hijacking their own defaults.
+				// Mirrors the cross-profile chain path.
+				group["proxies"] = append([]any{chainGroup}, members...)
+			} else {
+				group["proxies"] = append(members, chainGroup)
+			}
+			injected++
 		}
-		selectors++
-		// T40: skip region groups (see patchChainPolicy); the main
-		// selector still takes the chain first.
-		if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
-			continue
-		}
-		if selectors == 1 {
-			// The main selector lists the chain first so it is the
-			// default choice once a chain is configured; other
-			// selectors keep the chain as an extra option at the end
-			// without hijacking their own defaults. Mirrors the
-			// cross-profile chain path.
-			group["proxies"] = append([]any{chainGroup}, members...)
-		} else {
-			group["proxies"] = append(members, chainGroup)
-		}
+		return injected
+	}
+	if inject(true) == 0 {
+		inject(false)
 	}
 	return nil
 }
