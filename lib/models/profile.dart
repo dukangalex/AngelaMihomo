@@ -243,6 +243,24 @@ extension ProxyGroupOverrideExt on ProxyGroupOverride {
   bool get isEmpty => toPatchMap().isEmpty;
 }
 
+/// T81 S-5: group names that carry per-group App state on [profile] —
+/// a parameter override (groupOverrides) or a remembered selection
+/// (selectedMap) — but are absent from [groupNames], the group set the
+/// profile currently provides. Both stores are keyed by group name,
+/// so a subscription-side rename (or a hand edit in the full-text
+/// editor) used to orphan them silently: the override and the
+/// selection simply stopped applying, with no signal anywhere. The
+/// caller surfaces the returned names to the user; the state itself
+/// is kept, so renaming the group back restores it. GLOBAL is exempt:
+/// it is bridge-synthesized, never a stored subscription group.
+List<String> orphanedGroupStateNames(Profile profile, Set<String> groupNames) {
+  final orphans = <String>{
+    ...profile.groupOverrides.keys,
+    ...profile.selectedMap.keys,
+  }..removeWhere((name) => name == 'GLOBAL' || groupNames.contains(name));
+  return orphans.toList()..sort();
+}
+
 /// T76: a group's effective parameter values with kernel defaults already
 /// resolved (lazy defaults to true in the kernel parser; the include-all
 /// family and the switch family default to false). The group-settings

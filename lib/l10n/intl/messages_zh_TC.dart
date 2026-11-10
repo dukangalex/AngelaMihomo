@@ -49,91 +49,91 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m14(label) => "${label}目前已存在";
 
-  static String m15(count) => "${Intl.plural(count, other: '小時')}";
+  static String m17(count) => "${Intl.plural(count, other: '小時')}";
 
-  static String m16(port) => "連接埠 ${port} 已被佔用，請換一個連接埠";
+  static String m18(port) => "連接埠 ${port} 已被佔用，請換一個連接埠";
 
-  static String m17(code) => "伺服器拒絕了本次測試（錯誤碼 ${code}）";
+  static String m19(code) => "伺服器拒絕了本次測試（錯誤碼 ${code}）";
 
-  static String m18(lost, total) => "${lost}/${total} 個封包";
+  static String m20(lost, total) => "${lost}/${total} 個封包";
 
-  static String m19(name) => "已掃碼：${name}";
+  static String m21(name) => "已掃碼：${name}";
 
-  static String m20(value) => "${value} 秒";
+  static String m22(value) => "${value} 秒";
 
-  static String m21(port) => "正在監聽連接埠 ${port}";
+  static String m23(port) => "正在監聽連接埠 ${port}";
 
-  static String m22(count) => "${count} 條串流";
+  static String m24(count) => "${count} 條串流";
 
-  static String m23(count) => "${count}";
+  static String m25(count) => "${count}";
 
-  static String m24(count) => "${count} 位元組";
+  static String m26(count) => "${count} 位元組";
 
-  static String m25(address) => "來自 ${address}";
+  static String m27(address) => "來自 ${address}";
 
-  static String m26(count) => "僅顯示最近 ${count} 筆，複製結果可查看全部";
+  static String m28(count) => "僅顯示最近 ${count} 筆，複製結果可查看全部";
 
-  static String m27(min, avg, max, jitter) =>
+  static String m29(min, avg, max, jitter) =>
       "往返時間：最短 ${min} / 平均 ${avg} / 最長 ${max} / 抖動 ${jitter} ms";
 
-  static String m28(target) => "${target} 的 Ping 統計";
+  static String m30(target) => "${target} 的 Ping 統計";
 
-  static String m29(sent, received, lost, loss) =>
+  static String m31(sent, received, lost, loss) =>
       "已傳送 ${sent}，已接收 ${received}，遺失 ${lost}（${loss}% 遺失）";
 
-  static String m30(level) => "${level}模式適合網路偵錯，日常使用建議關閉";
+  static String m32(level) => "${level}模式適合網路偵錯，日常使用建議關閉";
 
-  static String m31(done, total, unlocked) =>
+  static String m33(done, total, unlocked) =>
       "已檢測 ${done}/${total} · 可用 ${unlocked}";
 
-  static String m32(count) => "${Intl.plural(count, other: '分鐘')}";
+  static String m34(count) => "${Intl.plural(count, other: '分鐘')}";
 
-  static String m33(count) => "${Intl.plural(count, other: '月')}";
+  static String m35(count) => "${Intl.plural(count, other: '月')}";
 
-  static String m34(count) => "${count} 條";
+  static String m36(count) => "${count} 條";
 
-  static String m35(ip) => "經 ${ip} 比對";
+  static String m37(ip) => "經 ${ip} 比對";
 
-  static String m36(count) => "${count} 則新日誌";
+  static String m38(count) => "${count} 則新日誌";
 
-  static String m37(label) => "暫無 ${label}";
+  static String m39(label) => "暫無 ${label}";
 
-  static String m38(min, max) => "請輸入 ${min}–${max} 之間的整數";
+  static String m40(min, max) => "請輸入 ${min}–${max} 之間的整數";
 
-  static String m39(label) => "${label}必須為數字";
+  static String m41(label) => "${label}必須為數字";
 
-  static String m40(label) => "只看 ${label}";
+  static String m42(label) => "只看 ${label}";
 
-  static String m41(label) => "${label} 必須在 1024 到 49151 之間，0 為關閉";
+  static String m43(label) => "${label} 必須在 1024 到 49151 之間，0 為關閉";
 
-  static String m42(statusCode) =>
+  static String m44(statusCode) =>
       "配置導入失敗，請檢查網路狀況或嘗試重置訂閱連結( HTTP錯誤代碼: ${statusCode} )";
 
-  static String m43(index, time) => "第 ${index} 條規則觸發解析 · ${time} ms";
+  static String m45(index, time) => "第 ${index} 條規則觸發解析 · ${time} ms";
 
-  static String m44(ips) => "命中 Hosts：${ips}";
+  static String m46(ips) => "命中 Hosts：${ips}";
 
-  static String m45(total, index) => "共 ${total} 條規則，命中第 ${index} 條";
+  static String m47(total, index) => "共 ${total} 條規則，命中第 ${index} 條";
 
-  static String m46(total) => "共 ${total} 條規則";
+  static String m48(total) => "共 ${total} 條規則";
 
-  static String m47(count) => "已選擇 ${count} 項";
+  static String m49(count) => "已選擇 ${count} 項";
 
-  static String m48(count) => "多執行緒會並行 ${count} 條連線以跑滿頻寬";
+  static String m50(count) => "多執行緒會並行 ${count} 條連線以跑滿頻寬";
 
-  static String m49(provider) => "出站節點可能封鎖了 ${provider} 測速，可切換測速源或更換出站";
+  static String m51(provider) => "出站節點可能封鎖了 ${provider} 測速，可切換測速源或更換出站";
 
-  static String m50(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
+  static String m52(protocol, fallback) => "${protocol} 不可用，已回退到 ${fallback}";
 
-  static String m51(count) => "${count} 條連線";
+  static String m53(count) => "${count} 條連線";
 
-  static String m52(provider) => "切換到 ${provider}";
+  static String m54(provider) => "切換到 ${provider}";
 
-  static String m53(error) => "无法确认设置已应用到当前配置：${error}";
+  static String m55(error) => "无法确认设置已应用到当前配置：${error}";
 
-  static String m54(label) => "${label}必須為 URL";
+  static String m56(label) => "${label}必須為 URL";
 
-  static String m55(count) => "${Intl.plural(count, other: '年')}";
+  static String m57(count) => "${Intl.plural(count, other: '年')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -737,7 +737,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hotkeyManagement": MessageLookupByLibrary.simpleMessage("快捷鍵管理"),
     "hotkeyManagementDesc": MessageLookupByLibrary.simpleMessage("使用鍵盤控制應用程式"),
     "hourGlass": MessageLookupByLibrary.simpleMessage("沙漏翻轉"),
-    "hours": m15,
+    "hours": m17,
     "httpPortSniffer": MessageLookupByLibrary.simpleMessage("HTTP 連接埠嗅探"),
     "icmpForwarding": MessageLookupByLibrary.simpleMessage("ICMP 轉發"),
     "icmpForwardingDesc": MessageLookupByLibrary.simpleMessage(
@@ -799,21 +799,21 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage("測試被中斷"),
     "iperfErrorListen": MessageLookupByLibrary.simpleMessage("無法啟動伺服端"),
-    "iperfErrorPortInUse": m16,
+    "iperfErrorPortInUse": m18,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "通訊異常，對方可能不是 iPerf3 伺服端",
     ),
     "iperfErrorRefused": MessageLookupByLibrary.simpleMessage(
       "連線被拒絕，請確認對方已啟動 iPerf3 伺服端",
     ),
-    "iperfErrorServer": m17,
+    "iperfErrorServer": m19,
     "iperfErrorTimeout": MessageLookupByLibrary.simpleMessage("連線逾時，請檢查位址和網路"),
     "iperfErrorUdp": MessageLookupByLibrary.simpleMessage("UDP 交握失敗，可能被防火牆攔截"),
     "iperfErrorUnreachable": MessageLookupByLibrary.simpleMessage("無法連線到伺服器"),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
       "如果其他裝置無法連線，請在系統防火牆中允許 Angela Mihomo 核心的傳入連線。",
     ),
-    "iperfLostPackets": m18,
+    "iperfLostPackets": m20,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(
       "未偵測到區域網路位址，請確認已連線 Wi-Fi 或有線網路",
     ),
@@ -838,11 +838,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfScanInvalid": MessageLookupByLibrary.simpleMessage(
       "這不是 iPerf3 連線 QR 碼",
     ),
-    "iperfScanned": m19,
-    "iperfSeconds": m20,
+    "iperfScanned": m21,
+    "iperfSeconds": m22,
     "iperfSend": MessageLookupByLibrary.simpleMessage("傳送"),
     "iperfServer": MessageLookupByLibrary.simpleMessage("伺服端"),
-    "iperfServerListening": m21,
+    "iperfServerListening": m23,
     "iperfServerOff": MessageLookupByLibrary.simpleMessage("伺服端未啟動"),
     "iperfServerOffHint": MessageLookupByLibrary.simpleMessage(
       "啟動後，其他裝置掃碼或輸入本機位址即可連線",
@@ -853,7 +853,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "伺服端只在本頁面開啟時執行，離開頁面後會自動停止；執行期間螢幕保持常亮。",
     ),
     "iperfStart": MessageLookupByLibrary.simpleMessage("開始測試"),
-    "iperfStreams": m22,
+    "iperfStreams": m24,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 工具"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
       "測試區域網路內裝置之間的頻寬，相容官方 iperf3",
@@ -867,7 +867,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("開啟後將可以接收 IPv6 流量"),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("允許 IPv6 入站"),
     "isp": MessageLookupByLibrary.simpleMessage("電信業者"),
-    "itemsCount": m23,
+    "itemsCount": m25,
     "just": MessageLookupByLibrary.simpleMessage("剛剛"),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage("TCP 保持活動間隔"),
     "keepDockIcon": MessageLookupByLibrary.simpleMessage("常駐DOCK"),
@@ -888,7 +888,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localFile": MessageLookupByLibrary.simpleMessage("本地檔案"),
     "localPing": MessageLookupByLibrary.simpleMessage("本機 Ping"),
     "localPingAverage": MessageLookupByLibrary.simpleMessage("平均延遲"),
-    "localPingBytes": m24,
+    "localPingBytes": m26,
     "localPingClosed": MessageLookupByLibrary.simpleMessage("連接埠關閉"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("次數"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
@@ -903,22 +903,22 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage("無法解析該網域"),
     "localPingFailed": MessageLookupByLibrary.simpleMessage("傳送失敗"),
-    "localPingFrom": m25,
+    "localPingFrom": m27,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("閘道"),
-    "localPingListLimit": m26,
+    "localPingListLimit": m28,
     "localPingMax": MessageLookupByLibrary.simpleMessage("最長"),
     "localPingMin": MessageLookupByLibrary.simpleMessage("最短"),
     "localPingReady": MessageLookupByLibrary.simpleMessage("選擇目標後開始 Ping"),
     "localPingReceived": MessageLookupByLibrary.simpleMessage("已接收"),
     "localPingResolving": MessageLookupByLibrary.simpleMessage("正在解析"),
     "localPingResult": MessageLookupByLibrary.simpleMessage("Ping 結果"),
-    "localPingRttSummary": m27,
+    "localPingRttSummary": m29,
     "localPingRunning": MessageLookupByLibrary.simpleMessage("正在 Ping"),
     "localPingSent": MessageLookupByLibrary.simpleMessage("已傳送"),
     "localPingSize": MessageLookupByLibrary.simpleMessage("封包大小"),
     "localPingStart": MessageLookupByLibrary.simpleMessage("開始 Ping"),
-    "localPingStats": m28,
-    "localPingSummary": m29,
+    "localPingStats": m30,
+    "localPingSummary": m31,
     "localPingTargetHint": MessageLookupByLibrary.simpleMessage("網域或 IP 位址"),
     "localPingTcpTip": MessageLookupByLibrary.simpleMessage(
       "TCP Ping 測量建立連線的耗時；連接埠關閉時對方會立即拒絕，同樣代表主機可達",
@@ -933,7 +933,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "log": MessageLookupByLibrary.simpleMessage("日誌"),
     "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜尋"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日誌等級"),
-    "logLevelDebugHint": m30,
+    "logLevelDebugHint": m32,
     "logcat": MessageLookupByLibrary.simpleMessage("日誌捕獲"),
     "logcatDesc": MessageLookupByLibrary.simpleMessage("開啟後將會顯示日誌入口"),
     "logs": MessageLookupByLibrary.simpleMessage("日誌"),
@@ -955,7 +955,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("檢測"),
     "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage("沒有可檢測的節點"),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("選擇檢測範圍"),
-    "mediaBatchSummary": m31,
+    "mediaBatchSummary": m33,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("節點批次檢測"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("連通性測試"),
     "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
@@ -997,11 +997,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "minimize": MessageLookupByLibrary.simpleMessage("最小化"),
     "minimizeOnExit": MessageLookupByLibrary.simpleMessage("退出最小化"),
     "minimizeOnExitDesc": MessageLookupByLibrary.simpleMessage("修改系統預設退出事件"),
-    "minutes": m32,
+    "minutes": m34,
     "mixedPort": MessageLookupByLibrary.simpleMessage("混合連接埠"),
     "mode": MessageLookupByLibrary.simpleMessage("模式"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("單色"),
-    "months": m33,
+    "months": m35,
     "more": MessageLookupByLibrary.simpleMessage("查看"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("更多 IP 資訊"),
     "mrsCopyRawLink": MessageLookupByLibrary.simpleMessage("複製為 GitHub Raw 連結"),
@@ -1018,8 +1018,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
       "開啟後，針對網域依目前 DNS 設定解析出 IP 並進行比對",
     ),
-    "mrsRules": m34,
-    "mrsVia": m35,
+    "mrsRules": m36,
+    "mrsVia": m37,
     "name": MessageLookupByLibrary.simpleMessage("名稱"),
     "nameSort": MessageLookupByLibrary.simpleMessage("按名稱排序"),
     "nameserver": MessageLookupByLibrary.simpleMessage("網域名稱伺服器"),
@@ -1123,7 +1123,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("網路類型"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("中性"),
-    "newLogsCount": m36,
+    "newLogsCount": m38,
     "noAnimation": MessageLookupByLibrary.simpleMessage("預設"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage("未找到備份檔案"),
     "noData": MessageLookupByLibrary.simpleMessage("暫無資料"),
@@ -1163,14 +1163,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "ntpStatus": MessageLookupByLibrary.simpleMessage("狀態"),
     "ntpStatusDesc": MessageLookupByLibrary.simpleMessage("開啟 NTP 時間服務"),
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage("沒有設定檔，請先新增設定檔"),
-    "nullTip": m37,
-    "numberRangeInvalid": m38,
-    "numberTip": m39,
+    "nullTip": m39,
+    "numberRangeInvalid": m40,
+    "numberTip": m41,
     "oneColumn": MessageLookupByLibrary.simpleMessage("一列"),
     "onlinePanel": MessageLookupByLibrary.simpleMessage("線上面板"),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("僅圖示"),
     "onlyOtherApps": MessageLookupByLibrary.simpleMessage("僅第三方應用程式"),
-    "onlyShow": m40,
+    "onlyShow": m42,
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage("代理流量統計"),
     "onlyStatisticsProxyDesc": MessageLookupByLibrary.simpleMessage(
       "開啟後將只統計代理流量",
@@ -1244,7 +1244,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "port": MessageLookupByLibrary.simpleMessage("連接埠"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("請輸入不同的連接埠"),
-    "portTip": m41,
+    "portTip": m43,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage("流沙傾注"),
     "pouringHourGlassRefined": MessageLookupByLibrary.simpleMessage("玉漏凝光"),
     "powerSwitch": MessageLookupByLibrary.simpleMessage("啟動開關"),
@@ -1261,7 +1261,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "設定檔已經修改，是否關閉自動更新？",
     ),
-    "profileImportFailed": m42,
+    "profileImportFailed": m44,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "請輸入配置名稱",
     ),
@@ -1373,14 +1373,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "檢視網域或 IP 在核心中的 DNS 與規則比對過程",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解析"),
-    "routeTraceDnsBy": m43,
+    "routeTraceDnsBy": m45,
     "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage("目標本身是 IP，無需解析"),
     "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
       "比對過程中無需解析 IP",
     ),
     "routeTraceFinal": MessageLookupByLibrary.simpleMessage("最終出站"),
     "routeTraceHint": MessageLookupByLibrary.simpleMessage("輸入網域、IP 或網址"),
-    "routeTraceHostsHit": m44,
+    "routeTraceHostsHit": m46,
     "routeTraceInput": MessageLookupByLibrary.simpleMessage("目標"),
     "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage("直連模式：所有流量直連"),
     "routeTraceModeGlobal": MessageLookupByLibrary.simpleMessage(
@@ -1388,8 +1388,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "routeTraceNoMatch": MessageLookupByLibrary.simpleMessage("沒有規則命中，以直連處理"),
     "routeTraceRules": MessageLookupByLibrary.simpleMessage("規則比對"),
-    "routeTraceRulesSummary": m45,
-    "routeTraceRulesTotal": m46,
+    "routeTraceRulesSummary": m47,
+    "routeTraceRulesTotal": m48,
     "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage("目標不存在，略過"),
     "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage("PASS 略過"),
     "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage("不支援 UDP，略過"),
@@ -1423,7 +1423,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("全選"),
     "selectBackupVersion": MessageLookupByLibrary.simpleMessage("選擇備份版本"),
     "selected": MessageLookupByLibrary.simpleMessage("已選擇"),
-    "selectedCountTitle": m47,
+    "selectedCountTitle": m49,
     "serviceReady": MessageLookupByLibrary.simpleMessage("服務已就緒"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("服務正在執行中"),
     "setcapFailedFallback": MessageLookupByLibrary.simpleMessage(
@@ -1490,7 +1490,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "speedTestConnecting": MessageLookupByLibrary.simpleMessage("連線中"),
     "speedTestConnections": MessageLookupByLibrary.simpleMessage("連線方式"),
-    "speedTestConnectionsDesc": m48,
+    "speedTestConnectionsDesc": m50,
     "speedTestCoreStopped": MessageLookupByLibrary.simpleMessage("未啟動 · 直連測速"),
     "speedTestCredit": MessageLookupByLibrary.simpleMessage(
       "測速伺服器由網路上公開的第三方提供，特別感謝 Apple、Cloudflare 以及 Speedtest by Ookla。",
@@ -1498,7 +1498,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestDataUsed": MessageLookupByLibrary.simpleMessage("已用流量"),
     "speedTestDuration": MessageLookupByLibrary.simpleMessage("測試時長"),
     "speedTestErrorBlocked": MessageLookupByLibrary.simpleMessage("測速服務不可用"),
-    "speedTestErrorBlockedDesc": m49,
+    "speedTestErrorBlockedDesc": m51,
     "speedTestErrorNetworkDesc": MessageLookupByLibrary.simpleMessage(
       "請檢查出站是否可用後重試",
     ),
@@ -1531,7 +1531,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestProtocolDesc": MessageLookupByLibrary.simpleMessage(
       "HTTP/3 基於 QUIC (UDP)，不可用時依次回退到 HTTP/2、（HTTP/2 不可用時）HTTP/1.1",
     ),
-    "speedTestProtocolFallback": m50,
+    "speedTestProtocolFallback": m52,
     "speedTestQuality": MessageLookupByLibrary.simpleMessage("網路品質"),
     "speedTestReady": MessageLookupByLibrary.simpleMessage("準備就緒"),
     "speedTestRealtime": MessageLookupByLibrary.simpleMessage("即時速率"),
@@ -1544,8 +1544,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "speedTestSettings": MessageLookupByLibrary.simpleMessage("測速設定"),
     "speedTestSingleThread": MessageLookupByLibrary.simpleMessage("單執行緒"),
     "speedTestStart": MessageLookupByLibrary.simpleMessage("開始測速"),
-    "speedTestStreams": m51,
-    "speedTestSwitchProvider": m52,
+    "speedTestStreams": m53,
+    "speedTestSwitchProvider": m54,
     "speedTestUseSystemDns": MessageLookupByLibrary.simpleMessage(
       "使用系統 DNS 解析",
     ),
@@ -1596,7 +1596,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitApplyState": MessageLookupByLibrary.simpleMessage(
       "设置应用状态待确认",
     ),
-    "systemExplicitApplyUnconfirmed": m53,
+    "systemExplicitApplyUnconfirmed": m55,
     "systemExplicitBlockAds": MessageLookupByLibrary.simpleMessage("广告拦截"),
     "systemExplicitBlockAdsDesc": MessageLookupByLibrary.simpleMessage(
       "默认关闭。按 Mihomo 的 GEOSITE category-ads-all 分类阻断广告域名；仅替换配置中同类广告规则，其它规则保留。",
@@ -1810,7 +1810,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("上傳"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("透過 URL 獲取設定檔"),
-    "urlTip": m54,
+    "urlTip": m56,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage("指令碼覆寫開關"),
     "useHosts": MessageLookupByLibrary.simpleMessage("使用 Hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系統 Hosts"),
@@ -1847,6 +1847,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xattrUnsupportedFallback": MessageLookupByLibrary.simpleMessage(
       "檔案系統不支援檔案能力（xattr），已回退到 setuid",
     ),
-    "years": m55,
+    "years": m57,
   };
 }

@@ -1995,6 +1995,49 @@ rules:
 	}
 }
 
+// T81 C-3 regression: an editor exclude-filter used to replace the
+// group value wholesale AFTER patchProxyGroups had concatenated the
+// global node-exclusion filter onto it, so setting any exclude-filter
+// in the group editor silently dropped the global exclusion for that
+// group and the excluded nodes came back. The merge semantics are now
+// defined: editor patterns replace the subscription's own filter, the
+// global patterns are always appended (never swallowed). On the
+// pre-fix code the first group assertion fails (GlobalBad is gone).
+func TestApplyPatchGroupOverrideExcludeFilterMergesGlobal(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxy-providers:
+  sub:
+    type: inline
+    payload:
+      - {name: A, type: ss, server: a.example.com, port: 1, cipher: aes-128-gcm, password: p}
+proxy-groups:
+  - {name: Edited, type: select, use: [sub], exclude-filter: "SubPattern"}
+  - {name: Untouched, type: select, use: [sub], exclude-filter: "SubPattern"}
+  - {name: Local, type: select, proxies: [A], exclude-filter: "SubPattern"}
+rules:
+  - MATCH,Edited
+`)
+	params := patchParams(t, `{"node-exclude-filter":"GlobalBad","group-overrides":{"Edited":{"exclude-filter":"EditorPattern"},"Local":{"exclude-filter":"EditorPattern"}}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	groups := map[string]map[string]any{}
+	for _, group := range rawCfg.ProxyGroup {
+		if name, ok := groupName(group); ok {
+			groups[name] = group
+		}
+	}
+	if got := groups["Edited"]["exclude-filter"]; got != "EditorPattern|GlobalBad" {
+		t.Errorf("Edited exclude-filter = %v, want editor patterns with global appended", got)
+	}
+	if got := groups["Untouched"]["exclude-filter"]; got != "SubPattern|GlobalBad" {
+		t.Errorf("Untouched exclude-filter = %v, want subscription + global concat unchanged", got)
+	}
+	if got := groups["Local"]["exclude-filter"]; got != "EditorPattern" {
+		t.Errorf("Local (no use list) exclude-filter = %v, want editor value only — the global filter never concatenated here", got)
+	}
+}
+
 func TestApplyPatchLanAllowedIPsGuard(t *testing.T) {
 	profile := `
 proxies:

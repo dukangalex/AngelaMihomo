@@ -1,5 +1,6 @@
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
@@ -74,6 +75,11 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
   List<String> _memberNames = const [];
   List<String> _allNames = const [];
   List<String> _typeChoices = const [];
+  // T81 C-4: chain health floor applying to this group, if it carries
+  // a chain hop. The bridge raises lower health-check values to the
+  // floor at setup; the rows echo the effective value so the raise is
+  // visible instead of silent.
+  ChainHealthFloor? _chainFloor;
 
   @override
   void initState() {
@@ -91,6 +97,12 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
       return;
     }
     _profileId = profile.id;
+    await ProfileChainStore.instance.ensureLoaded();
+    _chainFloor = chainHealthFloorForGroup(
+      ProfileChainStore.instance.of(profile.id),
+      currentProfileId: profile.id,
+      groupName: widget.groupName,
+    );
     _scriptActive =
         globalState.config.scriptProps.resolveScript(
           useScriptOverride: profile.useScriptOverride,
@@ -238,10 +250,20 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
     required bool overridden,
     required ValueChanged<int?> onChanged,
     required VoidCallback onReset,
+    int? floorMin,
   }) {
+    // T81 C-4: when the chain floor raises this value at runtime, the
+    // subtitle echoes the effective value next to the configured one.
+    final floored = floorMin == null
+        ? null
+        : chainFlooredValue(value, floorMin);
     return ListItem.input(
       title: InfoTitle(text: label, info: info),
-      subtitle: Text(value?.toString() ?? appLocalizations.notSet),
+      subtitle: Text(
+        floored != null
+            ? '$value · ${appLocalizations.groupChainFloorEffective(floored)}'
+            : value?.toString() ?? appLocalizations.notSet,
+      ),
       trailing: overridden ? _overrideTag(onReset) : null,
       delegate: InputDelegate(
         title: label,
@@ -375,6 +397,7 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
               onChanged: (v) => _commit(values.copyWith(interval: v)),
               onReset: () =>
                   _commit(values.copyWith(interval: subscription.interval)),
+              floorMin: _chainFloor?.interval,
             ),
             _switchRow(
               label: appLocalizations.groupParamLazy,
@@ -393,6 +416,7 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
               onChanged: (v) => _commit(values.copyWith(timeout: v)),
               onReset: () =>
                   _commit(values.copyWith(timeout: subscription.timeout)),
+              floorMin: _chainFloor?.timeout,
             ),
             _intRow(
               label: appLocalizations.groupParamMaxFailedTimes,
@@ -414,6 +438,7 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
                 onReset: () => _commit(
                   values.copyWith(tolerance: subscription.tolerance),
                 ),
+                floorMin: _chainFloor?.tolerance,
               ),
             _textRow(
               label: appLocalizations.groupParamExpectedStatus,

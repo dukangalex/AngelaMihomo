@@ -613,6 +613,7 @@ class AppController {
       _ref
           .read(profilesProvider.notifier)
           .setProfile(newProfile.copyWith(isUpdating: false));
+      await notifyOrphanedGroupState(newProfile);
       if (profile.id != _ref.read(currentProfileIdProvider)) return;
       if (modified != null && modified == await profile.profileLastModified) {
         return;
@@ -622,6 +623,35 @@ class AppController {
       rethrow;
     } finally {
       _updatingProfileIds.remove(profile.id);
+    }
+  }
+
+  /// T81 S-5: after a subscription update or a full-text editor save,
+  /// warn when per-group state (parameter overrides, remembered
+  /// selections) now points at groups the profile no longer provides
+  /// — a rename used to orphan that state with no signal anywhere.
+  /// Best-effort: any failure here must never break the update or
+  /// save flow that triggered the check. The state itself is kept,
+  /// so renaming the group back restores it.
+  Future<void> notifyOrphanedGroupState(Profile profile) async {
+    try {
+      if (profile.groupOverrides.isEmpty && profile.selectedMap.isEmpty) {
+        return;
+      }
+      final raw = await globalState.getProfileConfig(profile.id);
+      final rawGroups = raw['proxy-groups'];
+      if (rawGroups is! List) return;
+      final groupNames = <String>{
+        for (final group in rawGroups)
+          if (group is Map && group['name'] != null) group['name'].toString(),
+      };
+      final orphans = orphanedGroupStateNames(profile, groupNames);
+      if (orphans.isEmpty) return;
+      globalState.showNotifier(
+        appLocalizations.groupStateOrphanedWarning(orphans.join(', ')),
+      );
+    } catch (_) {
+      // Warning only; swallow.
     }
   }
 

@@ -214,6 +214,7 @@ class EditProfileViewState extends State<EditProfileView> {
         try {
           final updatedProfile = await profile.saveFile(fileData!);
           appController.setProfileAndAutoApply(updatedProfile);
+          await appController.notifyOrphanedGroupState(updatedProfile);
         } catch (e) {
           if (mounted) {
             await globalState.showMessage(

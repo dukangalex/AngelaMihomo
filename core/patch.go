@@ -197,7 +197,7 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 		}
 	}
 	patchProxyGroups(raw, params)
-	applyGroupOverrides(raw, params.GroupOverrides)
+	applyGroupOverrides(raw, params.GroupOverrides, params.NodeExcludeFilter)
 
 	// AngelaMihomo fork: per-profile chain proxy (was applyChainPolicy in
 	// the fork's explicit_policy.dart).
@@ -816,7 +816,15 @@ var groupOverrideKeys = map[string]bool{
 // applyGroupOverrides merges the profile's stored per-group parameter
 // overrides into the raw subscription groups. Groups the subscription no
 // longer provides are ignored, as are keys outside the editor vocabulary.
-func applyGroupOverrides(raw *config.RawConfig, overrides map[string]map[string]any) {
+//
+// exclude-filter is the one key that does not replace outright (T81
+// C-3): patchProxyGroups has already concatenated the global
+// node-exclusion filter (globalFilter) onto provider-backed groups,
+// and that global part must never be swallowed by an editor value.
+// The merged result is the editor's patterns with the global patterns
+// appended — the editor value replaces the subscription's own filter,
+// the global exclusion always rides along.
+func applyGroupOverrides(raw *config.RawConfig, overrides map[string]map[string]any, globalFilter string) {
 	if len(overrides) == 0 {
 		return
 	}
@@ -830,11 +838,56 @@ func applyGroupOverrides(raw *config.RawConfig, overrides map[string]map[string]
 			continue
 		}
 		for key, value := range patch {
-			if groupOverrideKeys[key] {
-				group[key] = value
+			if !groupOverrideKeys[key] {
+				continue
 			}
+			if key == "exclude-filter" {
+				if editorFilter, ok := value.(string); ok {
+					group[key] = mergeEditorExcludeFilter(group, editorFilter, globalFilter)
+					continue
+				}
+			}
+			group[key] = value
 		}
 	}
+}
+
+// mergeEditorExcludeFilter builds the effective exclude-filter for a
+// group whose editor override sets the key: the editor's patterns win
+// over the subscription's, and the global node-exclusion patterns are
+// appended when patchProxyGroups would have concatenated them onto
+// this group (provider-backed groups, i.e. a non-nil use list — the
+// same condition combineExcludeFilter was applied under). Patterns
+// already present are not duplicated.
+func mergeEditorExcludeFilter(group map[string]any, editorFilter, globalFilter string) string {
+	merged := editorFilter
+	if globalFilter == "" {
+		return merged
+	}
+	use, hasUse := group["use"]
+	if !hasUse || use == nil {
+		return merged
+	}
+	for _, pattern := range strings.Split(globalFilter, "|") {
+		pattern = strings.TrimSpace(pattern)
+		if pattern == "" {
+			continue
+		}
+		present := false
+		for _, existing := range strings.Split(merged, "|") {
+			if strings.TrimSpace(existing) == pattern {
+				present = true
+				break
+			}
+		}
+		if !present {
+			if merged != "" {
+				merged += "|"
+			}
+			merged += pattern
+		}
+	}
+	return merged
 }
 
 func filterGroups(groups []map[string]any, keep func(name string) bool) []map[string]any {

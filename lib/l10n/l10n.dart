@@ -11395,6 +11395,26 @@ class AppLocalizations {
     );
   }
 
+  /// `effective {value} · chain minimum`
+  String groupChainFloorEffective(int value) {
+    return Intl.message(
+      'effective $value · chain minimum',
+      name: 'groupChainFloorEffective',
+      desc: '',
+      args: [value],
+    );
+  }
+
+  /// `Groups renamed or removed: {names}. Their saved group settings and selections no longer apply.`
+  String groupStateOrphanedWarning(String names) {
+    return Intl.message(
+      'Groups renamed or removed: $names. Their saved group settings and selections no longer apply.',
+      name: 'groupStateOrphanedWarning',
+      desc: '',
+      args: [names],
+    );
+  }
+
   /// `What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.`
   String get groupParamHashKeyInfo {
     return Intl.message(
