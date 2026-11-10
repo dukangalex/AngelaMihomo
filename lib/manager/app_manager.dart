@@ -92,7 +92,26 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         return;
       }
       final shouldSet = next.a == true && next.b == true;
-      await system.updateDns(!shouldSet);
+      final result = await system.updateDns(!shouldSet);
+      if (result != null && result.isFailure) {
+        // DNS failures must never pass silently: on Linux a failed
+        // set/restore can leave the machine without name resolution.
+        commonPrint.warn('System DNS update failed: $result');
+        final message = switch (result.failure) {
+          LinuxDnsFailure.setFailedRestored =>
+            appLocalizations.systemDnsSetFailedKept,
+          LinuxDnsFailure.setFailedRestoreFailed =>
+            appLocalizations.systemDnsSetFailedBroken,
+          LinuxDnsFailure.restoreFailed =>
+            appLocalizations.systemDnsRestoreFailed,
+          LinuxDnsFailure.none => appLocalizations.systemDnsSetFailedKept,
+        };
+        await globalState.showMessage(
+          title: appLocalizations.tip,
+          message: TextSpan(text: message),
+          cancelable: false,
+        );
+      }
     });
     ref.listenManual(currentBrightnessProvider, (prev, next) {
       if (prev == next) {

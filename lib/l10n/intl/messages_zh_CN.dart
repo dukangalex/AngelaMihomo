@@ -1736,6 +1736,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "system": MessageLookupByLibrary.simpleMessage("系统"),
     "systemApp": MessageLookupByLibrary.simpleMessage("系统应用"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
+    "systemDnsRestoreFailed": MessageLookupByLibrary.simpleMessage(
+      "恢复原先的系统 DNS 设置失败。已保存的设置会在下次启动时重试；若无法解析域名，请重启 NetworkManager。",
+    ),
+    "systemDnsSetFailedBroken": MessageLookupByLibrary.simpleMessage(
+      "自动设置系统 DNS 失败，且未能恢复原先的 DNS 设置。若出现无法解析域名的情况，请重启 NetworkManager。",
+    ),
+    "systemDnsSetFailedKept": MessageLookupByLibrary.simpleMessage(
+      "自动设置系统 DNS 失败，已保留你原先的 DNS 设置。",
+    ),
     "systemExplicitAdapt": MessageLookupByLibrary.simpleMessage("自适应通路"),
     "systemExplicitAdaptDesc": MessageLookupByLibrary.simpleMessage(
       "发出数据却收不到回包时会立刻复查。只切换正在走流量的手动组。连续两次、并且换过探测地址仍测不通，才换节点，并放开旧节点上卡住的连接。自动测速组不再把直连当作失败后的退路。不改订阅。",

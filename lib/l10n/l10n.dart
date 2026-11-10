@@ -5645,6 +5645,36 @@ class AppLocalizations {
     );
   }
 
+  /// `Failed to set the system DNS automatically. Your previous DNS settings were kept.`
+  String get systemDnsSetFailedKept {
+    return Intl.message(
+      'Failed to set the system DNS automatically. Your previous DNS settings were kept.',
+      name: 'systemDnsSetFailedKept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to set the system DNS automatically, and your previous DNS settings could not be restored. If name resolution stops working, restart NetworkManager.`
+  String get systemDnsSetFailedBroken {
+    return Intl.message(
+      'Failed to set the system DNS automatically, and your previous DNS settings could not be restored. If name resolution stops working, restart NetworkManager.',
+      name: 'systemDnsSetFailedBroken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to restore your previous system DNS settings. The saved settings will be retried on the next launch. If name resolution is broken, restart NetworkManager.`
+  String get systemDnsRestoreFailed {
+    return Intl.message(
+      'Failed to restore your previous system DNS settings. The saved settings will be retried on the next launch. If name resolution is broken, restart NetworkManager.',
+      name: 'systemDnsRestoreFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Details`
   String get details {
     return Intl.message('Details', name: 'details', desc: '', args: []);
