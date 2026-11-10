@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net/netip"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -120,11 +121,32 @@ func hasPatchValue(data json.RawMessage) bool {
 	return len(data) > 0 && string(data) != "null"
 }
 
+func samePrefixes(a, b []netip.Prefix) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 	defaults := config.DefaultRawConfig()
 	if hasPatchValue(params.General) {
+		prevAllowedIPs := raw.LanAllowedIPs
 		if err := yaml.Unmarshal(params.General, raw); err != nil {
 			return "", fmt.Errorf("patch general: %w", err)
+		}
+		// T79 defense in depth: an explicit empty lan-allowed-ips in the
+		// patch must not erase the allow-all default that was in place
+		// before the overwrite. (The kernel's ipfilter also treats an
+		// empty allow list as "no restriction" now, but other consumers
+		// read LanAllowedIPs verbatim.)
+		if len(raw.LanAllowedIPs) == 0 && samePrefixes(prevAllowedIPs, defaults.LanAllowedIPs) {
+			raw.LanAllowedIPs = prevAllowedIPs
 		}
 		var nullable struct {
 			GlobalUA *string `json:"global-ua"`

@@ -1921,3 +1921,35 @@ rules:
 		t.Errorf("override for a group the subscription does not provide must not create it")
 	}
 }
+
+func TestApplyPatchLanAllowedIPsGuard(t *testing.T) {
+	profile := `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+rules:
+  - MATCH,DIRECT
+`
+	// T79 regression: an explicit empty lan-allowed-ips in the general
+	// patch must not erase the allow-all default (on the pre-fix code
+	// raw.LanAllowedIPs ends up empty here).
+	rawCfg := parsePatchProfile(t, profile)
+	params := patchParams(t, `{"general":{"lan-allowed-ips":[]}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	defaults := config.DefaultRawConfig()
+	if !reflect.DeepEqual(rawCfg.LanAllowedIPs, defaults.LanAllowedIPs) {
+		t.Errorf("LanAllowedIPs = %v, want allow-all default %v preserved", rawCfg.LanAllowedIPs, defaults.LanAllowedIPs)
+	}
+
+	// An explicit list in the patch is honored verbatim.
+	rawCfg2 := parsePatchProfile(t, profile)
+	params2 := patchParams(t, `{"general":{"lan-allowed-ips":["10.0.0.0/8"]}}`)
+	if _, err := applyPatch(rawCfg2, params2); err != nil {
+		t.Fatal(err)
+	}
+	want := []netip.Prefix{netip.MustParsePrefix("10.0.0.0/8")}
+	if !reflect.DeepEqual(rawCfg2.LanAllowedIPs, want) {
+		t.Errorf("LanAllowedIPs = %v, want %v", rawCfg2.LanAllowedIPs, want)
+	}
+}
