@@ -23,6 +23,13 @@ _ProxyGroup _$ProxyGroupFromJson(Map<String, dynamic> json) => _ProxyGroup(
   hidden: _parseBool(json['hidden']),
   icon: json['icon'] as String?,
   tolerance: _parseInt(json['tolerance']),
+  defaultSelected: json['default-selected'] as String?,
+  emptyFallback: json['empty-fallback'] as String?,
+  disableUdp: _parseBool(json['disable-udp']),
+  includeAll: _parseBool(json['include-all']),
+  includeAllProxies: _parseBool(json['include-all-proxies']),
+  includeAllProviders: _parseBool(json['include-all-providers']),
+  strategy: json['strategy'] as String?,
 );
 
 Map<String, dynamic> _$ProxyGroupToJson(_ProxyGroup instance) =>
@@ -43,6 +50,13 @@ Map<String, dynamic> _$ProxyGroupToJson(_ProxyGroup instance) =>
       'hidden': instance.hidden,
       'icon': instance.icon,
       'tolerance': instance.tolerance,
+      'default-selected': instance.defaultSelected,
+      'empty-fallback': instance.emptyFallback,
+      'disable-udp': instance.disableUdp,
+      'include-all': instance.includeAll,
+      'include-all-proxies': instance.includeAllProxies,
+      'include-all-providers': instance.includeAllProviders,
+      'strategy': instance.strategy,
     };
 
 const _$GroupTypeEnumMap = {

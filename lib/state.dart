@@ -933,6 +933,22 @@ class GlobalState {
     );
   }
 
+  /// T76: kernel-keyed group parameter patches for the Go patch pipeline,
+  /// keyed by group name. Groups whose override diffed away to nothing are
+  /// omitted entirely; returns null when the profile overrides nothing.
+  Map<String, Map<String, Object?>>? buildGroupOverridesParam(
+    Profile profile,
+  ) {
+    final result = <String, Map<String, Object?>>{};
+    for (final entry in profile.groupOverrides.entries) {
+      final patch = entry.value.toPatchMap();
+      if (patch.isNotEmpty) {
+        result[entry.key] = patch;
+      }
+    }
+    return result.isEmpty ? null : result;
+  }
+
   Future<Map<String, dynamic>> buildChainPolicyParams(
     Profile profile,
     ProfileChain chain,
@@ -1157,6 +1173,14 @@ class GlobalState {
               for (final entry in profile.groupSwitches.entries)
                 if (!entry.value) entry.key,
             ],
+      // T76: per-group parameter overrides live on the profile and are
+      // merged into the raw groups Go-side on every setup, so they
+      // survive subscription updates. Like disabled-groups, a script
+      // override owns the whole config while active, so the patch steps
+      // aside instead of fighting it.
+      'group-overrides': scriptActive
+          ? null
+          : buildGroupOverridesParam(profile),
       'select-global': profile.selectedMap['GLOBAL'] == null,
     };
   }

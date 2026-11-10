@@ -137,6 +137,19 @@ abstract class ProxyGroup with _$ProxyGroup {
     @JsonKey(fromJson: _parseBool) bool? hidden,
     String? icon,
     @JsonKey(fromJson: _parseInt) int? tolerance,
+    // T76: remaining GroupCommonOption / SelectorOption / LoadBalanceOption
+    // fields the kernel parses but the model used to drop on the floor.
+    // Sources: core parser.go GroupCommonOption, selector.go
+    // SelectorOption.default-selected, loadbalance.go LoadBalanceOption.
+    @JsonKey(name: 'default-selected') String? defaultSelected,
+    @JsonKey(name: 'empty-fallback') String? emptyFallback,
+    @JsonKey(name: 'disable-udp', fromJson: _parseBool) bool? disableUdp,
+    @JsonKey(name: 'include-all', fromJson: _parseBool) bool? includeAll,
+    @JsonKey(name: 'include-all-proxies', fromJson: _parseBool)
+    bool? includeAllProxies,
+    @JsonKey(name: 'include-all-providers', fromJson: _parseBool)
+    bool? includeAllProviders,
+    String? strategy,
   }) = _ProxyGroup;
 
   factory ProxyGroup.fromJson(Map<String, Object?> json) =>

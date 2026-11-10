@@ -117,6 +117,13 @@ abstract class Profile with _$Profile {
     @JsonKey(name: 'group-switches')
     @Default({})
     Map<String, bool> groupSwitches,
+    // T76: per-group parameter overrides, keyed by group name. Stored on
+    // the profile (never written into the subscription file) and applied
+    // Go-side on every setup, so subscription updates cannot wash them
+    // away. Only fields that differ from the subscription values are kept.
+    @JsonKey(name: 'group-overrides')
+    @Default({})
+    Map<String, ProxyGroupOverride> groupOverrides,
   }) = _Profile;
 
   factory Profile.fromJson(Map<String, Object?> json) =>
@@ -167,6 +174,246 @@ abstract class OverrideRule with _$OverrideRule {
 
   factory OverrideRule.fromJson(Map<String, Object?> json) =>
       _$OverrideRuleFromJson(json);
+}
+
+/// T76: one proxy group's overridden parameters. A null field means "not
+/// overridden — follow the subscription". JSON keys are the kernel's own
+/// field names (GroupCommonOption & friends), so the persisted form and
+/// the patch form sent to the core share one vocabulary.
+@freezed
+abstract class ProxyGroupOverride with _$ProxyGroupOverride {
+  @JsonSerializable(includeIfNull: false)
+  const factory ProxyGroupOverride({
+    String? url,
+    int? interval,
+    bool? lazy,
+    int? timeout,
+    @JsonKey(name: 'max-failed-times') int? maxFailedTimes,
+    String? filter,
+    @JsonKey(name: 'exclude-filter') String? excludeFilter,
+    @JsonKey(name: 'exclude-type') String? excludeType,
+    @JsonKey(name: 'expected-status') String? expectedStatus,
+    bool? hidden,
+    String? icon,
+    int? tolerance,
+    @JsonKey(name: 'default-selected') String? defaultSelected,
+    @JsonKey(name: 'empty-fallback') String? emptyFallback,
+    @JsonKey(name: 'disable-udp') bool? disableUdp,
+    @JsonKey(name: 'include-all') bool? includeAll,
+    @JsonKey(name: 'include-all-proxies') bool? includeAllProxies,
+    @JsonKey(name: 'include-all-providers') bool? includeAllProviders,
+    String? strategy,
+  }) = _ProxyGroupOverride;
+
+  factory ProxyGroupOverride.fromJson(Map<String, Object?> json) =>
+      _$ProxyGroupOverrideFromJson(json);
+}
+
+extension ProxyGroupOverrideExt on ProxyGroupOverride {
+  /// Kernel-keyed patch entries for the Go patch pipeline; only fields the
+  /// user actually overrode are present.
+  Map<String, Object?> toPatchMap() {
+    return {
+      if (url != null) 'url': url,
+      if (interval != null) 'interval': interval,
+      if (lazy != null) 'lazy': lazy,
+      if (timeout != null) 'timeout': timeout,
+      if (maxFailedTimes != null) 'max-failed-times': maxFailedTimes,
+      if (filter != null) 'filter': filter,
+      if (excludeFilter != null) 'exclude-filter': excludeFilter,
+      if (excludeType != null) 'exclude-type': excludeType,
+      if (expectedStatus != null) 'expected-status': expectedStatus,
+      if (hidden != null) 'hidden': hidden,
+      if (icon != null) 'icon': icon,
+      if (tolerance != null) 'tolerance': tolerance,
+      if (defaultSelected != null) 'default-selected': defaultSelected,
+      if (emptyFallback != null) 'empty-fallback': emptyFallback,
+      if (disableUdp != null) 'disable-udp': disableUdp,
+      if (includeAll != null) 'include-all': includeAll,
+      if (includeAllProxies != null)
+        'include-all-proxies': includeAllProxies,
+      if (includeAllProviders != null)
+        'include-all-providers': includeAllProviders,
+      if (strategy != null) 'strategy': strategy,
+    };
+  }
+
+  bool get isEmpty => toPatchMap().isEmpty;
+}
+
+/// T76: a group's effective parameter values with kernel defaults already
+/// resolved (lazy defaults to true in the kernel parser; the include-all
+/// family and the switch family default to false). The group-settings
+/// editor works on this shape; [diffAgainst] turns an edited copy back
+/// into the minimal [ProxyGroupOverride] worth persisting.
+@freezed
+abstract class ProxyGroupParams with _$ProxyGroupParams {
+  const factory ProxyGroupParams({
+    @Default('') String url,
+    int? interval,
+    @Default(true) bool lazy,
+    int? timeout,
+    int? maxFailedTimes,
+    @Default('') String filter,
+    @Default('') String excludeFilter,
+    @Default('') String excludeType,
+    @Default('') String expectedStatus,
+    @Default(false) bool hidden,
+    @Default('') String icon,
+    int? tolerance,
+    @Default('') String defaultSelected,
+    @Default('') String emptyFallback,
+    @Default(false) bool disableUdp,
+    @Default(false) bool includeAll,
+    @Default(false) bool includeAllProxies,
+    @Default(false) bool includeAllProviders,
+    @Default('') String strategy,
+  }) = _ProxyGroupParams;
+
+  /// Tolerant reader for one raw `proxy-groups` entry as returned by the
+  /// core's getConfig. Unlike [ProxyGroup.fromJson] this never throws on
+  /// group types the Dart enum does not know (e.g. relay): the editor only
+  /// needs the parameter fields, and type gating comes from runtime data.
+  factory ProxyGroupParams.fromRawMap(Map<String, Object?> json) {
+    int? asInt(Object? value) {
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+
+    bool? asBool(Object? value) {
+      if (value is bool) return value;
+      if (value is String) {
+        if (value.toLowerCase() == 'true') return true;
+        if (value.toLowerCase() == 'false') return false;
+      }
+      return null;
+    }
+
+    String asText(String key) => json[key]?.toString() ?? '';
+
+    return ProxyGroupParams(
+      url: asText('url'),
+      interval: asInt(json['interval']),
+      lazy: asBool(json['lazy']) ?? true,
+      timeout: asInt(json['timeout']),
+      maxFailedTimes: asInt(json['max-failed-times']),
+      filter: asText('filter'),
+      excludeFilter: asText('exclude-filter'),
+      excludeType: asText('exclude-type'),
+      expectedStatus: asText('expected-status'),
+      hidden: asBool(json['hidden']) ?? false,
+      icon: asText('icon'),
+      tolerance: asInt(json['tolerance']),
+      defaultSelected: asText('default-selected'),
+      emptyFallback: asText('empty-fallback'),
+      disableUdp: asBool(json['disable-udp']) ?? false,
+      includeAll: asBool(json['include-all']) ?? false,
+      includeAllProxies: asBool(json['include-all-proxies']) ?? false,
+      includeAllProviders: asBool(json['include-all-providers']) ?? false,
+      strategy: asText('strategy'),
+    );
+  }
+
+  factory ProxyGroupParams.fromGroup(ProxyGroup? group) {
+    if (group == null) return const ProxyGroupParams();
+    return ProxyGroupParams(
+      url: group.url ?? '',
+      interval: group.interval,
+      lazy: group.lazy ?? true,
+      timeout: group.timeout,
+      maxFailedTimes: group.maxFailedTimes,
+      filter: group.filter ?? '',
+      excludeFilter: group.excludeFilter ?? '',
+      excludeType: group.excludeType ?? '',
+      expectedStatus: group.expectedStatus?.toString() ?? '',
+      hidden: group.hidden ?? false,
+      icon: group.icon ?? '',
+      tolerance: group.tolerance,
+      defaultSelected: group.defaultSelected ?? '',
+      emptyFallback: group.emptyFallback ?? '',
+      disableUdp: group.disableUdp ?? false,
+      includeAll: group.includeAll ?? false,
+      includeAllProxies: group.includeAllProxies ?? false,
+      includeAllProviders: group.includeAllProviders ?? false,
+      strategy: group.strategy ?? '',
+    );
+  }
+}
+
+extension ProxyGroupParamsExt on ProxyGroupParams {
+  /// This subscription baseline with a stored override applied on top —
+  /// the values the core will effectively run with.
+  ProxyGroupParams applyOverride(ProxyGroupOverride? override) {
+    if (override == null) return this;
+    return ProxyGroupParams(
+      url: override.url ?? url,
+      interval: override.interval ?? interval,
+      lazy: override.lazy ?? lazy,
+      timeout: override.timeout ?? timeout,
+      maxFailedTimes: override.maxFailedTimes ?? maxFailedTimes,
+      filter: override.filter ?? filter,
+      excludeFilter: override.excludeFilter ?? excludeFilter,
+      excludeType: override.excludeType ?? excludeType,
+      expectedStatus: override.expectedStatus ?? expectedStatus,
+      hidden: override.hidden ?? hidden,
+      icon: override.icon ?? icon,
+      tolerance: override.tolerance ?? tolerance,
+      defaultSelected: override.defaultSelected ?? defaultSelected,
+      emptyFallback: override.emptyFallback ?? emptyFallback,
+      disableUdp: override.disableUdp ?? disableUdp,
+      includeAll: override.includeAll ?? includeAll,
+      includeAllProxies: override.includeAllProxies ?? includeAllProxies,
+      includeAllProviders:
+          override.includeAllProviders ?? includeAllProviders,
+      strategy: override.strategy ?? strategy,
+    );
+  }
+
+  /// The minimal override that turns [subscription] into this value set:
+  /// fields equal to the subscription baseline are left out entirely, so
+  /// untouched parameters keep following subscription updates.
+  ProxyGroupOverride diffAgainst(ProxyGroupParams subscription) {
+    return ProxyGroupOverride(
+      url: url != subscription.url ? url : null,
+      interval: interval != subscription.interval ? interval : null,
+      lazy: lazy != subscription.lazy ? lazy : null,
+      timeout: timeout != subscription.timeout ? timeout : null,
+      maxFailedTimes: maxFailedTimes != subscription.maxFailedTimes
+          ? maxFailedTimes
+          : null,
+      filter: filter != subscription.filter ? filter : null,
+      excludeFilter: excludeFilter != subscription.excludeFilter
+          ? excludeFilter
+          : null,
+      excludeType: excludeType != subscription.excludeType
+          ? excludeType
+          : null,
+      expectedStatus: expectedStatus != subscription.expectedStatus
+          ? expectedStatus
+          : null,
+      hidden: hidden != subscription.hidden ? hidden : null,
+      icon: icon != subscription.icon ? icon : null,
+      tolerance: tolerance != subscription.tolerance ? tolerance : null,
+      defaultSelected: defaultSelected != subscription.defaultSelected
+          ? defaultSelected
+          : null,
+      emptyFallback: emptyFallback != subscription.emptyFallback
+          ? emptyFallback
+          : null,
+      disableUdp: disableUdp != subscription.disableUdp ? disableUdp : null,
+      includeAll: includeAll != subscription.includeAll ? includeAll : null,
+      includeAllProxies: includeAllProxies != subscription.includeAllProxies
+          ? includeAllProxies
+          : null,
+      includeAllProviders:
+          includeAllProviders != subscription.includeAllProviders
+          ? includeAllProviders
+          : null,
+      strategy: strategy != subscription.strategy ? strategy : null,
+    );
+  }
 }
 
 extension OverrideRuleExt on OverrideRule {

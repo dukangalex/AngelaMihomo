@@ -981,6 +981,136 @@ class MessageLookup extends MessageLookupByLibrary {
     "global": MessageLookupByLibrary.simpleMessage("Global"),
     "go": MessageLookupByLibrary.simpleMessage("Go"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Download Now"),
+    "groupOverriddenTag": MessageLookupByLibrary.simpleMessage("Overridden"),
+    "groupParamDefaultSelected": MessageLookupByLibrary.simpleMessage(
+      "Default selected node",
+    ),
+    "groupParamDefaultSelectedInfo": MessageLookupByLibrary.simpleMessage(
+      "The node this group selects the first time it appears; without it, the first node is selected.",
+    ),
+    "groupParamDisableUdp": MessageLookupByLibrary.simpleMessage("Disable UDP"),
+    "groupParamDisableUdpInfo": MessageLookupByLibrary.simpleMessage(
+      "Turns off UDP forwarding for this group.",
+    ),
+    "groupParamEmptyFallback": MessageLookupByLibrary.simpleMessage(
+      "Empty-group fallback",
+    ),
+    "groupParamEmptyFallbackInfo": MessageLookupByLibrary.simpleMessage(
+      "When the group ends up with no usable node, this node takes over instead. Without it, COMPATIBLE is used.",
+    ),
+    "groupParamExcludeFilter": MessageLookupByLibrary.simpleMessage(
+      "Exclude filter (regex)",
+    ),
+    "groupParamExcludeFilterInfo": MessageLookupByLibrary.simpleMessage(
+      "Nodes whose name matches this regular expression are removed from the group; separate multiple expressions with `.",
+    ),
+    "groupParamExcludeType": MessageLookupByLibrary.simpleMessage(
+      "Exclude types",
+    ),
+    "groupParamExcludeTypeInfo": MessageLookupByLibrary.simpleMessage(
+      "Removes nodes of the selected protocol types from the group. Matching ignores letter case.",
+    ),
+    "groupParamExpectedStatus": MessageLookupByLibrary.simpleMessage(
+      "Expected status",
+    ),
+    "groupParamExpectedStatusInfo": MessageLookupByLibrary.simpleMessage(
+      "The HTTP status a health check must return to count as alive, e.g. 200, 200/204 or 200-299. Leaving it empty is the same as *.",
+    ),
+    "groupParamFilter": MessageLookupByLibrary.simpleMessage("Filter (regex)"),
+    "groupParamFilterInfo": MessageLookupByLibrary.simpleMessage(
+      "Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with `.",
+    ),
+    "groupParamHidden": MessageLookupByLibrary.simpleMessage("Hidden"),
+    "groupParamHiddenInfo": MessageLookupByLibrary.simpleMessage(
+      "When on, this group is hidden from the panel\'s group list.",
+    ),
+    "groupParamIcon": MessageLookupByLibrary.simpleMessage("Group icon"),
+    "groupParamIconInfo": MessageLookupByLibrary.simpleMessage(
+      "Image address used as this group\'s icon.",
+    ),
+    "groupParamIncludeAll": MessageLookupByLibrary.simpleMessage("Include all"),
+    "groupParamIncludeAllInfo": MessageLookupByLibrary.simpleMessage(
+      "Automatically includes every node and every provider in this group; equivalent to turning on both options below.",
+    ),
+    "groupParamIncludeAllProviders": MessageLookupByLibrary.simpleMessage(
+      "Include all providers",
+    ),
+    "groupParamIncludeAllProvidersInfo": MessageLookupByLibrary.simpleMessage(
+      "Automatically includes every proxy provider in this group.",
+    ),
+    "groupParamIncludeAllProxies": MessageLookupByLibrary.simpleMessage(
+      "Include all proxies",
+    ),
+    "groupParamIncludeAllProxiesInfo": MessageLookupByLibrary.simpleMessage(
+      "Automatically includes every node in this group, ordered by name.",
+    ),
+    "groupParamInterval": MessageLookupByLibrary.simpleMessage(
+      "Check interval (seconds)",
+    ),
+    "groupParamIntervalInfo": MessageLookupByLibrary.simpleMessage(
+      "How often the group runs its automatic health check, in seconds.",
+    ),
+    "groupParamLazy": MessageLookupByLibrary.simpleMessage("Lazy"),
+    "groupParamLazyInfo": MessageLookupByLibrary.simpleMessage(
+      "When on, a group only health-checks while it is being used; idle groups skip testing and save resources.",
+    ),
+    "groupParamMaxFailedTimes": MessageLookupByLibrary.simpleMessage(
+      "Max failed times",
+    ),
+    "groupParamMaxFailedTimesInfo": MessageLookupByLibrary.simpleMessage(
+      "Once health checks have failed this many times, a forced health check is triggered. The kernel default is 5.",
+    ),
+    "groupParamStrategy": MessageLookupByLibrary.simpleMessage(
+      "Load-balance strategy",
+    ),
+    "groupParamStrategyInfo": MessageLookupByLibrary.simpleMessage(
+      "How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.",
+    ),
+    "groupParamTimeout": MessageLookupByLibrary.simpleMessage(
+      "Check timeout (ms)",
+    ),
+    "groupParamTimeoutInfo": MessageLookupByLibrary.simpleMessage(
+      "Timeout of a single health check in milliseconds; a check that times out counts as failed. The kernel default is 5000.",
+    ),
+    "groupParamTolerance": MessageLookupByLibrary.simpleMessage(
+      "Tolerance (ms)",
+    ),
+    "groupParamToleranceInfo": MessageLookupByLibrary.simpleMessage(
+      "For auto groups: the selection only switches when the current fastest node is slower than a newly measured one by more than this many milliseconds, which avoids constant flip-flopping.",
+    ),
+    "groupParamUrl": MessageLookupByLibrary.simpleMessage("Health check URL"),
+    "groupParamUrlInfo": MessageLookupByLibrary.simpleMessage(
+      "The address the group periodically visits to measure each node\'s latency; together with the check interval it sets the auto speed-test rhythm.",
+    ),
+    "groupSectionBehavior": MessageLookupByLibrary.simpleMessage("Behavior"),
+    "groupSectionFiltering": MessageLookupByLibrary.simpleMessage(
+      "Member filtering",
+    ),
+    "groupSectionHealthCheck": MessageLookupByLibrary.simpleMessage(
+      "Health check",
+    ),
+    "groupSettings": MessageLookupByLibrary.simpleMessage("Group settings"),
+    "groupSettingsLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not read this group\'s subscription parameters.",
+    ),
+    "groupSettingsResetAll": MessageLookupByLibrary.simpleMessage(
+      "Clear this group\'s overrides",
+    ),
+    "groupSettingsResetConfirm": MessageLookupByLibrary.simpleMessage(
+      "All parameter overrides for this group will be removed and the subscription values will apply again.",
+    ),
+    "groupSettingsScriptInactive": MessageLookupByLibrary.simpleMessage(
+      "A script override is active for this profile and owns the whole config, so group parameter overrides do not take effect right now.",
+    ),
+    "groupStrategyConsistentHashing": MessageLookupByLibrary.simpleMessage(
+      "Consistent hashing",
+    ),
+    "groupStrategyRoundRobin": MessageLookupByLibrary.simpleMessage(
+      "Round-robin",
+    ),
+    "groupStrategyStickySessions": MessageLookupByLibrary.simpleMessage(
+      "Sticky sessions",
+    ),
     "harmonyFont": MessageLookupByLibrary.simpleMessage("Font Fix"),
     "harmonyFontDesc": MessageLookupByLibrary.simpleMessage(
       "Use built-in font to fix display issues",

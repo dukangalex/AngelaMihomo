@@ -63,7 +63,12 @@ type PatchParams struct {
 	PrependRules        []string        `json:"prepend-rules"`
 	SystemExplicitRules []string        `json:"system-explicit-rules"`
 	DisabledGroups      []string        `json:"disabled-groups"`
-	SelectGlobal        bool            `json:"select-global"`
+	// T76: per-group parameter overrides from the group-settings editor,
+	// keyed by group name with kernel field names inside. The values live
+	// on the Dart-side profile, never in the subscription file, and are
+	// merged into the raw groups here on every setup.
+	GroupOverrides map[string]map[string]any `json:"group-overrides"`
+	SelectGlobal   bool                      `json:"select-global"`
 	// AngelaMihomo fork: runtime policy ported from the fork's
 	// SystemExplicitStore.apply / ProfileChainStore.apply, which used to
 	// mutate the Dart-assembled full config before the Go patch pipeline
@@ -170,6 +175,7 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 		}
 	}
 	patchProxyGroups(raw, params)
+	applyGroupOverrides(raw, params.GroupOverrides)
 
 	// AngelaMihomo fork: per-profile chain proxy (was applyChainPolicy in
 	// the fork's explicit_policy.dart).
@@ -764,6 +770,45 @@ func applyHostsToProxies(proxies []map[string]any, hosts map[string]any, hostOrd
 func groupName(group map[string]any) (string, bool) {
 	name, ok := group["name"].(string)
 	return name, ok
+}
+
+// groupOverrideKeys is the T76 group-settings editor's vocabulary: the
+// GroupCommonOption / SelectorOption / URLTestOption / LoadBalanceOption
+// parameters a user may patch per group. Identity and membership keys
+// (name, type, proxies, use) are deliberately absent — the editor never
+// renames a group or rewrites its member list.
+var groupOverrideKeys = map[string]bool{
+	"url": true, "interval": true, "lazy": true, "timeout": true,
+	"max-failed-times": true, "filter": true, "exclude-filter": true,
+	"exclude-type": true, "expected-status": true, "hidden": true,
+	"icon": true, "tolerance": true, "default-selected": true,
+	"empty-fallback": true, "disable-udp": true, "include-all": true,
+	"include-all-proxies": true, "include-all-providers": true,
+	"strategy": true,
+}
+
+// applyGroupOverrides merges the profile's stored per-group parameter
+// overrides into the raw subscription groups. Groups the subscription no
+// longer provides are ignored, as are keys outside the editor vocabulary.
+func applyGroupOverrides(raw *config.RawConfig, overrides map[string]map[string]any) {
+	if len(overrides) == 0 {
+		return
+	}
+	for _, group := range raw.ProxyGroup {
+		name, ok := groupName(group)
+		if !ok {
+			continue
+		}
+		patch, ok := overrides[name]
+		if !ok {
+			continue
+		}
+		for key, value := range patch {
+			if groupOverrideKeys[key] {
+				group[key] = value
+			}
+		}
+	}
 }
 
 func filterGroups(groups []map[string]any, keep func(name string) bool) []map[string]any {

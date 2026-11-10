@@ -725,6 +725,104 @@ class MessageLookup extends MessageLookupByLibrary {
     "global": MessageLookupByLibrary.simpleMessage("全局"),
     "go": MessageLookupByLibrary.simpleMessage("前往"),
     "goDownload": MessageLookupByLibrary.simpleMessage("前往下载"),
+    "groupOverriddenTag": MessageLookupByLibrary.simpleMessage("已覆盖"),
+    "groupParamDefaultSelected": MessageLookupByLibrary.simpleMessage("默认选中节点"),
+    "groupParamDefaultSelectedInfo": MessageLookupByLibrary.simpleMessage(
+      "组第一次出现时默认选中的节点；不设则选第一个。",
+    ),
+    "groupParamDisableUdp": MessageLookupByLibrary.simpleMessage("禁用 UDP"),
+    "groupParamDisableUdpInfo": MessageLookupByLibrary.simpleMessage(
+      "关掉这个组的 UDP 转发。",
+    ),
+    "groupParamEmptyFallback": MessageLookupByLibrary.simpleMessage("空组回退"),
+    "groupParamEmptyFallbackInfo": MessageLookupByLibrary.simpleMessage(
+      "组里没有可用节点时，改用这个节点兜底；不设时用 COMPATIBLE。",
+    ),
+    "groupParamExcludeFilter": MessageLookupByLibrary.simpleMessage("排除筛选（正则）"),
+    "groupParamExcludeFilterInfo": MessageLookupByLibrary.simpleMessage(
+      "名称匹配该正则的节点会被移出组；多个正则用 ` 分隔。",
+    ),
+    "groupParamExcludeType": MessageLookupByLibrary.simpleMessage("排除类型"),
+    "groupParamExcludeTypeInfo": MessageLookupByLibrary.simpleMessage(
+      "把所选协议类型的节点移出组。匹配时不分大小写。",
+    ),
+    "groupParamExpectedStatus": MessageLookupByLibrary.simpleMessage("期望状态码"),
+    "groupParamExpectedStatusInfo": MessageLookupByLibrary.simpleMessage(
+      "健康检查返回的状态码符合期望才算存活，如 200、200/204、200-299；留空等同于 *。",
+    ),
+    "groupParamFilter": MessageLookupByLibrary.simpleMessage("筛选（正则）"),
+    "groupParamFilterInfo": MessageLookupByLibrary.simpleMessage(
+      "只保留名称匹配该正则的节点；多个正则用 ` 分隔。",
+    ),
+    "groupParamHidden": MessageLookupByLibrary.simpleMessage("隐藏该组"),
+    "groupParamHiddenInfo": MessageLookupByLibrary.simpleMessage(
+      "开启后，该组不在面板的组列表中显示。",
+    ),
+    "groupParamIcon": MessageLookupByLibrary.simpleMessage("组图标"),
+    "groupParamIconInfo": MessageLookupByLibrary.simpleMessage("用作该组图标的图片地址。"),
+    "groupParamIncludeAll": MessageLookupByLibrary.simpleMessage("包含全部"),
+    "groupParamIncludeAllInfo": MessageLookupByLibrary.simpleMessage(
+      "自动把全部节点与全部集合纳入本组，等同于同时打开下面两项。",
+    ),
+    "groupParamIncludeAllProviders": MessageLookupByLibrary.simpleMessage(
+      "包含全部集合",
+    ),
+    "groupParamIncludeAllProvidersInfo": MessageLookupByLibrary.simpleMessage(
+      "自动把全部代理集合纳入本组。",
+    ),
+    "groupParamIncludeAllProxies": MessageLookupByLibrary.simpleMessage(
+      "包含全部节点",
+    ),
+    "groupParamIncludeAllProxiesInfo": MessageLookupByLibrary.simpleMessage(
+      "自动把全部节点纳入本组，按名称排序。",
+    ),
+    "groupParamInterval": MessageLookupByLibrary.simpleMessage("检查间隔（秒）"),
+    "groupParamIntervalInfo": MessageLookupByLibrary.simpleMessage(
+      "组自动做健康检查的间隔，单位秒。",
+    ),
+    "groupParamLazy": MessageLookupByLibrary.simpleMessage("懒模式"),
+    "groupParamLazyInfo": MessageLookupByLibrary.simpleMessage(
+      "开启时，组只有被用到时才做健康检查，闲置的组不测速、省资源。",
+    ),
+    "groupParamMaxFailedTimes": MessageLookupByLibrary.simpleMessage("最大失败次数"),
+    "groupParamMaxFailedTimesInfo": MessageLookupByLibrary.simpleMessage(
+      "健康检查失败达到这个次数时，会触发一次强制健康检查。内核默认 5。",
+    ),
+    "groupParamStrategy": MessageLookupByLibrary.simpleMessage("负载均衡策略"),
+    "groupParamStrategyInfo": MessageLookupByLibrary.simpleMessage(
+      "负载均衡组的分流方式：一致哈希按目标固定节点、轮询逐个轮换、粘性会话按来源固定节点。",
+    ),
+    "groupParamTimeout": MessageLookupByLibrary.simpleMessage("检查超时（毫秒）"),
+    "groupParamTimeoutInfo": MessageLookupByLibrary.simpleMessage(
+      "单次健康检查的超时，单位毫秒；超时算失败。内核默认 5000。",
+    ),
+    "groupParamTolerance": MessageLookupByLibrary.simpleMessage("容差（毫秒）"),
+    "groupParamToleranceInfo": MessageLookupByLibrary.simpleMessage(
+      "仅自动组：当前最快节点比新测出的最快节点慢超过该毫秒数时才切换，避免节点来回跳。",
+    ),
+    "groupParamUrl": MessageLookupByLibrary.simpleMessage("健康检查地址"),
+    "groupParamUrlInfo": MessageLookupByLibrary.simpleMessage(
+      "组会定期访问这个地址来测各节点延迟；它和检查间隔一起决定自动测速的节奏。",
+    ),
+    "groupSectionBehavior": MessageLookupByLibrary.simpleMessage("组行为"),
+    "groupSectionFiltering": MessageLookupByLibrary.simpleMessage("成员筛选"),
+    "groupSectionHealthCheck": MessageLookupByLibrary.simpleMessage("健康检查"),
+    "groupSettings": MessageLookupByLibrary.simpleMessage("组设置"),
+    "groupSettingsLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "读不到该组的订阅参数。",
+    ),
+    "groupSettingsResetAll": MessageLookupByLibrary.simpleMessage("清除本组的参数覆盖"),
+    "groupSettingsResetConfirm": MessageLookupByLibrary.simpleMessage(
+      "该组的全部参数覆盖将被移除，恢复使用订阅提供的值。",
+    ),
+    "groupSettingsScriptInactive": MessageLookupByLibrary.simpleMessage(
+      "该配置正启用脚本覆写，脚本接管整份配置，组参数覆盖当前不生效。",
+    ),
+    "groupStrategyConsistentHashing": MessageLookupByLibrary.simpleMessage(
+      "一致哈希",
+    ),
+    "groupStrategyRoundRobin": MessageLookupByLibrary.simpleMessage("轮询"),
+    "groupStrategyStickySessions": MessageLookupByLibrary.simpleMessage("粘性会话"),
     "harmonyFont": MessageLookupByLibrary.simpleMessage("字体修复"),
     "harmonyFontDesc": MessageLookupByLibrary.simpleMessage("使用内置字体解决显示异常问题"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage("是否缓存修改"),

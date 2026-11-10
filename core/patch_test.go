@@ -1846,3 +1846,67 @@ func TestIsRegionSelectGroup(t *testing.T) {
 		t.Error("paired group that is not url-test must not mark a region group")
 	}
 }
+
+func TestApplyPatchGroupOverrides(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+  - {name: B, type: vless, server: b.example.com, port: 443, uuid: u}
+proxy-groups:
+  - {name: Main, type: select, proxies: [A, B], url: "https://example.com/check", interval: 300}
+  - {name: Auto, type: url-test, proxies: [A, B], tolerance: 50}
+rules:
+  - MATCH,Main
+`)
+	params := patchParams(t, `{"group-overrides":{"Main":{"interval":60,"lazy":false,"disable-udp":true,"default-selected":"B","proxies":["A"],"type":"url-test"},"Auto":{"strategy":"round-robin","tolerance":120},"Ghost":{"interval":10}}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	groups := map[string]map[string]any{}
+	for _, group := range rawCfg.ProxyGroup {
+		if name, ok := groupName(group); ok {
+			groups[name] = group
+		}
+	}
+	main := groups["Main"]
+	if main == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := main["interval"]; fmt.Sprint(got) != "60" {
+		t.Errorf("Main interval = %v (%T), want overridden 60", got, got)
+	}
+	if got := main["lazy"]; got != false {
+		t.Errorf("Main lazy = %v, want overridden false", got)
+	}
+	if got := main["disable-udp"]; got != true {
+		t.Errorf("Main disable-udp = %v, want overridden true", got)
+	}
+	if got := main["default-selected"]; got != "B" {
+		t.Errorf("Main default-selected = %v, want B", got)
+	}
+	if got := main["url"]; got != "https://example.com/check" {
+		t.Errorf("Main url = %v, subscription value must be preserved", got)
+	}
+	if got := main["type"]; got != "select" {
+		t.Errorf("Main type = %v, identity keys must not be patchable", got)
+	}
+	if got := main["proxies"]; !reflect.DeepEqual(got, []any{"A", "B"}) {
+		t.Errorf("Main proxies = %v, membership must not be patchable", got)
+	}
+	auto := groups["Auto"]
+	if auto == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := auto["tolerance"]; fmt.Sprint(got) != "120" {
+		t.Errorf("Auto tolerance = %v (%T), want overridden 120", got, got)
+	}
+	// The patch layer is permissive about type-specific keys (the editor
+	// only offers strategy on load-balance groups); the kernel itself
+	// ignores strategy outside load-balance groups.
+	if got := auto["strategy"]; got != "round-robin" {
+		t.Errorf("Auto strategy = %v, want round-robin", got)
+	}
+	if _, ok := groups["Ghost"]; ok {
+		t.Errorf("override for a group the subscription does not provide must not create it")
+	}
+}

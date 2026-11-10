@@ -10964,6 +10964,496 @@ class AppLocalizations {
   String get notSet {
     return Intl.message('Not set', name: 'notSet', desc: '', args: []);
   }
+
+  /// `Group settings`
+  String get groupSettings {
+    return Intl.message(
+      'Group settings',
+      name: 'groupSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overridden`
+  String get groupOverriddenTag {
+    return Intl.message(
+      'Overridden',
+      name: 'groupOverriddenTag',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Health check URL`
+  String get groupParamUrl {
+    return Intl.message(
+      'Health check URL',
+      name: 'groupParamUrl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The address the group periodically visits to measure each node's latency; together with the check interval it sets the auto speed-test rhythm.`
+  String get groupParamUrlInfo {
+    return Intl.message(
+      'The address the group periodically visits to measure each node\'s latency; together with the check interval it sets the auto speed-test rhythm.',
+      name: 'groupParamUrlInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check interval (seconds)`
+  String get groupParamInterval {
+    return Intl.message(
+      'Check interval (seconds)',
+      name: 'groupParamInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How often the group runs its automatic health check, in seconds.`
+  String get groupParamIntervalInfo {
+    return Intl.message(
+      'How often the group runs its automatic health check, in seconds.',
+      name: 'groupParamIntervalInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lazy`
+  String get groupParamLazy {
+    return Intl.message('Lazy', name: 'groupParamLazy', desc: '', args: []);
+  }
+
+  /// `When on, a group only health-checks while it is being used; idle groups skip testing and save resources.`
+  String get groupParamLazyInfo {
+    return Intl.message(
+      'When on, a group only health-checks while it is being used; idle groups skip testing and save resources.',
+      name: 'groupParamLazyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check timeout (ms)`
+  String get groupParamTimeout {
+    return Intl.message(
+      'Check timeout (ms)',
+      name: 'groupParamTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Timeout of a single health check in milliseconds; a check that times out counts as failed. The kernel default is 5000.`
+  String get groupParamTimeoutInfo {
+    return Intl.message(
+      'Timeout of a single health check in milliseconds; a check that times out counts as failed. The kernel default is 5000.',
+      name: 'groupParamTimeoutInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Max failed times`
+  String get groupParamMaxFailedTimes {
+    return Intl.message(
+      'Max failed times',
+      name: 'groupParamMaxFailedTimes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Once health checks have failed this many times, a forced health check is triggered. The kernel default is 5.`
+  String get groupParamMaxFailedTimesInfo {
+    return Intl.message(
+      'Once health checks have failed this many times, a forced health check is triggered. The kernel default is 5.',
+      name: 'groupParamMaxFailedTimesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tolerance (ms)`
+  String get groupParamTolerance {
+    return Intl.message(
+      'Tolerance (ms)',
+      name: 'groupParamTolerance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For auto groups: the selection only switches when the current fastest node is slower than a newly measured one by more than this many milliseconds, which avoids constant flip-flopping.`
+  String get groupParamToleranceInfo {
+    return Intl.message(
+      'For auto groups: the selection only switches when the current fastest node is slower than a newly measured one by more than this many milliseconds, which avoids constant flip-flopping.',
+      name: 'groupParamToleranceInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filter (regex)`
+  String get groupParamFilter {
+    return Intl.message(
+      'Filter (regex)',
+      name: 'groupParamFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with '.`
+  String get groupParamFilterInfo {
+    return Intl.message(
+      'Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with `.',
+      name: 'groupParamFilterInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exclude filter (regex)`
+  String get groupParamExcludeFilter {
+    return Intl.message(
+      'Exclude filter (regex)',
+      name: 'groupParamExcludeFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes whose name matches this regular expression are removed from the group; separate multiple expressions with '.`
+  String get groupParamExcludeFilterInfo {
+    return Intl.message(
+      'Nodes whose name matches this regular expression are removed from the group; separate multiple expressions with `.',
+      name: 'groupParamExcludeFilterInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exclude types`
+  String get groupParamExcludeType {
+    return Intl.message(
+      'Exclude types',
+      name: 'groupParamExcludeType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Removes nodes of the selected protocol types from the group. Matching ignores letter case.`
+  String get groupParamExcludeTypeInfo {
+    return Intl.message(
+      'Removes nodes of the selected protocol types from the group. Matching ignores letter case.',
+      name: 'groupParamExcludeTypeInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expected status`
+  String get groupParamExpectedStatus {
+    return Intl.message(
+      'Expected status',
+      name: 'groupParamExpectedStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The HTTP status a health check must return to count as alive, e.g. 200, 200/204 or 200-299. Leaving it empty is the same as *.`
+  String get groupParamExpectedStatusInfo {
+    return Intl.message(
+      'The HTTP status a health check must return to count as alive, e.g. 200, 200/204 or 200-299. Leaving it empty is the same as *.',
+      name: 'groupParamExpectedStatusInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hidden`
+  String get groupParamHidden {
+    return Intl.message('Hidden', name: 'groupParamHidden', desc: '', args: []);
+  }
+
+  /// `When on, this group is hidden from the panel's group list.`
+  String get groupParamHiddenInfo {
+    return Intl.message(
+      'When on, this group is hidden from the panel\'s group list.',
+      name: 'groupParamHiddenInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Group icon`
+  String get groupParamIcon {
+    return Intl.message(
+      'Group icon',
+      name: 'groupParamIcon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image address used as this group's icon.`
+  String get groupParamIconInfo {
+    return Intl.message(
+      'Image address used as this group\'s icon.',
+      name: 'groupParamIconInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Default selected node`
+  String get groupParamDefaultSelected {
+    return Intl.message(
+      'Default selected node',
+      name: 'groupParamDefaultSelected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The node this group selects the first time it appears; without it, the first node is selected.`
+  String get groupParamDefaultSelectedInfo {
+    return Intl.message(
+      'The node this group selects the first time it appears; without it, the first node is selected.',
+      name: 'groupParamDefaultSelectedInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty-group fallback`
+  String get groupParamEmptyFallback {
+    return Intl.message(
+      'Empty-group fallback',
+      name: 'groupParamEmptyFallback',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When the group ends up with no usable node, this node takes over instead. Without it, COMPATIBLE is used.`
+  String get groupParamEmptyFallbackInfo {
+    return Intl.message(
+      'When the group ends up with no usable node, this node takes over instead. Without it, COMPATIBLE is used.',
+      name: 'groupParamEmptyFallbackInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disable UDP`
+  String get groupParamDisableUdp {
+    return Intl.message(
+      'Disable UDP',
+      name: 'groupParamDisableUdp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turns off UDP forwarding for this group.`
+  String get groupParamDisableUdpInfo {
+    return Intl.message(
+      'Turns off UDP forwarding for this group.',
+      name: 'groupParamDisableUdpInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all`
+  String get groupParamIncludeAll {
+    return Intl.message(
+      'Include all',
+      name: 'groupParamIncludeAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every node and every provider in this group; equivalent to turning on both options below.`
+  String get groupParamIncludeAllInfo {
+    return Intl.message(
+      'Automatically includes every node and every provider in this group; equivalent to turning on both options below.',
+      name: 'groupParamIncludeAllInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all proxies`
+  String get groupParamIncludeAllProxies {
+    return Intl.message(
+      'Include all proxies',
+      name: 'groupParamIncludeAllProxies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every node in this group, ordered by name.`
+  String get groupParamIncludeAllProxiesInfo {
+    return Intl.message(
+      'Automatically includes every node in this group, ordered by name.',
+      name: 'groupParamIncludeAllProxiesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all providers`
+  String get groupParamIncludeAllProviders {
+    return Intl.message(
+      'Include all providers',
+      name: 'groupParamIncludeAllProviders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every proxy provider in this group.`
+  String get groupParamIncludeAllProvidersInfo {
+    return Intl.message(
+      'Automatically includes every proxy provider in this group.',
+      name: 'groupParamIncludeAllProvidersInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load-balance strategy`
+  String get groupParamStrategy {
+    return Intl.message(
+      'Load-balance strategy',
+      name: 'groupParamStrategy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.`
+  String get groupParamStrategyInfo {
+    return Intl.message(
+      'How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.',
+      name: 'groupParamStrategyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Consistent hashing`
+  String get groupStrategyConsistentHashing {
+    return Intl.message(
+      'Consistent hashing',
+      name: 'groupStrategyConsistentHashing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Round-robin`
+  String get groupStrategyRoundRobin {
+    return Intl.message(
+      'Round-robin',
+      name: 'groupStrategyRoundRobin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sticky sessions`
+  String get groupStrategyStickySessions {
+    return Intl.message(
+      'Sticky sessions',
+      name: 'groupStrategyStickySessions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear this group's overrides`
+  String get groupSettingsResetAll {
+    return Intl.message(
+      'Clear this group\'s overrides',
+      name: 'groupSettingsResetAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All parameter overrides for this group will be removed and the subscription values will apply again.`
+  String get groupSettingsResetConfirm {
+    return Intl.message(
+      'All parameter overrides for this group will be removed and the subscription values will apply again.',
+      name: 'groupSettingsResetConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A script override is active for this profile and owns the whole config, so group parameter overrides do not take effect right now.`
+  String get groupSettingsScriptInactive {
+    return Intl.message(
+      'A script override is active for this profile and owns the whole config, so group parameter overrides do not take effect right now.',
+      name: 'groupSettingsScriptInactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not read this group's subscription parameters.`
+  String get groupSettingsLoadFailed {
+    return Intl.message(
+      'Could not read this group\'s subscription parameters.',
+      name: 'groupSettingsLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Health check`
+  String get groupSectionHealthCheck {
+    return Intl.message(
+      'Health check',
+      name: 'groupSectionHealthCheck',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Member filtering`
+  String get groupSectionFiltering {
+    return Intl.message(
+      'Member filtering',
+      name: 'groupSectionFiltering',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Behavior`
+  String get groupSectionBehavior {
+    return Intl.message(
+      'Behavior',
+      name: 'groupSectionBehavior',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

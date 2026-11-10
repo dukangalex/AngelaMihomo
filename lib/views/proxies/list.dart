@@ -12,6 +12,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'group_settings.dart';
 
 class ProxiesListView extends StatelessWidget {
   const ProxiesListView({super.key});
@@ -543,6 +544,25 @@ class _GroupHeader extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(width: 4),
+                  // T76: group parameter editor entry, next to the other
+                  // per-group actions in the expanded header.
+                  _PressScaleWrapper(
+                    child: SizedBox.square(
+                      dimension: 36,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.tune),
+                        onPressed: () {
+                          BaseNavigator.push(
+                            context,
+                            GroupSettingsView(groupName: group.name),
+                          );
+                        },
+                        tooltip: appLocalizations.groupSettings,
+                      ),
+                    ),
+                  ),
                   _PressScaleWrapper(
                     child: SizedBox.square(
                       dimension: 36,
