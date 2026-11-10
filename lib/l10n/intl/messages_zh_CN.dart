@@ -754,6 +754,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "groupParamFilterInfo": MessageLookupByLibrary.simpleMessage(
       "只保留名称匹配该正则的节点；多个正则用 ` 分隔。",
     ),
+    "groupParamHashKey": MessageLookupByLibrary.simpleMessage("哈希键"),
+    "groupParamHashKeyInfo": MessageLookupByLibrary.simpleMessage(
+      "负载均衡把流量固定到节点时按什么计算哈希键：留空按目标主机/IP 计算；填 in-user 时改按入站认证用户名计算，无用户名时回退到目标。当前内核仅接受 in-user，其它值会被内核拒绝。",
+    ),
     "groupParamHidden": MessageLookupByLibrary.simpleMessage("隐藏该组"),
     "groupParamHiddenInfo": MessageLookupByLibrary.simpleMessage(
       "开启后，该组不在面板的组列表中显示。",

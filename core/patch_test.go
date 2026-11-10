@@ -1855,10 +1855,11 @@ proxies:
 proxy-groups:
   - {name: Main, type: select, proxies: [A, B], url: "https://example.com/check", interval: 300}
   - {name: Auto, type: url-test, proxies: [A, B], tolerance: 50}
+  - {name: LB, type: load-balance, proxies: [A, B], strategy: consistent-hashing}
 rules:
   - MATCH,Main
 `)
-	params := patchParams(t, `{"group-overrides":{"Main":{"interval":60,"lazy":false,"disable-udp":true,"default-selected":"B","proxies":["A"],"type":"url-test"},"Auto":{"strategy":"round-robin","tolerance":120},"Ghost":{"interval":10}}}`)
+	params := patchParams(t, `{"group-overrides":{"Main":{"interval":60,"lazy":false,"disable-udp":true,"default-selected":"B","proxies":["A"],"type":"url-test"},"Auto":{"strategy":"round-robin","tolerance":120},"LB":{"hash-key":"in-user"},"Ghost":{"interval":10}}}`)
 	if _, err := applyPatch(rawCfg, params); err != nil {
 		t.Fatal(err)
 	}
@@ -1905,6 +1906,16 @@ rules:
 	// ignores strategy outside load-balance groups.
 	if got := auto["strategy"]; got != "round-robin" {
 		t.Errorf("Auto strategy = %v, want round-robin", got)
+	}
+	lb := groups["LB"]
+	if lb == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := lb["hash-key"]; got != "in-user" {
+		t.Errorf("LB hash-key = %v, want overridden in-user", got)
+	}
+	if got := lb["strategy"]; got != "consistent-hashing" {
+		t.Errorf("LB strategy = %v, subscription value must be preserved", got)
 	}
 	if _, ok := groups["Ghost"]; ok {
 		t.Errorf("override for a group the subscription does not provide must not create it")

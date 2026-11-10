@@ -30,6 +30,7 @@ _ProxyGroup _$ProxyGroupFromJson(Map<String, dynamic> json) => _ProxyGroup(
   includeAllProxies: _parseBool(json['include-all-proxies']),
   includeAllProviders: _parseBool(json['include-all-providers']),
   strategy: json['strategy'] as String?,
+  hashKey: json['hash-key'] as String?,
 );
 
 Map<String, dynamic> _$ProxyGroupToJson(_ProxyGroup instance) =>
@@ -57,6 +58,7 @@ Map<String, dynamic> _$ProxyGroupToJson(_ProxyGroup instance) =>
       'include-all-proxies': instance.includeAllProxies,
       'include-all-providers': instance.includeAllProviders,
       'strategy': instance.strategy,
+      'hash-key': instance.hashKey,
     };
 
 const _$GroupTypeEnumMap = {

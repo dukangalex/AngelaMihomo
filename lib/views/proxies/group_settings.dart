@@ -579,6 +579,16 @@ class _GroupSettingsViewState extends ConsumerState<GroupSettingsView> {
                   },
                 ),
               ),
+            if (_rawType == 'load-balance')
+              _textRow(
+                label: appLocalizations.groupParamHashKey,
+                info: appLocalizations.groupParamHashKeyInfo,
+                value: values.hashKey,
+                overridden: values.hashKey != subscription.hashKey,
+                onChanged: (v) => _commit(values.copyWith(hashKey: v)),
+                onReset: () =>
+                    _commit(values.copyWith(hashKey: subscription.hashKey)),
+              ),
             _nameRow(
               label: appLocalizations.groupParamEmptyFallback,
               info: appLocalizations.groupParamEmptyFallbackInfo,

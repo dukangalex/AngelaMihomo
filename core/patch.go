@@ -784,7 +784,7 @@ var groupOverrideKeys = map[string]bool{
 	"icon": true, "tolerance": true, "default-selected": true,
 	"empty-fallback": true, "disable-udp": true, "include-all": true,
 	"include-all-proxies": true, "include-all-providers": true,
-	"strategy": true,
+	"strategy": true, "hash-key": true,
 }
 
 // applyGroupOverrides merges the profile's stored per-group parameter

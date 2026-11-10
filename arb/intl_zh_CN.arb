@@ -1326,6 +1326,8 @@
   "groupParamIncludeAllProvidersInfo": "自动把全部代理集合纳入本组。",
   "groupParamStrategy": "负载均衡策略",
   "groupParamStrategyInfo": "负载均衡组的分流方式：一致哈希按目标固定节点、轮询逐个轮换、粘性会话按来源固定节点。",
+  "groupParamHashKey": "哈希键",
+  "groupParamHashKeyInfo": "负载均衡把流量固定到节点时按什么计算哈希键：留空按目标主机/IP 计算；填 in-user 时改按入站认证用户名计算，无用户名时回退到目标。当前内核仅接受 in-user，其它值会被内核拒绝。",
   "groupStrategyConsistentHashing": "一致哈希",
   "groupStrategyRoundRobin": "轮询",
   "groupStrategyStickySessions": "粘性会话",

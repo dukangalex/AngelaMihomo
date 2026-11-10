@@ -11385,6 +11385,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Hash key`
+  String get groupParamHashKey {
+    return Intl.message(
+      'Hash key',
+      name: 'groupParamHashKey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.`
+  String get groupParamHashKeyInfo {
+    return Intl.message(
+      'What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.',
+      name: 'groupParamHashKeyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Consistent hashing`
   String get groupStrategyConsistentHashing {
     return Intl.message(

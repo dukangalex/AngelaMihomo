@@ -150,6 +150,7 @@ abstract class ProxyGroup with _$ProxyGroup {
     @JsonKey(name: 'include-all-providers', fromJson: _parseBool)
     bool? includeAllProviders,
     String? strategy,
+    @JsonKey(name: 'hash-key') String? hashKey,
   }) = _ProxyGroup;
 
   factory ProxyGroup.fromJson(Map<String, Object?> json) =>

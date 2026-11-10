@@ -33,6 +33,7 @@ void main() {
       'include-all-proxies': true,
       'include-all-providers': true,
       'strategy': 'round-robin',
+      'hash-key': 'in-user',
     });
     expect(group.defaultSelected, 'B');
     expect(group.emptyFallback, 'DIRECT');
@@ -48,6 +49,45 @@ void main() {
     expect(out['include-all-proxies'], isTrue);
     expect(out['include-all-providers'], isTrue);
     expect(out['strategy'], 'round-robin');
+    expect(out['hash-key'], 'in-user');
+  });
+
+  test('hash-key 覆盖往返：设置、改回订阅值摘除、清空覆盖', () {
+    final subscription = ProxyGroupParams.fromRawMap(const {
+      'name': 'LB',
+      'type': 'load-balance',
+      'strategy': 'consistent-hashing',
+    });
+    expect(subscription.hashKey, '');
+    // Setting it produces exactly one patch entry, kernel-named.
+    final edited = subscription.copyWith(hashKey: 'in-user');
+    final override = edited.diffAgainst(subscription);
+    expect(override.toPatchMap(), {'hash-key': 'in-user'});
+    expect(subscription.applyOverride(override), edited);
+    // A subscription that already carries hash-key: clearing the field in
+    // the editor writes an explicit empty override (kernel omits empty),
+    // while editing back to the subscription value drops the override.
+    final subWithKey = ProxyGroupParams.fromRawMap(const {
+      'name': 'LB',
+      'type': 'load-balance',
+      'hash-key': 'in-user',
+    });
+    final cleared = subWithKey.copyWith(hashKey: '');
+    expect(cleared.diffAgainst(subWithKey).toPatchMap(), {'hash-key': ''});
+    expect(subWithKey.diffAgainst(subWithKey).isEmpty, isTrue);
+    // Profile persistence keeps the kernel field name.
+    final profile = Profile(
+      id: 'p2',
+      autoUpdateDuration: const Duration(hours: 1),
+      groupOverrides: const {'LB': ProxyGroupOverride(hashKey: 'in-user')},
+    );
+    final json =
+        jsonDecode(jsonEncode(profile.toJson())) as Map<String, dynamic>;
+    final lb =
+        (json['group-overrides'] as Map<String, dynamic>)['LB']
+            as Map<String, dynamic>;
+    expect(lb, {'hash-key': 'in-user'});
+    expect(Profile.fromJson(json).groupOverrides['LB']?.hashKey, 'in-user');
   });
 
   test('fromRawMap 容错读未知 type 的组参数（relay 不炸）', () {

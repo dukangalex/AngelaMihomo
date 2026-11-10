@@ -203,6 +203,7 @@ abstract class ProxyGroupOverride with _$ProxyGroupOverride {
     @JsonKey(name: 'include-all-proxies') bool? includeAllProxies,
     @JsonKey(name: 'include-all-providers') bool? includeAllProviders,
     String? strategy,
+    @JsonKey(name: 'hash-key') String? hashKey,
   }) = _ProxyGroupOverride;
 
   factory ProxyGroupOverride.fromJson(Map<String, Object?> json) =>
@@ -235,6 +236,7 @@ extension ProxyGroupOverrideExt on ProxyGroupOverride {
       if (includeAllProviders != null)
         'include-all-providers': includeAllProviders,
       if (strategy != null) 'strategy': strategy,
+      if (hashKey != null) 'hash-key': hashKey,
     };
   }
 
@@ -268,6 +270,7 @@ abstract class ProxyGroupParams with _$ProxyGroupParams {
     @Default(false) bool includeAllProxies,
     @Default(false) bool includeAllProviders,
     @Default('') String strategy,
+    @Default('') String hashKey,
   }) = _ProxyGroupParams;
 
   /// Tolerant reader for one raw `proxy-groups` entry as returned by the
@@ -313,6 +316,7 @@ abstract class ProxyGroupParams with _$ProxyGroupParams {
       includeAllProxies: asBool(json['include-all-proxies']) ?? false,
       includeAllProviders: asBool(json['include-all-providers']) ?? false,
       strategy: asText('strategy'),
+      hashKey: asText('hash-key'),
     );
   }
 
@@ -338,6 +342,7 @@ abstract class ProxyGroupParams with _$ProxyGroupParams {
       includeAllProxies: group.includeAllProxies ?? false,
       includeAllProviders: group.includeAllProviders ?? false,
       strategy: group.strategy ?? '',
+      hashKey: group.hashKey ?? '',
     );
   }
 }
@@ -368,6 +373,7 @@ extension ProxyGroupParamsExt on ProxyGroupParams {
       includeAllProviders:
           override.includeAllProviders ?? includeAllProviders,
       strategy: override.strategy ?? strategy,
+      hashKey: override.hashKey ?? hashKey,
     );
   }
 
@@ -412,6 +418,7 @@ extension ProxyGroupParamsExt on ProxyGroupParams {
           ? includeAllProviders
           : null,
       strategy: strategy != subscription.strategy ? strategy : null,
+      hashKey: hashKey != subscription.hashKey ? hashKey : null,
     );
   }
 }

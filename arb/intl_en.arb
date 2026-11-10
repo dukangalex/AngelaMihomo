@@ -1326,6 +1326,8 @@
   "groupParamIncludeAllProvidersInfo": "Automatically includes every proxy provider in this group.",
   "groupParamStrategy": "Load-balance strategy",
   "groupParamStrategyInfo": "How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.",
+  "groupParamHashKey": "Hash key",
+  "groupParamHashKeyInfo": "What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.",
   "groupStrategyConsistentHashing": "Consistent hashing",
   "groupStrategyRoundRobin": "Round-robin",
   "groupStrategyStickySessions": "Sticky sessions",

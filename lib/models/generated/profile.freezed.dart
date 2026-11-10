@@ -1258,7 +1258,7 @@ as List<Rule>,
 /// @nodoc
 mixin _$ProxyGroupOverride {
 
- String? get url; int? get interval; bool? get lazy; int? get timeout;@JsonKey(name: 'max-failed-times') int? get maxFailedTimes; String? get filter;@JsonKey(name: 'exclude-filter') String? get excludeFilter;@JsonKey(name: 'exclude-type') String? get excludeType;@JsonKey(name: 'expected-status') String? get expectedStatus; bool? get hidden; String? get icon; int? get tolerance;@JsonKey(name: 'default-selected') String? get defaultSelected;@JsonKey(name: 'empty-fallback') String? get emptyFallback;@JsonKey(name: 'disable-udp') bool? get disableUdp;@JsonKey(name: 'include-all') bool? get includeAll;@JsonKey(name: 'include-all-proxies') bool? get includeAllProxies;@JsonKey(name: 'include-all-providers') bool? get includeAllProviders; String? get strategy;
+ String? get url; int? get interval; bool? get lazy; int? get timeout;@JsonKey(name: 'max-failed-times') int? get maxFailedTimes; String? get filter;@JsonKey(name: 'exclude-filter') String? get excludeFilter;@JsonKey(name: 'exclude-type') String? get excludeType;@JsonKey(name: 'expected-status') String? get expectedStatus; bool? get hidden; String? get icon; int? get tolerance;@JsonKey(name: 'default-selected') String? get defaultSelected;@JsonKey(name: 'empty-fallback') String? get emptyFallback;@JsonKey(name: 'disable-udp') bool? get disableUdp;@JsonKey(name: 'include-all') bool? get includeAll;@JsonKey(name: 'include-all-proxies') bool? get includeAllProxies;@JsonKey(name: 'include-all-providers') bool? get includeAllProviders; String? get strategy;@JsonKey(name: 'hash-key') String? get hashKey;
 /// Create a copy of ProxyGroupOverride
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1272,20 +1272,20 @@ $ProxyGroupOverrideCopyWith<ProxyGroupOverride> get copyWith => _$ProxyGroupOver
 @override
 bool operator ==(Object other) {
   final _this = this as ProxyGroupOverride;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxyGroupOverride&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.interval, _this.interval) || other.interval == _this.interval)&&(identical(other.lazy, _this.lazy) || other.lazy == _this.lazy)&&(identical(other.timeout, _this.timeout) || other.timeout == _this.timeout)&&(identical(other.maxFailedTimes, _this.maxFailedTimes) || other.maxFailedTimes == _this.maxFailedTimes)&&(identical(other.filter, _this.filter) || other.filter == _this.filter)&&(identical(other.excludeFilter, _this.excludeFilter) || other.excludeFilter == _this.excludeFilter)&&(identical(other.excludeType, _this.excludeType) || other.excludeType == _this.excludeType)&&(identical(other.expectedStatus, _this.expectedStatus) || other.expectedStatus == _this.expectedStatus)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.tolerance, _this.tolerance) || other.tolerance == _this.tolerance)&&(identical(other.defaultSelected, _this.defaultSelected) || other.defaultSelected == _this.defaultSelected)&&(identical(other.emptyFallback, _this.emptyFallback) || other.emptyFallback == _this.emptyFallback)&&(identical(other.disableUdp, _this.disableUdp) || other.disableUdp == _this.disableUdp)&&(identical(other.includeAll, _this.includeAll) || other.includeAll == _this.includeAll)&&(identical(other.includeAllProxies, _this.includeAllProxies) || other.includeAllProxies == _this.includeAllProxies)&&(identical(other.includeAllProviders, _this.includeAllProviders) || other.includeAllProviders == _this.includeAllProviders)&&(identical(other.strategy, _this.strategy) || other.strategy == _this.strategy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxyGroupOverride&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.interval, _this.interval) || other.interval == _this.interval)&&(identical(other.lazy, _this.lazy) || other.lazy == _this.lazy)&&(identical(other.timeout, _this.timeout) || other.timeout == _this.timeout)&&(identical(other.maxFailedTimes, _this.maxFailedTimes) || other.maxFailedTimes == _this.maxFailedTimes)&&(identical(other.filter, _this.filter) || other.filter == _this.filter)&&(identical(other.excludeFilter, _this.excludeFilter) || other.excludeFilter == _this.excludeFilter)&&(identical(other.excludeType, _this.excludeType) || other.excludeType == _this.excludeType)&&(identical(other.expectedStatus, _this.expectedStatus) || other.expectedStatus == _this.expectedStatus)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.tolerance, _this.tolerance) || other.tolerance == _this.tolerance)&&(identical(other.defaultSelected, _this.defaultSelected) || other.defaultSelected == _this.defaultSelected)&&(identical(other.emptyFallback, _this.emptyFallback) || other.emptyFallback == _this.emptyFallback)&&(identical(other.disableUdp, _this.disableUdp) || other.disableUdp == _this.disableUdp)&&(identical(other.includeAll, _this.includeAll) || other.includeAll == _this.includeAll)&&(identical(other.includeAllProxies, _this.includeAllProxies) || other.includeAllProxies == _this.includeAllProxies)&&(identical(other.includeAllProviders, _this.includeAllProviders) || other.includeAllProviders == _this.includeAllProviders)&&(identical(other.strategy, _this.strategy) || other.strategy == _this.strategy)&&(identical(other.hashKey, _this.hashKey) || other.hashKey == _this.hashKey));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ProxyGroupOverride;
-  return Object.hashAll([runtimeType,_this.url,_this.interval,_this.lazy,_this.timeout,_this.maxFailedTimes,_this.filter,_this.excludeFilter,_this.excludeType,_this.expectedStatus,_this.hidden,_this.icon,_this.tolerance,_this.defaultSelected,_this.emptyFallback,_this.disableUdp,_this.includeAll,_this.includeAllProxies,_this.includeAllProviders,_this.strategy]);
+  return Object.hashAll([runtimeType,_this.url,_this.interval,_this.lazy,_this.timeout,_this.maxFailedTimes,_this.filter,_this.excludeFilter,_this.excludeType,_this.expectedStatus,_this.hidden,_this.icon,_this.tolerance,_this.defaultSelected,_this.emptyFallback,_this.disableUdp,_this.includeAll,_this.includeAllProxies,_this.includeAllProviders,_this.strategy,_this.hashKey]);
 }
 
 @override
 String toString() {
   final _this = this as ProxyGroupOverride;
-  return 'ProxyGroupOverride(url: ${_this.url}, interval: ${_this.interval}, lazy: ${_this.lazy}, timeout: ${_this.timeout}, maxFailedTimes: ${_this.maxFailedTimes}, filter: ${_this.filter}, excludeFilter: ${_this.excludeFilter}, excludeType: ${_this.excludeType}, expectedStatus: ${_this.expectedStatus}, hidden: ${_this.hidden}, icon: ${_this.icon}, tolerance: ${_this.tolerance}, defaultSelected: ${_this.defaultSelected}, emptyFallback: ${_this.emptyFallback}, disableUdp: ${_this.disableUdp}, includeAll: ${_this.includeAll}, includeAllProxies: ${_this.includeAllProxies}, includeAllProviders: ${_this.includeAllProviders}, strategy: ${_this.strategy})';
+  return 'ProxyGroupOverride(url: ${_this.url}, interval: ${_this.interval}, lazy: ${_this.lazy}, timeout: ${_this.timeout}, maxFailedTimes: ${_this.maxFailedTimes}, filter: ${_this.filter}, excludeFilter: ${_this.excludeFilter}, excludeType: ${_this.excludeType}, expectedStatus: ${_this.expectedStatus}, hidden: ${_this.hidden}, icon: ${_this.icon}, tolerance: ${_this.tolerance}, defaultSelected: ${_this.defaultSelected}, emptyFallback: ${_this.emptyFallback}, disableUdp: ${_this.disableUdp}, includeAll: ${_this.includeAll}, includeAllProxies: ${_this.includeAllProxies}, includeAllProviders: ${_this.includeAllProviders}, strategy: ${_this.strategy}, hashKey: ${_this.hashKey})';
 }
 
 
@@ -1296,7 +1296,7 @@ abstract mixin class $ProxyGroupOverrideCopyWith<$Res>  {
   factory $ProxyGroupOverrideCopyWith(ProxyGroupOverride value, $Res Function(ProxyGroupOverride) _then) = _$ProxyGroupOverrideCopyWithImpl;
 @useResult
 $Res call({
- String? url, int? interval, bool? lazy, int? timeout,@JsonKey(name: 'max-failed-times') int? maxFailedTimes, String? filter,@JsonKey(name: 'exclude-filter') String? excludeFilter,@JsonKey(name: 'exclude-type') String? excludeType,@JsonKey(name: 'expected-status') String? expectedStatus, bool? hidden, String? icon, int? tolerance,@JsonKey(name: 'default-selected') String? defaultSelected,@JsonKey(name: 'empty-fallback') String? emptyFallback,@JsonKey(name: 'disable-udp') bool? disableUdp,@JsonKey(name: 'include-all') bool? includeAll,@JsonKey(name: 'include-all-proxies') bool? includeAllProxies,@JsonKey(name: 'include-all-providers') bool? includeAllProviders, String? strategy
+ String? url, int? interval, bool? lazy, int? timeout,@JsonKey(name: 'max-failed-times') int? maxFailedTimes, String? filter,@JsonKey(name: 'exclude-filter') String? excludeFilter,@JsonKey(name: 'exclude-type') String? excludeType,@JsonKey(name: 'expected-status') String? expectedStatus, bool? hidden, String? icon, int? tolerance,@JsonKey(name: 'default-selected') String? defaultSelected,@JsonKey(name: 'empty-fallback') String? emptyFallback,@JsonKey(name: 'disable-udp') bool? disableUdp,@JsonKey(name: 'include-all') bool? includeAll,@JsonKey(name: 'include-all-proxies') bool? includeAllProxies,@JsonKey(name: 'include-all-providers') bool? includeAllProviders, String? strategy,@JsonKey(name: 'hash-key') String? hashKey
 });
 
 
@@ -1313,7 +1313,7 @@ class _$ProxyGroupOverrideCopyWithImpl<$Res>
 
 /// Create a copy of ProxyGroupOverride
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? url = freezed,Object? interval = freezed,Object? lazy = freezed,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = freezed,Object? excludeFilter = freezed,Object? excludeType = freezed,Object? expectedStatus = freezed,Object? hidden = freezed,Object? icon = freezed,Object? tolerance = freezed,Object? defaultSelected = freezed,Object? emptyFallback = freezed,Object? disableUdp = freezed,Object? includeAll = freezed,Object? includeAllProxies = freezed,Object? includeAllProviders = freezed,Object? strategy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? url = freezed,Object? interval = freezed,Object? lazy = freezed,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = freezed,Object? excludeFilter = freezed,Object? excludeType = freezed,Object? expectedStatus = freezed,Object? hidden = freezed,Object? icon = freezed,Object? tolerance = freezed,Object? defaultSelected = freezed,Object? emptyFallback = freezed,Object? disableUdp = freezed,Object? includeAll = freezed,Object? includeAllProxies = freezed,Object? includeAllProviders = freezed,Object? strategy = freezed,Object? hashKey = freezed,}) {
   return _then(ProxyGroupOverride(
 url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String?,interval: freezed == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
@@ -1334,6 +1334,7 @@ as bool?,includeAll: freezed == includeAll ? _self.includeAll : includeAll // ig
 as bool?,includeAllProxies: freezed == includeAllProxies ? _self.includeAllProxies : includeAllProxies // ignore: cast_nullable_to_non_nullable
 as bool?,includeAllProviders: freezed == includeAllProviders ? _self.includeAllProviders : includeAllProviders // ignore: cast_nullable_to_non_nullable
 as bool?,strategy: freezed == strategy ? _self.strategy : strategy // ignore: cast_nullable_to_non_nullable
+as String?,hashKey: freezed == hashKey ? _self.hashKey : hashKey // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -1419,10 +1420,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy, @JsonKey(name: 'hash-key')  String? hashKey)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProxyGroupOverride() when $default != null:
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   return orElse();
 
 }
@@ -1440,10 +1441,10 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy, @JsonKey(name: 'hash-key')  String? hashKey)  $default,) {final _that = this;
 switch (_that) {
 case _ProxyGroupOverride():
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1460,10 +1461,10 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? url,  int? interval,  bool? lazy,  int? timeout, @JsonKey(name: 'max-failed-times')  int? maxFailedTimes,  String? filter, @JsonKey(name: 'exclude-filter')  String? excludeFilter, @JsonKey(name: 'exclude-type')  String? excludeType, @JsonKey(name: 'expected-status')  String? expectedStatus,  bool? hidden,  String? icon,  int? tolerance, @JsonKey(name: 'default-selected')  String? defaultSelected, @JsonKey(name: 'empty-fallback')  String? emptyFallback, @JsonKey(name: 'disable-udp')  bool? disableUdp, @JsonKey(name: 'include-all')  bool? includeAll, @JsonKey(name: 'include-all-proxies')  bool? includeAllProxies, @JsonKey(name: 'include-all-providers')  bool? includeAllProviders,  String? strategy, @JsonKey(name: 'hash-key')  String? hashKey)?  $default,) {final _that = this;
 switch (_that) {
 case _ProxyGroupOverride() when $default != null:
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   return null;
 
 }
@@ -1475,7 +1476,7 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 
 @JsonSerializable(includeIfNull: false)
 class _ProxyGroupOverride implements ProxyGroupOverride {
-  const _ProxyGroupOverride({this.url, this.interval, this.lazy, this.timeout, @JsonKey(name: 'max-failed-times') this.maxFailedTimes, this.filter, @JsonKey(name: 'exclude-filter') this.excludeFilter, @JsonKey(name: 'exclude-type') this.excludeType, @JsonKey(name: 'expected-status') this.expectedStatus, this.hidden, this.icon, this.tolerance, @JsonKey(name: 'default-selected') this.defaultSelected, @JsonKey(name: 'empty-fallback') this.emptyFallback, @JsonKey(name: 'disable-udp') this.disableUdp, @JsonKey(name: 'include-all') this.includeAll, @JsonKey(name: 'include-all-proxies') this.includeAllProxies, @JsonKey(name: 'include-all-providers') this.includeAllProviders, this.strategy});
+  const _ProxyGroupOverride({this.url, this.interval, this.lazy, this.timeout, @JsonKey(name: 'max-failed-times') this.maxFailedTimes, this.filter, @JsonKey(name: 'exclude-filter') this.excludeFilter, @JsonKey(name: 'exclude-type') this.excludeType, @JsonKey(name: 'expected-status') this.expectedStatus, this.hidden, this.icon, this.tolerance, @JsonKey(name: 'default-selected') this.defaultSelected, @JsonKey(name: 'empty-fallback') this.emptyFallback, @JsonKey(name: 'disable-udp') this.disableUdp, @JsonKey(name: 'include-all') this.includeAll, @JsonKey(name: 'include-all-proxies') this.includeAllProxies, @JsonKey(name: 'include-all-providers') this.includeAllProviders, this.strategy, @JsonKey(name: 'hash-key') this.hashKey});
   factory _ProxyGroupOverride.fromJson(Map<String, dynamic> json) => _$ProxyGroupOverrideFromJson(json);
 
 @override final  String? url;
@@ -1497,6 +1498,7 @@ class _ProxyGroupOverride implements ProxyGroupOverride {
 @override@JsonKey(name: 'include-all-proxies') final  bool? includeAllProxies;
 @override@JsonKey(name: 'include-all-providers') final  bool? includeAllProviders;
 @override final  String? strategy;
+@override@JsonKey(name: 'hash-key') final  String? hashKey;
 
 /// Create a copy of ProxyGroupOverride
 /// with the given fields replaced by the non-null parameter values.
@@ -1511,18 +1513,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxyGroupOverride&&(identical(other.url, url) || other.url == url)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.lazy, lazy) || other.lazy == lazy)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.maxFailedTimes, maxFailedTimes) || other.maxFailedTimes == maxFailedTimes)&&(identical(other.filter, filter) || other.filter == filter)&&(identical(other.excludeFilter, excludeFilter) || other.excludeFilter == excludeFilter)&&(identical(other.excludeType, excludeType) || other.excludeType == excludeType)&&(identical(other.expectedStatus, expectedStatus) || other.expectedStatus == expectedStatus)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.tolerance, tolerance) || other.tolerance == tolerance)&&(identical(other.defaultSelected, defaultSelected) || other.defaultSelected == defaultSelected)&&(identical(other.emptyFallback, emptyFallback) || other.emptyFallback == emptyFallback)&&(identical(other.disableUdp, disableUdp) || other.disableUdp == disableUdp)&&(identical(other.includeAll, includeAll) || other.includeAll == includeAll)&&(identical(other.includeAllProxies, includeAllProxies) || other.includeAllProxies == includeAllProxies)&&(identical(other.includeAllProviders, includeAllProviders) || other.includeAllProviders == includeAllProviders)&&(identical(other.strategy, strategy) || other.strategy == strategy));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxyGroupOverride&&(identical(other.url, url) || other.url == url)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.lazy, lazy) || other.lazy == lazy)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.maxFailedTimes, maxFailedTimes) || other.maxFailedTimes == maxFailedTimes)&&(identical(other.filter, filter) || other.filter == filter)&&(identical(other.excludeFilter, excludeFilter) || other.excludeFilter == excludeFilter)&&(identical(other.excludeType, excludeType) || other.excludeType == excludeType)&&(identical(other.expectedStatus, expectedStatus) || other.expectedStatus == expectedStatus)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.tolerance, tolerance) || other.tolerance == tolerance)&&(identical(other.defaultSelected, defaultSelected) || other.defaultSelected == defaultSelected)&&(identical(other.emptyFallback, emptyFallback) || other.emptyFallback == emptyFallback)&&(identical(other.disableUdp, disableUdp) || other.disableUdp == disableUdp)&&(identical(other.includeAll, includeAll) || other.includeAll == includeAll)&&(identical(other.includeAllProxies, includeAllProxies) || other.includeAllProxies == includeAllProxies)&&(identical(other.includeAllProviders, includeAllProviders) || other.includeAllProviders == includeAllProviders)&&(identical(other.strategy, strategy) || other.strategy == strategy)&&(identical(other.hashKey, hashKey) || other.hashKey == hashKey));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hashAll([runtimeType,url,interval,lazy,timeout,maxFailedTimes,filter,excludeFilter,excludeType,expectedStatus,hidden,icon,tolerance,defaultSelected,emptyFallback,disableUdp,includeAll,includeAllProxies,includeAllProviders,strategy]);
+    return Object.hashAll([runtimeType,url,interval,lazy,timeout,maxFailedTimes,filter,excludeFilter,excludeType,expectedStatus,hidden,icon,tolerance,defaultSelected,emptyFallback,disableUdp,includeAll,includeAllProxies,includeAllProviders,strategy,hashKey]);
 }
 
 @override
 String toString() {
-    return 'ProxyGroupOverride(url: $url, interval: $interval, lazy: $lazy, timeout: $timeout, maxFailedTimes: $maxFailedTimes, filter: $filter, excludeFilter: $excludeFilter, excludeType: $excludeType, expectedStatus: $expectedStatus, hidden: $hidden, icon: $icon, tolerance: $tolerance, defaultSelected: $defaultSelected, emptyFallback: $emptyFallback, disableUdp: $disableUdp, includeAll: $includeAll, includeAllProxies: $includeAllProxies, includeAllProviders: $includeAllProviders, strategy: $strategy)';
+    return 'ProxyGroupOverride(url: $url, interval: $interval, lazy: $lazy, timeout: $timeout, maxFailedTimes: $maxFailedTimes, filter: $filter, excludeFilter: $excludeFilter, excludeType: $excludeType, expectedStatus: $expectedStatus, hidden: $hidden, icon: $icon, tolerance: $tolerance, defaultSelected: $defaultSelected, emptyFallback: $emptyFallback, disableUdp: $disableUdp, includeAll: $includeAll, includeAllProxies: $includeAllProxies, includeAllProviders: $includeAllProviders, strategy: $strategy, hashKey: $hashKey)';
 }
 
 
@@ -1533,7 +1535,7 @@ abstract mixin class _$ProxyGroupOverrideCopyWith<$Res> implements $ProxyGroupOv
   factory _$ProxyGroupOverrideCopyWith(_ProxyGroupOverride value, $Res Function(_ProxyGroupOverride) _then) = __$ProxyGroupOverrideCopyWithImpl;
 @override @useResult
 $Res call({
- String? url, int? interval, bool? lazy, int? timeout,@JsonKey(name: 'max-failed-times') int? maxFailedTimes, String? filter,@JsonKey(name: 'exclude-filter') String? excludeFilter,@JsonKey(name: 'exclude-type') String? excludeType,@JsonKey(name: 'expected-status') String? expectedStatus, bool? hidden, String? icon, int? tolerance,@JsonKey(name: 'default-selected') String? defaultSelected,@JsonKey(name: 'empty-fallback') String? emptyFallback,@JsonKey(name: 'disable-udp') bool? disableUdp,@JsonKey(name: 'include-all') bool? includeAll,@JsonKey(name: 'include-all-proxies') bool? includeAllProxies,@JsonKey(name: 'include-all-providers') bool? includeAllProviders, String? strategy
+ String? url, int? interval, bool? lazy, int? timeout,@JsonKey(name: 'max-failed-times') int? maxFailedTimes, String? filter,@JsonKey(name: 'exclude-filter') String? excludeFilter,@JsonKey(name: 'exclude-type') String? excludeType,@JsonKey(name: 'expected-status') String? expectedStatus, bool? hidden, String? icon, int? tolerance,@JsonKey(name: 'default-selected') String? defaultSelected,@JsonKey(name: 'empty-fallback') String? emptyFallback,@JsonKey(name: 'disable-udp') bool? disableUdp,@JsonKey(name: 'include-all') bool? includeAll,@JsonKey(name: 'include-all-proxies') bool? includeAllProxies,@JsonKey(name: 'include-all-providers') bool? includeAllProviders, String? strategy,@JsonKey(name: 'hash-key') String? hashKey
 });
 
 
@@ -1550,7 +1552,7 @@ class __$ProxyGroupOverrideCopyWithImpl<$Res>
 
 /// Create a copy of ProxyGroupOverride
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? url = freezed,Object? interval = freezed,Object? lazy = freezed,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = freezed,Object? excludeFilter = freezed,Object? excludeType = freezed,Object? expectedStatus = freezed,Object? hidden = freezed,Object? icon = freezed,Object? tolerance = freezed,Object? defaultSelected = freezed,Object? emptyFallback = freezed,Object? disableUdp = freezed,Object? includeAll = freezed,Object? includeAllProxies = freezed,Object? includeAllProviders = freezed,Object? strategy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? url = freezed,Object? interval = freezed,Object? lazy = freezed,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = freezed,Object? excludeFilter = freezed,Object? excludeType = freezed,Object? expectedStatus = freezed,Object? hidden = freezed,Object? icon = freezed,Object? tolerance = freezed,Object? defaultSelected = freezed,Object? emptyFallback = freezed,Object? disableUdp = freezed,Object? includeAll = freezed,Object? includeAllProxies = freezed,Object? includeAllProviders = freezed,Object? strategy = freezed,Object? hashKey = freezed,}) {
   return _then(_ProxyGroupOverride(
 url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String?,interval: freezed == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
@@ -1571,6 +1573,7 @@ as bool?,includeAll: freezed == includeAll ? _self.includeAll : includeAll // ig
 as bool?,includeAllProxies: freezed == includeAllProxies ? _self.includeAllProxies : includeAllProxies // ignore: cast_nullable_to_non_nullable
 as bool?,includeAllProviders: freezed == includeAllProviders ? _self.includeAllProviders : includeAllProviders // ignore: cast_nullable_to_non_nullable
 as bool?,strategy: freezed == strategy ? _self.strategy : strategy // ignore: cast_nullable_to_non_nullable
+as String?,hashKey: freezed == hashKey ? _self.hashKey : hashKey // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -1581,7 +1584,7 @@ as String?,
 /// @nodoc
 mixin _$ProxyGroupParams {
 
- String get url; int? get interval; bool get lazy; int? get timeout; int? get maxFailedTimes; String get filter; String get excludeFilter; String get excludeType; String get expectedStatus; bool get hidden; String get icon; int? get tolerance; String get defaultSelected; String get emptyFallback; bool get disableUdp; bool get includeAll; bool get includeAllProxies; bool get includeAllProviders; String get strategy;
+ String get url; int? get interval; bool get lazy; int? get timeout; int? get maxFailedTimes; String get filter; String get excludeFilter; String get excludeType; String get expectedStatus; bool get hidden; String get icon; int? get tolerance; String get defaultSelected; String get emptyFallback; bool get disableUdp; bool get includeAll; bool get includeAllProxies; bool get includeAllProviders; String get strategy; String get hashKey;
 /// Create a copy of ProxyGroupParams
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1593,20 +1596,20 @@ $ProxyGroupParamsCopyWith<ProxyGroupParams> get copyWith => _$ProxyGroupParamsCo
 @override
 bool operator ==(Object other) {
   final _this = this as ProxyGroupParams;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxyGroupParams&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.interval, _this.interval) || other.interval == _this.interval)&&(identical(other.lazy, _this.lazy) || other.lazy == _this.lazy)&&(identical(other.timeout, _this.timeout) || other.timeout == _this.timeout)&&(identical(other.maxFailedTimes, _this.maxFailedTimes) || other.maxFailedTimes == _this.maxFailedTimes)&&(identical(other.filter, _this.filter) || other.filter == _this.filter)&&(identical(other.excludeFilter, _this.excludeFilter) || other.excludeFilter == _this.excludeFilter)&&(identical(other.excludeType, _this.excludeType) || other.excludeType == _this.excludeType)&&(identical(other.expectedStatus, _this.expectedStatus) || other.expectedStatus == _this.expectedStatus)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.tolerance, _this.tolerance) || other.tolerance == _this.tolerance)&&(identical(other.defaultSelected, _this.defaultSelected) || other.defaultSelected == _this.defaultSelected)&&(identical(other.emptyFallback, _this.emptyFallback) || other.emptyFallback == _this.emptyFallback)&&(identical(other.disableUdp, _this.disableUdp) || other.disableUdp == _this.disableUdp)&&(identical(other.includeAll, _this.includeAll) || other.includeAll == _this.includeAll)&&(identical(other.includeAllProxies, _this.includeAllProxies) || other.includeAllProxies == _this.includeAllProxies)&&(identical(other.includeAllProviders, _this.includeAllProviders) || other.includeAllProviders == _this.includeAllProviders)&&(identical(other.strategy, _this.strategy) || other.strategy == _this.strategy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxyGroupParams&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.interval, _this.interval) || other.interval == _this.interval)&&(identical(other.lazy, _this.lazy) || other.lazy == _this.lazy)&&(identical(other.timeout, _this.timeout) || other.timeout == _this.timeout)&&(identical(other.maxFailedTimes, _this.maxFailedTimes) || other.maxFailedTimes == _this.maxFailedTimes)&&(identical(other.filter, _this.filter) || other.filter == _this.filter)&&(identical(other.excludeFilter, _this.excludeFilter) || other.excludeFilter == _this.excludeFilter)&&(identical(other.excludeType, _this.excludeType) || other.excludeType == _this.excludeType)&&(identical(other.expectedStatus, _this.expectedStatus) || other.expectedStatus == _this.expectedStatus)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.tolerance, _this.tolerance) || other.tolerance == _this.tolerance)&&(identical(other.defaultSelected, _this.defaultSelected) || other.defaultSelected == _this.defaultSelected)&&(identical(other.emptyFallback, _this.emptyFallback) || other.emptyFallback == _this.emptyFallback)&&(identical(other.disableUdp, _this.disableUdp) || other.disableUdp == _this.disableUdp)&&(identical(other.includeAll, _this.includeAll) || other.includeAll == _this.includeAll)&&(identical(other.includeAllProxies, _this.includeAllProxies) || other.includeAllProxies == _this.includeAllProxies)&&(identical(other.includeAllProviders, _this.includeAllProviders) || other.includeAllProviders == _this.includeAllProviders)&&(identical(other.strategy, _this.strategy) || other.strategy == _this.strategy)&&(identical(other.hashKey, _this.hashKey) || other.hashKey == _this.hashKey));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ProxyGroupParams;
-  return Object.hashAll([runtimeType,_this.url,_this.interval,_this.lazy,_this.timeout,_this.maxFailedTimes,_this.filter,_this.excludeFilter,_this.excludeType,_this.expectedStatus,_this.hidden,_this.icon,_this.tolerance,_this.defaultSelected,_this.emptyFallback,_this.disableUdp,_this.includeAll,_this.includeAllProxies,_this.includeAllProviders,_this.strategy]);
+  return Object.hashAll([runtimeType,_this.url,_this.interval,_this.lazy,_this.timeout,_this.maxFailedTimes,_this.filter,_this.excludeFilter,_this.excludeType,_this.expectedStatus,_this.hidden,_this.icon,_this.tolerance,_this.defaultSelected,_this.emptyFallback,_this.disableUdp,_this.includeAll,_this.includeAllProxies,_this.includeAllProviders,_this.strategy,_this.hashKey]);
 }
 
 @override
 String toString() {
   final _this = this as ProxyGroupParams;
-  return 'ProxyGroupParams(url: ${_this.url}, interval: ${_this.interval}, lazy: ${_this.lazy}, timeout: ${_this.timeout}, maxFailedTimes: ${_this.maxFailedTimes}, filter: ${_this.filter}, excludeFilter: ${_this.excludeFilter}, excludeType: ${_this.excludeType}, expectedStatus: ${_this.expectedStatus}, hidden: ${_this.hidden}, icon: ${_this.icon}, tolerance: ${_this.tolerance}, defaultSelected: ${_this.defaultSelected}, emptyFallback: ${_this.emptyFallback}, disableUdp: ${_this.disableUdp}, includeAll: ${_this.includeAll}, includeAllProxies: ${_this.includeAllProxies}, includeAllProviders: ${_this.includeAllProviders}, strategy: ${_this.strategy})';
+  return 'ProxyGroupParams(url: ${_this.url}, interval: ${_this.interval}, lazy: ${_this.lazy}, timeout: ${_this.timeout}, maxFailedTimes: ${_this.maxFailedTimes}, filter: ${_this.filter}, excludeFilter: ${_this.excludeFilter}, excludeType: ${_this.excludeType}, expectedStatus: ${_this.expectedStatus}, hidden: ${_this.hidden}, icon: ${_this.icon}, tolerance: ${_this.tolerance}, defaultSelected: ${_this.defaultSelected}, emptyFallback: ${_this.emptyFallback}, disableUdp: ${_this.disableUdp}, includeAll: ${_this.includeAll}, includeAllProxies: ${_this.includeAllProxies}, includeAllProviders: ${_this.includeAllProviders}, strategy: ${_this.strategy}, hashKey: ${_this.hashKey})';
 }
 
 
@@ -1617,7 +1620,7 @@ abstract mixin class $ProxyGroupParamsCopyWith<$Res>  {
   factory $ProxyGroupParamsCopyWith(ProxyGroupParams value, $Res Function(ProxyGroupParams) _then) = _$ProxyGroupParamsCopyWithImpl;
 @useResult
 $Res call({
- String url, int? interval, bool lazy, int? timeout, int? maxFailedTimes, String filter, String excludeFilter, String excludeType, String expectedStatus, bool hidden, String icon, int? tolerance, String defaultSelected, String emptyFallback, bool disableUdp, bool includeAll, bool includeAllProxies, bool includeAllProviders, String strategy
+ String url, int? interval, bool lazy, int? timeout, int? maxFailedTimes, String filter, String excludeFilter, String excludeType, String expectedStatus, bool hidden, String icon, int? tolerance, String defaultSelected, String emptyFallback, bool disableUdp, bool includeAll, bool includeAllProxies, bool includeAllProviders, String strategy, String hashKey
 });
 
 
@@ -1634,7 +1637,7 @@ class _$ProxyGroupParamsCopyWithImpl<$Res>
 
 /// Create a copy of ProxyGroupParams
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? interval = freezed,Object? lazy = null,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = null,Object? excludeFilter = null,Object? excludeType = null,Object? expectedStatus = null,Object? hidden = null,Object? icon = null,Object? tolerance = freezed,Object? defaultSelected = null,Object? emptyFallback = null,Object? disableUdp = null,Object? includeAll = null,Object? includeAllProxies = null,Object? includeAllProviders = null,Object? strategy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? interval = freezed,Object? lazy = null,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = null,Object? excludeFilter = null,Object? excludeType = null,Object? expectedStatus = null,Object? hidden = null,Object? icon = null,Object? tolerance = freezed,Object? defaultSelected = null,Object? emptyFallback = null,Object? disableUdp = null,Object? includeAll = null,Object? includeAllProxies = null,Object? includeAllProviders = null,Object? strategy = null,Object? hashKey = null,}) {
   return _then(ProxyGroupParams(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,interval: freezed == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
@@ -1655,6 +1658,7 @@ as bool,includeAll: null == includeAll ? _self.includeAll : includeAll // ignore
 as bool,includeAllProxies: null == includeAllProxies ? _self.includeAllProxies : includeAllProxies // ignore: cast_nullable_to_non_nullable
 as bool,includeAllProviders: null == includeAllProviders ? _self.includeAllProviders : includeAllProviders // ignore: cast_nullable_to_non_nullable
 as bool,strategy: null == strategy ? _self.strategy : strategy // ignore: cast_nullable_to_non_nullable
+as String,hashKey: null == hashKey ? _self.hashKey : hashKey // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -1740,10 +1744,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy,  String hashKey)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProxyGroupParams() when $default != null:
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   return orElse();
 
 }
@@ -1761,10 +1765,10 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy,  String hashKey)  $default,) {final _that = this;
 switch (_that) {
 case _ProxyGroupParams():
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1781,10 +1785,10 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  int? interval,  bool lazy,  int? timeout,  int? maxFailedTimes,  String filter,  String excludeFilter,  String excludeType,  String expectedStatus,  bool hidden,  String icon,  int? tolerance,  String defaultSelected,  String emptyFallback,  bool disableUdp,  bool includeAll,  bool includeAllProxies,  bool includeAllProviders,  String strategy,  String hashKey)?  $default,) {final _that = this;
 switch (_that) {
 case _ProxyGroupParams() when $default != null:
-return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy);case _:
+return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFailedTimes,_that.filter,_that.excludeFilter,_that.excludeType,_that.expectedStatus,_that.hidden,_that.icon,_that.tolerance,_that.defaultSelected,_that.emptyFallback,_that.disableUdp,_that.includeAll,_that.includeAllProxies,_that.includeAllProviders,_that.strategy,_that.hashKey);case _:
   return null;
 
 }
@@ -1796,7 +1800,7 @@ return $default(_that.url,_that.interval,_that.lazy,_that.timeout,_that.maxFaile
 
 
 class _ProxyGroupParams implements ProxyGroupParams {
-  const _ProxyGroupParams({this.url = '', this.interval, this.lazy = true, this.timeout, this.maxFailedTimes, this.filter = '', this.excludeFilter = '', this.excludeType = '', this.expectedStatus = '', this.hidden = false, this.icon = '', this.tolerance, this.defaultSelected = '', this.emptyFallback = '', this.disableUdp = false, this.includeAll = false, this.includeAllProxies = false, this.includeAllProviders = false, this.strategy = ''});
+  const _ProxyGroupParams({this.url = '', this.interval, this.lazy = true, this.timeout, this.maxFailedTimes, this.filter = '', this.excludeFilter = '', this.excludeType = '', this.expectedStatus = '', this.hidden = false, this.icon = '', this.tolerance, this.defaultSelected = '', this.emptyFallback = '', this.disableUdp = false, this.includeAll = false, this.includeAllProxies = false, this.includeAllProviders = false, this.strategy = '', this.hashKey = ''});
   
 
 @override@JsonKey() final  String url;
@@ -1818,6 +1822,7 @@ class _ProxyGroupParams implements ProxyGroupParams {
 @override@JsonKey() final  bool includeAllProxies;
 @override@JsonKey() final  bool includeAllProviders;
 @override@JsonKey() final  String strategy;
+@override@JsonKey() final  String hashKey;
 
 /// Create a copy of ProxyGroupParams
 /// with the given fields replaced by the non-null parameter values.
@@ -1829,18 +1834,18 @@ _$ProxyGroupParamsCopyWith<_ProxyGroupParams> get copyWith => __$ProxyGroupParam
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxyGroupParams&&(identical(other.url, url) || other.url == url)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.lazy, lazy) || other.lazy == lazy)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.maxFailedTimes, maxFailedTimes) || other.maxFailedTimes == maxFailedTimes)&&(identical(other.filter, filter) || other.filter == filter)&&(identical(other.excludeFilter, excludeFilter) || other.excludeFilter == excludeFilter)&&(identical(other.excludeType, excludeType) || other.excludeType == excludeType)&&(identical(other.expectedStatus, expectedStatus) || other.expectedStatus == expectedStatus)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.tolerance, tolerance) || other.tolerance == tolerance)&&(identical(other.defaultSelected, defaultSelected) || other.defaultSelected == defaultSelected)&&(identical(other.emptyFallback, emptyFallback) || other.emptyFallback == emptyFallback)&&(identical(other.disableUdp, disableUdp) || other.disableUdp == disableUdp)&&(identical(other.includeAll, includeAll) || other.includeAll == includeAll)&&(identical(other.includeAllProxies, includeAllProxies) || other.includeAllProxies == includeAllProxies)&&(identical(other.includeAllProviders, includeAllProviders) || other.includeAllProviders == includeAllProviders)&&(identical(other.strategy, strategy) || other.strategy == strategy));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxyGroupParams&&(identical(other.url, url) || other.url == url)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.lazy, lazy) || other.lazy == lazy)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.maxFailedTimes, maxFailedTimes) || other.maxFailedTimes == maxFailedTimes)&&(identical(other.filter, filter) || other.filter == filter)&&(identical(other.excludeFilter, excludeFilter) || other.excludeFilter == excludeFilter)&&(identical(other.excludeType, excludeType) || other.excludeType == excludeType)&&(identical(other.expectedStatus, expectedStatus) || other.expectedStatus == expectedStatus)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.tolerance, tolerance) || other.tolerance == tolerance)&&(identical(other.defaultSelected, defaultSelected) || other.defaultSelected == defaultSelected)&&(identical(other.emptyFallback, emptyFallback) || other.emptyFallback == emptyFallback)&&(identical(other.disableUdp, disableUdp) || other.disableUdp == disableUdp)&&(identical(other.includeAll, includeAll) || other.includeAll == includeAll)&&(identical(other.includeAllProxies, includeAllProxies) || other.includeAllProxies == includeAllProxies)&&(identical(other.includeAllProviders, includeAllProviders) || other.includeAllProviders == includeAllProviders)&&(identical(other.strategy, strategy) || other.strategy == strategy)&&(identical(other.hashKey, hashKey) || other.hashKey == hashKey));
 }
 
 
 @override
 int get hashCode {
-    return Object.hashAll([runtimeType,url,interval,lazy,timeout,maxFailedTimes,filter,excludeFilter,excludeType,expectedStatus,hidden,icon,tolerance,defaultSelected,emptyFallback,disableUdp,includeAll,includeAllProxies,includeAllProviders,strategy]);
+    return Object.hashAll([runtimeType,url,interval,lazy,timeout,maxFailedTimes,filter,excludeFilter,excludeType,expectedStatus,hidden,icon,tolerance,defaultSelected,emptyFallback,disableUdp,includeAll,includeAllProxies,includeAllProviders,strategy,hashKey]);
 }
 
 @override
 String toString() {
-    return 'ProxyGroupParams(url: $url, interval: $interval, lazy: $lazy, timeout: $timeout, maxFailedTimes: $maxFailedTimes, filter: $filter, excludeFilter: $excludeFilter, excludeType: $excludeType, expectedStatus: $expectedStatus, hidden: $hidden, icon: $icon, tolerance: $tolerance, defaultSelected: $defaultSelected, emptyFallback: $emptyFallback, disableUdp: $disableUdp, includeAll: $includeAll, includeAllProxies: $includeAllProxies, includeAllProviders: $includeAllProviders, strategy: $strategy)';
+    return 'ProxyGroupParams(url: $url, interval: $interval, lazy: $lazy, timeout: $timeout, maxFailedTimes: $maxFailedTimes, filter: $filter, excludeFilter: $excludeFilter, excludeType: $excludeType, expectedStatus: $expectedStatus, hidden: $hidden, icon: $icon, tolerance: $tolerance, defaultSelected: $defaultSelected, emptyFallback: $emptyFallback, disableUdp: $disableUdp, includeAll: $includeAll, includeAllProxies: $includeAllProxies, includeAllProviders: $includeAllProviders, strategy: $strategy, hashKey: $hashKey)';
 }
 
 
@@ -1851,7 +1856,7 @@ abstract mixin class _$ProxyGroupParamsCopyWith<$Res> implements $ProxyGroupPara
   factory _$ProxyGroupParamsCopyWith(_ProxyGroupParams value, $Res Function(_ProxyGroupParams) _then) = __$ProxyGroupParamsCopyWithImpl;
 @override @useResult
 $Res call({
- String url, int? interval, bool lazy, int? timeout, int? maxFailedTimes, String filter, String excludeFilter, String excludeType, String expectedStatus, bool hidden, String icon, int? tolerance, String defaultSelected, String emptyFallback, bool disableUdp, bool includeAll, bool includeAllProxies, bool includeAllProviders, String strategy
+ String url, int? interval, bool lazy, int? timeout, int? maxFailedTimes, String filter, String excludeFilter, String excludeType, String expectedStatus, bool hidden, String icon, int? tolerance, String defaultSelected, String emptyFallback, bool disableUdp, bool includeAll, bool includeAllProxies, bool includeAllProviders, String strategy, String hashKey
 });
 
 
@@ -1868,7 +1873,7 @@ class __$ProxyGroupParamsCopyWithImpl<$Res>
 
 /// Create a copy of ProxyGroupParams
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? interval = freezed,Object? lazy = null,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = null,Object? excludeFilter = null,Object? excludeType = null,Object? expectedStatus = null,Object? hidden = null,Object? icon = null,Object? tolerance = freezed,Object? defaultSelected = null,Object? emptyFallback = null,Object? disableUdp = null,Object? includeAll = null,Object? includeAllProxies = null,Object? includeAllProviders = null,Object? strategy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? interval = freezed,Object? lazy = null,Object? timeout = freezed,Object? maxFailedTimes = freezed,Object? filter = null,Object? excludeFilter = null,Object? excludeType = null,Object? expectedStatus = null,Object? hidden = null,Object? icon = null,Object? tolerance = freezed,Object? defaultSelected = null,Object? emptyFallback = null,Object? disableUdp = null,Object? includeAll = null,Object? includeAllProxies = null,Object? includeAllProviders = null,Object? strategy = null,Object? hashKey = null,}) {
   return _then(_ProxyGroupParams(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,interval: freezed == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
@@ -1889,6 +1894,7 @@ as bool,includeAll: null == includeAll ? _self.includeAll : includeAll // ignore
 as bool,includeAllProxies: null == includeAllProxies ? _self.includeAllProxies : includeAllProxies // ignore: cast_nullable_to_non_nullable
 as bool,includeAllProviders: null == includeAllProviders ? _self.includeAllProviders : includeAllProviders // ignore: cast_nullable_to_non_nullable
 as bool,strategy: null == strategy ? _self.strategy : strategy // ignore: cast_nullable_to_non_nullable
+as String,hashKey: null == hashKey ? _self.hashKey : hashKey // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

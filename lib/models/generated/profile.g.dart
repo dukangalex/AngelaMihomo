@@ -146,6 +146,7 @@ _ProxyGroupOverride _$ProxyGroupOverrideFromJson(Map<String, dynamic> json) =>
       includeAllProxies: json['include-all-proxies'] as bool?,
       includeAllProviders: json['include-all-providers'] as bool?,
       strategy: json['strategy'] as String?,
+      hashKey: json['hash-key'] as String?,
     );
 
 Map<String, dynamic> _$ProxyGroupOverrideToJson(_ProxyGroupOverride instance) =>
@@ -169,4 +170,5 @@ Map<String, dynamic> _$ProxyGroupOverrideToJson(_ProxyGroupOverride instance) =>
       'include-all-proxies': ?instance.includeAllProxies,
       'include-all-providers': ?instance.includeAllProviders,
       'strategy': ?instance.strategy,
+      'hash-key': ?instance.hashKey,
     };

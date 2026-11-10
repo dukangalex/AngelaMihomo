@@ -1020,6 +1020,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "groupParamFilterInfo": MessageLookupByLibrary.simpleMessage(
       "Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with `.",
     ),
+    "groupParamHashKey": MessageLookupByLibrary.simpleMessage("Hash key"),
+    "groupParamHashKeyInfo": MessageLookupByLibrary.simpleMessage(
+      "What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.",
+    ),
     "groupParamHidden": MessageLookupByLibrary.simpleMessage("Hidden"),
     "groupParamHiddenInfo": MessageLookupByLibrary.simpleMessage(
       "When on, this group is hidden from the panel\'s group list.",
