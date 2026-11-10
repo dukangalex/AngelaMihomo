@@ -6,24 +6,8 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OverrideNtpItem extends ConsumerWidget {
-  const OverrideNtpItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final override = ref.watch(overrideNtpProvider);
-    return ListItem.switchItem(
-      title: Text(appLocalizations.overrideNtp),
-      subtitle: Text(appLocalizations.overrideNtpDesc),
-      delegate: SwitchDelegate(
-        value: override,
-        onChanged: (bool value) async {
-          ref.read(overrideNtpProvider.notifier).value = value;
-        },
-      ),
-    );
-  }
-}
+// T81 batch 3 (P-2): the OverrideNtpItem gate switch is gone — the
+// NTP section is unconditionally App-owned.
 
 class NtpStatusItem extends ConsumerWidget {
   const NtpStatusItem({super.key});
@@ -330,7 +314,6 @@ class _NtpDialerProxyItemState extends ConsumerState<NtpDialerProxyItem> {
 }
 
 final ntpItems = <Widget>[
-  ...generateSection(items: const [OverrideNtpItem()]),
   ...generateSection(
     title: appLocalizations.options,
     items: [

@@ -80,6 +80,12 @@ abstract class UpdateParams with _$UpdateParams {
     @JsonKey(name: 'external-controller')
     required ExternalControllerStatus externalController,
     @JsonKey(name: 'unified-delay') required bool unifiedDelay,
+    // T81 batch 3 (P-5): the Go hot-update channel has always been
+    // able to apply interface-name (dialer.DefaultInterface) but the
+    // Dart side never sent it, so the field silently waited for the
+    // next setup. Sent on desktop only, mirroring the setup path;
+    // null elsewhere leaves the running value untouched.
+    @JsonKey(name: 'interface-name') String? interfaceName,
   }) = _UpdateParams;
 
   factory UpdateParams.fromJson(Map<String, dynamic> json) =>

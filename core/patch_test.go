@@ -260,12 +260,18 @@ func TestApplyPatchDnsInjection(t *testing.T) {
 		t.Errorf("private dns should become proxy-server-nameserver: %v", rawCfg.DNS.ProxyServerNameserver)
 	}
 
+	// T81 batch 3 (P-2): the gate is gone. An enabled subscription DNS
+	// no longer shields the section from the App model — the App
+	// section takes over wholesale (legacy users were seeded from
+	// their subscription by the Dart-side migration, so this does not
+	// silently change their effective DNS). On the pre-batch code this
+	// case kept the subscription's nameserver and fails.
 	enabled := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1']}\n")
 	if _, err := applyPatch(enabled, params); err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(enabled.DNS.NameServer, []string{"10.0.0.1"}) {
-		t.Errorf("enabled dns without override should be kept: %v", enabled.DNS.NameServer)
+	if !reflect.DeepEqual(enabled.DNS.NameServer, []string{"1.1.1.1"}) {
+		t.Errorf("app dns should take over an enabled subscription dns: %v", enabled.DNS.NameServer)
 	}
 }
 
@@ -274,8 +280,13 @@ func TestApplyPatchDnsInjection(t *testing.T) {
 // model's value ever took effect. The field must survive the patch in
 // both DNS ownership modes. On the pre-fix code both cases fail (the
 // list comes back empty).
+//
+// T81 batch 3 (P-2) updated the ownership semantics: the gate is gone
+// and the App model is the single DNS authority, so case 1 now sends
+// no App section at all (the subscription section passes through
+// untouched) and case 2 no longer needs an override flag.
 func TestApplyPatchDnsFallbackFilterGeoSiteSurvives(t *testing.T) {
-	// Subscription-owned DNS (enabled, no override): SUB value wins.
+	// No App DNS section sent: the subscription section is untouched.
 	sub := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback: ['8.8.8.8'], fallback-filter: {geosite: ['gfw']}}\n")
 	if _, err := applyPatch(sub, patchParams(t, `{}`)); err != nil {
 		t.Fatal(err)
@@ -284,7 +295,8 @@ func TestApplyPatchDnsFallbackFilterGeoSiteSurvives(t *testing.T) {
 		t.Errorf("subscription geosite should survive: %v", sub.DNS.FallbackFilter.GeoSite)
 	}
 
-	// Settings-owned DNS (override on): the model's geosite wins.
+	// App DNS section sent: it takes over wholesale, geosite included,
+	// with no gate flag involved.
 	dns, _ := json.Marshal(map[string]any{
 		"enable":          true,
 		"nameserver":      []string{"1.1.1.1"},
@@ -292,13 +304,15 @@ func TestApplyPatchDnsFallbackFilterGeoSiteSurvives(t *testing.T) {
 	})
 	params := patchParams(t, `{}`)
 	params.Dns = dns
-	params.OverrideDns = true
 	overridden := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback-filter: {geosite: ['gfw']}}\n")
 	if _, err := applyPatch(overridden, params); err != nil {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(overridden.DNS.FallbackFilter.GeoSite, []string{"cn"}) {
 		t.Errorf("settings geosite should survive takeover: %v", overridden.DNS.FallbackFilter.GeoSite)
+	}
+	if !reflect.DeepEqual(overridden.DNS.NameServer, []string{"1.1.1.1"}) {
+		t.Errorf("settings nameserver should win under takeover: %v", overridden.DNS.NameServer)
 	}
 }
 

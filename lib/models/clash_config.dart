@@ -29,6 +29,15 @@ const defaultGeoUpdateInterval = 24;
 const defaultBindAddress = '*';
 const defaultSkipAuthPrefixes = ['127.0.0.1/8', '::1/128'];
 
+// T81 batch 3 (R-4): the external UI source used to be hardcoded in
+// the patch-params builder (zashboard latest zip + empty name), which
+// silently shadowed these model fields. The values now live here as
+// the model defaults — the single source — and the builder emits
+// whatever the model carries.
+const defaultExternalUiUrl =
+    'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
+const defaultExternalUiName = '';
+
 const defaultBypassPrivateRouteAddress = [
   '198.51.100.0/30',
   '1.0.0.0/8',
@@ -389,6 +398,11 @@ abstract class FallbackFilter with _$FallbackFilter {
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
     @Default([]) List<String> ipcidr,
     @Default([]) List<String> domain,
+    // T81 batch 3: carrier for the kernel's fallback-filter.geosite.
+    // The model could not represent this field, so a subscription's
+    // geosite condition would have been dropped by the DNS takeover
+    // (batch 1 S-1 restored the field's effectiveness bridge-side).
+    @Default([]) List<String> geosite,
   }) = _FallbackFilter;
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
       _$FallbackFilterFromJson(json);
@@ -458,6 +472,14 @@ abstract class Dns with _$Dns {
     @Default(false)
     @JsonKey(name: 'fallback-lazy-query')
     bool fallbackLazyQuery,
+    // T81 batch 3: carriers for kernel DNS fields the model could not
+    // represent (ipv6-timeout / listen-routing-mark / cache-max-size).
+    // Without them the DNS takeover migration would silently drop a
+    // subscription's values for these keys. Model-only carriers: the
+    // kernel defaults for all three are 0 (unset), matching @Default.
+    @Default(0) @JsonKey(name: 'ipv6-timeout') int ipv6Timeout,
+    @Default(0) @JsonKey(name: 'listen-routing-mark') int listenRoutingMark,
+    @Default(0) @JsonKey(name: 'cache-max-size') int cacheMaxSize,
   }) = _Dns;
 
   factory Dns.fromJson(Map<String, Object?> json) => _$DnsFromJson(json);
@@ -509,6 +531,10 @@ abstract class Experimental with _$Experimental {
     @Default(false)
     @JsonKey(name: 'dialer-ip4p-convert')
     bool dialerIp4pConvert,
+    // T81 batch 3: carrier for the kernel's experimental.fingerprints,
+    // which the model could not represent; the section takeover would
+    // otherwise drop a subscription's value. Model-only carrier.
+    @Default([]) List<String> fingerprints,
   }) = _Experimental;
 
   factory Experimental.fromJson(Map<String, Object?> json) =>
@@ -801,6 +827,11 @@ abstract class ClashConfig with _$ClashConfig {
     @Default(GeodataLoader.memconservative)
     @JsonKey(name: 'geodata-loader')
     GeodataLoader geodataLoader,
+    // T81 batch 3 (R-2): geodata-mode joins geodata-loader in the
+    // model. Both used to be hardcoded literals in the patch-params
+    // builder (the loader field existed but was never read, the mode
+    // had no field at all); the model is now the single source.
+    @Default(false) @JsonKey(name: 'geodata-mode') bool geodataMode,
     @Default([]) @JsonKey(name: 'proxy-groups') List<ProxyGroup> proxyGroups,
     @Default([]) List<String> rule,
     @JsonKey(name: 'global-ua') String? globalUa,
@@ -808,8 +839,12 @@ abstract class ClashConfig with _$ClashConfig {
     @JsonKey(name: 'external-controller')
     ExternalControllerStatus externalController,
     String? secret,
-    @JsonKey(name: 'external-ui-name') String? externalUiName,
-    @JsonKey(name: 'external-ui-url') String? externalUiUrl,
+    @Default(defaultExternalUiName)
+    @JsonKey(name: 'external-ui-name')
+    String? externalUiName,
+    @Default(defaultExternalUiUrl)
+    @JsonKey(name: 'external-ui-url')
+    String? externalUiUrl,
     @Default({}) HostsMap hosts,
   }) = _ClashConfig;
 

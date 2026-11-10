@@ -526,11 +526,13 @@ abstract class Config with _$Config {
     @Default([]) List<Profile> profiles,
     @Default([]) List<HotKeyAction> hotKeyActions,
     String? currentProfileId,
-    @Default(false) bool overrideDns,
-    @Default(false) bool overrideNtp,
-    @Default(false) bool overrideSniffer,
+    // T81 batch 3 (P-2): the overrideDns / overrideNtp /
+    // overrideSniffer / overrideExperimental gate fields are gone.
+    // The four sections are unconditionally owned by the App model
+    // now; the one-time inheritance migration reads the legacy gate
+    // values from the raw persisted JSON before this model drops
+    // them (see lib/common/spec_migration.dart).
     @Default(false) bool overrideTunnel,
-    @Default(false) bool overrideExperimental,
     @Default(true) bool overrideTestUrl,
     DAV? dav,
     @Default(defaultNetworkProps) NetworkProps networkProps,
@@ -546,6 +548,10 @@ abstract class Config with _$Config {
     @Default(ScriptProps()) ScriptProps scriptProps,
     @Default('') String nodeExcludeFilter,
     @Default(5000) int healthCheckTimeout,
+    // One-time data migration watermark. 0 = pre-T81-batch-3 data
+    // (the section-takeover inheritance migration has not run yet);
+    // 1 = it has. See lib/common/spec_migration.dart.
+    @Default(0) int specMigrationVersion,
   }) = _Config;
 
   factory Config.fromJson(Map<String, Object?> json) => _$ConfigFromJson(json);

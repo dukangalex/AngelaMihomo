@@ -40,11 +40,7 @@ Config configState(Ref ref) {
   final appSetting = ref.watch(appSettingProvider);
   final profiles = ref.watch(profilesProvider);
   final currentProfileId = ref.watch(currentProfileIdProvider);
-  final overrideDns = ref.watch(overrideDnsProvider);
-  final overrideNtp = ref.watch(overrideNtpProvider);
-  final overrideSniffer = ref.watch(overrideSnifferProvider);
   final overrideTunnel = ref.watch(overrideTunnelProvider);
-  final overrideExperimental = ref.watch(overrideExperimentalProvider);
   final overrideTestUrl = ref.watch(overrideTestUrlProvider);
   final networkProps = ref.watch(networkSettingProvider);
   final vpnProps = ref.watch(vpnSettingProvider);
@@ -61,11 +57,7 @@ Config configState(Ref ref) {
     proxiesStyle: proxiesStyle,
     vpnProps: vpnProps,
     networkProps: networkProps,
-    overrideDns: overrideDns,
-    overrideNtp: overrideNtp,
-    overrideSniffer: overrideSniffer,
     overrideTunnel: overrideTunnel,
-    overrideExperimental: overrideExperimental,
     overrideTestUrl: overrideTestUrl,
     currentProfileId: currentProfileId,
     profiles: profiles,
@@ -194,6 +186,7 @@ UpdateParams updateParams(Ref ref) {
         externalController: state.externalController,
         unifiedDelay: state.unifiedDelay,
         mixedPort: state.mixedPort,
+        interfaceName: system.isDesktop ? state.interfaceName : null,
       ),
     ),
   );
@@ -1014,10 +1007,12 @@ VM4<String?, String?, Dns?, String?> needSetup(Ref ref) {
   final scriptDigest = ref.watch(
     scriptStateProvider.select((state) => state.currentScript?.digest),
   );
-  final overrideDns = ref.watch(overrideDnsProvider);
-  final dns = overrideDns == true
-      ? ref.watch(patchClashConfigProvider.select((state) => state.dns))
-      : null;
+  // T81 batch 3 (P-2): the DNS section is always App-owned now, so a
+  // dns change always requires a re-setup (previously only when the
+  // override gate was on).
+  final dns = ref.watch(
+    patchClashConfigProvider.select((state) => state.dns),
+  );
   final loopbackPorts =
       ref.watch(vpnSettingProvider.select((state) => state.loopbackProtection))
       ? ref.watch(patchClashConfigProvider.select((state) => state.listenPorts))

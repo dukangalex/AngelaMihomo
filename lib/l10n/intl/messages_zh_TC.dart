@@ -469,6 +469,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "coreMountNosuid": MessageLookupByLibrary.simpleMessage(
       "核心所在檔案系統以 nosuid 掛載，檔案能力與 setuid 均無法生效",
     ),
+    "coreRestartHint": MessageLookupByLibrary.simpleMessage("重啟核心後生效"),
     "coreStatus": MessageLookupByLibrary.simpleMessage("核心負載詳情"),
     "coreSuspended": MessageLookupByLibrary.simpleMessage("已掛起"),
     "country": MessageLookupByLibrary.simpleMessage("區域"),

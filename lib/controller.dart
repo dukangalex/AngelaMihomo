@@ -2991,8 +2991,8 @@ class AppController {
       _ref.read(proxiesStyleSettingProvider.notifier).value =
           config.proxiesStyle;
 
-      // 9. Restore DNS override settings
-      _ref.read(overrideDnsProvider.notifier).value = config.overrideDns;
+      // 9. (T81 batch 3: the DNS override gate restore is gone with
+      // the gate itself.)
 
       // 10. Restore hotkey settings (desktop only)
       if (system.isDesktop) {

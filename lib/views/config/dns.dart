@@ -6,24 +6,9 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OverrideItem extends ConsumerWidget {
-  const OverrideItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final override = ref.watch(overrideDnsProvider);
-    return ListItem.switchItem(
-      title: Text(appLocalizations.overrideDns),
-      subtitle: Text(appLocalizations.overrideDnsDesc),
-      delegate: SwitchDelegate(
-        value: override,
-        onChanged: (bool value) async {
-          ref.read(overrideDnsProvider.notifier).value = value;
-        },
-      ),
-    );
-  }
-}
+// T81 batch 3 (P-2): the OverrideItem gate switch is gone — the DNS
+// section is unconditionally App-owned, so the page starts directly
+// with the section's own options.
 
 class StatusItem extends ConsumerWidget {
   const StatusItem({super.key});
@@ -917,7 +902,6 @@ class DomainItem extends StatelessWidget {
 }
 
 final dnsItems = <Widget>[
-  ...generateSection(items: const [OverrideItem()]),
   ...generateSection(
     title: appLocalizations.options,
     items: const [

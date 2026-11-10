@@ -264,6 +264,9 @@ _FallbackFilter _$FallbackFilterFromJson(
   domain:
       (json['domain'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  geosite:
+      (json['geosite'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$FallbackFilterToJson(_FallbackFilter instance) =>
@@ -272,6 +275,7 @@ Map<String, dynamic> _$FallbackFilterToJson(_FallbackFilter instance) =>
       'geoip-code': instance.geoipCode,
       'ipcidr': instance.ipcidr,
       'domain': instance.domain,
+      'geosite': instance.geosite,
     };
 
 _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
@@ -351,6 +355,9 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
           json['fallback-filter'] as Map<String, dynamic>,
         ),
   fallbackLazyQuery: json['fallback-lazy-query'] as bool? ?? false,
+  ipv6Timeout: (json['ipv6-timeout'] as num?)?.toInt() ?? 0,
+  listenRoutingMark: (json['listen-routing-mark'] as num?)?.toInt() ?? 0,
+  cacheMaxSize: (json['cache-max-size'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$DnsToJson(_Dns instance) => <String, dynamic>{
@@ -378,6 +385,9 @@ Map<String, dynamic> _$DnsToJson(_Dns instance) => <String, dynamic>{
   'direct-nameserver-follow-policy': instance.directNameserverFollowPolicy,
   'fallback-filter': instance.fallbackFilter,
   'fallback-lazy-query': instance.fallbackLazyQuery,
+  'ipv6-timeout': instance.ipv6Timeout,
+  'listen-routing-mark': instance.listenRoutingMark,
+  'cache-max-size': instance.cacheMaxSize,
 };
 
 const _$CacheAlgorithmEnumMap = {
@@ -421,6 +431,11 @@ _Experimental _$ExperimentalFromJson(Map<String, dynamic> json) =>
       quicGoDisableGso: json['quic-go-disable-gso'] as bool? ?? true,
       quicGoDisableEcn: json['quic-go-disable-ecn'] as bool? ?? true,
       dialerIp4pConvert: json['dialer-ip4p-convert'] as bool? ?? false,
+      fingerprints:
+          (json['fingerprints'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$ExperimentalToJson(_Experimental instance) =>
@@ -428,6 +443,7 @@ Map<String, dynamic> _$ExperimentalToJson(_Experimental instance) =>
       'quic-go-disable-gso': instance.quicGoDisableGso,
       'quic-go-disable-ecn': instance.quicGoDisableEcn,
       'dialer-ip4p-convert': instance.dialerIp4pConvert,
+      'fingerprints': instance.fingerprints,
     };
 
 _GeoXUrl _$GeoXUrlFromJson(Map<String, dynamic> json) => _GeoXUrl(
@@ -568,6 +584,7 @@ _ClashConfig _$ClashConfigFromJson(Map<String, dynamic> json) => _ClashConfig(
   geodataLoader:
       $enumDecodeNullable(_$GeodataLoaderEnumMap, json['geodata-loader']) ??
       GeodataLoader.memconservative,
+  geodataMode: json['geodata-mode'] as bool? ?? false,
   proxyGroups:
       (json['proxy-groups'] as List<dynamic>?)
           ?.map((e) => ProxyGroup.fromJson(e as Map<String, dynamic>))
@@ -584,8 +601,8 @@ _ClashConfig _$ClashConfigFromJson(Map<String, dynamic> json) => _ClashConfig(
       ) ??
       ExternalControllerStatus.close,
   secret: json['secret'] as String?,
-  externalUiName: json['external-ui-name'] as String?,
-  externalUiUrl: json['external-ui-url'] as String?,
+  externalUiName: json['external-ui-name'] as String? ?? defaultExternalUiName,
+  externalUiUrl: json['external-ui-url'] as String? ?? defaultExternalUiUrl,
   hosts:
       (json['hosts'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, e as String),
@@ -626,6 +643,7 @@ Map<String, dynamic> _$ClashConfigToJson(_ClashConfig instance) =>
       'experimental': instance.experimental,
       'geox-url': instance.geoXUrl,
       'geodata-loader': _$GeodataLoaderEnumMap[instance.geodataLoader]!,
+      'geodata-mode': instance.geodataMode,
       'proxy-groups': instance.proxyGroups,
       'rule': instance.rule,
       'global-ua': instance.globalUa,

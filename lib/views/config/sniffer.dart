@@ -6,24 +6,8 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OverrideSnifferItem extends ConsumerWidget {
-  const OverrideSnifferItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final override = ref.watch(overrideSnifferProvider);
-    return ListItem.switchItem(
-      title: Text(appLocalizations.overrideSniffer),
-      subtitle: Text(appLocalizations.overrideSnifferDesc),
-      delegate: SwitchDelegate(
-        value: override,
-        onChanged: (bool value) async {
-          ref.read(overrideSnifferProvider.notifier).value = value;
-        },
-      ),
-    );
-  }
-}
+// T81 batch 3 (P-2): the OverrideSnifferItem gate switch is gone —
+// the sniffer section is unconditionally App-owned.
 
 class SnifferStatusItem extends ConsumerWidget {
   const SnifferStatusItem({super.key});
@@ -551,7 +535,6 @@ class SkipDstAddressWidget extends ConsumerWidget {
 }
 
 final snifferItems = <Widget>[
-  ...generateSection(items: const [OverrideSnifferItem()]),
   ...generateSection(
     title: appLocalizations.options,
     items: const [

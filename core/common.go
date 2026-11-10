@@ -191,10 +191,12 @@ func updateConfig(params *UpdateParams) {
 	if params.MixedPort != nil {
 		general.MixedPort = *params.MixedPort
 	}
-	if params.Sniffing != nil {
-		general.Sniffing = *params.Sniffing
-		tunnel.SetSniffing(general.Sniffing)
-	}
+	// T81 batch 3 (P-5): the half-channel UpdateParams.Sniffing field
+	// was removed. No setup path ever wrote the general sniffing flag
+	// (sniffing is governed by the sniffer section, which is setup-only)
+	// and the Dart side never sent it; keeping a field with no writer
+	// on the setup side made the hot channel pretend to a projection
+	// that does not exist.
 	if params.FindProcessMode != nil {
 		general.FindProcessMode = *params.FindProcessMode
 		tunnel.SetFindProcessMode(general.FindProcessMode)

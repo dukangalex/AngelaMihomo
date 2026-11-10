@@ -50,7 +50,6 @@ type PatchParams struct {
 	General             json.RawMessage `json:"general"`
 	GeoXUrl             json.RawMessage `json:"geox-url"`
 	Hosts               []PatchHost     `json:"hosts"`
-	OverrideDns         bool            `json:"override-dns"`
 	DnsNodeOverride     bool            `json:"dns-node-override"`
 	Dns                 json.RawMessage `json:"dns"`
 	Ntp                 json.RawMessage `json:"ntp"`
@@ -487,16 +486,25 @@ func patchHosts(raw *config.RawConfig, hosts []PatchHost) []string {
 }
 
 func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawConfig, hostOrder []string) error {
+	// T81 batch 3 (P-2): the DNS section has exactly one authority —
+	// the App settings model. The old override-dns gate (subscription
+	// wins unless the gate was on or the subscription DNS was disabled)
+	// is gone; whenever the App sends its DNS section it takes over
+	// wholesale, layered over the kernel defaults for any key the model
+	// JSON omits. Legacy users were migrated by seeding the model from
+	// their subscription (see the Dart-side spec migration), so the
+	// takeover does not silently change anyone's effective DNS.
 	enabled := raw.DNS.Enable
-	if params.OverrideDns || !enabled {
+	if hasPatchValue(params.Dns) {
 		original := raw.DNS
 		dns := defaults.DNS
-		if hasPatchValue(params.Dns) {
-			if err := yaml.Unmarshal(params.Dns, &dns); err != nil {
-				return fmt.Errorf("patch dns: %w", err)
-			}
+		if err := yaml.Unmarshal(params.Dns, &dns); err != nil {
+			return fmt.Errorf("patch dns: %w", err)
 		}
 		if !enabled {
+			// The subscription did not enable DNS at all; keep the
+			// long-standing fallback of appending the system resolver
+			// to the App section's nameservers.
 			dns.NameServer = append(append([]string{}, dns.NameServer...), "system://")
 		}
 		raw.DNS = dns

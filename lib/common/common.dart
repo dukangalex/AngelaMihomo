@@ -44,6 +44,7 @@ export 'request.dart';
 export 'scroll.dart';
 export 'string.dart';
 export 'linux_dns.dart';
+export 'spec_migration.dart';
 export 'system_explicit.dart';
 export 'system.dart';
 export 'text.dart';

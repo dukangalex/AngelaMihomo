@@ -1695,6 +1695,16 @@ class AppLocalizations {
     return Intl.message('Core', name: 'core', desc: '', args: []);
   }
 
+  /// `Takes effect after the core restarts`
+  String get coreRestartHint {
+    return Intl.message(
+      'Takes effect after the core restarts',
+      name: 'coreRestartHint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Linkage Switch`
   String get showStartSwitch {
     return Intl.message(

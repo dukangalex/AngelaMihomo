@@ -198,6 +198,7 @@
   "systemProxy": "System Proxy",
   "project": "Project",
   "core": "Core",
+  "coreRestartHint": "Takes effect after the core restarts",
   "showStartSwitch": "Linkage Switch",
   "showStartSwitchDesc": "Show standalone switch on homepage",
   "startSwitchStyle": "Style",

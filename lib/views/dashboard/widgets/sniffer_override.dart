@@ -38,7 +38,7 @@ class SnifferOverride extends StatelessWidget {
                 flex: 1,
                 child: TooltipText(
                   text: Text(
-                    appLocalizations.override,
+                    appLocalizations.status,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(
@@ -47,14 +47,24 @@ class SnifferOverride extends StatelessWidget {
                   ),
                 ),
               ),
+              // T81 batch 3 (P-2): the gate switch is gone; the card
+              // now toggles the sniffer section's own enable flag.
               Consumer(
                 builder: (_, ref, _) {
-                  final override = ref.watch(overrideSnifferProvider);
+                  final enable = ref.watch(
+                    patchClashConfigProvider.select(
+                      (state) => state.sniffer.enable,
+                    ),
+                  );
                   return Switch(
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    value: override,
+                    value: enable,
                     onChanged: (value) {
-                      ref.read(overrideSnifferProvider.notifier).value = value;
+                      ref
+                          .read(patchClashConfigProvider.notifier)
+                          .updateState(
+                            (state) => state.copyWith.sniffer(enable: value),
+                          );
                     },
                   );
                 },

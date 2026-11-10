@@ -650,6 +650,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "coreMountNosuid": MessageLookupByLibrary.simpleMessage(
       "The core is on a filesystem mounted with nosuid, so file capabilities and setuid cannot take effect",
     ),
+    "coreRestartHint": MessageLookupByLibrary.simpleMessage(
+      "Takes effect after the core restarts",
+    ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Core Status"),
     "coreSuspended": MessageLookupByLibrary.simpleMessage("Suspended"),
     "country": MessageLookupByLibrary.simpleMessage("Country"),

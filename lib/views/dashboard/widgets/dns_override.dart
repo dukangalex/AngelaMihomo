@@ -73,7 +73,7 @@ class DnsOverride extends StatelessWidget {
                 flex: 1,
                 child: TooltipText(
                   text: Text(
-                    appLocalizations.override,
+                    appLocalizations.status,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(
@@ -82,14 +82,25 @@ class DnsOverride extends StatelessWidget {
                   ),
                 ),
               ),
+              // T81 batch 3 (P-2): the gate switch is gone; the card
+              // now toggles the DNS section's own enable flag, which
+              // is the single authority under the takeover.
               Consumer(
                 builder: (_, ref, _) {
-                  final override = ref.watch(overrideDnsProvider);
+                  final enable = ref.watch(
+                    patchClashConfigProvider.select(
+                      (state) => state.dns.enable,
+                    ),
+                  );
                   return Switch(
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    value: override,
+                    value: enable,
                     onChanged: (value) {
-                      ref.read(overrideDnsProvider.notifier).value = value;
+                      ref
+                          .read(patchClashConfigProvider.notifier)
+                          .updateState(
+                            (state) => state.copyWith.dns(enable: value),
+                          );
                     },
                   );
                 },

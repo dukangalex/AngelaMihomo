@@ -65,7 +65,9 @@ class _UaItemState extends ConsumerState<UaItem> {
 
     return ListItem(
       leading: const Icon(Icons.computer_outlined),
-      title: const Text('UA'),
+      // T81 batch 3 (P-5): global-ua is not in the hot-update
+      // projection; annotate when it takes effect.
+      title: InfoTitle(text: 'UA', info: appLocalizations.coreRestartHint),
       subtitle: Text(
         isCustom ? appLocalizations.custom : appLocalizations.defaultText,
       ),
@@ -162,7 +164,12 @@ class KeepAliveIntervalItem extends ConsumerWidget {
     );
     return ListItem.input(
       leading: const Icon(Icons.timer_outlined),
-      title: Text(appLocalizations.keepAliveIntervalDesc),
+      // T81 batch 3 (P-5): keep-alive-interval is not in the
+      // hot-update projection; annotate when it takes effect.
+      title: InfoTitle(
+        text: appLocalizations.keepAliveIntervalDesc,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text('$keepAliveInterval ${appLocalizations.seconds}'),
       delegate: InputDelegate(
         title: appLocalizations.keepAliveIntervalDesc,
@@ -207,7 +214,10 @@ class KeepAliveIdleItem extends ConsumerWidget {
       leading: const Icon(Icons.timer_outlined),
       title: InfoTitle(
         text: appLocalizations.keepAliveIdleDesc,
-        info: appLocalizations.keepAliveIdleInfo,
+        // T81 batch 3 (P-5): not in the hot-update projection.
+        info:
+            '${appLocalizations.keepAliveIdleInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       subtitle: Text('$keepAliveIdle ${appLocalizations.seconds}'),
       delegate: InputDelegate(
@@ -256,7 +266,10 @@ class BindAddressItem extends ConsumerWidget {
       leading: const Icon(Icons.settings_ethernet_outlined),
       title: InfoTitle(
         text: appLocalizations.bindAddress,
-        info: appLocalizations.bindAddressInfo,
+        // T81 batch 3 (P-5): not in the hot-update projection.
+        info:
+            '${appLocalizations.bindAddressInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       subtitle: Text(
         bindAddress == defaultBindAddress
@@ -321,7 +334,10 @@ class LanAllowedIpsItem extends StatelessWidget {
       leading: const Icon(Icons.verified_user_outlined),
       title: InfoTitle(
         text: appLocalizations.lanAllowedIps,
-        info: appLocalizations.lanAllowedIpsInfo,
+        // T81 batch 3 (P-5): not in the hot-update projection.
+        info:
+            '${appLocalizations.lanAllowedIpsInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       delegate: NextDelegate(
         blur: false,
@@ -360,7 +376,10 @@ class LanDisallowedIpsItem extends StatelessWidget {
       leading: const Icon(Icons.block_outlined),
       title: InfoTitle(
         text: appLocalizations.lanDisallowedIps,
-        info: appLocalizations.lanDisallowedIpsInfo,
+        // T81 batch 3 (P-5): not in the hot-update projection.
+        info:
+            '${appLocalizations.lanDisallowedIpsInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       delegate: NextDelegate(
         blur: false,
@@ -404,7 +423,10 @@ class StoreFakeIpItem extends ConsumerWidget {
       leading: const Icon(Icons.bookmark_outline),
       title: InfoTitle(
         text: appLocalizations.storeFakeIp,
-        info: appLocalizations.storeFakeIpInfo,
+        // T81 batch 3 (P-5): not in the hot-update projection.
+        info:
+            '${appLocalizations.storeFakeIpInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       delegate: SwitchDelegate(
         value: storeFakeIp,
@@ -1192,6 +1214,15 @@ class _PortDialogState extends ConsumerState<_PortDialog> {
                   },
                 ),
                 if (_isMore) ...[
+                  // T81 batch 3 (P-5): unlike the mixed port, the
+                  // ports below are not in the hot-update projection.
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      appLocalizations.coreRestartHint,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
                   TextFormField(
                     keyboardType: TextInputType.url,
                     maxLines: 1,

@@ -672,11 +672,7 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
           .toList() ??
       const [],
   currentProfileId: json['currentProfileId'] as String?,
-  overrideDns: json['overrideDns'] as bool? ?? false,
-  overrideNtp: json['overrideNtp'] as bool? ?? false,
-  overrideSniffer: json['overrideSniffer'] as bool? ?? false,
   overrideTunnel: json['overrideTunnel'] as bool? ?? false,
-  overrideExperimental: json['overrideExperimental'] as bool? ?? false,
   overrideTestUrl: json['overrideTestUrl'] as bool? ?? true,
   dav: json['dav'] == null
       ? null
@@ -706,6 +702,7 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
       : ScriptProps.fromJson(json['scriptProps'] as Map<String, dynamic>),
   nodeExcludeFilter: json['nodeExcludeFilter'] as String? ?? '',
   healthCheckTimeout: (json['healthCheckTimeout'] as num?)?.toInt() ?? 5000,
+  specMigrationVersion: (json['specMigrationVersion'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
@@ -713,11 +710,7 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'profiles': instance.profiles,
   'hotKeyActions': instance.hotKeyActions,
   'currentProfileId': instance.currentProfileId,
-  'overrideDns': instance.overrideDns,
-  'overrideNtp': instance.overrideNtp,
-  'overrideSniffer': instance.overrideSniffer,
   'overrideTunnel': instance.overrideTunnel,
-  'overrideExperimental': instance.overrideExperimental,
   'overrideTestUrl': instance.overrideTestUrl,
   'dav': instance.dav,
   'networkProps': instance.networkProps,
@@ -729,4 +722,5 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'scriptProps': instance.scriptProps,
   'nodeExcludeFilter': instance.nodeExcludeFilter,
   'healthCheckTimeout': instance.healthCheckTimeout,
+  'specMigrationVersion': instance.specMigrationVersion,
 };

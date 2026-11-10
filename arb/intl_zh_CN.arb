@@ -198,6 +198,7 @@
   "systemProxy": "系统代理",
   "project": "项目",
   "core": "内核",
+  "coreRestartHint": "重启核心后生效",
   "showStartSwitch": "联动开关",
   "showStartSwitchDesc": "首页显示独立的开关按钮",
   "startSwitchStyle": "样式",
