@@ -8,16 +8,23 @@
 // exactly that as the ONLY stage of the card's backdrop filter:
 //
 //   * Face (inside, beyond the bevel band): samples the backdrop
-//     nearly as-is, with an optional whisper of blur (uFaceBlur,
-//     a 9-tap tent) so content stays recognisable through the pane.
-//   * Bevel band (within uBand of the rim, uBand tracks the corner
-//     radius): sampling coordinates are displaced along the SDF
-//     gradient — strongest at the rim, easing to zero at the band's
-//     inner edge — so background content stretches around the edge
-//     like a lens rim. A slight brightening inside the band sells
-//     the bent light.
+//     exactly as-is (round 2: uFaceBlur is 0 — the face is fully
+//     clear, content stays recognisable through the pane).
+//   * Bevel band (round 2: a narrow ~8px band at the rim, no longer
+//     scaled off the corner radius): sampling coordinates are
+//     displaced along the SDF gradient with a sharp pow() peak —
+//     strongest AT the rim, collapsing to near-zero within a few
+//     pixels — so the bend reads as hard cut glass, not the soft,
+//     wide, elastic warp round 1 was judged as («像果冻»).
+//   * Cut-glass edge lines, computed from the geometric SDF (never
+//     displaced, so they stay crisp): a sharp specular bright line
+//     just inside the rim (uRimColor) and a fine dark line where
+//     the bevel meets the face, slightly dimming the sample. The
+//     bright/dark pair is the contrast that makes an edge read as
+//     cut glass rather than a soft glow.
 //   * Tint: an extremely light dye mixed over the sample (uniform
-//     entry reserved for T82's theme-following tint).
+//     entry reserved for T82's theme-following tint); round 2 drops
+//     it to near zero so the face carries no colour of its own.
 //
 // This is a static UV displacement, not a physical light simulation.
 // Applied via BackdropFilter(ImageFilter.shader) on Impeller; any
@@ -34,6 +41,7 @@ uniform float uBand;
 uniform float uStrength;
 uniform float uFaceBlur;
 uniform vec4 uTint;
+uniform vec4 uRimColor;
 
 out vec4 fragColor;
 
@@ -80,7 +88,10 @@ void main() {
     if (gl > 0.0001) {
       vec2 outward = grad / gl;
       float t = 1.0 - inside / uBand;
-      float falloff = t * t * (3.0 - 2.0 * t);
+      // Round 2: sharp peak, fast decay (pow 3.5) — the displacement
+      // lives in the outer ~3px of the band and is effectively zero
+      // at the face, a hard bend instead of round 1's smooth warp.
+      float falloff = pow(t, 3.5);
       // Sample from deeper inside the pane: edge content stretches
       // around the rim, which reads as refraction at the bevel.
       offset = -outward * falloff * uStrength;
@@ -92,9 +103,23 @@ void main() {
   // Bent-light lift: the bevel catches light, so it reads a touch
   // brighter than the face. Kept very subtle — the rim light proper
   // is still painted by the surface's Dart overlays.
-  col.rgb += bevel * 0.05;
-  // The pane's dye: extremely light on the prototype (the face must
-  // stay clear); the uniform is the T82 theme-tint entry point.
+  col.rgb += bevel * 0.04;
+  // The pane's dye: near zero in round 2 (the face must stay clear);
+  // the uniform is the T82 theme-tint entry point.
   col.rgb = mix(col.rgb, uTint.rgb, uTint.a);
+  if (inside >= 0.0) {
+    // Cut-glass edge lines from the geometric distance (undisplaced,
+    // so both lines stay 1px-crisp around the whole perimeter).
+    // Dark line first: a fine shadow where the bevel meets the face,
+    // centred just inside the band's inner edge.
+    float dd = inside - (uBand - 0.8);
+    float darkLine = exp(-(dd * dd) / 1.28); // sigma 0.8px
+    col.rgb *= 1.0 - darkLine * 0.16;
+    // Specular line last so the rim itself stays the brightest
+    // element: a ~1px bright peak centred just inside the rim.
+    float bd = inside - 0.8;
+    float brightLine = exp(-(bd * bd) / 0.72); // sigma 0.6px
+    col.rgb = mix(col.rgb, uRimColor.rgb, brightLine * uRimColor.a * 0.85);
+  }
   fragColor = vec4(col.rgb, col.a);
 }

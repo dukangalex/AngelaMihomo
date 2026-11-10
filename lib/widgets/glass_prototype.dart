@@ -18,6 +18,18 @@ import 'package:material_ui/material_ui.dart';
 /// so the ONLY structural difference under comparison is the face
 /// treatment.
 ///
+/// Round 2 (after round 1's real-device verdict «感觉像果冻多点，
+/// 不像液态玻璃»): jelly = soft, thick, elastic — the opposite of
+/// crystal (thin, hard, clear). Round 1's band was too wide (25.5px)
+/// with a smooth warp curve, the face still carried 1.1px blur and a
+/// visible dye film, and the rim was a soft glow without a hard
+/// line. Round 2 narrows the bevel band to ~8px with a sharp-peak
+/// displacement curve, takes the face fully clear (zero blur, dye
+/// near zero), and adds cut-glass edge lines in the shader — a crisp
+/// specular bright line at the rim plus a fine dark line where the
+/// bevel meets the face. Only the prototype changes; the current
+/// glass and every other surface are untouched.
+///
 /// Scope discipline: this prototype is wired to exactly one surface —
 /// the home page's main status card (the outbound-mode card, both
 /// dashboard layouts) — via CommonCard's `shaderGlass` opt-in. Every
@@ -41,24 +53,29 @@ abstract final class GlassEdgeRefraction {
   static const String asset = 'shaders/glass_edge_refraction.frag';
 
   /// Maximum sampling displacement at the rim, logical pixels.
-  static const double strength = 11;
+  /// Round 2: slightly up from round 1's 11 — with the displacement
+  /// curve now a sharp pow() peak at the rim, a larger peak reads
+  /// as a hard bend over ~3px instead of a soft warp over 25px.
+  static const double strength = 13;
 
-  /// Face blur radius, logical pixels — a whisper, only enough to
-  /// take the raw edge off backdrop content behind the pane. The
-  /// face must stay readable-clear; this is NOT the current glass's
-  /// full-face gaussian.
-  static const double faceBlur = 1.1;
+  /// Face blur radius, logical pixels. Round 2: zero — round 1's
+  /// 1.1px whisper still read as a pasted-on film over the face
+  /// («像果冻» verdict); the face now samples the backdrop exactly.
+  static const double faceBlur = 0;
 
-  /// Bevel band width for a pane of the given corner [radius]:
-  /// the sloped rim of a pane scales with its rounding.
+  /// Bevel band width for a pane of the given corner [radius].
+  /// Round 2: a narrow fixed-feeling band (~8px on the main card),
+  /// no longer the wide radius-scaled slope of round 1 (25.5px),
+  /// which was the main source of the soft, thick, elastic look.
   static double bandFor(double radius) =>
-      (radius * 0.85).clamp(16.0, 30.0).toDouble();
+      (radius * 0.27).clamp(6.0, 10.0).toDouble();
 
   /// Face tint alpha (the tint colour itself is the tier's dyed
-  /// fill colour — azure for the primary tier). Extremely light: the
-  /// pane's body comes from the backdrop, not from a fill.
+  /// fill colour — azure for the primary tier). Round 2: near zero
+  /// (was 0.10/0.14) — the pane's body comes from the backdrop, not
+  /// from a fill, and any visible dye film breaks the crystal read.
   static double tintAlphaFor(Brightness brightness) =>
-      brightness == Brightness.light ? 0.10 : 0.14;
+      brightness == Brightness.light ? 0.03 : 0.05;
 
   static FragmentShader? _shader;
   static Future<bool>? _loading;
@@ -86,12 +103,15 @@ abstract final class GlassEdgeRefraction {
   }
 
   /// Builds the refraction filter for a surface of [size] and corner
-  /// [radius], dyed by [tint]; null when the prototype is unavailable
-  /// or switched off (callers fall back to [GlassSurface]).
+  /// [radius], dyed by [tint]; [rim] colours the shader's sharp
+  /// specular edge line (round 2's cut-glass bright line). Null when
+  /// the prototype is unavailable or switched off (callers fall back
+  /// to [GlassSurface]).
   static ImageFilter? filterFor({
     required Size size,
     required double radius,
     required Color tint,
+    Color rim = const Color(0xFFFFFFFF),
   }) {
     final shader = _shader;
     if (shader == null || _unsupported || !GlassPrototype.enabled) {
@@ -107,7 +127,11 @@ abstract final class GlassEdgeRefraction {
       ..setFloat(6, tint.r)
       ..setFloat(7, tint.g)
       ..setFloat(8, tint.b)
-      ..setFloat(9, tint.a);
+      ..setFloat(9, tint.a)
+      ..setFloat(10, rim.r)
+      ..setFloat(11, rim.g)
+      ..setFloat(12, rim.b)
+      ..setFloat(13, rim.a);
     try {
       return ImageFilter.shader(shader);
     } catch (_) {
@@ -208,6 +232,7 @@ class _PrototypeGlassSurfaceState extends State<PrototypeGlassSurface> {
           size: size,
           radius: widget.radius,
           tint: tint,
+          rim: tokens.rim,
         );
         if (filter == null) {
           return _fallback();
