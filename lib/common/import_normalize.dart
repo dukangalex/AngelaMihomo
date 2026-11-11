@@ -4,6 +4,20 @@ import 'dart:convert';
 /// Mihomo YAML document. Clash/Mihomo text is returned unchanged.
 /// The original subscription file is only rewritten at import time.
 class ImportNormalize {
+  /// Whether [raw] carries content the importer can turn into nodes:
+  /// share links (single or batched, plain or base64), sing-box / Xray
+  /// JSON, or a Mihomo document pasted as text. Plain URLs and unrelated
+  /// text return false, so callers can route clipboard / scan content
+  /// that is not a subscription URL into the content-import path instead
+  /// of dead-ending it (T73).
+  static bool hasImportableContent(String raw) {
+    final text = raw.trim();
+    if (text.isEmpty) return false;
+    final unfolded = _unfold(text);
+    if (_isMihomo(unfolded)) return true;
+    return _collect(unfolded).isNotEmpty;
+  }
+
   static String toMihomo(String raw) {
     final text = raw.replaceFirst('\uFEFF', '').trim();
     if (text.isEmpty || text.contains('age-encryption.org')) return raw;

@@ -80,6 +80,34 @@ begin
     Exec('taskkill', '/f /im {{CORE_EXECUTABLE_NAME}}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
+{ Pre-rebrand installs registered the helper under the legacy name
+  BettboxHelperService (executable BettboxHelperService.exe). When it
+  keeps running it locks the shared runtime files and the upgrade
+  fails with error 5 — the current-name stop in ForceKillProcesses
+  cannot see it. Stop it, wait for the process to exit, and delete
+  the stale registration before any file is copied (T55). The names
+  are legacy constants, written literally like the legacy registry
+  keys in CleanRegistry. }
+procedure CleanupLegacyHelperService;
+var
+  ResultCode: Integer;
+  WaitCount: Integer;
+begin
+  Exec('sc', 'stop BettboxHelperService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  WaitCount := 0;
+  while (WaitCount < 5) and IsProcessRunning('BettboxHelperService.exe') do
+  begin
+    Sleep(400);
+    WaitCount := WaitCount + 1;
+  end;
+
+  if IsProcessRunning('BettboxHelperService.exe') then
+    Exec('taskkill', '/f /im BettboxHelperService.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  Exec('sc', 'delete BettboxHelperService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
 procedure CleanWintunDevices;
 var
   ResultCode: Integer;
@@ -282,6 +310,8 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssInstall then
   begin
+    { Legacy-name helper first: its lock blocks the file copy itself. }
+    CleanupLegacyHelperService;
     { Let Inno Setup try CloseApplications first; force-kill any leftovers before files are copied. }
     ForceKillProcesses(False);
   end;
@@ -303,6 +333,7 @@ begin
   if CurUninstallStep = usPostUninstall then
   begin
     UnregisterHelperService;
+    CleanupLegacyHelperService;
     
     UnregisterTaskScheduler;
     

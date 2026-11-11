@@ -264,8 +264,91 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
                 (geoItem) => GeoDataListItem(geoItem: geoItem),
               ),
             ),
+            const SizedBox(height: 8),
+            ...generateSection(
+              items: const [GeoAutoUpdateItem(), GeoUpdateIntervalItem()],
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class GeoAutoUpdateItem extends ConsumerWidget {
+  const GeoAutoUpdateItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final geoAutoUpdate = ref.watch(
+      patchClashConfigProvider.select((state) => state.geoAutoUpdate),
+    );
+    return ListItem.switchItem(
+      title: InfoTitle(
+        text: appLocalizations.geoAutoUpdate,
+        info: appLocalizations.geoAutoUpdateInfo,
+      ),
+      delegate: SwitchDelegate(
+        value: geoAutoUpdate,
+        onChanged: (bool value) async {
+          ref
+              .read(patchClashConfigProvider.notifier)
+              .updateState((state) => state.copyWith(geoAutoUpdate: value));
+          await globalState.appController.setupClashConfig();
+        },
+      ),
+    );
+  }
+}
+
+class GeoUpdateIntervalItem extends ConsumerWidget {
+  const GeoUpdateIntervalItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final geoAutoUpdate = ref.watch(
+      patchClashConfigProvider.select((state) => state.geoAutoUpdate),
+    );
+    if (!geoAutoUpdate) {
+      return const SizedBox.shrink();
+    }
+    final geoUpdateInterval = ref.watch(
+      patchClashConfigProvider.select((state) => state.geoUpdateInterval),
+    );
+    return ListItem.input(
+      title: InfoTitle(
+        text: appLocalizations.geoUpdateInterval,
+        info: appLocalizations.geoUpdateIntervalInfo,
+      ),
+      subtitle: Text(
+        '$geoUpdateInterval ${appLocalizations.hours(geoUpdateInterval)}',
+      ),
+      delegate: InputDelegate(
+        title: appLocalizations.geoUpdateInterval,
+        resetValue: '$defaultGeoUpdateInterval',
+        value: '$geoUpdateInterval',
+        validator: (String? value) {
+          if (value == null || value.isEmpty) {
+            return appLocalizations.emptyTip(appLocalizations.interval);
+          }
+          final intValue = int.tryParse(value);
+          if (intValue == null || intValue <= 0) {
+            return appLocalizations.numberTip(appLocalizations.interval);
+          }
+          return null;
+        },
+        onChanged: (String? value) async {
+          if (value == null) {
+            return;
+          }
+          final intValue = int.parse(value);
+          ref
+              .read(patchClashConfigProvider.notifier)
+              .updateState(
+                (state) => state.copyWith(geoUpdateInterval: intValue),
+              );
+          await globalState.appController.setupClashConfig();
+        },
       ),
     );
   }

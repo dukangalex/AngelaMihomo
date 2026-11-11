@@ -14,6 +14,59 @@ enum ChainTargetKind { proxy, group }
 String chainTargetKey(ChainTargetKind kind, String name) =>
     '${kind.name}\u0000$name';
 
+/// Health-check floors the bridge raises chain-carrying groups to
+/// (core/patch.go floorChainHopHealthCheck: interval ≥ 180 s,
+/// tolerance ≥ 200 ms, timeout ≥ 5000 ms, so a two-hop chain does not
+/// flap on ordinary link jitter). Mirrored here so the group editor
+/// can echo the effective value when a setting sits below the floor
+/// instead of the runtime silently diverging from what the user
+/// dialed in (T81 C-4).
+class ChainHealthFloor {
+  final int interval;
+  final int tolerance;
+  final int timeout;
+
+  const ChainHealthFloor({
+    required this.interval,
+    required this.tolerance,
+    required this.timeout,
+  });
+}
+
+const chainHopHealthFloor = ChainHealthFloor(
+  interval: 180,
+  tolerance: 200,
+  timeout: 5000,
+);
+
+/// The chain health floor applying to [groupName] under [chain], or
+/// null when the group carries no chain hop. The bridge floors the
+/// entry group of an enabled chain and the exit group when it lives
+/// in the same profile (patchChainPolicy in core/patch.go).
+ChainHealthFloor? chainHealthFloorForGroup(
+  ProfileChain chain, {
+  required String currentProfileId,
+  required String groupName,
+}) {
+  if (!chain.enabled) return null;
+  if (chain.entryKind == ChainTargetKind.group && chain.entry == groupName) {
+    return chainHopHealthFloor;
+  }
+  if (chain.landingKind == ChainTargetKind.group &&
+      chain.landing == groupName &&
+      chain.resolvedLandingProfileId(currentProfileId) == currentProfileId) {
+    return chainHopHealthFloor;
+  }
+  return null;
+}
+
+/// The value the core will actually run when [value] is configured
+/// under a chain floor of [floor]: the bridge raises present values
+/// below the floor and leaves absent or higher values untouched.
+/// Returns the raised value, or null when the floor changes nothing.
+int? chainFlooredValue(int? value, int floor) =>
+    value != null && value < floor ? floor : null;
+
 class ProfileChain {
   bool enabled;
   String entry;

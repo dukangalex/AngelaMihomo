@@ -56,6 +56,7 @@ class ThemeView extends ConsumerWidget {
     final items = <Widget>[
       const _ThemeModeItem(),
       const _PrimaryColorItem(),
+      const _ControlStyleItem(),
       if (brightness == Brightness.dark) const _PrueBlackItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
@@ -819,4 +820,21 @@ class _SliderDefaultsM3 extends SliderThemeData {
 
   @override
   double? get trackGap => 6.0;
+}
+
+/// Control style (T62 → T64): the keycap-future option was retired
+/// by the 2026-11-08 visual ruling — liquid glass is the only style,
+/// so the Appearance page states it instead of offering a choice
+/// that no longer exists. A stored keycap value falls back to glass
+/// in [ControlStyleStore.load], without an error.
+class _ControlStyleItem extends StatelessWidget {
+  const _ControlStyleItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem(
+      title: Text(appLocalizations.controlStyle),
+      subtitle: Text(appLocalizations.controlStyleLiquidGlass),
+    );
+  }
 }

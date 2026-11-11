@@ -2,6 +2,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
 import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/glass_prototype.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -93,6 +94,8 @@ class CommonCard extends StatelessWidget {
     this.info,
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
+    this.glassTier,
+    this.shaderGlass = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -107,6 +110,22 @@ class CommonCard extends StatelessWidget {
   final double? radius;
   final Clip clipBehavior;
   final bool elevated;
+
+  /// Glass hierarchy tier override (T64 round 6). Null keeps the
+  /// card default — the secondary tier, which recedes. A page's main
+  /// card / main action passes [GlassTier.primary] so it reads
+  /// denser and brighter than the page's secondary cards, matching
+  /// the home page's primary/secondary contrast.
+  final GlassTier? glassTier;
+
+  /// T83 prototype opt-in: render this card's glass through the
+  /// shader edge-refraction prototype surface ([PrototypeGlassSurface])
+  /// instead of [GlassSurface] — a clear face with refraction only in
+  /// the bevel band. Only the home page's main status card opts in;
+  /// every other surface keeps the production glass, and the
+  /// prototype surface itself falls back to [GlassSurface] whenever
+  /// the shader path is unavailable.
+  final bool shaderGlass;
 
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
@@ -155,6 +174,24 @@ class CommonCard extends StatelessWidget {
   }) {
     final colorScheme = context.colorScheme;
     if (isSelected) {
+      if (glass != null) {
+        // Round 7: a selected card is a primary-semantic surface
+        // (the profiles page's current profile above all). Under
+        // glass it no longer paints the flat secondaryContainer
+        // slab — the round-6 device photos showed exactly that
+        // slab reading as a plain pale card — it blends the
+        // container tint with the primary tier's dyed glass fill,
+        // keeping the selection identity while joining the glass.
+        // The blend leans further into the glass fill for primary
+        // (0.7): in static scopes (the profiles list) the pale static
+        // fill would otherwise be washed out by the container color
+        // and the selected card would fall back to a flat tint.
+        return Color.lerp(
+          colorScheme.secondaryContainer,
+          glass.effectiveFill,
+          glass.tier == GlassTier.primary ? 0.7 : 0.45,
+        );
+      }
       return type == CommonCardType.filled
           ? colorScheme.secondaryContainer.opacity80
           : colorScheme.secondaryContainer;
@@ -174,9 +211,20 @@ class CommonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Round 7: the effective tier — an explicitly claimed tier
+    // wins; a selected card (the page's current choice, a
+    // primary-semantic surface) resolves as primary when the
+    // caller claimed no tier of its own.
+    final effectiveTier = glassTier ?? (isSelected ? GlassTier.primary : null);
     // Glass-surfaced cards take a larger, softer radius (T38 round 3,
-    // 20–28 band); flat cards keep the stock 20.
-    final actualRadius = radius ?? (GlassScope.isActive(context) ? 24.0 : 20.0);
+    // 20–28 band); flat cards keep the stock 20. Round 6 addendum
+    // (Orville curve language): primary-tier cards round further —
+    // 30 — so the page's main surface carries the softest curve.
+    final actualRadius =
+        radius ??
+        (GlassScope.isActive(context)
+            ? (effectiveTier == GlassTier.primary ? 30.0 : 24.0)
+            : 20.0);
     var childWidget = child;
 
     if (info != null) {
@@ -209,8 +257,13 @@ class CommonCard extends StatelessWidget {
             context.colorScheme,
             GlassKind.card,
             realtime: GlassScope.isLive(context),
+            tier: effectiveTier,
           )
         : null;
+    // T83 prototype: the opted-in card paints no fill of its own —
+    // the prototype surface supplies the pane body (the shader's
+    // backdrop sample, or the fallback fill layer).
+    final useShaderGlass = shaderGlass && glass != null && !isSelected;
     Widget card = OutlinedButton(
       onLongPress: onLongPress,
       clipBehavior: clipBehavior,
@@ -220,7 +273,9 @@ class CommonCard extends StatelessWidget {
         iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
         iconSize: WidgetStateProperty.all(20),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states, glass: glass),
+          (states) => useShaderGlass
+              ? Colors.transparent
+              : getBackgroundColor(context, states, glass: glass),
         ),
         side: WidgetStateProperty.resolveWith(
           (states) => getBorderSide(context, states, glass: glass),
@@ -233,7 +288,14 @@ class CommonCard extends StatelessWidget {
     );
 
     if (glass != null) {
-      card = GlassSurface(shape: shape, tokens: glass, child: card);
+      card = useShaderGlass
+          ? PrototypeGlassSurface(
+              shape: shape,
+              tokens: glass,
+              radius: actualRadius,
+              child: card,
+            )
+          : GlassSurface(shape: shape, tokens: glass, child: card);
     }
 
     if (elevated) {
@@ -244,8 +306,15 @@ class CommonCard extends StatelessWidget {
             BoxShadow(
               blurRadius: 10,
               offset: const Offset(0, 2),
-              color: Colors.black.withValues(alpha: isLight ? 0.045 : 0.25),
+              // Round 5: a touch more presence so the pane separates
+              // from the colour field it floats on (light theme only —
+              // the dark shadow was already strong).
+              color: Colors.black.withValues(alpha: isLight ? 0.07 : 0.25),
             ),
+            // Round 7: the primary tier's coloured ambient glow
+            // rides under the neutral shadow — only primary tokens
+            // carry glow shadows, so every other card is untouched.
+            if (glass != null) ...glass.glowShadows,
           ],
         ),
         child: card,

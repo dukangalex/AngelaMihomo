@@ -147,7 +147,9 @@ class _ConfigViewState extends State<ConfigView> {
         ),
       ),
       ListItem.next(
-        title: const Text('Hosts'),
+        // T89 D-01: hosts edits are not in the hot-update projection;
+        // same annotation as the general page editor-entry rows (P-5).
+        title: InfoTitle(text: 'Hosts', info: appLocalizations.coreRestartHint),
         subtitle: Text(appLocalizations.hostsDesc),
         leading: const Icon(Icons.view_list_outlined),
         delegate: NextDelegate(
@@ -219,7 +221,13 @@ class _ConfigViewState extends State<ConfigView> {
         ),
       ),
       ListItem.next(
-        title: Text(appLocalizations.tunnel),
+        // T89 D-01: tunnels edits are not in the hot-update
+        // projection; same annotation as the general page
+        // editor-entry rows (P-5).
+        title: InfoTitle(
+          text: appLocalizations.tunnel,
+          info: appLocalizations.coreRestartHint,
+        ),
         subtitle: Text(appLocalizations.tunnelDesc),
         leading: const Icon(Icons.swap_horiz),
         delegate: NextDelegate(

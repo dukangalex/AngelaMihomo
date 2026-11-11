@@ -1092,8 +1092,10 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     final dnsCategory = '$configCategory/DNS';
     items.addAll([
       _SearchItem(
-        title: appLocalizations.overrideDns,
-        subtitle: appLocalizations.overrideDnsDesc,
+        // T81 batch 3 (P-2): the override gate is gone; this entry is
+        // the DNS section itself now.
+        title: 'DNS',
+        subtitle: appLocalizations.dnsDesc,
         category: dnsCategory,
         onTap: (context, _) => _pushPage(context, 'DNS', const DnsListView()),
       ),
@@ -1242,8 +1244,10 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     final ntpCategory = '$configCategory/NTP';
     items.addAll([
       _SearchItem(
-        title: appLocalizations.overrideNtp,
-        subtitle: appLocalizations.overrideNtpDesc,
+        // T81 batch 3 (P-2): the override gate is gone; this entry is
+        // the NTP section itself now.
+        title: 'NTP',
+        subtitle: appLocalizations.ntpDesc,
         category: ntpCategory,
         onTap: (context, _) => _pushPage(context, 'NTP', const NtpListView()),
       ),
@@ -1292,8 +1296,10 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     final snifferCategory = '$configCategory/${appLocalizations.sniffer}';
     items.addAll([
       _SearchItem(
-        title: appLocalizations.overrideSniffer,
-        subtitle: appLocalizations.overrideSnifferDesc,
+        // T81 batch 3 (P-2): the override gate is gone; this entry is
+        // the sniffer section itself now.
+        title: appLocalizations.sniffer,
+        subtitle: appLocalizations.snifferDesc,
         category: snifferCategory,
         onTap: (context, _) => _pushPage(
           context,
@@ -1417,8 +1423,10 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         '$configCategory/${appLocalizations.experimental}';
     items.addAll([
       _SearchItem(
-        title: appLocalizations.overrideExperimental,
-        subtitle: appLocalizations.overrideExperimentalDesc,
+        // T81 batch 3 (P-2): the override gate is gone; this entry is
+        // the experimental section itself now.
+        title: appLocalizations.experimental,
+        subtitle: appLocalizations.experimentalDesc,
         category: experimentalCategory,
         onTap: (context, _) => _pushPage(
           context,

@@ -157,6 +157,38 @@ rules:
 	}
 }
 
+// T86 regression: when the node exclusion filter empties a group's
+// member list, the fallback member must be REJECT (fail-closed), never
+// DIRECT — an emptied proxy group must not silently become a direct
+// connection. A group the filter only partially empties keeps its
+// surviving members with no fallback appended.
+func TestApplyPatchExcludeFilterEmptiesGroupRejects(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+  - {name: B, type: vless, server: b.example.com, port: 443, uuid: u}
+  - {name: C, type: vless, server: c.example.com, port: 443, uuid: u}
+proxy-groups:
+  - {name: Emptied, type: select, proxies: [A, B]}
+  - {name: Partial, type: select, proxies: [A, C]}
+rules:
+  - MATCH,Emptied
+`)
+	params := patchParams(t, `{"node-exclude-filter":"^[AB]$"}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	if got := findGroup(rawCfg.ProxyGroup, "Emptied")["proxies"]; !reflect.DeepEqual(got, []any{"REJECT"}) {
+		t.Errorf("emptied group proxies = %v, want [REJECT] (fail-closed)", got)
+	}
+	if got := findGroup(rawCfg.ProxyGroup, "Partial")["proxies"]; !reflect.DeepEqual(got, []any{"C"}) {
+		t.Errorf("partial group proxies = %v, want [C] with no fallback appended", got)
+	}
+	if _, err := config.ParseRawConfig(rawCfg); err != nil {
+		t.Errorf("patched config should load in the kernel: %v", err)
+	}
+}
+
 func TestApplyPatchAndroidDns(t *testing.T) {
 	previous := patchForAndroid
 	patchForAndroid = true
@@ -260,12 +292,99 @@ func TestApplyPatchDnsInjection(t *testing.T) {
 		t.Errorf("private dns should become proxy-server-nameserver: %v", rawCfg.DNS.ProxyServerNameserver)
 	}
 
+	// T81 batch 3 (P-2): the gate is gone. An enabled subscription DNS
+	// no longer shields the section from the App model — the App
+	// section takes over wholesale (legacy users were seeded from
+	// their subscription by the Dart-side migration, so this does not
+	// silently change their effective DNS). On the pre-batch code this
+	// case kept the subscription's nameserver and fails.
 	enabled := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1']}\n")
 	if _, err := applyPatch(enabled, params); err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(enabled.DNS.NameServer, []string{"10.0.0.1"}) {
-		t.Errorf("enabled dns without override should be kept: %v", enabled.DNS.NameServer)
+	if !reflect.DeepEqual(enabled.DNS.NameServer, []string{"1.1.1.1"}) {
+		t.Errorf("app dns should take over an enabled subscription dns: %v", enabled.DNS.NameServer)
+	}
+}
+
+// T81 S-1 regression: patchDns used to zero dns.fallback-filter.geosite
+// unconditionally, so neither the subscription's nor the settings
+// model's value ever took effect. The field must survive the patch in
+// both DNS ownership modes. On the pre-fix code both cases fail (the
+// list comes back empty).
+//
+// T81 batch 3 (P-2) updated the ownership semantics: the gate is gone
+// and the App model is the single DNS authority, so case 1 now sends
+// no App section at all (the subscription section passes through
+// untouched) and case 2 no longer needs an override flag.
+func TestApplyPatchDnsFallbackFilterGeoSiteSurvives(t *testing.T) {
+	// No App DNS section sent: the subscription section is untouched.
+	sub := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback: ['8.8.8.8'], fallback-filter: {geosite: ['gfw']}}\n")
+	if _, err := applyPatch(sub, patchParams(t, `{}`)); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(sub.DNS.FallbackFilter.GeoSite, []string{"gfw"}) {
+		t.Errorf("subscription geosite should survive: %v", sub.DNS.FallbackFilter.GeoSite)
+	}
+
+	// App DNS section sent: it takes over wholesale, geosite included,
+	// with no gate flag involved.
+	dns, _ := json.Marshal(map[string]any{
+		"enable":          true,
+		"nameserver":      []string{"1.1.1.1"},
+		"fallback-filter": map[string]any{"geosite": []string{"cn"}},
+	})
+	params := patchParams(t, `{}`)
+	params.Dns = dns
+	overridden := parsePatchProfile(t, "dns: {enable: true, nameserver: ['10.0.0.1'], fallback-filter: {geosite: ['gfw']}}\n")
+	if _, err := applyPatch(overridden, params); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(overridden.DNS.FallbackFilter.GeoSite, []string{"cn"}) {
+		t.Errorf("settings geosite should survive takeover: %v", overridden.DNS.FallbackFilter.GeoSite)
+	}
+	if !reflect.DeepEqual(overridden.DNS.NameServer, []string{"1.1.1.1"}) {
+		t.Errorf("settings nameserver should win under takeover: %v", overridden.DNS.NameServer)
+	}
+}
+
+// T81 C-2 regression: with override-test-url on (the default), the
+// bridge rewrote every group's url to the App test address AFTER
+// applyGroupOverrides, silently stomping a url the user set explicitly
+// in the group editor. Explicit editor urls must win; groups without
+// one keep following the App test address. On the pre-fix code the
+// first assertion fails (Main's url comes back as the App test URL).
+func TestPrepareSetupGroupOverrideURLWinsOverTestURL(t *testing.T) {
+	dir := t.TempDir()
+	profile := filepath.Join(dir, "profile.yaml")
+	content := "proxies:\n  - {name: A, type: ss, server: a.example.com, port: 1, cipher: aes-128-gcm, password: p}\n" +
+		"proxy-groups:\n" +
+		"  - {name: Main, type: url-test, proxies: [A], url: 'https://sub.example.com/204', interval: 300}\n" +
+		"  - {name: Other, type: url-test, proxies: [A], url: 'https://sub.example.com/other', interval: 300}\n" +
+		"rules:\n  - MATCH,Main\n"
+	if err := os.WriteFile(profile, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	setup := defaultSetupParams()
+	setup.ProfilePath = profile
+	setup.OverrideTestUrl = true
+	setup.TestURL = "https://app.example.com/test"
+	setup.Patch = patchParams(t, `{"group-overrides":{"Main":{"url":"https://editor.example.com/health"}}}`)
+	prepared, err := prepareSetup(setup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	urls := map[string]string{}
+	for _, group := range prepared.rawCfg.ProxyGroup {
+		name, _ := group["name"].(string)
+		url, _ := group["url"].(string)
+		urls[name] = url
+	}
+	if urls["Main"] != "https://editor.example.com/health" {
+		t.Errorf("explicit editor url must win over the App test url: got %q", urls["Main"])
+	}
+	if urls["Other"] != "https://app.example.com/test" {
+		t.Errorf("group without an explicit url keeps the App test url: got %q", urls["Other"])
 	}
 }
 
@@ -1777,5 +1896,222 @@ func TestApplyPatchTunDNSMode(t *testing.T) {
 	}
 	if rawCfg.Tun.DNSMode != "hijack" {
 		t.Errorf("patched dns-mode should override, got %q", rawCfg.Tun.DNSMode)
+	}
+}
+
+// T40: region groups (select groups whose members include their paired
+// "<name>-自动选择" url-test group) must not receive the chain landing;
+// the main selector still gets it first and other plain select groups
+// still get it appended.
+func TestApplyPatchChainSkipsRegionGroups(t *testing.T) {
+	raw := parsePatchProfile(t, `
+proxy-providers:
+  subscription:
+    type: inline
+    payload:
+      - {name: Entry, type: ss, server: e.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+      - {name: Landing, type: ss, server: l.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+      - {name: SGNode, type: ss, server: s.example.com, port: 8388, cipher: aes-128-gcm, password: p}
+proxy-groups:
+  - {name: Manual, type: select, use: [subscription]}
+  - {name: Singapore, type: select, proxies: [Singapore-自动选择, SGNode]}
+  - {name: Singapore-自动选择, type: url-test, proxies: [SGNode], url: "https://example.com", interval: 300}
+  - {name: Others, type: select, use: [subscription]}
+rules:
+  - MATCH,Manual
+`)
+	params := patchParams(t, `{"chain-policy": {"enabled": true, "entry": "Entry", "landing": "Landing"}}`)
+	if _, err := applyPatch(raw, params); err != nil {
+		t.Fatal(err)
+	}
+	containsChain := func(groupName string) bool {
+		group := findGroup(raw.ProxyGroup, groupName)
+		if group == nil {
+			t.Fatalf("group %q missing after patch", groupName)
+		}
+		for _, member := range anyStrings(group["proxies"]) {
+			if text, ok := member.(string); ok && text == explicitChainGroup {
+				return true
+			}
+		}
+		return false
+	}
+	if !containsChain("Manual") {
+		t.Error("main selector must keep the chain landing first")
+	}
+	if containsChain("Singapore") {
+		t.Error("region group must not receive the chain landing")
+	}
+	if !containsChain("Others") {
+		t.Error("plain select group must keep the appended chain landing")
+	}
+}
+
+func TestIsRegionSelectGroup(t *testing.T) {
+	groups := []map[string]any{
+		{"name": "HK", "type": "select", "proxies": []any{"HK-自动选择", "node1"}},
+		{"name": "HK-自动选择", "type": "url-test", "proxies": []any{"node1"}},
+		{"name": "Plain", "type": "select", "proxies": []any{"node2"}},
+		{"name": "Fake", "type": "select", "proxies": []any{"Fake-自动选择"}},
+		{"name": "Fake-自动选择", "type": "select", "proxies": []any{"node3"}},
+	}
+	if !isRegionSelectGroup(groups[0], groups) {
+		t.Error("paired url-test member should mark a region group")
+	}
+	if isRegionSelectGroup(groups[2], groups) {
+		t.Error("group without the paired member is not a region group")
+	}
+	if isRegionSelectGroup(groups[3], groups) {
+		t.Error("paired group that is not url-test must not mark a region group")
+	}
+}
+
+func TestApplyPatchGroupOverrides(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+  - {name: B, type: vless, server: b.example.com, port: 443, uuid: u}
+proxy-groups:
+  - {name: Main, type: select, proxies: [A, B], url: "https://example.com/check", interval: 300}
+  - {name: Auto, type: url-test, proxies: [A, B], tolerance: 50}
+  - {name: LB, type: load-balance, proxies: [A, B], strategy: consistent-hashing}
+rules:
+  - MATCH,Main
+`)
+	params := patchParams(t, `{"group-overrides":{"Main":{"interval":60,"lazy":false,"disable-udp":true,"default-selected":"B","proxies":["A"],"type":"url-test"},"Auto":{"strategy":"round-robin","tolerance":120},"LB":{"hash-key":"in-user"},"Ghost":{"interval":10}}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	groups := map[string]map[string]any{}
+	for _, group := range rawCfg.ProxyGroup {
+		if name, ok := groupName(group); ok {
+			groups[name] = group
+		}
+	}
+	main := groups["Main"]
+	if main == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := main["interval"]; fmt.Sprint(got) != "60" {
+		t.Errorf("Main interval = %v (%T), want overridden 60", got, got)
+	}
+	if got := main["lazy"]; got != false {
+		t.Errorf("Main lazy = %v, want overridden false", got)
+	}
+	if got := main["disable-udp"]; got != true {
+		t.Errorf("Main disable-udp = %v, want overridden true", got)
+	}
+	if got := main["default-selected"]; got != "B" {
+		t.Errorf("Main default-selected = %v, want B", got)
+	}
+	if got := main["url"]; got != "https://example.com/check" {
+		t.Errorf("Main url = %v, subscription value must be preserved", got)
+	}
+	if got := main["type"]; got != "select" {
+		t.Errorf("Main type = %v, identity keys must not be patchable", got)
+	}
+	if got := main["proxies"]; !reflect.DeepEqual(got, []any{"A", "B"}) {
+		t.Errorf("Main proxies = %v, membership must not be patchable", got)
+	}
+	auto := groups["Auto"]
+	if auto == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := auto["tolerance"]; fmt.Sprint(got) != "120" {
+		t.Errorf("Auto tolerance = %v (%T), want overridden 120", got, got)
+	}
+	// The patch layer is permissive about type-specific keys (the editor
+	// only offers strategy on load-balance groups); the kernel itself
+	// ignores strategy outside load-balance groups.
+	if got := auto["strategy"]; got != "round-robin" {
+		t.Errorf("Auto strategy = %v, want round-robin", got)
+	}
+	lb := groups["LB"]
+	if lb == nil {
+		t.Fatalf("groups = %v", rawCfg.ProxyGroup)
+	}
+	if got := lb["hash-key"]; got != "in-user" {
+		t.Errorf("LB hash-key = %v, want overridden in-user", got)
+	}
+	if got := lb["strategy"]; got != "consistent-hashing" {
+		t.Errorf("LB strategy = %v, subscription value must be preserved", got)
+	}
+	if _, ok := groups["Ghost"]; ok {
+		t.Errorf("override for a group the subscription does not provide must not create it")
+	}
+}
+
+// T81 C-3 regression: an editor exclude-filter used to replace the
+// group value wholesale AFTER patchProxyGroups had concatenated the
+// global node-exclusion filter onto it, so setting any exclude-filter
+// in the group editor silently dropped the global exclusion for that
+// group and the excluded nodes came back. The merge semantics are now
+// defined: editor patterns replace the subscription's own filter, the
+// global patterns are always appended (never swallowed). On the
+// pre-fix code the first group assertion fails (GlobalBad is gone).
+func TestApplyPatchGroupOverrideExcludeFilterMergesGlobal(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxy-providers:
+  sub:
+    type: inline
+    payload:
+      - {name: A, type: ss, server: a.example.com, port: 1, cipher: aes-128-gcm, password: p}
+proxy-groups:
+  - {name: Edited, type: select, use: [sub], exclude-filter: "SubPattern"}
+  - {name: Untouched, type: select, use: [sub], exclude-filter: "SubPattern"}
+  - {name: Local, type: select, proxies: [A], exclude-filter: "SubPattern"}
+rules:
+  - MATCH,Edited
+`)
+	params := patchParams(t, `{"node-exclude-filter":"GlobalBad","group-overrides":{"Edited":{"exclude-filter":"EditorPattern"},"Local":{"exclude-filter":"EditorPattern"}}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	groups := map[string]map[string]any{}
+	for _, group := range rawCfg.ProxyGroup {
+		if name, ok := groupName(group); ok {
+			groups[name] = group
+		}
+	}
+	if got := groups["Edited"]["exclude-filter"]; got != "EditorPattern|GlobalBad" {
+		t.Errorf("Edited exclude-filter = %v, want editor patterns with global appended", got)
+	}
+	if got := groups["Untouched"]["exclude-filter"]; got != "SubPattern|GlobalBad" {
+		t.Errorf("Untouched exclude-filter = %v, want subscription + global concat unchanged", got)
+	}
+	if got := groups["Local"]["exclude-filter"]; got != "EditorPattern" {
+		t.Errorf("Local (no use list) exclude-filter = %v, want editor value only — the global filter never concatenated here", got)
+	}
+}
+
+func TestApplyPatchLanAllowedIPsGuard(t *testing.T) {
+	profile := `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+rules:
+  - MATCH,DIRECT
+`
+	// T79 regression: an explicit empty lan-allowed-ips in the general
+	// patch must not erase the allow-all default (on the pre-fix code
+	// raw.LanAllowedIPs ends up empty here).
+	rawCfg := parsePatchProfile(t, profile)
+	params := patchParams(t, `{"general":{"lan-allowed-ips":[]}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	defaults := config.DefaultRawConfig()
+	if !reflect.DeepEqual(rawCfg.LanAllowedIPs, defaults.LanAllowedIPs) {
+		t.Errorf("LanAllowedIPs = %v, want allow-all default %v preserved", rawCfg.LanAllowedIPs, defaults.LanAllowedIPs)
+	}
+
+	// An explicit list in the patch is honored verbatim.
+	rawCfg2 := parsePatchProfile(t, profile)
+	params2 := patchParams(t, `{"general":{"lan-allowed-ips":["10.0.0.0/8"]}}`)
+	if _, err := applyPatch(rawCfg2, params2); err != nil {
+		t.Fatal(err)
+	}
+	want := []netip.Prefix{netip.MustParsePrefix("10.0.0.0/8")}
+	if !reflect.DeepEqual(rawCfg2.LanAllowedIPs, want) {
+		t.Errorf("LanAllowedIPs = %v, want %v", rawCfg2.LanAllowedIPs, want)
 	}
 }

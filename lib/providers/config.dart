@@ -182,18 +182,10 @@ class AppDAVSetting extends _$AppDAVSetting with AutoDisposeNotifierMixin {
   }
 }
 
-@riverpod
-class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideDns;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideDns: value);
-  }
-}
+// T81 batch 3 (P-2): the OverrideDns / OverrideNtp / OverrideSniffer
+// / OverrideExperimental providers are gone together with the Config
+// gate fields — the four sections are unconditionally owned by the
+// App model, so there is no gate left to expose.
 
 @riverpod
 class OverrideTestUrl extends _$OverrideTestUrl with AutoDisposeNotifierMixin {
@@ -209,32 +201,6 @@ class OverrideTestUrl extends _$OverrideTestUrl with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class OverrideNtp extends _$OverrideNtp with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideNtp;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideNtp: value);
-  }
-}
-
-@riverpod
-class OverrideSniffer extends _$OverrideSniffer with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideSniffer;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideSniffer: value);
-  }
-}
-
-@riverpod
 class OverrideTunnel extends _$OverrideTunnel with AutoDisposeNotifierMixin {
   @override
   bool build() {
@@ -244,22 +210,6 @@ class OverrideTunnel extends _$OverrideTunnel with AutoDisposeNotifierMixin {
   @override
   onUpdate(value) {
     globalState.config = globalState.config.copyWith(overrideTunnel: value);
-  }
-}
-
-@riverpod
-class OverrideExperimental extends _$OverrideExperimental
-    with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideExperimental;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(
-      overrideExperimental: value,
-    );
   }
 }
 

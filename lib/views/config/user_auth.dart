@@ -32,12 +32,16 @@ class UserAuthDialog extends ConsumerStatefulWidget {
 class _UserAuthDialogState extends ConsumerState<UserAuthDialog> {
   final _formKey = GlobalKey<FormState>();
   late List<_UserAuthEntry> _entries;
+  late List<TextEditingController> _prefixControllers;
   late bool _skipLocalAuth;
 
   @override
   void initState() {
     super.initState();
     final config = ref.read(patchClashConfigProvider);
+    _prefixControllers = config.skipAuthPrefixes
+        .map((prefix) => TextEditingController(text: prefix))
+        .toList();
     final auth = config.authentication;
     if (auth.isEmpty) {
       _entries = [];
@@ -62,7 +66,54 @@ class _UserAuthDialogState extends ConsumerState<UserAuthDialog> {
     for (final entry in _entries) {
       entry.dispose();
     }
+    for (final controller in _prefixControllers) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  List<String> get _currentPrefixes => _prefixControllers
+      .map((controller) => controller.text.trim())
+      .where((prefix) => prefix.isNotEmpty)
+      .toList();
+
+  void _setSkipLocalAuth(bool value) {
+    setState(() {
+      _skipLocalAuth = value;
+      final prefixes = _currentPrefixes;
+      if (value) {
+        for (final prefix in defaultSkipAuthPrefixes.reversed) {
+          if (!prefixes.contains(prefix)) {
+            _prefixControllers.insert(
+              0,
+              TextEditingController(text: prefix),
+            );
+          }
+        }
+      } else {
+        _prefixControllers.removeWhere((controller) {
+          final hit = defaultSkipAuthPrefixes.contains(
+            controller.text.trim(),
+          );
+          if (hit) {
+            controller.dispose();
+          }
+          return hit;
+        });
+      }
+    });
+  }
+
+  void _addPrefix() {
+    setState(() {
+      _prefixControllers.add(TextEditingController());
+    });
+  }
+
+  void _removePrefix(int index) {
+    setState(() {
+      _prefixControllers.removeAt(index).dispose();
+    });
   }
 
   void _addEntry() {
@@ -89,7 +140,14 @@ class _UserAuthDialogState extends ConsumerState<UserAuthDialog> {
       }
     }
 
-    final nextPrefixes = _skipLocalAuth ? defaultSkipAuthPrefixes : <String>[];
+    // The editable list is the source of truth; the skip-local toggle only
+    // adds/removes the built-in loopback defaults inside that list.
+    final nextPrefixes = <String>[];
+    for (final prefix in _currentPrefixes) {
+      if (!nextPrefixes.contains(prefix)) {
+        nextPrefixes.add(prefix);
+      }
+    }
 
     ref
         .read(patchClashConfigProvider.notifier)
@@ -241,16 +299,54 @@ class _UserAuthDialogState extends ConsumerState<UserAuthDialog> {
                     ],
                   ),
                 ),
-                Switch(
-                  value: _skipLocalAuth,
-                  onChanged: (val) {
-                    setState(() {
-                      _skipLocalAuth = val;
-                    });
-                  },
+                Switch(value: _skipLocalAuth, onChanged: _setSkipLocalAuth),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    appLocalizations.skipAuthPrefixes,
+                    style: context.textTheme.bodyMedium,
+                  ),
+                ),
+                InfoHintButton(
+                  title: appLocalizations.skipAuthPrefixes,
+                  message: appLocalizations.skipAuthPrefixesInfo,
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.add, size: 20),
+                  onPressed: _addPrefix,
+                  tooltip: appLocalizations.add,
                 ),
               ],
             ),
+            const SizedBox(height: 4),
+            for (int i = 0; i < _prefixControllers.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _prefixControllers[i],
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          hintText: '192.168.0.0/16',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      onPressed: () => _removePrefix(i),
+                      tooltip: appLocalizations.delete,
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

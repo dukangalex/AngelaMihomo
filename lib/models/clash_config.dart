@@ -21,7 +21,22 @@ const defaultGeoXUrl = GeoXUrl();
 
 const defaultMixedPort = 7890;
 const defaultKeepAliveInterval = 30;
+// Mihomo wiki (config/general): keep-alive-idle defaults to 15 seconds.
+const defaultKeepAliveIdle = 15;
+// Mihomo DefaultRawConfig: geo-update-interval defaults to 24 (hours),
+// bind-address defaults to '*' (all interfaces).
+const defaultGeoUpdateInterval = 24;
+const defaultBindAddress = '*';
 const defaultSkipAuthPrefixes = ['127.0.0.1/8', '::1/128'];
+
+// T81 batch 3 (R-4): the external UI source used to be hardcoded in
+// the patch-params builder (zashboard latest zip + empty name), which
+// silently shadowed these model fields. The values now live here as
+// the model defaults — the single source — and the builder emits
+// whatever the model carries.
+const defaultExternalUiUrl =
+    'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
+const defaultExternalUiName = '';
 
 const defaultBypassPrivateRouteAddress = [
   '198.51.100.0/30',
@@ -123,12 +138,28 @@ abstract class ProxyGroup with _$ProxyGroup {
     @JsonKey(fromJson: _parseInt) int? timeout,
     @JsonKey(name: 'max-failed-times', fromJson: _parseInt) int? maxFailedTimes,
     String? filter,
-    @JsonKey(name: 'expected-filter') String? excludeFilter,
+    // 内核字段名为 exclude-filter（GroupCommonOption）；曾误写 expected-filter，
+    // 导致解析时该过滤被静默丢弃（T75 第 0 步实证，回归测试在 test/models）。
+    @JsonKey(name: 'exclude-filter') String? excludeFilter,
     @JsonKey(name: 'exclude-type') String? excludeType,
     @JsonKey(name: 'expected-status') dynamic expectedStatus,
     @JsonKey(fromJson: _parseBool) bool? hidden,
     String? icon,
     @JsonKey(fromJson: _parseInt) int? tolerance,
+    // T76: remaining GroupCommonOption / SelectorOption / LoadBalanceOption
+    // fields the kernel parses but the model used to drop on the floor.
+    // Sources: core parser.go GroupCommonOption, selector.go
+    // SelectorOption.default-selected, loadbalance.go LoadBalanceOption.
+    @JsonKey(name: 'default-selected') String? defaultSelected,
+    @JsonKey(name: 'empty-fallback') String? emptyFallback,
+    @JsonKey(name: 'disable-udp', fromJson: _parseBool) bool? disableUdp,
+    @JsonKey(name: 'include-all', fromJson: _parseBool) bool? includeAll,
+    @JsonKey(name: 'include-all-proxies', fromJson: _parseBool)
+    bool? includeAllProxies,
+    @JsonKey(name: 'include-all-providers', fromJson: _parseBool)
+    bool? includeAllProviders,
+    String? strategy,
+    @JsonKey(name: 'hash-key') String? hashKey,
   }) = _ProxyGroup;
 
   factory ProxyGroup.fromJson(Map<String, Object?> json) =>
@@ -367,6 +398,11 @@ abstract class FallbackFilter with _$FallbackFilter {
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
     @Default([]) List<String> ipcidr,
     @Default([]) List<String> domain,
+    // T81 batch 3: carrier for the kernel's fallback-filter.geosite.
+    // The model could not represent this field, so a subscription's
+    // geosite condition would have been dropped by the DNS takeover
+    // (batch 1 S-1 restored the field's effectiveness bridge-side).
+    @Default([]) List<String> geosite,
   }) = _FallbackFilter;
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
       _$FallbackFilterFromJson(json);
@@ -416,6 +452,9 @@ abstract class Dns with _$Dns {
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
+    @Default({})
+    @JsonKey(name: 'proxy-server-nameserver-policy')
+    Map<String, String> proxyServerNameserverPolicy,
     @Default(['1.1.1.1']) List<String> nameserver,
     @Default([]) List<String> fallback,
     @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
@@ -433,6 +472,14 @@ abstract class Dns with _$Dns {
     @Default(false)
     @JsonKey(name: 'fallback-lazy-query')
     bool fallbackLazyQuery,
+    // T81 batch 3: carriers for kernel DNS fields the model could not
+    // represent (ipv6-timeout / listen-routing-mark / cache-max-size).
+    // Without them the DNS takeover migration would silently drop a
+    // subscription's values for these keys. Model-only carriers: the
+    // kernel defaults for all three are 0 (unset), matching @Default.
+    @Default(0) @JsonKey(name: 'ipv6-timeout') int ipv6Timeout,
+    @Default(0) @JsonKey(name: 'listen-routing-mark') int listenRoutingMark,
+    @Default(0) @JsonKey(name: 'cache-max-size') int cacheMaxSize,
   }) = _Dns;
 
   factory Dns.fromJson(Map<String, Object?> json) => _$DnsFromJson(json);
@@ -462,6 +509,7 @@ abstract class Ntp with _$Ntp {
     @Default('time.apple.com') String server,
     @Default(123) int port,
     @Default(60) int interval,
+    @JsonKey(name: 'dialer-proxy') String? dialerProxy,
   }) = _Ntp;
 
   factory Ntp.fromJson(Map<String, Object?> json) => _$NtpFromJson(json);
@@ -483,6 +531,10 @@ abstract class Experimental with _$Experimental {
     @Default(false)
     @JsonKey(name: 'dialer-ip4p-convert')
     bool dialerIp4pConvert,
+    // T81 batch 3: carrier for the kernel's experimental.fingerprints,
+    // which the model could not represent; the section takeover would
+    // otherwise drop a subscription's value. Model-only carrier.
+    @Default([]) List<String> fingerprints,
   }) = _Experimental;
 
   factory Experimental.fromJson(Map<String, Object?> json) =>
@@ -739,6 +791,24 @@ abstract class ClashConfig with _$ClashConfig {
     @Default(defaultKeepAliveInterval)
     @JsonKey(name: 'keep-alive-interval')
     int keepAliveInterval,
+    @Default(defaultKeepAliveIdle)
+    @JsonKey(name: 'keep-alive-idle')
+    int keepAliveIdle,
+    @Default(false) @JsonKey(name: 'geo-auto-update') bool geoAutoUpdate,
+    @Default(defaultGeoUpdateInterval)
+    @JsonKey(name: 'geo-update-interval')
+    int geoUpdateInterval,
+    @Default(defaultBindAddress)
+    @JsonKey(name: 'bind-address')
+    String bindAddress,
+    @Default([]) @JsonKey(name: 'lan-allowed-ips') List<String> lanAllowedIps,
+    @Default([])
+    @JsonKey(name: 'lan-disallowed-ips')
+    List<String> lanDisallowedIps,
+    // Kernel home for this flag is profile.store-fake-ip; the flat field is
+    // app-side storage only, state.dart emits it under 'profile'.
+    @Default(false) @JsonKey(name: 'store-fake-ip') bool storeFakeIp,
+    @JsonKey(name: 'interface-name') String? interfaceName,
     @Default(true) @JsonKey(name: 'unified-delay') bool unifiedDelay,
     @Default(true) @JsonKey(name: 'tcp-concurrent') bool tcpConcurrent,
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,
@@ -757,6 +827,11 @@ abstract class ClashConfig with _$ClashConfig {
     @Default(GeodataLoader.memconservative)
     @JsonKey(name: 'geodata-loader')
     GeodataLoader geodataLoader,
+    // T81 batch 3 (R-2): geodata-mode joins geodata-loader in the
+    // model. Both used to be hardcoded literals in the patch-params
+    // builder (the loader field existed but was never read, the mode
+    // had no field at all); the model is now the single source.
+    @Default(false) @JsonKey(name: 'geodata-mode') bool geodataMode,
     @Default([]) @JsonKey(name: 'proxy-groups') List<ProxyGroup> proxyGroups,
     @Default([]) List<String> rule,
     @JsonKey(name: 'global-ua') String? globalUa,
@@ -764,8 +839,12 @@ abstract class ClashConfig with _$ClashConfig {
     @JsonKey(name: 'external-controller')
     ExternalControllerStatus externalController,
     String? secret,
-    @JsonKey(name: 'external-ui-name') String? externalUiName,
-    @JsonKey(name: 'external-ui-url') String? externalUiUrl,
+    @Default(defaultExternalUiName)
+    @JsonKey(name: 'external-ui-name')
+    String? externalUiName,
+    @Default(defaultExternalUiUrl)
+    @JsonKey(name: 'external-ui-url')
+    String? externalUiUrl,
     @Default({}) HostsMap hosts,
   }) = _ClashConfig;
 

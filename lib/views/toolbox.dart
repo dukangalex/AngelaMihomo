@@ -225,7 +225,17 @@ class _ToolboxViewState extends ConsumerState<ToolboxView> {
     );
     final tiles = _resolveTiles(_buildTools(), saved);
     final body = SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      // T67: SingleChildScrollView ignores MediaQuery padding, so add
+      // the floating-bar reserve explicitly when hosted under it.
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        24 +
+            (FloatingBottomBarScope.has(context)
+                ? getFloatingBottomBarReserveHeight(context)
+                : 0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

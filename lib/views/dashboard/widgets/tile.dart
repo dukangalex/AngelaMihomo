@@ -151,27 +151,31 @@ class DashboardTileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = DashboardDecor(
+      mark: mark,
+      bottom: markBottom,
+      angle: markAngle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InfoHeader(
+            info: info,
+            actions: actions,
+            padding: baseInfoEdgeInsets.copyWith(bottom: 0),
+          ),
+          Expanded(child: child),
+        ],
+      ),
+    );
     return SizedBox(
       height: getWidgetHeight(context, size.rows),
+      // T64: the keycap tile face was retired with the keycap style
+      // (2026-11-08 ruling); dashboard tiles are glass cards, full
+      // stop — same content, layout and tap targets as before.
       child: CommonCard(
         onPressed: onPressed,
         onLongPress: onLongPress,
-        child: DashboardDecor(
-          mark: mark,
-          bottom: markBottom,
-          angle: markAngle,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              InfoHeader(
-                info: info,
-                actions: actions,
-                padding: baseInfoEdgeInsets.copyWith(bottom: 0),
-              ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
+        child: content,
       ),
     );
   }

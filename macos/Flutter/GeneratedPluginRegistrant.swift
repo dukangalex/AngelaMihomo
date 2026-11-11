@@ -12,6 +12,7 @@ import dynamic_color
 import file_picker_darwin
 import file_selector_macos
 import hotkey_manager_macos
+import local_auth_darwin
 import mobile_scanner
 import package_info_plus
 import restart_app
@@ -31,6 +32,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
   HotkeyManagerMacosPlugin.register(with: registry.registrar(forPlugin: "HotkeyManagerMacosPlugin"))
+  LocalAuthPlugin.register(with: registry.registrar(forPlugin: "LocalAuthPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
   RestartAppPlugin.register(with: registry.registrar(forPlugin: "RestartAppPlugin"))

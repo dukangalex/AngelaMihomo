@@ -63,7 +63,6 @@ type UpdateParams struct {
 	Mode               *tunnel.TunnelMode `json:"mode"`
 	LogLevel           *log.LogLevel      `json:"log-level"`
 	IPv6               *bool              `json:"ipv6"`
-	Sniffing           *bool              `json:"sniffing"`
 	TCPConcurrent      *bool              `json:"tcp-concurrent"`
 	ExternalController *string            `json:"external-controller"`
 	Interface          *string            `json:"interface-name"`

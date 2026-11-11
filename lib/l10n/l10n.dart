@@ -1665,198 +1665,6 @@ class AppLocalizations {
     return Intl.message('AI Search', name: 'logAiSearch', desc: '', args: []);
   }
 
-  /// `AI Patrol`
-  String get aiPatrol {
-    return Intl.message('AI Patrol', name: 'aiPatrol', desc: '', args: []);
-  }
-
-  /// `Everything looks good`
-  String get patrolAllGood {
-    return Intl.message('Everything looks good', name: 'patrolAllGood', desc: '', args: []);
-  }
-
-  /// `Recheck`
-  String get patrolRecheck {
-    return Intl.message('Recheck', name: 'patrolRecheck', desc: '', args: []);
-  }
-
-  /// `No problems found`
-  String get patrolNoProblems {
-    return Intl.message('No problems found', name: 'patrolNoProblems', desc: '', args: []);
-  }
-
-  /// `Log problems`
-  String get patrolSectionLogs {
-    return Intl.message('Log problems', name: 'patrolSectionLogs', desc: '', args: []);
-  }
-
-  /// `Connection failures`
-  String get patrolLogConnection {
-    return Intl.message('Connection failures', name: 'patrolLogConnection', desc: '', args: []);
-  }
-
-  /// `DNS failures`
-  String get patrolLogDns {
-    return Intl.message('DNS failures', name: 'patrolLogDns', desc: '', args: []);
-  }
-
-  /// `Timeouts`
-  String get patrolLogTimeouts {
-    return Intl.message('Timeouts', name: 'patrolLogTimeouts', desc: '', args: []);
-  }
-
-  /// `Rule problems`
-  String get patrolLogRule {
-    return Intl.message('Rule problems', name: 'patrolLogRule', desc: '', args: []);
-  }
-
-  /// `Subscription`
-  String get patrolSectionSubscription {
-    return Intl.message('Subscription', name: 'patrolSectionSubscription', desc: '', args: []);
-  }
-
-  /// `No profile selected`
-  String get patrolSubNoProfile {
-    return Intl.message('No profile selected', name: 'patrolSubNoProfile', desc: '', args: []);
-  }
-
-  /// `Last updated`
-  String get patrolSubLastUpdated {
-    return Intl.message('Last updated', name: 'patrolSubLastUpdated', desc: '', args: []);
-  }
-
-  /// `Never updated`
-  String get patrolSubNeverUpdated {
-    return Intl.message('Never updated', name: 'patrolSubNeverUpdated', desc: '', args: []);
-  }
-
-  /// `Update overdue — refresh it manually once`
-  String get patrolSubStale {
-    return Intl.message('Update overdue — refresh it manually once', name: 'patrolSubStale', desc: '', args: []);
-  }
-
-  /// `Subscription expired`
-  String get patrolSubExpired {
-    return Intl.message('Subscription expired', name: 'patrolSubExpired', desc: '', args: []);
-  }
-
-  /// `The last update failed`
-  String get patrolSubUpdateFailed {
-    return Intl.message('The last update failed', name: 'patrolSubUpdateFailed', desc: '', args: []);
-  }
-
-  /// `Node health`
-  String get patrolSectionNodes {
-    return Intl.message('Node health', name: 'patrolSectionNodes', desc: '', args: []);
-  }
-
-  /// `Working`
-  String get patrolNodesWorking {
-    return Intl.message('Working', name: 'patrolNodesWorking', desc: '', args: []);
-  }
-
-  /// `Unavailable`
-  String get patrolNodesUnavailable {
-    return Intl.message('Unavailable', name: 'patrolNodesUnavailable', desc: '', args: []);
-  }
-
-  /// `Untested`
-  String get patrolNodesUntested {
-    return Intl.message('Untested', name: 'patrolNodesUntested', desc: '', args: []);
-  }
-
-  /// `No speed-test data yet`
-  String get patrolNodesNoData {
-    return Intl.message('No speed-test data yet', name: 'patrolNodesNoData', desc: '', args: []);
-  }
-
-  /// `Most nodes are unreachable — likely a network or subscription problem, not a single bad node`
-  String get patrolNodesWidespread {
-    return Intl.message('Most nodes are unreachable — likely a network or subscription problem, not a single bad node', name: 'patrolNodesWidespread', desc: '', args: []);
-  }
-
-  /// `Some nodes are unavailable`
-  String get patrolNodesSomeDown {
-    return Intl.message('Some nodes are unavailable', name: 'patrolNodesSomeDown', desc: '', args: []);
-  }
-
-  /// `Mode & chain`
-  String get patrolSectionLink {
-    return Intl.message('Mode & chain', name: 'patrolSectionLink', desc: '', args: []);
-  }
-
-  /// `Chain proxy is off`
-  String get patrolChainOff {
-    return Intl.message('Chain proxy is off', name: 'patrolChainOff', desc: '', args: []);
-  }
-
-  /// `Chain proxy is on`
-  String get patrolChainOn {
-    return Intl.message('Chain proxy is on', name: 'patrolChainOn', desc: '', args: []);
-  }
-
-  /// `Entry or exit is not selected yet`
-  String get patrolChainIncomplete {
-    return Intl.message('Entry or exit is not selected yet', name: 'patrolChainIncomplete', desc: '', args: []);
-  }
-
-  /// `One chain hop looks down`
-  String get patrolChainHopDown {
-    return Intl.message('One chain hop looks down', name: 'patrolChainHopDown', desc: '', args: []);
-  }
-
-  /// `Core & config`
-  String get patrolSectionCore {
-    return Intl.message('Core & config', name: 'patrolSectionCore', desc: '', args: []);
-  }
-
-  /// `Version`
-  String get patrolVersion {
-    return Intl.message('Version', name: 'patrolVersion', desc: '', args: []);
-  }
-
-  /// `Config check passed`
-  String get patrolConfigValid {
-    return Intl.message('Config check passed', name: 'patrolConfigValid', desc: '', args: []);
-  }
-
-  /// `Config check failed`
-  String get patrolConfigInvalid {
-    return Intl.message('Config check failed', name: 'patrolConfigInvalid', desc: '', args: []);
-  }
-
-  /// `Checking config…`
-  String get patrolConfigChecking {
-    return Intl.message('Checking config…', name: 'patrolConfigChecking', desc: '', args: []);
-  }
-
-  /// `Start the service to run the full config check`
-  String get patrolConfigUnavailable {
-    return Intl.message('Start the service to run the full config check', name: 'patrolConfigUnavailable', desc: '', args: []);
-  }
-
-  /// `{count, plural, one{1 area needs attention} other{{count} areas need attention}}`
-  String patrolAttentionNeeded(num count) {
-    return Intl.plural(
-      count,
-      one: '1 area needs attention',
-      other: '$count areas need attention',
-      name: 'patrolAttentionNeeded',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `Couldn't switch to the new profile, so the previous profile was restored`
-  String get profileSwitchFailedRollback {
-    return Intl.message('Couldn\'t switch to the new profile, so the previous profile was restored', name: 'profileSwitchFailedRollback', desc: '', args: []);
-  }
-
-  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
-  String get profileSwitchFailed {
-    return Intl.message('Couldn\'t switch profiles. The current profile is unchanged; check it and try again', name: 'profileSwitchFailed', desc: '', args: []);
-  }
-
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);
@@ -1885,6 +1693,16 @@ class AppLocalizations {
   /// `Core`
   String get core {
     return Intl.message('Core', name: 'core', desc: '', args: []);
+  }
+
+  /// `Takes effect after the core restarts`
+  String get coreRestartHint {
+    return Intl.message(
+      'Takes effect after the core restarts',
+      name: 'coreRestartHint',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Linkage Switch`
@@ -4482,6 +4300,16 @@ class AppLocalizations {
     );
   }
 
+  /// `When on, direct resolution applies the same routing policy as the main resolver. It only has something to act on once direct nameservers are set, so this item is hidden while that list is empty.`
+  String get directNameserverFollowPolicyInfo {
+    return Intl.message(
+      'When on, direct resolution applies the same routing policy as the main resolver. It only has something to act on once direct nameservers are set, so this item is hidden while that list is empty.',
+      name: 'directNameserverFollowPolicyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Fallback`
   String get fallback {
     return Intl.message('Fallback', name: 'fallback', desc: '', args: []);
@@ -5837,6 +5665,36 @@ class AppLocalizations {
     );
   }
 
+  /// `Failed to set the system DNS automatically. Your previous DNS settings were kept.`
+  String get systemDnsSetFailedKept {
+    return Intl.message(
+      'Failed to set the system DNS automatically. Your previous DNS settings were kept.',
+      name: 'systemDnsSetFailedKept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to set the system DNS automatically, and your previous DNS settings could not be restored. If name resolution stops working, restart NetworkManager.`
+  String get systemDnsSetFailedBroken {
+    return Intl.message(
+      'Failed to set the system DNS automatically, and your previous DNS settings could not be restored. If name resolution stops working, restart NetworkManager.',
+      name: 'systemDnsSetFailedBroken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to restore your previous system DNS settings. The saved settings will be retried on the next launch. If name resolution is broken, restart NetworkManager.`
+  String get systemDnsRestoreFailed {
+    return Intl.message(
+      'Failed to restore your previous system DNS settings. The saved settings will be retried on the next launch. If name resolution is broken, restart NetworkManager.',
+      name: 'systemDnsRestoreFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Details`
   String get details {
     return Intl.message('Details', name: 'details', desc: '', args: []);
@@ -6102,6 +5960,7 @@ class AppLocalizations {
     );
   }
 
+  /// `Do Not Use a Script`
   String get scriptNotUsed {
     return Intl.message(
       'Do Not Use a Script',
@@ -6111,6 +5970,7 @@ class AppLocalizations {
     );
   }
 
+  /// `Follow Global Script`
   String get followGlobalScript {
     return Intl.message(
       'Follow Global Script',
@@ -6127,6 +5987,36 @@ class AppLocalizations {
       name: 'profileImportFailed',
       desc: '',
       args: [statusCode],
+    );
+  }
+
+  /// `Import failed: the network is unreachable or the subscription service is temporarily unavailable. Check your connection and try again`
+  String get profileImportNetworkFailed {
+    return Intl.message(
+      'Import failed: the network is unreachable or the subscription service is temporarily unavailable. Check your connection and try again',
+      name: 'profileImportNetworkFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import failed: the content is not recognized or is corrupted. Make sure you copied the complete subscription link or node info, then try again`
+  String get profileImportInvalidContent {
+    return Intl.message(
+      'Import failed: the content is not recognized or is corrupted. Make sure you copied the complete subscription link or node info, then try again',
+      name: 'profileImportInvalidContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Imported profile`
+  String get contentImportLabel {
+    return Intl.message(
+      'Imported profile',
+      name: 'contentImportLabel',
+      desc: '',
+      args: [],
     );
   }
 
@@ -10325,6 +10215,1331 @@ class AppLocalizations {
     return Intl.message(
       'System options',
       name: 'systemExplicitTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't switch to the new profile, so the previous profile was restored`
+  String get profileSwitchFailedRollback {
+    return Intl.message(
+      'Couldn\'t switch to the new profile, so the previous profile was restored',
+      name: 'profileSwitchFailedRollback',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
+  String get profileSwitchFailed {
+    return Intl.message(
+      'Couldn\'t switch profiles. The current profile is unchanged; check it and try again',
+      name: 'profileSwitchFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mihomo core version`
+  String get mihomoCoreVersion {
+    return Intl.message(
+      'Mihomo core version',
+      name: 'mihomoCoreVersion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test all groups`
+  String get testAllDelay {
+    return Intl.message(
+      'Test all groups',
+      name: 'testAllDelay',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not tested`
+  String get proxyDelayNotTested {
+    return Intl.message(
+      'Not tested',
+      name: 'proxyDelayNotTested',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
+  String get systemExplicitDirectExceptionModeDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.',
+      name: 'systemExplicitDirectExceptionModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct exceptions are not active in this mode`
+  String get systemExplicitExceptionsInactive {
+    return Intl.message(
+      'Direct exceptions are not active in this mode',
+      name: 'systemExplicitExceptionsInactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.`
+  String get systemExplicitExceptionsInactiveDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.',
+      name: 'systemExplicitExceptionsInactiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Interception is active in this mode`
+  String get systemExplicitInterceptionActive {
+    return Intl.message(
+      'Interception is active in this mode',
+      name: 'systemExplicitInterceptionActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy, WebRTC and ad blocking keep working in global/direct mode.`
+  String get systemExplicitInterceptionActiveDesc {
+    return Intl.message(
+      'Privacy, WebRTC and ad blocking keep working in global/direct mode.',
+      name: 'systemExplicitInterceptionActiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto-update is on for this subscription (every {hours} h, as suggested by the provider). You can change it in the profile settings.`
+  String autoUpdateOnImportTip(Object hours) {
+    return Intl.message(
+      'Auto-update is on for this subscription (every $hours h, as suggested by the provider). You can change it in the profile settings.',
+      name: 'autoUpdateOnImportTip',
+      desc: '',
+      args: [hours],
+    );
+  }
+
+  /// `Saved`
+  String get saveSuccess {
+    return Intl.message('Saved', name: 'saveSuccess', desc: '', args: []);
+  }
+
+  /// `App lock`
+  String get appLock {
+    return Intl.message('App lock', name: 'appLock', desc: '', args: []);
+  }
+
+  /// `Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.`
+  String get appLockDesc {
+    return Intl.message(
+      'Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.',
+      name: 'appLockDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter PIN`
+  String get appLockEnterPin {
+    return Intl.message(
+      'Enter PIN',
+      name: 'appLockEnterPin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set a PIN (4-6 digits)`
+  String get appLockSetPin {
+    return Intl.message(
+      'Set a PIN (4-6 digits)',
+      name: 'appLockSetPin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the PIN again`
+  String get appLockConfirmPin {
+    return Intl.message(
+      'Enter the PIN again',
+      name: 'appLockConfirmPin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The two PINs do not match`
+  String get appLockPinMismatch {
+    return Intl.message(
+      'The two PINs do not match',
+      name: 'appLockPinMismatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wrong PIN`
+  String get appLockWrongPin {
+    return Intl.message(
+      'Wrong PIN',
+      name: 'appLockWrongPin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many attempts. Wait a while and try again.`
+  String get appLockWait {
+    return Intl.message(
+      'Too many attempts. Wait a while and try again.',
+      name: 'appLockWait',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.`
+  String get appLockNoRecovery {
+    return Intl.message(
+      'There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.',
+      name: 'appLockNoRecovery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Re-lock after leaving`
+  String get appLockRelock {
+    return Intl.message(
+      'Re-lock after leaving',
+      name: 'appLockRelock',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Immediately`
+  String get appLockRelockImmediate {
+    return Intl.message(
+      'Immediately',
+      name: 'appLockRelockImmediate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `30 seconds`
+  String get appLockRelock30s {
+    return Intl.message(
+      '30 seconds',
+      name: 'appLockRelock30s',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 minute`
+  String get appLockRelock1m {
+    return Intl.message(
+      '1 minute',
+      name: 'appLockRelock1m',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `5 minutes`
+  String get appLockRelock5m {
+    return Intl.message(
+      '5 minutes',
+      name: 'appLockRelock5m',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use biometrics`
+  String get appLockBiometric {
+    return Intl.message(
+      'Use biometrics',
+      name: 'appLockBiometric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Biometrics are not available on this device`
+  String get appLockBiometricUnavailable {
+    return Intl.message(
+      'Biometrics are not available on this device',
+      name: 'appLockBiometricUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No fingerprint or face is enrolled on this device yet — add one in the system settings first.`
+  String get appLockBiometricNotEnrolled {
+    return Intl.message(
+      'No fingerprint or face is enrolled on this device yet — add one in the system settings first.',
+      name: 'appLockBiometricNotEnrolled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device has no fingerprint or face hardware.`
+  String get appLockBiometricNoHardware {
+    return Intl.message(
+      'This device has no fingerprint or face hardware.',
+      name: 'appLockBiometricNoHardware',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Biometric unlock is not supported on this platform.`
+  String get appLockBiometricUnsupported {
+    return Intl.message(
+      'Biometric unlock is not supported on this platform.',
+      name: 'appLockBiometricUnsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlock with biometrics`
+  String get appLockUnlockBiometric {
+    return Intl.message(
+      'Unlock with biometrics',
+      name: 'appLockUnlockBiometric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Control style`
+  String get controlStyle {
+    return Intl.message(
+      'Control style',
+      name: 'controlStyle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Liquid glass`
+  String get controlStyleLiquidGlass {
+    return Intl.message(
+      'Liquid glass',
+      name: 'controlStyleLiquidGlass',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `China adaptation preset`
+  String get chinaPreset {
+    return Intl.message(
+      'China adaptation preset',
+      name: 'chinaPreset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.`
+  String get chinaPresetDesc {
+    return Intl.message(
+      'One tap applies the recommended combination for use from China. Only existing app capabilities are combined — no new rules, no new requests.',
+      name: 'chinaPresetDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Applied`
+  String get chinaPresetStateOn {
+    return Intl.message(
+      'Applied',
+      name: 'chinaPresetStateOn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not applied`
+  String get chinaPresetStateOff {
+    return Intl.message(
+      'Not applied',
+      name: 'chinaPresetStateOff',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customized`
+  String get chinaPresetStateCustomized {
+    return Intl.message(
+      'Customized',
+      name: 'chinaPresetStateCustomized',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apply preset`
+  String get chinaPresetApply {
+    return Intl.message(
+      'Apply preset',
+      name: 'chinaPresetApply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restore defaults`
+  String get chinaPresetReset {
+    return Intl.message(
+      'Restore defaults',
+      name: 'chinaPresetReset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No installer for this device was found in this release. Opening the release page instead.`
+  String get updateNoMatchingAsset {
+    return Intl.message(
+      'No installer for this device was found in this release. Opening the release page instead.',
+      name: 'updateNoMatchingAsset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.`
+  String get updateSumsMissing {
+    return Intl.message(
+      'This release has no verifiable SHA256SUMS entry for the installer, so an in-app download cannot be verified. Opening the release page instead.',
+      name: 'updateSumsMissing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.`
+  String get updateChecksumMismatch {
+    return Intl.message(
+      'The downloaded file failed SHA-256 verification and was deleted. Nothing was installed.',
+      name: 'updateChecksumMismatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The installer is starting. The app will close so the update can replace its files.`
+  String get updateInstallLaunch {
+    return Intl.message(
+      'The installer is starting. The app will close so the update can replace its files.',
+      name: 'updateInstallLaunch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Downloading update`
+  String get updateProgressTitle {
+    return Intl.message(
+      'Downloading update',
+      name: 'updateProgressTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release's SHA256SUMS.`
+  String get updateInstallPermissionNote {
+    return Intl.message(
+      'Android may ask to allow installs from this app (the REQUEST_INSTALL_PACKAGES permission, used only for updates). Some phones\' security scanners warn about any self-update — this file is handed to the installer only after its SHA-256 matches the release\'s SHA256SUMS.',
+      name: 'updateInstallPermissionNote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In-app install is not available on this platform yet; opening the release page.`
+  String get updateDesktopNote {
+    return Intl.message(
+      'In-app install is not available on this platform yet; opening the release page.',
+      name: 'updateDesktopNote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The core is not running, so this download goes direct instead of through the local proxy.`
+  String get updateDirectNote {
+    return Intl.message(
+      'The core is not running, so this download goes direct instead of through the local proxy.',
+      name: 'updateDirectNote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto-update is on for this subscription (every {hours} h). You can change it in the profile settings.`
+  String autoUpdateOnImportTipDefault(num hours) {
+    return Intl.message(
+      'Auto-update is on for this subscription (every $hours h). You can change it in the profile settings.',
+      name: 'autoUpdateOnImportTipDefault',
+      desc: '',
+      args: [hours],
+    );
+  }
+
+  /// `Recommended combination`
+  String get chinaAdaptRecommendTitle {
+    return Intl.message(
+      'Recommended combination',
+      name: 'chinaAdaptRecommendTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.`
+  String get chinaAdaptRecommendDesc {
+    return Intl.message(
+      'For networks in China, the recommended combination is the three interception options in this group: privacy protection, WebRTC/STUN/TURN blocking and ad blocking. Turn them on together as a starting point; each can still be adjusted on its own.',
+      name: 'chinaAdaptRecommendDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on recommended`
+  String get chinaAdaptApplyRecommended {
+    return Intl.message(
+      'Turn on recommended',
+      name: 'chinaAdaptApplyRecommended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system's DNS, not the DNS inside your profile, and does nothing on Android.`
+  String get chinaAdaptDnsNoteDesc {
+    return Intl.message(
+      'That switch is not part of this group: it lives in Settings → Network and only takes effect on desktop (macOS/Linux). It changes the operating system\'s DNS, not the DNS inside your profile, and does nothing on Android.',
+      name: 'chinaAdaptDnsNoteDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep-alive idle`
+  String get keepAliveIdleDesc {
+    return Intl.message(
+      'Keep-alive idle',
+      name: 'keepAliveIdleDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How long a connection stays idle before keep-alive probes start.`
+  String get keepAliveIdleInfo {
+    return Intl.message(
+      'How long a connection stays idle before keep-alive probes start.',
+      name: 'keepAliveIdleInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo auto update`
+  String get geoAutoUpdate {
+    return Intl.message(
+      'Geo auto update',
+      name: 'geoAutoUpdate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update Geo rule data automatically on a schedule, so routing decisions do not go stale.`
+  String get geoAutoUpdateInfo {
+    return Intl.message(
+      'Update Geo rule data automatically on a schedule, so routing decisions do not go stale.',
+      name: 'geoAutoUpdateInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo update interval`
+  String get geoUpdateInterval {
+    return Intl.message(
+      'Geo update interval',
+      name: 'geoUpdateInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How often Geo data is updated automatically, in hours.`
+  String get geoUpdateIntervalInfo {
+    return Intl.message(
+      'How often Geo data is updated automatically, in hours.',
+      name: 'geoUpdateIntervalInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep Fake-IP mappings`
+  String get storeFakeIp {
+    return Intl.message(
+      'Keep Fake-IP mappings',
+      name: 'storeFakeIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again. Only meaningful when the DNS mode is Fake-IP.`
+  String get storeFakeIpInfo {
+    return Intl.message(
+      'Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again. Only meaningful when the DNS mode is Fake-IP.',
+      name: 'storeFakeIpInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bind address`
+  String get bindAddress {
+    return Intl.message(
+      'Bind address',
+      name: 'bindAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in. It affects LAN reachability only while LAN connections are enabled; with LAN connections off, the ports listen on this device only.`
+  String get bindAddressInfo {
+    return Intl.message(
+      'Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in. It affects LAN reachability only while LAN connections are enabled; with LAN connections off, the ports listen on this device only.',
+      name: 'bindAddressInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All interfaces`
+  String get bindAllInterfaces {
+    return Intl.message(
+      'All interfaces',
+      name: 'bindAllInterfaces',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device only`
+  String get bindThisDeviceOnly {
+    return Intl.message(
+      'This device only',
+      name: 'bindThisDeviceOnly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LAN allowed IPs`
+  String get lanAllowedIps {
+    return Intl.message(
+      'LAN allowed IPs',
+      name: 'lanAllowedIps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only IPs in this list may connect in and use the proxy over the LAN. Applies only while LAN connections are enabled; if the bind address is this device only, listed devices still cannot connect in.`
+  String get lanAllowedIpsInfo {
+    return Intl.message(
+      'Only IPs in this list may connect in and use the proxy over the LAN. Applies only while LAN connections are enabled; if the bind address is this device only, listed devices still cannot connect in.',
+      name: 'lanAllowedIpsInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LAN blocked IPs`
+  String get lanDisallowedIps {
+    return Intl.message(
+      'LAN blocked IPs',
+      name: 'lanDisallowedIps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IPs in this list are refused. The blocked list wins over the allowed list. Applies only while LAN connections are enabled; if the bind address is this device only, LAN devices cannot connect in anyway.`
+  String get lanDisallowedIpsInfo {
+    return Intl.message(
+      'IPs in this list are refused. The blocked list wins over the allowed list. Applies only while LAN connections are enabled; if the bind address is this device only, LAN devices cannot connect in anyway.',
+      name: 'lanDisallowedIpsInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Skip-auth IP ranges`
+  String get skipAuthPrefixes {
+    return Intl.message(
+      'Skip-auth IP ranges',
+      name: 'skipAuthPrefixes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Source IPs in this list can connect without a username and password.`
+  String get skipAuthPrefixesInfo {
+    return Intl.message(
+      'Source IPs in this list can connect without a username and password.',
+      name: 'skipAuthPrefixesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Port whitelist`
+  String get portWhitelist {
+    return Intl.message(
+      'Port whitelist',
+      name: 'portWhitelist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only traffic on these ports is sniffed and identified.`
+  String get portWhitelistInfo {
+    return Intl.message(
+      'Only traffic on these ports is sniffed and identified.',
+      name: 'portWhitelistInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy server nameserver policy`
+  String get proxyServerNameserverPolicy {
+    return Intl.message(
+      'Proxy server nameserver policy',
+      name: 'proxyServerNameserverPolicy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Decides which DNS servers resolve proxy server hostnames, separately from normal domains.`
+  String get proxyServerNameserverPolicyInfo {
+    return Intl.message(
+      'Decides which DNS servers resolve proxy server hostnames, separately from normal domains.',
+      name: 'proxyServerNameserverPolicyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `NTP dialer proxy`
+  String get ntpDialerProxy {
+    return Intl.message(
+      'NTP dialer proxy',
+      name: 'ntpDialerProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Route time-sync traffic through a proxy, for when direct time sync is interfered with.`
+  String get ntpDialerProxyInfo {
+    return Intl.message(
+      'Route time-sync traffic through a proxy, for when direct time sync is interfered with.',
+      name: 'ntpDialerProxyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outbound interface`
+  String get interfaceName {
+    return Intl.message(
+      'Outbound interface',
+      name: 'interfaceName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Force traffic out through a specific network interface. Only needed on multi-NIC computers.`
+  String get interfaceNameInfo {
+    return Intl.message(
+      'Force traffic out through a specific network interface. Only needed on multi-NIC computers.',
+      name: 'interfaceNameInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not set`
+  String get notSet {
+    return Intl.message('Not set', name: 'notSet', desc: '', args: []);
+  }
+
+  /// `Group settings`
+  String get groupSettings {
+    return Intl.message(
+      'Group settings',
+      name: 'groupSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overridden`
+  String get groupOverriddenTag {
+    return Intl.message(
+      'Overridden',
+      name: 'groupOverriddenTag',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Health check URL`
+  String get groupParamUrl {
+    return Intl.message(
+      'Health check URL',
+      name: 'groupParamUrl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The address the group periodically visits to measure each node's latency; together with the check interval it sets the auto speed-test rhythm.`
+  String get groupParamUrlInfo {
+    return Intl.message(
+      'The address the group periodically visits to measure each node\'s latency; together with the check interval it sets the auto speed-test rhythm.',
+      name: 'groupParamUrlInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check interval (seconds)`
+  String get groupParamInterval {
+    return Intl.message(
+      'Check interval (seconds)',
+      name: 'groupParamInterval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How often the group runs its automatic health check, in seconds.`
+  String get groupParamIntervalInfo {
+    return Intl.message(
+      'How often the group runs its automatic health check, in seconds.',
+      name: 'groupParamIntervalInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lazy`
+  String get groupParamLazy {
+    return Intl.message('Lazy', name: 'groupParamLazy', desc: '', args: []);
+  }
+
+  /// `When on, a group only health-checks while it is being used; idle groups skip testing and save resources.`
+  String get groupParamLazyInfo {
+    return Intl.message(
+      'When on, a group only health-checks while it is being used; idle groups skip testing and save resources.',
+      name: 'groupParamLazyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check timeout (ms)`
+  String get groupParamTimeout {
+    return Intl.message(
+      'Check timeout (ms)',
+      name: 'groupParamTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Timeout of a single health check in milliseconds; a check that times out counts as failed. The kernel default is 5000.`
+  String get groupParamTimeoutInfo {
+    return Intl.message(
+      'Timeout of a single health check in milliseconds; a check that times out counts as failed. The kernel default is 5000.',
+      name: 'groupParamTimeoutInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Max failed times`
+  String get groupParamMaxFailedTimes {
+    return Intl.message(
+      'Max failed times',
+      name: 'groupParamMaxFailedTimes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Once health checks have failed this many times, a forced health check is triggered. The kernel default is 5.`
+  String get groupParamMaxFailedTimesInfo {
+    return Intl.message(
+      'Once health checks have failed this many times, a forced health check is triggered. The kernel default is 5.',
+      name: 'groupParamMaxFailedTimesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tolerance (ms)`
+  String get groupParamTolerance {
+    return Intl.message(
+      'Tolerance (ms)',
+      name: 'groupParamTolerance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For auto groups: the selection only switches when the current fastest node is slower than a newly measured one by more than this many milliseconds, which avoids constant flip-flopping.`
+  String get groupParamToleranceInfo {
+    return Intl.message(
+      'For auto groups: the selection only switches when the current fastest node is slower than a newly measured one by more than this many milliseconds, which avoids constant flip-flopping.',
+      name: 'groupParamToleranceInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filter (regex)`
+  String get groupParamFilter {
+    return Intl.message(
+      'Filter (regex)',
+      name: 'groupParamFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with '.`
+  String get groupParamFilterInfo {
+    return Intl.message(
+      'Only nodes whose name matches this regular expression stay in the group; separate multiple expressions with `.',
+      name: 'groupParamFilterInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exclude filter (regex)`
+  String get groupParamExcludeFilter {
+    return Intl.message(
+      'Exclude filter (regex)',
+      name: 'groupParamExcludeFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes whose name matches this regular expression are removed from the group; separate multiple expressions with '.`
+  String get groupParamExcludeFilterInfo {
+    return Intl.message(
+      'Nodes whose name matches this regular expression are removed from the group; separate multiple expressions with `.',
+      name: 'groupParamExcludeFilterInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exclude types`
+  String get groupParamExcludeType {
+    return Intl.message(
+      'Exclude types',
+      name: 'groupParamExcludeType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Removes nodes of the selected protocol types from the group. Matching ignores letter case.`
+  String get groupParamExcludeTypeInfo {
+    return Intl.message(
+      'Removes nodes of the selected protocol types from the group. Matching ignores letter case.',
+      name: 'groupParamExcludeTypeInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expected status`
+  String get groupParamExpectedStatus {
+    return Intl.message(
+      'Expected status',
+      name: 'groupParamExpectedStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The HTTP status a health check must return to count as alive, e.g. 200, 200/204 or 200-299. Leaving it empty is the same as *.`
+  String get groupParamExpectedStatusInfo {
+    return Intl.message(
+      'The HTTP status a health check must return to count as alive, e.g. 200, 200/204 or 200-299. Leaving it empty is the same as *.',
+      name: 'groupParamExpectedStatusInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hidden`
+  String get groupParamHidden {
+    return Intl.message('Hidden', name: 'groupParamHidden', desc: '', args: []);
+  }
+
+  /// `When on, this group is hidden from the panel's group list.`
+  String get groupParamHiddenInfo {
+    return Intl.message(
+      'When on, this group is hidden from the panel\'s group list.',
+      name: 'groupParamHiddenInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Group icon`
+  String get groupParamIcon {
+    return Intl.message(
+      'Group icon',
+      name: 'groupParamIcon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image address used as this group's icon.`
+  String get groupParamIconInfo {
+    return Intl.message(
+      'Image address used as this group\'s icon.',
+      name: 'groupParamIconInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Default selected node`
+  String get groupParamDefaultSelected {
+    return Intl.message(
+      'Default selected node',
+      name: 'groupParamDefaultSelected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The node this group selects the first time it appears; without it, the first node is selected.`
+  String get groupParamDefaultSelectedInfo {
+    return Intl.message(
+      'The node this group selects the first time it appears; without it, the first node is selected.',
+      name: 'groupParamDefaultSelectedInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty-group fallback`
+  String get groupParamEmptyFallback {
+    return Intl.message(
+      'Empty-group fallback',
+      name: 'groupParamEmptyFallback',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When the group ends up with no usable node, this node takes over instead. Without it, COMPATIBLE is used.`
+  String get groupParamEmptyFallbackInfo {
+    return Intl.message(
+      'When the group ends up with no usable node, this node takes over instead. Without it, COMPATIBLE is used.',
+      name: 'groupParamEmptyFallbackInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disable UDP`
+  String get groupParamDisableUdp {
+    return Intl.message(
+      'Disable UDP',
+      name: 'groupParamDisableUdp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turns off UDP forwarding for this group.`
+  String get groupParamDisableUdpInfo {
+    return Intl.message(
+      'Turns off UDP forwarding for this group.',
+      name: 'groupParamDisableUdpInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all`
+  String get groupParamIncludeAll {
+    return Intl.message(
+      'Include all',
+      name: 'groupParamIncludeAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every node and every provider in this group; equivalent to turning on both options below.`
+  String get groupParamIncludeAllInfo {
+    return Intl.message(
+      'Automatically includes every node and every provider in this group; equivalent to turning on both options below.',
+      name: 'groupParamIncludeAllInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all proxies`
+  String get groupParamIncludeAllProxies {
+    return Intl.message(
+      'Include all proxies',
+      name: 'groupParamIncludeAllProxies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every node in this group, ordered by name.`
+  String get groupParamIncludeAllProxiesInfo {
+    return Intl.message(
+      'Automatically includes every node in this group, ordered by name.',
+      name: 'groupParamIncludeAllProxiesInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Include all providers`
+  String get groupParamIncludeAllProviders {
+    return Intl.message(
+      'Include all providers',
+      name: 'groupParamIncludeAllProviders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically includes every proxy provider in this group.`
+  String get groupParamIncludeAllProvidersInfo {
+    return Intl.message(
+      'Automatically includes every proxy provider in this group.',
+      name: 'groupParamIncludeAllProvidersInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load-balance strategy`
+  String get groupParamStrategy {
+    return Intl.message(
+      'Load-balance strategy',
+      name: 'groupParamStrategy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.`
+  String get groupParamStrategyInfo {
+    return Intl.message(
+      'How a load-balance group spreads traffic: consistent hashing pins a destination to one node, round-robin rotates node by node, sticky sessions pin by source.',
+      name: 'groupParamStrategyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hash key`
+  String get groupParamHashKey {
+    return Intl.message(
+      'Hash key',
+      name: 'groupParamHashKey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `effective {value} · chain minimum`
+  String groupChainFloorEffective(int value) {
+    return Intl.message(
+      'effective $value · chain minimum',
+      name: 'groupChainFloorEffective',
+      desc: '',
+      args: [value],
+    );
+  }
+
+  /// `Groups renamed or removed: {names}. Their saved group settings and selections no longer apply.`
+  String groupStateOrphanedWarning(String names) {
+    return Intl.message(
+      'Groups renamed or removed: $names. Their saved group settings and selections no longer apply.',
+      name: 'groupStateOrphanedWarning',
+      desc: '',
+      args: [names],
+    );
+  }
+
+  /// `What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.`
+  String get groupParamHashKeyInfo {
+    return Intl.message(
+      'What load balancing hashes on when pinning traffic to a node. Leave empty to hash by destination; set in-user to hash by the inbound authenticated user name instead, falling back to the destination when there is none. The kernel currently only accepts in-user; any other value is rejected.',
+      name: 'groupParamHashKeyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Consistent hashing`
+  String get groupStrategyConsistentHashing {
+    return Intl.message(
+      'Consistent hashing',
+      name: 'groupStrategyConsistentHashing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Round-robin`
+  String get groupStrategyRoundRobin {
+    return Intl.message(
+      'Round-robin',
+      name: 'groupStrategyRoundRobin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sticky sessions`
+  String get groupStrategyStickySessions {
+    return Intl.message(
+      'Sticky sessions',
+      name: 'groupStrategyStickySessions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear this group's overrides`
+  String get groupSettingsResetAll {
+    return Intl.message(
+      'Clear this group\'s overrides',
+      name: 'groupSettingsResetAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All parameter overrides for this group will be removed and the subscription values will apply again.`
+  String get groupSettingsResetConfirm {
+    return Intl.message(
+      'All parameter overrides for this group will be removed and the subscription values will apply again.',
+      name: 'groupSettingsResetConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A script override is active for this profile and owns the whole config, so group parameter overrides do not take effect right now.`
+  String get groupSettingsScriptInactive {
+    return Intl.message(
+      'A script override is active for this profile and owns the whole config, so group parameter overrides do not take effect right now.',
+      name: 'groupSettingsScriptInactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not read this group's subscription parameters.`
+  String get groupSettingsLoadFailed {
+    return Intl.message(
+      'Could not read this group\'s subscription parameters.',
+      name: 'groupSettingsLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Health check`
+  String get groupSectionHealthCheck {
+    return Intl.message(
+      'Health check',
+      name: 'groupSectionHealthCheck',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Member filtering`
+  String get groupSectionFiltering {
+    return Intl.message(
+      'Member filtering',
+      name: 'groupSectionFiltering',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Behavior`
+  String get groupSectionBehavior {
+    return Intl.message(
+      'Behavior',
+      name: 'groupSectionBehavior',
       desc: '',
       args: [],
     );

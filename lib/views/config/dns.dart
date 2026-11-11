@@ -6,24 +6,9 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OverrideItem extends ConsumerWidget {
-  const OverrideItem({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final override = ref.watch(overrideDnsProvider);
-    return ListItem.switchItem(
-      title: Text(appLocalizations.overrideDns),
-      subtitle: Text(appLocalizations.overrideDnsDesc),
-      delegate: SwitchDelegate(
-        value: override,
-        onChanged: (bool value) async {
-          ref.read(overrideDnsProvider.notifier).value = value;
-        },
-      ),
-    );
-  }
-}
+// T81 batch 3 (P-2): the OverrideItem gate switch is gone — the DNS
+// section is unconditionally App-owned, so the page starts directly
+// with the section's own options.
 
 class StatusItem extends ConsumerWidget {
   const StatusItem({super.key});
@@ -560,6 +545,48 @@ class NameserverPolicyItem extends StatelessWidget {
   }
 }
 
+class ProxyServerNameserverPolicyItem extends StatelessWidget {
+  const ProxyServerNameserverPolicyItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.next(
+      title: InfoTitle(
+        text: appLocalizations.proxyServerNameserverPolicy,
+        info: appLocalizations.proxyServerNameserverPolicyInfo,
+      ),
+      delegate: NextDelegate(
+        blur: false,
+        title: appLocalizations.proxyServerNameserverPolicy,
+        widget: Consumer(
+          builder: (_, ref, _) {
+            final policy = ref.watch(
+              patchClashConfigProvider.select(
+                (state) => state.dns.proxyServerNameserverPolicy,
+              ),
+            );
+            return MapInputPage(
+              title: appLocalizations.proxyServerNameserverPolicy,
+              map: policy,
+              titleBuilder: (item) => Text(item.key),
+              subtitleBuilder: (item) => Text(item.value),
+              onChange: (value) {
+                ref
+                    .read(patchClashConfigProvider.notifier)
+                    .updateState(
+                      (state) => state.copyWith.dns(
+                        proxyServerNameserverPolicy: value,
+                      ),
+                    );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class ProxyServerNameserverItem extends StatelessWidget {
   const ProxyServerNameserverItem({super.key});
 
@@ -658,7 +685,15 @@ class DirectNameserverFollowPolicyItem extends ConsumerWidget {
     }
 
     return ListItem.switchItem(
-      title: Text(appLocalizations.directNameserverFollowPolicy),
+      title: InfoTitle(
+        text: appLocalizations.directNameserverFollowPolicy,
+        // T89 D-04: the kernel only builds a direct resolver when at
+        // least one direct nameserver exists (dns/resolver.go), so the
+        // policy flag has no object while that list is empty — which is
+        // also why this row above hides itself in that state. State the
+        // precondition in the implicit explanation.
+        info: appLocalizations.directNameserverFollowPolicyInfo,
+      ),
       delegate: SwitchDelegate(
         value: directNameserverFollowPolicy,
         onChanged: (bool value) async {
@@ -875,7 +910,6 @@ class DomainItem extends StatelessWidget {
 }
 
 final dnsItems = <Widget>[
-  ...generateSection(items: const [OverrideItem()]),
   ...generateSection(
     title: appLocalizations.options,
     items: const [
@@ -895,6 +929,7 @@ final dnsItems = <Widget>[
       FakeIpTtlItem(),
       DefaultNameserverItem(),
       NameserverPolicyItem(),
+      ProxyServerNameserverPolicyItem(),
       NameserverItem(),
       FallbackItem(),
       ProxyServerNameserverItem(),

@@ -203,44 +203,99 @@ Future<void> _service(List<String> flags) async {
     );
 
     Future(() async {
-      try {
-        final params = await globalState.getSetupParams(
-          pathConfig: clashConfig,
-        );
-        final profileId = globalState.config.currentProfileId;
-        if (profileId == null) {
-          return;
-        }
-        final res = await clashLibHandler.quickStart(
-          InitParams(homeDir: homeDirPath, version: version),
-          params,
-          globalState.getCoreState(),
-        );
-        final message = res.message;
-        debugPrint(message);
-        if (message.isNotEmpty) {
-          commonPrint.error('QuickStart failed with error: $message');
-          await vpn?.stop();
-          return;
-        }
-        await vpn?.start(clashLibHandler.getAndroidVpnOptions());
-        Future.delayed(const Duration(seconds: 2), checkSmartAutoStop);
-
-        if (globalState.config.vpnProps.networkSpeedNotification) {
-          final profile = globalState.config.profiles
-              .where((e) => e.id == profileId)
-              .firstOrNull;
-          await SystemExplicitStore.instance.ensureLoaded();
-          final profileName = SystemExplicitStore.instance.notificationLabel(
-            profile?.label ?? 'Angela Mihomo',
+      // T88: the quick/boot sequence is the only self-recovery path
+      // after the system kills the main process in the background
+      // (always-on restart). It used to run exactly once and fail
+      // silently into vpn.stop(); it now retries with growing delays
+      // and, if every attempt fails, leaves a persistent marker the
+      // UI isolate surfaces on the next launch.
+      var step = 'getSetupParams';
+      var lastError = '';
+      var attempts = 0;
+      final ok = await runQuickStartWithRetry(
+        () async {
+          attempts++;
+          step = 'getSetupParams';
+          final params = await globalState.getSetupParams(
+            pathConfig: clashConfig,
           );
-          await vpn?.updateNotificationSpeed(profileName, '↑0B/s ↓0B/s');
-        }
+          final profileId = globalState.config.currentProfileId;
+          if (profileId == null) {
+            // Nothing configured to start: a legitimate outcome,
+            // not a failure — do not retry, do not mark.
+            return true;
+          }
+          step = 'quickStart';
+          final res = await clashLibHandler.quickStart(
+            InitParams(homeDir: homeDirPath, version: version),
+            params,
+            globalState.getCoreState(),
+          );
+          final message = res.message;
+          debugPrint(message);
+          if (message.isNotEmpty) {
+            lastError = message;
+            commonPrint.error('QuickStart failed with error: $message');
+            return false;
+          }
+          step = 'vpnStart';
+          await vpn?.start(clashLibHandler.getAndroidVpnOptions());
+          Future.delayed(const Duration(seconds: 2), checkSmartAutoStop);
 
-        await clashLibHandler.startListener();
-      } catch (e) {
-        commonPrint.error('Fatal error during service background start: $e');
+          if (globalState.config.vpnProps.networkSpeedNotification) {
+            final profile = globalState.config.profiles
+                .where((e) => e.id == profileId)
+                .firstOrNull;
+            await SystemExplicitStore.instance.ensureLoaded();
+            final profileName = SystemExplicitStore.instance
+                .notificationLabel(profile?.label ?? 'Angela Mihomo');
+            await vpn?.updateNotificationSpeed(profileName, '↑0B/s ↓0B/s');
+          }
+
+          step = 'startListener';
+          await clashLibHandler.startListener();
+          return true;
+        },
+        onFailure: (error) async {
+          lastError = error.toString();
+          commonPrint.error(
+            'Quick start attempt $attempts failed at step $step: $error',
+          );
+          await vpn?.stop();
+        },
+      );
+      if (!ok) {
+        commonPrint.error(
+          'Fatal error during service background start: quick start '
+          'exhausted $attempts attempts, last step $step, error: $lastError',
+        );
+        try {
+          final marker = QuickStartFailureMarker(
+            time: DateTime.now().toUtc().toIso8601String(),
+            step: step,
+            error: lastError,
+            attempts: attempts,
+          );
+          await File(
+            await appPath.quickStartFailurePath,
+          ).writeAsString(marker.encode(), flush: true);
+        } catch (e) {
+          commonPrint.error('Failed to persist quick start marker: $e');
+        }
         await vpn?.stop();
+      } else {
+        // T88: a successful quick start is the only event that retires
+        // a failure marker left by an earlier exhausted run (the UI
+        // isolate used to delete it on read, which destroyed the
+        // evidence before the user could export it). Best-effort.
+        try {
+          final markerFile = File(await appPath.quickStartFailurePath);
+          if (await markerFile.exists()) {
+            await markerFile.delete();
+          }
+        } catch (e) {
+          commonPrint.warn('Failed to clear quick start marker: $e');
+        }
       }
     });
   }

@@ -58,6 +58,12 @@ _Profile _$ProfileFromJson(Map<String, dynamic> json) => _Profile(
         (k, e) => MapEntry(k, e as bool),
       ) ??
       const {},
+  groupOverrides:
+      (json['group-overrides'] as Map<String, dynamic>?)?.map(
+        (k, e) =>
+            MapEntry(k, ProxyGroupOverride.fromJson(e as Map<String, dynamic>)),
+      ) ??
+      const {},
 );
 
 Map<String, dynamic> _$ProfileToJson(_Profile instance) => <String, dynamic>{
@@ -76,6 +82,7 @@ Map<String, dynamic> _$ProfileToJson(_Profile instance) => <String, dynamic>{
   'scriptId': instance.scriptId,
   'ageSecretKey': instance.ageSecretKey,
   'group-switches': instance.groupSwitches,
+  'group-overrides': instance.groupOverrides,
 };
 
 _OverrideData _$OverrideDataFromJson(Map<String, dynamic> json) =>
@@ -117,3 +124,51 @@ const _$OverrideRuleTypeEnumMap = {
   OverrideRuleType.override: 'override',
   OverrideRuleType.added: 'added',
 };
+
+_ProxyGroupOverride _$ProxyGroupOverrideFromJson(Map<String, dynamic> json) =>
+    _ProxyGroupOverride(
+      url: json['url'] as String?,
+      interval: (json['interval'] as num?)?.toInt(),
+      lazy: json['lazy'] as bool?,
+      timeout: (json['timeout'] as num?)?.toInt(),
+      maxFailedTimes: (json['max-failed-times'] as num?)?.toInt(),
+      filter: json['filter'] as String?,
+      excludeFilter: json['exclude-filter'] as String?,
+      excludeType: json['exclude-type'] as String?,
+      expectedStatus: json['expected-status'] as String?,
+      hidden: json['hidden'] as bool?,
+      icon: json['icon'] as String?,
+      tolerance: (json['tolerance'] as num?)?.toInt(),
+      defaultSelected: json['default-selected'] as String?,
+      emptyFallback: json['empty-fallback'] as String?,
+      disableUdp: json['disable-udp'] as bool?,
+      includeAll: json['include-all'] as bool?,
+      includeAllProxies: json['include-all-proxies'] as bool?,
+      includeAllProviders: json['include-all-providers'] as bool?,
+      strategy: json['strategy'] as String?,
+      hashKey: json['hash-key'] as String?,
+    );
+
+Map<String, dynamic> _$ProxyGroupOverrideToJson(_ProxyGroupOverride instance) =>
+    <String, dynamic>{
+      'url': ?instance.url,
+      'interval': ?instance.interval,
+      'lazy': ?instance.lazy,
+      'timeout': ?instance.timeout,
+      'max-failed-times': ?instance.maxFailedTimes,
+      'filter': ?instance.filter,
+      'exclude-filter': ?instance.excludeFilter,
+      'exclude-type': ?instance.excludeType,
+      'expected-status': ?instance.expectedStatus,
+      'hidden': ?instance.hidden,
+      'icon': ?instance.icon,
+      'tolerance': ?instance.tolerance,
+      'default-selected': ?instance.defaultSelected,
+      'empty-fallback': ?instance.emptyFallback,
+      'disable-udp': ?instance.disableUdp,
+      'include-all': ?instance.includeAll,
+      'include-all-proxies': ?instance.includeAllProxies,
+      'include-all-providers': ?instance.includeAllProviders,
+      'strategy': ?instance.strategy,
+      'hash-key': ?instance.hashKey,
+    };

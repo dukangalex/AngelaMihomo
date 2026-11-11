@@ -14,7 +14,7 @@ import app.angelabettbox.plugins.AppPlugin
 import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -22,7 +22,11 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity (not FlutterActivity) so local_auth can
+// present the system BiometricPrompt for the app lock (T66). It is a
+// drop-in host replacement: engine caching, splash and the plugins
+// below are unaffected.
+class MainActivity : FlutterFragmentActivity() {
     companion object {
         private const val MAIN_ENGINE_ID = "bettbox_main_engine"
     }

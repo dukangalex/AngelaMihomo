@@ -38,7 +38,7 @@ class NtpOverride extends StatelessWidget {
                 flex: 1,
                 child: TooltipText(
                   text: Text(
-                    appLocalizations.switchLabel,
+                    appLocalizations.status,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(
@@ -47,14 +47,24 @@ class NtpOverride extends StatelessWidget {
                   ),
                 ),
               ),
+              // T81 batch 3 (P-2): the gate switch is gone; the card
+              // now toggles the NTP section's own enable flag.
               Consumer(
                 builder: (_, ref, _) {
-                  final override = ref.watch(overrideNtpProvider);
+                  final enable = ref.watch(
+                    patchClashConfigProvider.select(
+                      (state) => state.ntp.enable,
+                    ),
+                  );
                   return Switch(
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    value: override,
+                    value: enable,
                     onChanged: (value) {
-                      ref.read(overrideNtpProvider.notifier).value = value;
+                      ref
+                          .read(patchClashConfigProvider.notifier)
+                          .updateState(
+                            (state) => state.copyWith.ntp(enable: value),
+                          );
                     },
                   );
                 },

@@ -12,6 +12,7 @@ import (
 	authStore "github.com/metacubex/mihomo/listener/auth"
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/reality"
+	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/ntp"
 
 	"github.com/metacubex/tls"
@@ -136,7 +137,8 @@ func NewWithConfig(config LC.AuthServer, lc C.InboundListenConfig, tunnel C.Tunn
 
 			store := config.AuthStore
 			if isDefault || store == authStore.Default { // only apply on default listener
-				if !inbound.IsRemoteAddrDisAllowed(conn.RemoteAddr()) {
+				if !inbound.IsRemoteAddrAllowed(conn.RemoteAddr()) {
+					log.Debugln("[HTTP] drop connection from %s: rejected by lan allow/disallow list", conn.RemoteAddr())
 					_ = conn.Close()
 					continue
 				}

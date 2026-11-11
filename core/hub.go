@@ -1204,8 +1204,27 @@ func handleSuspend(mode int) bool {
 	return true
 }
 
+// shouldReportDelay decides whether a URLTest result may be written to
+// the UI delay map. A failed test (delay == 0) observed while the data
+// plane is not ready carries no information about the node: on Android
+// the socket-protection gate rejects every dial until the TUN listener
+// is up (see lib_android.go), and provider health checks already run
+// during config assembly, before that point. Reporting such a failure
+// would park a false -1 (rendered as "Timeout") in the delay map until
+// the next periodic check, even though real traffic flows again as soon
+// as the TUN is ready (T89 D-08). Dropping it keeps the node at
+// "untested"; once the data plane is ready, genuine failures are
+// reported normally. Successful results are always real measurements
+// and are always reported.
+func shouldReportDelay(delay uint16, dataPlaneReady bool) bool {
+	return delay != 0 || dataPlaneReady
+}
+
 func init() {
 	adapter.UrlTestHook = func(url string, name string, delay uint16) {
+		if !shouldReportDelay(delay, delayDataPlaneReady()) {
+			return
+		}
 		delayData := &Delay{
 			Url:  url,
 			Name: name,

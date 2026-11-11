@@ -112,7 +112,29 @@ class _HomePageState extends State<HomePage> {
               removeLeft: true,
               removeRight: true,
               context: context,
-              child: FloatingBottomBarScope(child: child),
+              child: FloatingBottomBarScope(
+                // T67: broadcast the floating-bar reserve as the bottom
+                // MediaQuery padding for everything hosted under the bar,
+                // so scroll views that rely on the default MediaQuery
+                // padding (and widgets reading padding.bottom) leave
+                // room for the bar instead of hiding their last item
+                // beneath it. Pages that add the reserve explicitly are
+                // unaffected (explicit padding wins; the reserve helpers
+                // read viewPadding, which this override leaves intact).
+                child: Builder(
+                  builder: (context) {
+                    final data = MediaQuery.of(context);
+                    return MediaQuery(
+                      data: data.copyWith(
+                        padding: data.padding.copyWith(
+                          bottom: getFloatingBottomBarReserveHeight(context),
+                        ),
+                      ),
+                      child: child,
+                    );
+                  },
+                ),
+              ),
             );
             final navBar = MediaQuery.removePadding(
               removeTop: true,

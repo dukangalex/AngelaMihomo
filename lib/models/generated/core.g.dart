@@ -53,6 +53,7 @@ _UpdateParams _$UpdateParamsFromJson(Map<String, dynamic> json) =>
         json['external-controller'],
       ),
       unifiedDelay: json['unified-delay'] as bool,
+      interfaceName: json['interface-name'] as String?,
     );
 
 Map<String, dynamic> _$UpdateParamsToJson(_UpdateParams instance) =>
@@ -68,6 +69,7 @@ Map<String, dynamic> _$UpdateParamsToJson(_UpdateParams instance) =>
       'external-controller':
           _$ExternalControllerStatusEnumMap[instance.externalController]!,
       'unified-delay': instance.unifiedDelay,
+      'interface-name': instance.interfaceName,
     };
 
 const _$FindProcessModeEnumMap = {

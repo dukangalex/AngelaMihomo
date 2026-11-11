@@ -3,8 +3,11 @@ import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// material_ui, not Flutter's material (T30 class): the app registers
+// only the fork's MaterialLocalizations, so Flutter's showDialog /
+// AlertDialog throw "Null check operator used on a null value" here.
+import 'package:material_ui/material_ui.dart';
 
 /// The system-explicit options as a section of the tools page
 /// (OtherSettingView), where they live alongside the app's other
@@ -30,9 +33,17 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     });
   }
 
-  Future<void> _setRuleOption(bool on, void Function(bool) update) async {
+  /// [directException] marks the direct-exception class (T54). Only
+  /// that class needs rule mode: turning one on in global/direct mode
+  /// offers the switch to rule mode. Interception options apply
+  /// directly in every mode and never show the dialog.
+  Future<void> _setRuleOption(
+    bool on,
+    void Function(bool) update, {
+    required bool directException,
+  }) async {
     final mode = ref.read(patchClashConfigProvider).mode;
-    if (on && mode != Mode.rule) {
+    if (on && directException && mode != Mode.rule) {
       final accepted = await showDialog<bool>(
         context: context,
         builder: (dialogContext) {
@@ -57,7 +68,9 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
               shape: glassShape,
               backgroundColor: glassTokens.effectiveFill,
               title: Text(appLocalizations.systemExplicitRuleModeTitle),
-              content: Text(appLocalizations.systemExplicitRuleModeDesc),
+              content: Text(
+                appLocalizations.systemExplicitDirectExceptionModeDesc,
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
@@ -178,18 +191,28 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
       return const SizedBox.shrink();
     }
     final value = SystemExplicitStore.instance.value;
-    final mode = ref.watch(
-      patchClashConfigProvider.select((state) => state.mode),
-    );
-    final incompatible = !systemExplicitModeCompatible(value, mode);
     return generateSection(
       title: appLocalizations.systemExplicitTitle,
       items: [
-        if (incompatible)
-          ListItem(
-            title: Text(appLocalizations.systemExplicitInactive),
-            subtitle: Text(appLocalizations.systemExplicitInactiveDesc),
-          ),
+        // T70: the group is functional switches only. The display
+        // layer that used to sit here — the recommended-combination
+        // card and the two standing effectiveness notes (direct
+        // exceptions inactive outside rule mode / interception
+        // options active in this mode) — is removed by the user's
+        // call: non-functional items do not belong in the app. The
+        // linkage underneath is untouched: direct exceptions still
+        // apply only in rule mode and interception options still
+        // apply in every mode; the per-option tap-to-expand
+        // descriptions and the apply-error row remain, as does the
+        // rule-mode offer dialog when a direct exception is enabled
+        // outside rule mode.
+        // Auto-set system DNS deliberately does NOT move into this
+        // group; the note only says where it lives.
+        _infoItem(
+          id: 'autoDnsNote',
+          title: appLocalizations.autoSetSystemDns,
+          desc: appLocalizations.chinaAdaptDnsNoteDesc,
+        ),
         if (_applyError.isNotEmpty)
           ListItem(
             title: Text(appLocalizations.systemExplicitApplyState),
@@ -201,7 +224,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitPrivacyDesc,
           value: value.privacy,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.privacy = valueOn),
+              _setRuleOption(on, (valueOn) => value.privacy = valueOn, directException: false),
         ),
         _optionItem(
           id: 'chinaDirect',
@@ -209,7 +232,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitChinaDirectDesc,
           value: value.chinaDirect,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn),
+              _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn, directException: true),
         ),
         _optionItem(
           id: 'chinaDnsDirect',
@@ -219,6 +242,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           onChanged: (on) => _setRuleOption(
             on,
             (valueOn) => value.chinaPublicDnsDirect = valueOn,
+            directException: true,
           ),
         ),
         _optionItem(
@@ -227,7 +251,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitLanDirectDesc,
           value: value.lanDirect,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
+              _setRuleOption(on, (valueOn) => value.lanDirect = valueOn, directException: true),
         ),
         _optionItem(
           id: 'blockWebRtc',
@@ -237,6 +261,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           onChanged: (on) => _setRuleOption(
             on,
             (valueOn) => value.blockCommonWebRtc = valueOn,
+            directException: false,
           ),
         ),
         _optionItem(
@@ -245,7 +270,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
           desc: appLocalizations.systemExplicitBlockAdsDesc,
           value: value.blockAds,
           onChanged: (on) =>
-              _setRuleOption(on, (valueOn) => value.blockAds = valueOn),
+              _setRuleOption(on, (valueOn) => value.blockAds = valueOn, directException: false),
         ),
         _infoItem(
           id: 'limits',

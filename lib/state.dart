@@ -732,6 +732,17 @@ class GlobalState {
       await prefs.remove(customDashboardTitleKey);
     }
     await prefs?.remove(customSidebarIconKey);
+
+    // T81 batch 3 (P-2): one-time inheritance migration for the
+    // section takeover. Runs on the local config (the branches above
+    // may have saved a newer config than the field holds); the result
+    // becomes both the field and the persisted config.
+    final migrated = await runSectionTakeoverMigration(config);
+    if (migrated != config) {
+      config = migrated;
+      this.config = migrated;
+      await preferences.saveConfig(migrated);
+    }
   }
 
   CoreState getCoreState() {
@@ -933,6 +944,22 @@ class GlobalState {
     );
   }
 
+  /// T76: kernel-keyed group parameter patches for the Go patch pipeline,
+  /// keyed by group name. Groups whose override diffed away to nothing are
+  /// omitted entirely; returns null when the profile overrides nothing.
+  Map<String, Map<String, Object?>>? buildGroupOverridesParam(
+    Profile profile,
+  ) {
+    final result = <String, Map<String, Object?>>{};
+    for (final entry in profile.groupOverrides.entries) {
+      final patch = entry.value.toPatchMap();
+      if (patch.isNotEmpty) {
+        result[entry.key] = patch;
+      }
+    }
+    return result.isEmpty ? null : result;
+  }
+
   Future<Map<String, dynamic>> buildChainPolicyParams(
     Profile profile,
     ProfileChain chain,
@@ -1006,14 +1033,46 @@ class GlobalState {
           secret.isNotEmpty)
         'secret': secret,
       'external-ui': await appPath.uiPath,
-      'external-ui-url':
-          'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip',
-      'external-ui-name': '',
+      // T81 batch 3 (R-4): the UI package source comes from the model
+      // (whose defaults carry the values that used to be hardcoded
+      // here). The bridge no longer shadows the model fields.
+      'external-ui-url': patchConfig.externalUiUrl ?? defaultExternalUiUrl,
+      'external-ui-name': patchConfig.externalUiName ?? defaultExternalUiName,
       'tcp-concurrent': patchConfig.tcpConcurrent,
       'unified-delay': patchConfig.unifiedDelay,
       'ipv6': patchConfig.ipv6,
       'log-level': patchConfig.logLevel.name,
       'keep-alive-interval': patchConfig.keepAliveInterval,
+      'keep-alive-idle': patchConfig.keepAliveIdle,
+      'geo-auto-update': patchConfig.geoAutoUpdate,
+      'geo-update-interval': patchConfig.geoUpdateInterval,
+      'bind-address': patchConfig.bindAddress,
+      // T79: never send empty LAN lists. An explicit empty
+      // lan-allowed-ips overwrites the kernel's allow-all default in
+      // applyPatch, and the vendored listener gate then drops every
+      // inbound connection (which silently killed subscription
+      // updates through the mixed port). Same guard as
+      // skip-auth-prefixes below: unset means "do not override".
+      'lan-allowed-ips': patchConfig.lanAllowedIps.isNotEmpty
+          ? patchConfig.lanAllowedIps
+          : null,
+      'lan-disallowed-ips': patchConfig.lanDisallowedIps.isNotEmpty
+          ? patchConfig.lanDisallowedIps
+          : null,
+      // T81 R-1a: store-selected is explicitly off so the kernel
+      // cachefile never persists group selections. The App's
+      // Profile.selectedMap is the single authority for selections
+      // (ForceSet after every setup); with the kernel cache also
+      // storing, the two could fork — selections made in an external
+      // controller were silently resurrected/reverted across setups.
+      'profile': {
+        'store-fake-ip': patchConfig.storeFakeIp,
+        'store-selected': false,
+      },
+      if (system.isDesktop &&
+          patchConfig.interfaceName != null &&
+          patchConfig.interfaceName!.isNotEmpty)
+        'interface-name': patchConfig.interfaceName,
       'mixed-port': patchConfig.mixedPort,
       'port': patchConfig.port,
       'socks-port': patchConfig.socksPort,
@@ -1026,7 +1085,15 @@ class GlobalState {
           hasAuthentication && patchConfig.skipAuthPrefixes.isNotEmpty
           ? patchConfig.skipAuthPrefixes
           : null,
-      'mode': patchConfig.mode.name,
+      // T54: with interception options on, global/direct run as rule
+      // mode under the hood so the REJECT rules are evaluated; the
+      // synthesized MATCH (see buildRuntimeRulesForMode) keeps every
+      // other flow on the user-selected mode's path. The UI mode stays
+      // exactly what the user picked.
+      'mode': effectiveRuntimeMode(
+        SystemExplicitStore.instance.value,
+        patchConfig.mode,
+      ).name,
       'tun': {
         'enable': tun.enable,
         'device': tun.device,
@@ -1044,8 +1111,12 @@ class GlobalState {
         'disable-icmp-forwarding': tun.disableIcmpForwarding,
         'mtu': tun.mtu,
       },
-      'geodata-loader': 'memconservative',
-      'geodata-mode': false,
+      // T81 batch 3 (R-2): both geodata fields come from the model.
+      // The loader used to be a hardcoded literal here while the
+      // model's own geodataLoader field was never read, and the mode
+      // had no model field at all — two sources for one behavior.
+      'geodata-loader': patchConfig.geodataLoader.name,
+      'geodata-mode': patchConfig.geodataMode,
       'global-ua': patchConfig.globalUa,
     };
 
@@ -1072,19 +1143,24 @@ class GlobalState {
           'value': ['131.107.255.255', 'fd3e:4f5a:5b81::1'],
         },
       ],
-      'override-dns': config.overrideDns,
+      // T81 batch 3 (P-2): no override gates remain. The dns / ntp /
+      // sniffer / experimental sections are always sent; the App
+      // model is their single authority (legacy users were seeded
+      // from their subscription by the spec migration).
       'dns': {
         ...dns.toJson(),
         'nameserver-policy': {
           for (final entry in dns.nameserverPolicy.entries)
             entry.key: entry.value.splitByMultipleSeparators,
         },
+        'proxy-server-nameserver-policy': {
+          for (final entry in dns.proxyServerNameserverPolicy.entries)
+            entry.key: entry.value.splitByMultipleSeparators,
+        },
       },
-      'ntp': config.overrideNtp ? patchConfig.ntp.toJson() : null,
-      'sniffer': config.overrideSniffer ? patchConfig.sniffer.toJson() : null,
-      'experimental': config.overrideExperimental
-          ? patchConfig.experimental.toJson()
-          : null,
+      'ntp': patchConfig.ntp.toJson(),
+      'sniffer': patchConfig.sniffer.toJson(),
+      'experimental': patchConfig.experimental.toJson(),
       'tunnels': patchConfig.tunnels.isEmpty
           ? null
           : patchConfig.tunnels.map((item) => item.toClashJson()).toList(),
@@ -1134,6 +1210,14 @@ class GlobalState {
               for (final entry in profile.groupSwitches.entries)
                 if (!entry.value) entry.key,
             ],
+      // T76: per-group parameter overrides live on the profile and are
+      // merged into the raw groups Go-side on every setup, so they
+      // survive subscription updates. Like disabled-groups, a script
+      // override owns the whole config while active, so the patch steps
+      // aside instead of fighting it.
+      'group-overrides': scriptActive
+          ? null
+          : buildGroupOverridesParam(profile),
       'select-global': profile.selectedMap['GLOBAL'] == null,
     };
   }

@@ -501,7 +501,6 @@ enum PageLabel {
   script,
   toolbox,
   connections,
-  patrol,
 }
 
 extension PageLabelExtension on PageLabel {
@@ -525,8 +524,6 @@ extension PageLabelExtension on PageLabel {
         return appLocalizations.toolbox;
       case PageLabel.connections:
         return appLocalizations.navConnections;
-      case PageLabel.patrol:
-        return appLocalizations.aiPatrol;
     }
   }
 }
@@ -536,6 +533,7 @@ enum RuleAction {
   DOMAIN_SUFFIX('DOMAIN-SUFFIX'),
   DOMAIN_KEYWORD('DOMAIN-KEYWORD'),
   DOMAIN_REGEX('DOMAIN-REGEX'),
+  DOMAIN_WILDCARD('DOMAIN-WILDCARD'),
   GEOSITE('GEOSITE'),
   IP_CIDR('IP-CIDR'),
   IP_CIDR6('IP-CIDR6'),

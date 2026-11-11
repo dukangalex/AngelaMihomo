@@ -194,6 +194,14 @@ func startTunLocked(fd int, callback unsafe.Pointer) error {
 	return nil
 }
 
+// delayDataPlaneReady reports whether the Android TUN data plane is
+// up. It reads the same lifecycle state that gates outbound sockets in
+// DefaultSocketHook above, so a URLTest failure can only be reported
+// once dials are actually allowed through (T89 D-08).
+func delayDataPlaneReady() bool {
+	return tunLifecycle.running()
+}
+
 func beginTunTransitionState() uint64 {
 	return tunLifecycle.begin()
 }

@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:bett_box/clash/clash.dart';
+import 'package:bett_box/common/import_normalize.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/helper/helper.dart';
 
@@ -44,7 +45,21 @@ import 'views/profiles/override_profile.dart';
 class AppController {
   int? lastProfileModified;
 
-  final BuildContext context;
+  /// The context captured at construction sits above [MaterialApp]
+  /// (see application.dart initState) and has no [Navigator] ancestor;
+  /// [_initApp] replaces the controller only when the navigator
+  /// context is already available, which is not guaranteed. It must
+  /// never be used for [Navigator.of] / showDialog / theme lookups —
+  /// doing so crashes showDialog with Navigator.of == null
+  /// (T54 defect 1: Rule -> Global with direct exceptions on).
+  final BuildContext _capturedContext;
+
+  /// Dialog/theme context: the navigator's own context, resolved at
+  /// call time. Falls back to the captured context only before the
+  /// first frame, where no dialog can be shown anyway.
+  BuildContext get context =>
+      globalState.navigatorKey.currentState?.context ?? _capturedContext;
+
   final WidgetRef _ref;
   WidgetRef get ref => _ref;
 
@@ -76,7 +91,7 @@ class AppController {
 
   static const _autoBackupFingerprintKey = 'auto_backup_fingerprint';
 
-  AppController(this.context, WidgetRef ref) : _ref = ref;
+  AppController(this._capturedContext, WidgetRef ref) : _ref = ref;
 
   DateTime _lastModeChangeTime = DateTime.fromMillisecondsSinceEpoch(0);
 
@@ -239,6 +254,14 @@ class AppController {
     final currentProfile = _ref.read(currentProfileProvider);
     if (currentProfile == null) {
       commonPrint.warn('Fast start aborted: No active profile configured.');
+      // T73: never let the start switch feel broken — with no profile
+      // there is nothing to start, so say what to do instead of
+      // silently doing nothing.
+      await globalState.showMessage(
+        title: appLocalizations.tip,
+        message: TextSpan(text: appLocalizations.nullProfileDesc),
+        cancelable: false,
+      );
       return;
     }
 
@@ -590,13 +613,45 @@ class AppController {
       _ref
           .read(profilesProvider.notifier)
           .setProfile(newProfile.copyWith(isUpdating: false));
+      await notifyOrphanedGroupState(newProfile);
       if (profile.id != _ref.read(currentProfileIdProvider)) return;
       if (modified != null && modified == await profile.profileLastModified) {
         return;
       }
       applyProfileDebounce(silence: true);
+    } catch (error) {
+      rethrow;
     } finally {
       _updatingProfileIds.remove(profile.id);
+    }
+  }
+
+  /// T81 S-5: after a subscription update or a full-text editor save,
+  /// warn when per-group state (parameter overrides, remembered
+  /// selections) now points at groups the profile no longer provides
+  /// — a rename used to orphan that state with no signal anywhere.
+  /// Best-effort: any failure here must never break the update or
+  /// save flow that triggered the check. The state itself is kept,
+  /// so renaming the group back restores it.
+  Future<void> notifyOrphanedGroupState(Profile profile) async {
+    try {
+      if (profile.groupOverrides.isEmpty && profile.selectedMap.isEmpty) {
+        return;
+      }
+      final raw = await globalState.getProfileConfig(profile.id);
+      final rawGroups = raw['proxy-groups'];
+      if (rawGroups is! List) return;
+      final groupNames = <String>{
+        for (final group in rawGroups)
+          if (group is Map && group['name'] != null) group['name'].toString(),
+      };
+      final orphans = orphanedGroupStateNames(profile, groupNames);
+      if (orphans.isEmpty) return;
+      globalState.showNotifier(
+        appLocalizations.groupStateOrphanedWarning(orphans.join(', ')),
+      );
+    } catch (_) {
+      // Warning only; swallow.
     }
   }
 
@@ -1114,7 +1169,19 @@ class AppController {
       try {
         final activeMode = await clashCore.getMode();
         final currentMode = _ref.read(patchClashConfigProvider).mode;
-        if (activeMode != currentMode) {
+        // T54 defect 2: only adopt the core-reported mode when it
+        // differs from the mode the core is *expected* to run. With
+        // interception on, global/direct run as rule under the hood
+        // (effectiveRuntimeMode), so a core report of rule is the
+        // expected state — writing it back flipped the UI to Rule and
+        // made "Global + core running + interception on" unreachable.
+        // A genuine external change is still adopted, as before.
+        await SystemExplicitStore.instance.ensureLoaded();
+        if (shouldAdoptCoreMode(
+          userMode: currentMode,
+          coreMode: activeMode,
+          options: SystemExplicitStore.instance.value,
+        )) {
           if (DateTime.now().difference(_lastModeChangeTime) >
               const Duration(seconds: 2)) {
             _ref
@@ -1374,6 +1441,26 @@ class AppController {
       if (res != true) {
         return;
       }
+      // In-app update (T56) for Android/Windows: verified download
+      // and installer hand-off. Falls back to the release page (with
+      // the reason already shown) when no verifiable asset exists.
+      if (system.isAndroid || system.isWindows) {
+        final outcome = await runInAppUpdate(
+          // The controller's context is the app-level navigator
+          // context (globalState), not a widget State context.
+          // ignore: use_build_context_synchronously
+          context,
+          data,
+          repository: repository,
+          exitApp: handleExit,
+        );
+        if (outcome != InAppUpdateOutcome.fellBackToPage) {
+          return;
+        }
+      }
+      if (system.isMacOS || system.isLinux) {
+        globalState.showNotifier(appLocalizations.updateDesktopNote);
+      }
       const String assetSuffix = String.fromEnvironment('APP_ASSET_SUFFIX');
       var finalSuffix = assetSuffix;
       if (assetSuffix.isNotEmpty && appPath.isPortable && system.isWindows) {
@@ -1584,6 +1671,33 @@ class AppController {
 
     final needRecovery = await _detectAbnormalExit();
 
+    // T88: surface a quick-start failure marker left by the service
+    // isolate (background restart exhausted its retries). It is only
+    // surfaced here, never deleted: the marker is forensic evidence
+    // (and is attached to log exports) until the service isolate
+    // clears it after the next successful quick start.
+    if (system.isAndroid) {
+      try {
+        final markerFile = File(await appPath.quickStartFailurePath);
+        if (await markerFile.exists()) {
+          final marker = QuickStartFailureMarker.tryParse(
+            await markerFile.readAsString(),
+          );
+          if (marker != null) {
+            commonPrint.error(
+              'Previous background quick start failed permanently: $marker',
+            );
+          } else {
+            commonPrint.warn(
+              'Previous background quick start left an unreadable failure marker',
+            );
+          }
+        }
+      } catch (e) {
+        commonPrint.warn('Failed to read quick start failure marker: $e');
+      }
+    }
+
     if (needRecovery) {
       commonPrint.warn('Abnormal exit detected');
       if (system.isAndroid) {
@@ -1614,6 +1728,8 @@ class AppController {
       await applyProfile();
       addCheckIpNumDebounce();
     }
+    // Control style (T62): hydrate the saved skin before first frame.
+    unawaited(ControlStyleStore.load());
   }
 
   Future<void> syncDesktopRuntimeState({
@@ -1675,6 +1791,15 @@ class AppController {
 
   void toProfiles() {
     toPage(PageLabel.profiles);
+  }
+
+  /// Uniform close-out for every import branch (T73 C2): a successful
+  /// import lands on the dashboard, where the start control lives.
+  /// Starting stays a deliberate tap by the user — the system VPN
+  /// consent prompt must be the user's own action, so imports never
+  /// auto-start the VPN.
+  void toDashboardAfterImport() {
+    toPage(PageLabel.dashboard);
   }
 
   void initLink() {
@@ -1757,12 +1882,41 @@ class AppController {
           (route) => route.isFirst,
         );
       }
-      toProfiles();
+      toDashboardAfterImport();
       await addProfile(profile);
     } on Object catch (e) {
       await globalState.showMessage(
         title: appLocalizations.add,
-        message: TextSpan(text: e.formatError),
+        message: TextSpan(text: e.formatProfileImportError),
+        cancelable: false,
+      );
+    } finally {
+      _ref.read(loadingProvider.notifier).value = false;
+    }
+  }
+
+  /// Imports node info carried as raw content (share links, batched
+  /// links, base64 subscriptions, sing-box / Xray JSON, pasted YAML)
+  /// from the clipboard, a scan, or a QR image (T73). The content goes
+  /// through the same saveFile pipeline as a picked file, so it lands
+  /// as a file profile without ever asking for a URL.
+  Future<void> addProfileFromContent(String content, {String? label}) async {
+    _ref.read(loadingProvider.notifier).value = true;
+    try {
+      final profile = await Profile.normal(
+        label: label ?? appLocalizations.contentImportLabel,
+      ).saveFile(utf8.encode(content));
+      if (globalState.navigatorKey.currentState?.canPop() ?? false) {
+        globalState.navigatorKey.currentState?.popUntil(
+          (route) => route.isFirst,
+        );
+      }
+      toDashboardAfterImport();
+      await addProfile(profile);
+    } on Object catch (e) {
+      await globalState.showMessage(
+        title: appLocalizations.add,
+        message: TextSpan(text: e.formatProfileImportError),
         cancelable: false,
       );
     } finally {
@@ -1810,7 +1964,7 @@ class AppController {
           if (!context.mounted) break;
           await globalState.showMessage(
             title: '${platformFile.name} (${appLocalizations.add})',
-            message: TextSpan(text: e.formatError),
+            message: TextSpan(text: e.formatProfileImportError),
             cancelable: false,
           );
         }
@@ -1820,7 +1974,7 @@ class AppController {
         globalState.navigatorKey.currentState?.popUntil(
           (route) => route.isFirst,
         );
-        toProfiles();
+        toDashboardAfterImport();
       }
     } finally {
       _ref.read(loadingProvider.notifier).value = false;
@@ -1828,9 +1982,23 @@ class AppController {
   }
 
   Future<void> addProfileFormQrCode() async {
-    final url = await safeRun(picker.pickerConfigQRCode);
-    if (url == null) return;
-    addProfileFormURL(url);
+    final content = await safeRun(picker.pickerConfigQRCode);
+    if (content == null) return;
+    if (content.isUrl) {
+      addProfileFormURL(content);
+      return;
+    }
+    // T73: a QR image can just as well carry node links — route those
+    // through the content import instead of rejecting them as non-URL.
+    if (ImportNormalize.hasImportableContent(content)) {
+      await addProfileFromContent(content);
+      return;
+    }
+    await globalState.showMessage(
+      title: appLocalizations.add,
+      message: TextSpan(text: appLocalizations.pleaseUploadValidQrcode),
+      cancelable: false,
+    );
   }
 
   void updateViewSize(Size size) {
@@ -1945,14 +2113,27 @@ class AppController {
 
   Future<void> changeMode(Mode mode) async {
     await SystemExplicitStore.instance.ensureLoaded();
-    if (!context.mounted) return;
     final explicit = SystemExplicitStore.instance.value;
     final currentMode = _ref.read(patchClashConfigProvider).mode;
     if (currentMode == mode) return;
-    final zh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
-    if (currentMode == Mode.rule && mode != Mode.rule && explicit.anyEnabled) {
+    // T54 defect 1: the confirmation dialog needs a context under the
+    // navigator, resolved at call time. The controller's captured
+    // context sits above MaterialApp (no Navigator ancestor); passing
+    // it to showDialog crashes with Navigator.of == null. Before the
+    // first frame there is no navigator yet — in that case refuse the
+    // switch instead of crashing; the UI keeps showing the old mode.
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    final localeContext = dialogContext ?? context;
+    if (!localeContext.mounted) return;
+    final zh = Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
+    // T54: only the direct-exception class pauses outside rule mode;
+    // interception options keep working, so they never trigger this.
+    if (currentMode == Mode.rule &&
+        mode != Mode.rule &&
+        explicit.directExceptionsEnabled) {
+      if (dialogContext == null || !dialogContext.mounted) return;
       final accepted = await showDialog<bool>(
-        context: context,
+        context: dialogContext,
         builder: (dialogContext) {
           // Liquid glass (T38 full rollout): same modal treatment as
           // CommonDialog — neutral fill, bright rim, specular band.
@@ -1977,8 +2158,8 @@ class AppController {
               title: Text(zh ? '切换模式？' : 'Change routing mode?'),
               content: Text(
                 zh
-                    ? '全局或直连模式会暂停系统显式路由规则，包括局域网发现和常见端口阻断。直连模式不经过代理。选项会保留，切回规则模式时恢复。'
-                    : 'Global or direct mode suspends system explicit routing rules, including discovery and common-port blocks. Direct mode bypasses the proxy. Choices are kept and restored in rule mode.',
+                    ? '全局或直连模式会暂停系统显式的直连例外（中国直连、公共 DNS 直连、局域直连）。拦截类选项（防隐私、阻断 WebRTC、广告拦截）在新模式下继续生效。选项会保留，切回规则模式时例外恢复。'
+                    : 'Global or direct mode pauses the system explicit direct exceptions (China direct, public DNS direct, LAN direct). Interception options (privacy, WebRTC block, ad block) keep working in the new mode. Choices are kept and the exceptions resume in rule mode.',
               ),
               actions: [
                 TextButton(
@@ -1994,10 +2175,12 @@ class AppController {
           );
         },
       );
-      if (accepted != true || !context.mounted) return;
+      if (accepted != true || !dialogContext.mounted) return;
     }
     final oldMode = _ref.read(patchClashConfigProvider).mode;
-    final isZh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
+    if (!localeContext.mounted) return;
+    final isZh =
+        Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
     _lastModeChangeTime = DateTime.now();
     _ref
         .read(patchClashConfigProvider.notifier)
@@ -2091,17 +2274,55 @@ class AppController {
   }
 
   Future<bool> exportLogs() async {
+    // T36: exported logs leave the device, so credentials (subscription
+    // URLs and tokens, node UUIDs/passwords, DAV credentials) are
+    // scrubbed first; the line structure stays for diagnosability.
     final logsRaw = _ref
         .read(filteredLogsProvider)
         .logs
-        .map((item) => item.line)
+        .map((item) => redactLogText(item.line))
         .toList();
+    // T88: attach the on-device forensic records (OEM memory-callback
+    // trail and the persistent quick-start failure marker). They live
+    // outside the in-memory log, so without this the death window of
+    // a background kill never reaches an exported log.
+    final forensicSections = await _forensicLogSections();
     final data = await Isolate.run<List<int>>(() async {
-      final logsRawString = logsRaw.join('\n');
-      return utf8.encode(logsRawString);
+      final buffer = StringBuffer(logsRaw.join('\n'));
+      for (final section in forensicSections) {
+        buffer
+          ..write('\n\n')
+          ..write(section);
+      }
+      return utf8.encode(buffer.toString());
     });
     return await picker.saveFile(utils.logFile, Uint8List.fromList(data)) !=
         null;
+  }
+
+  /// Best-effort collection of the forensic sections for [exportLogs]:
+  /// one section per record file that exists and is non-empty.
+  Future<List<String>> _forensicLogSections() async {
+    final candidates = <(String, Future<String>)>[
+      ('fair_memory_events.log', appPath.fairMemoryEventsPath),
+      ('quick_start_failure.json', appPath.quickStartFailurePath),
+    ];
+    final sections = <String>[];
+    for (final (name, pathFuture) in candidates) {
+      try {
+        final file = File(await pathFuture);
+        if (!await file.exists()) continue;
+        final section = buildForensicLogSection(
+          fileName: name,
+          content: await file.readAsString(),
+          redactLine: redactLogText,
+        );
+        if (section != null) sections.add(section);
+      } catch (_) {
+        // Attachments are best-effort; never fail the export over them.
+      }
+    }
+    return sections;
   }
 
   Future<List<int>> backupData({String password = ''}) async {
@@ -2832,8 +3053,8 @@ class AppController {
       _ref.read(proxiesStyleSettingProvider.notifier).value =
           config.proxiesStyle;
 
-      // 9. Restore DNS override settings
-      _ref.read(overrideDnsProvider.notifier).value = config.overrideDns;
+      // 9. (T81 batch 3: the DNS override gate restore is gone with
+      // the gate itself.)
 
       // 10. Restore hotkey settings (desktop only)
       if (system.isDesktop) {

@@ -23,6 +23,19 @@ class OutboundMode extends StatelessWidget {
             patchClashConfigProvider.select((state) => state.mode),
           );
           return CommonCard(
+            // T64 round 6: the home page's main card is the primary
+            // tier — the yardstick every other page's hierarchy is
+            // measured against.
+            glassTier: GlassTier.primary,
+            // T83 prototype: the home main status card is the one
+            // surface rendered by the shader edge-refraction glass.
+            // T88: disabled in trial builds until T83 settles the
+            // design — the prototype is this build's only new
+            // continuous rendering cost (foreground sampling plus the
+            // 1s curve refresh recompositing the backdrop), which
+            // feeds the OEM "excessive background power" verdict.
+            // Prototype code and the switch stay; re-enable with T83.
+            shaderGlass: false,
             info: Info(
               label: appLocalizations.outboundMode,
               iconData: Icons.call_split_sharp,
@@ -116,6 +129,11 @@ class OutboundModeV2 extends StatelessWidget {
     return SizedBox(
       height: getWidgetHeight(context, 1),
       child: CommonCard(
+        // T64 round 6: primary tier — see OutboundMode above.
+        glassTier: GlassTier.primary,
+        // T83 prototype: shader edge-refraction glass — see above.
+        // T88: disabled until T83 settles — see OutboundMode above.
+        shaderGlass: false,
         padding: EdgeInsets.zero,
         child: Column(
           children: [

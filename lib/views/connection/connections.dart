@@ -443,7 +443,16 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         scrollCacheExtent: cacheExtent,
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            // T67: CustomScrollView ignores MediaQuery padding, so add
+            // the floating-bar reserve explicitly when hosted under it.
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom:
+                  16 +
+                  (FloatingBottomBarScope.has(context)
+                      ? getFloatingBottomBarReserveHeight(context)
+                      : 0),
+            ),
             sliver: SliverFixedExtentList(
               itemExtent: TrackerInfoItem.height + 1,
               delegate: SliverChildBuilderDelegate(

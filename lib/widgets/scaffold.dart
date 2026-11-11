@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'chip.dart';
+import 'glass.dart';
 import 'text.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
@@ -319,6 +320,15 @@ class CommonScaffoldState extends State<CommonScaffold> {
           widget.title != null ||
           widget.titleWidget != null,
     );
+    // T64 full unification: every page hangs off CommonScaffold, so
+    // the glass scope is mounted here, at the root — section cards
+    // on every page (settings sub-pages, grandchild pages, the AI
+    // and app-lock pages included) resolve the same glass tokens.
+    // Static (live: false): pages are long scrolling lists, and the
+    // rendering discipline forbids per-card backdrop blur there.
+    // Pages that mount their own scope keep it — the nearest scope
+    // wins, so existing live surfaces are untouched.
+    final scopedBody = GlassScope(live: false, child: widget.body);
     final body = SafeArea(
       top: false,
       bottom: false,
@@ -362,9 +372,9 @@ class CommonScaffoldState extends State<CommonScaffold> {
             child: widget.scrollEdgeFade
                 ? _ScrollEdgeFade(
                     backgroundColor: widget.backgroundColor,
-                    child: widget.body,
+                    child: scopedBody,
                   )
-                : widget.body,
+                : scopedBody,
           ),
         ],
       ),
@@ -373,13 +383,21 @@ class CommonScaffoldState extends State<CommonScaffold> {
       child: Consumer(
         builder: (context, ref, _) {
           final isMobileView = ref.watch(isMobileViewProvider);
-          return Scaffold(
+          // Round 5 (T64): a page without a caller-supplied background
+          // sits on the designed glass field instead of the flat
+          // surfaceContainer — the scaffold goes transparent and the
+          // field is laid under the whole scaffold (the theme's app
+          // bar is transparent, so the field shows through there too).
+          // Callers that pass a backgroundColor, and the desktop
+          // layout, keep the round-4 behaviour exactly.
+          final onField = widget.backgroundColor == null && isMobileView;
+          final scaffold = Scaffold(
             appBar: _buildAppBar(),
             body: body,
             resizeToAvoidBottomInset: true,
             backgroundColor:
                 widget.backgroundColor ??
-                (isMobileView
+                (isMobileView && !onField
                     ? context.colorScheme.surfaceContainer
                     : Colors.transparent),
             floatingActionButton:
@@ -394,6 +412,17 @@ class CommonScaffoldState extends State<CommonScaffold> {
                     );
                   },
                 ),
+          );
+          if (!onField) return scaffold;
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GlassField(
+                  brightness: context.colorScheme.brightness,
+                ),
+              ),
+              scaffold,
+            ],
           );
         },
       ),
@@ -457,11 +486,13 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        widget.backgroundColor ??
-        (ref.watch(isMobileViewProvider)
-            ? context.colorScheme.surfaceContainer
-            : null);
+    // Round 5: the flat colour is no longer synthesised here. A page
+    // without an explicit backgroundColor now sits on the glass field
+    // (mobile) or on transparency (desktop) — in both cases there is
+    // no flat wedge colour, so the edge fade takes the mask path and
+    // dissolves the content into what is actually behind it. An
+    // explicit backgroundColor keeps the round-4 wedge behaviour.
+    final color = widget.backgroundColor;
     final opaque = color != null && color.a == 1;
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) => _handleScroll(

@@ -12,6 +12,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'group_settings.dart';
 
 class ProxiesListView extends StatelessWidget {
   const ProxiesListView({super.key});
@@ -389,6 +390,30 @@ class _GroupHeader extends ConsumerWidget {
     this.onScrollToSelected,
   });
 
+  /// T51: follows the selection chain through nested groups to the
+  /// final landing node/group. Returns the terminal name (== the direct
+  /// selection for leaf groups).
+  String _finalLanding(List<Group> groups, String selected) {
+    var current = selected;
+    final visited = <String>{};
+    while (visited.add(current)) {
+      final next = groups.getGroup(current)?.now;
+      if (next == null || next.isEmpty) break;
+      current = next;
+    }
+    return current;
+  }
+
+  int? _delayFor(DelayMap delayMap, String name) {
+    final byTestUrl = delayMap[group.testUrl]?[name];
+    if (byTestUrl != null) return byTestUrl;
+    for (final byName in delayMap.values) {
+      final value = byName[name];
+      if (value != null) return value;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final iconStyle = ref.watch(
@@ -398,6 +423,17 @@ class _GroupHeader extends ConsumerWidget {
     final selectedProxyName = ref
         .watch(getSelectedProxyNameProvider(group.name))
         .getSafeValue('');
+    // T49/T51: member count, final landing and its delay come from the
+    // live groups/delay data, so they track config switches, subscription
+    // updates and speed tests without any extra plumbing.
+    final allGroups = ref.watch(groupsProvider);
+    final delayMap = ref.watch(delayDataSourceProvider);
+    final finalLanding = selectedProxyName.isEmpty
+        ? ''
+        : _finalLanding(allGroups, selectedProxyName);
+    final landingDelay = finalLanding.isEmpty || finalLanding == group.name
+        ? null
+        : _delayFor(delayMap, finalLanding);
 
     final selectedProxyIcon = ref.watch(proxyIconProvider(selectedProxyName));
 
@@ -453,6 +489,13 @@ class _GroupHeader extends ConsumerWidget {
                   Row(
                     children: [
                       Text(group.type.name, style: labelLightStyle),
+                      // T49: direct member count, no ambiguous wording;
+                      // hidden entirely while the group has no data.
+                      if (group.all.isNotEmpty)
+                        Text(
+                          '  •  ${group.all.length}',
+                          style: labelLightStyle,
+                        ),
                       if (selectedProxyName.isNotEmpty) ...[
                         Text('  •  ', style: labelLightStyle),
                         if (selectedProxyIcon.isNotEmpty) ...[
@@ -464,11 +507,32 @@ class _GroupHeader extends ConsumerWidget {
                         ],
                         Flexible(
                           child: EmojiText(
-                            selectedProxyName,
+                            // T51: upper groups show the resolved final
+                            // landing after the direct selection.
+                            finalLanding.isNotEmpty &&
+                                    finalLanding != selectedProxyName
+                                ? '$selectedProxyName → $finalLanding'
+                                : selectedProxyName,
                             style: labelLightStyle,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        // T51: latest delay of the final landing node;
+                        // an explicit "not tested" instead of a fake 0.
+                        if (finalLanding.isNotEmpty &&
+                            allGroups.getGroup(finalLanding) == null)
+                          Text(
+                            landingDelay == null
+                                ? '  •  ${appLocalizations.proxyDelayNotTested}'
+                                : landingDelay > 0
+                                ? '  •  $landingDelay ms'
+                                : '  •  Timeout',
+                            style: landingDelay == null
+                                ? labelLightStyle
+                                : labelLightStyle?.copyWith(
+                                    color: utils.getDelayColor(landingDelay),
+                                  ),
+                          ),
                       ],
                     ],
                   ),
@@ -480,6 +544,25 @@ class _GroupHeader extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(width: 4),
+                  // T76: group parameter editor entry, next to the other
+                  // per-group actions in the expanded header.
+                  _PressScaleWrapper(
+                    child: SizedBox.square(
+                      dimension: 36,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.tune),
+                        onPressed: () {
+                          BaseNavigator.push(
+                            context,
+                            GroupSettingsView(groupName: group.name),
+                          );
+                        },
+                        tooltip: appLocalizations.groupSettings,
+                      ),
+                    ),
+                  ),
                   _PressScaleWrapper(
                     child: SizedBox.square(
                       dimension: 36,

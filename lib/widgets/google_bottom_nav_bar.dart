@@ -128,6 +128,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   @override
   void initState() {
     super.initState();
+    ControlStyleStore.load();
     _lastSnappedIndex = widget.selectedIndex;
     // Best-effort: when the refraction shader lands, rebuild once so the
     // bar picks up the rim-displacement stage. Failure leaves plain glass.
@@ -213,6 +214,12 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
 
   @override
   Widget build(BuildContext context) {
+    // T64: the keycap bar skin was retired with the keycap style
+    // (2026-11-08 ruling); the bar is always the glass bar now.
+    return _buildBar(context);
+  }
+
+  Widget _buildBar(BuildContext context) {
     final enableFeedback = ref.watch(
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
@@ -239,6 +246,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
       GlassKind.navigationBar,
       base: widgetBodyColor,
     );
+    final effectiveGlassTokens = glassTokens;
     const itemTextStyle = TextStyle(
       fontSize: 10.5,
       fontWeight: FontWeight.w500,
@@ -424,7 +432,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                     ),
                     child: GlassSurface(
                       shape: barShape,
-                      tokens: glassTokens,
+                      tokens: effectiveGlassTokens,
                       refractionSize: Size(constraints.maxWidth, barHeight),
                       refractionRadius: 30,
                       child: Container(
@@ -455,12 +463,37 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                       bubble: _bubbleController,
                                       count: count,
                                       slot: _clampWithResistance,
-                                      color: primaryColor,
-                                      baseAlpha: isLight ? 0.30 : 0.34,
-                                      activeAlpha: isLight ? 0.38 : 0.42,
-                                      rimColor: Colors.white.withValues(
-                                        alpha: isLight ? 0.55 : 0.40,
-                                      ),
+                                      // T64 round 7: the pill body leans
+                                      // from the scheme primary into
+                                      // sky azure, so the selected tab
+                                      // is blue-cyan glass, matching
+                                      // the primary tier's dye.
+                                      color: Color.lerp(
+                                        primaryColor,
+                                        const Color(0xFF0EA5E9),
+                                        0.30,
+                                      )!,
+                                      // T64 round 6: the selected pill
+                                      // leans toward the primary tier —
+                                      // denser and brighter than the
+                                      // bar body around it.
+                                      baseAlpha: isLight ? 0.34 : 0.38,
+                                      activeAlpha: isLight ? 0.44 : 0.48,
+                                      // Round 7: the rim leans cyan
+                                      // and the painter throws the
+                                      // primary glow halo under it.
+                                      rimColor:
+                                          Color.lerp(
+                                            Colors.white,
+                                            const Color(0xFF7DD3FC),
+                                            0.45,
+                                          )!.withValues(
+                                            alpha: isLight ? 0.75 : 0.55,
+                                          ),
+                                      glowColor: const Color(0xFF38BDF8)
+                                          .withValues(
+                                            alpha: isLight ? 0.50 : 0.42,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -563,33 +596,36 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                         }
                                       }
 
+                                      // Shared item content: icon + label.
+                                      final itemContent = Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconTheme(
+                                            data: IconThemeData(
+                                              color: itemColor,
+                                              size: 22,
+                                            ),
+                                            child: item.icon,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            localizedLabels[index],
+                                            style: itemTextStyle.copyWith(
+                                              color: itemColor,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      );
                                       return Expanded(
                                         child: Center(
                                           child: Transform.scale(
                                             scale: itemScale,
                                             alignment: Alignment.center,
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconTheme(
-                                                  data: IconThemeData(
-                                                    color: itemColor,
-                                                    size: 22,
-                                                  ),
-                                                  child: item.icon,
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  localizedLabels[index],
-                                                  style: itemTextStyle.copyWith(
-                                                    color: itemColor,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
+                                            child: itemContent,
                                           ),
                                         ),
                                       );
@@ -625,6 +661,12 @@ class NavBarPillPainter extends CustomPainter {
   final double activeAlpha;
   final Color rimColor;
 
+  /// Blue-cyan halo colour painted blurred under the pill
+  /// (round 7): the selected pill is a primary-semantic surface
+  /// and gets the primary tier's glow treatment, in the painter's
+  /// own medium — a soft coloured halo inside the bar.
+  final Color glowColor;
+
   NavBarPillPainter({
     required this.position,
     required this.lift,
@@ -636,6 +678,7 @@ class NavBarPillPainter extends CustomPainter {
     required this.baseAlpha,
     required this.activeAlpha,
     required this.rimColor,
+    this.glowColor = const Color(0xFF38BDF8),
   }) : super(repaint: Listenable.merge([position, lift, dragOffset, bubble]));
 
   static const double _restingGap = 4.0;
@@ -684,6 +727,18 @@ class NavBarPillPainter extends CustomPainter {
       rect,
       Radius.circular(rect.height / 2),
     );
+    // Round 7 glow: a blurred blue-cyan halo under the pill body,
+    // swelling slightly with the lift — the primary tier's ambient
+    // glow, drawn before the body so the glass sits inside its own
+    // light. (The canvas is already clipped to the bar capsule, so
+    // the halo pools inside the bar around the pill.)
+    final glowRect = rect.inflate(5);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(glowRect, Radius.circular(glowRect.height / 2)),
+      Paint()
+        ..color = glowColor.withValues(alpha: glowColor.a * (0.55 + 0.45 * t))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
     // Glass body of the bubble.
     canvas.drawRRect(rrect, Paint()..color = color.withValues(alpha: alpha));
     // Specular sheen across the top of the bubble.
@@ -718,6 +773,7 @@ class NavBarPillPainter extends CustomPainter {
         oldDelegate.color != color ||
         oldDelegate.baseAlpha != baseAlpha ||
         oldDelegate.activeAlpha != activeAlpha ||
-        oldDelegate.rimColor != rimColor;
+        oldDelegate.rimColor != rimColor ||
+        oldDelegate.glowColor != glowColor;
   }
 }

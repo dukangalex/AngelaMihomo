@@ -310,7 +310,15 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                                     vertical: 6,
                                   )
                                 : EdgeInsets.zero,
-                            child: EmojiText(group.name),
+                            // T49: the tab is the group presentation
+                            // of the default view — carry the same
+                            // direct member count the list view shows,
+                            // hidden while the group has no data.
+                            child: EmojiText(
+                              group.all.isEmpty
+                                  ? group.name
+                                  : '${group.name} · ${group.all.length}',
+                            ),
                           ),
                         ),
                     ],

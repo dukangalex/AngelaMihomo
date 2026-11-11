@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net/netip"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -49,7 +50,6 @@ type PatchParams struct {
 	General             json.RawMessage `json:"general"`
 	GeoXUrl             json.RawMessage `json:"geox-url"`
 	Hosts               []PatchHost     `json:"hosts"`
-	OverrideDns         bool            `json:"override-dns"`
 	DnsNodeOverride     bool            `json:"dns-node-override"`
 	Dns                 json.RawMessage `json:"dns"`
 	Ntp                 json.RawMessage `json:"ntp"`
@@ -63,7 +63,12 @@ type PatchParams struct {
 	PrependRules        []string        `json:"prepend-rules"`
 	SystemExplicitRules []string        `json:"system-explicit-rules"`
 	DisabledGroups      []string        `json:"disabled-groups"`
-	SelectGlobal        bool            `json:"select-global"`
+	// T76: per-group parameter overrides from the group-settings editor,
+	// keyed by group name with kernel field names inside. The values live
+	// on the Dart-side profile, never in the subscription file, and are
+	// merged into the raw groups here on every setup.
+	GroupOverrides map[string]map[string]any `json:"group-overrides"`
+	SelectGlobal   bool                      `json:"select-global"`
 	// AngelaMihomo fork: runtime policy ported from the fork's
 	// SystemExplicitStore.apply / ProfileChainStore.apply, which used to
 	// mutate the Dart-assembled full config before the Go patch pipeline
@@ -115,11 +120,32 @@ func hasPatchValue(data json.RawMessage) bool {
 	return len(data) > 0 && string(data) != "null"
 }
 
+func samePrefixes(a, b []netip.Prefix) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 	defaults := config.DefaultRawConfig()
 	if hasPatchValue(params.General) {
+		prevAllowedIPs := raw.LanAllowedIPs
 		if err := yaml.Unmarshal(params.General, raw); err != nil {
 			return "", fmt.Errorf("patch general: %w", err)
+		}
+		// T79 defense in depth: an explicit empty lan-allowed-ips in the
+		// patch must not erase the allow-all default that was in place
+		// before the overwrite. (The kernel's ipfilter also treats an
+		// empty allow list as "no restriction" now, but other consumers
+		// read LanAllowedIPs verbatim.)
+		if len(raw.LanAllowedIPs) == 0 && samePrefixes(prevAllowedIPs, defaults.LanAllowedIPs) {
+			raw.LanAllowedIPs = prevAllowedIPs
 		}
 		var nullable struct {
 			GlobalUA *string `json:"global-ua"`
@@ -170,6 +196,7 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 		}
 	}
 	patchProxyGroups(raw, params)
+	applyGroupOverrides(raw, params.GroupOverrides, params.NodeExcludeFilter)
 
 	// AngelaMihomo fork: per-profile chain proxy (was applyChainPolicy in
 	// the fork's explicit_policy.dart).
@@ -211,6 +238,25 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 				rules[i] = parsed.String()
 			}
 		}
+	}
+
+	// T87: China-routing invariant (rule mode, China adaptation on).
+	// When the system-explicit rule set carries the China-direct pair,
+	// the assembled rule list must end at a proxy choice: the kernel
+	// falls back to DIRECT for any connection no rule matches
+	// (tunnel match()), so a subscription that omits MATCH, points it
+	// at DIRECT, or routes it through a disabled/direct-only group
+	// would silently send non-China traffic direct. The China-direct
+	// rules themselves already sit ahead of every surviving profile
+	// rule via replaceExplicitRuleCategories; only the tail needs a
+	// guard, and it runs last so it sees the final group universe and
+	// the disabled-group retargeting above.
+	if chinaDirectArmed(params.SystemExplicitRules) {
+		disabledNames := make(map[string]bool, len(params.DisabledGroups))
+		for _, name := range params.DisabledGroups {
+			disabledNames[name] = true
+		}
+		rules = enforceChinaRoutingTail(rules, raw, disabledNames)
 	}
 
 	global := ""
@@ -459,16 +505,25 @@ func patchHosts(raw *config.RawConfig, hosts []PatchHost) []string {
 }
 
 func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawConfig, hostOrder []string) error {
+	// T81 batch 3 (P-2): the DNS section has exactly one authority —
+	// the App settings model. The old override-dns gate (subscription
+	// wins unless the gate was on or the subscription DNS was disabled)
+	// is gone; whenever the App sends its DNS section it takes over
+	// wholesale, layered over the kernel defaults for any key the model
+	// JSON omits. Legacy users were migrated by seeding the model from
+	// their subscription (see the Dart-side spec migration), so the
+	// takeover does not silently change anyone's effective DNS.
 	enabled := raw.DNS.Enable
-	if params.OverrideDns || !enabled {
+	if hasPatchValue(params.Dns) {
 		original := raw.DNS
 		dns := defaults.DNS
-		if hasPatchValue(params.Dns) {
-			if err := yaml.Unmarshal(params.Dns, &dns); err != nil {
-				return fmt.Errorf("patch dns: %w", err)
-			}
+		if err := yaml.Unmarshal(params.Dns, &dns); err != nil {
+			return fmt.Errorf("patch dns: %w", err)
 		}
 		if !enabled {
+			// The subscription did not enable DNS at all; keep the
+			// long-standing fallback of appending the system resolver
+			// to the App section's nameservers.
 			dns.NameServer = append(append([]string{}, dns.NameServer...), "system://")
 		}
 		raw.DNS = dns
@@ -476,7 +531,11 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 			applyDnsNodeOverride(raw, &original, hostOrder)
 		}
 	}
-	raw.DNS.FallbackFilter.GeoSite = []string{}
+	// T81 S-1: fallback-filter.geosite used to be zeroed here
+	// unconditionally, silently discarding whatever the subscription
+	// or the settings model wrote. The field now takes effect exactly
+	// as its single surviving writer (SUB, or SET when the DNS section
+	// is taken over) specifies.
 
 	if !patchForAndroid {
 		return nil
@@ -766,6 +825,98 @@ func groupName(group map[string]any) (string, bool) {
 	return name, ok
 }
 
+// groupOverrideKeys is the T76 group-settings editor's vocabulary: the
+// GroupCommonOption / SelectorOption / URLTestOption / LoadBalanceOption
+// parameters a user may patch per group. Identity and membership keys
+// (name, type, proxies, use) are deliberately absent — the editor never
+// renames a group or rewrites its member list.
+var groupOverrideKeys = map[string]bool{
+	"url": true, "interval": true, "lazy": true, "timeout": true,
+	"max-failed-times": true, "filter": true, "exclude-filter": true,
+	"exclude-type": true, "expected-status": true, "hidden": true,
+	"icon": true, "tolerance": true, "default-selected": true,
+	"empty-fallback": true, "disable-udp": true, "include-all": true,
+	"include-all-proxies": true, "include-all-providers": true,
+	"strategy": true, "hash-key": true,
+}
+
+// applyGroupOverrides merges the profile's stored per-group parameter
+// overrides into the raw subscription groups. Groups the subscription no
+// longer provides are ignored, as are keys outside the editor vocabulary.
+//
+// exclude-filter is the one key that does not replace outright (T81
+// C-3): patchProxyGroups has already concatenated the global
+// node-exclusion filter (globalFilter) onto provider-backed groups,
+// and that global part must never be swallowed by an editor value.
+// The merged result is the editor's patterns with the global patterns
+// appended — the editor value replaces the subscription's own filter,
+// the global exclusion always rides along.
+func applyGroupOverrides(raw *config.RawConfig, overrides map[string]map[string]any, globalFilter string) {
+	if len(overrides) == 0 {
+		return
+	}
+	for _, group := range raw.ProxyGroup {
+		name, ok := groupName(group)
+		if !ok {
+			continue
+		}
+		patch, ok := overrides[name]
+		if !ok {
+			continue
+		}
+		for key, value := range patch {
+			if !groupOverrideKeys[key] {
+				continue
+			}
+			if key == "exclude-filter" {
+				if editorFilter, ok := value.(string); ok {
+					group[key] = mergeEditorExcludeFilter(group, editorFilter, globalFilter)
+					continue
+				}
+			}
+			group[key] = value
+		}
+	}
+}
+
+// mergeEditorExcludeFilter builds the effective exclude-filter for a
+// group whose editor override sets the key: the editor's patterns win
+// over the subscription's, and the global node-exclusion patterns are
+// appended when patchProxyGroups would have concatenated them onto
+// this group (provider-backed groups, i.e. a non-nil use list — the
+// same condition combineExcludeFilter was applied under). Patterns
+// already present are not duplicated.
+func mergeEditorExcludeFilter(group map[string]any, editorFilter, globalFilter string) string {
+	merged := editorFilter
+	if globalFilter == "" {
+		return merged
+	}
+	use, hasUse := group["use"]
+	if !hasUse || use == nil {
+		return merged
+	}
+	for _, pattern := range strings.Split(globalFilter, "|") {
+		pattern = strings.TrimSpace(pattern)
+		if pattern == "" {
+			continue
+		}
+		present := false
+		for _, existing := range strings.Split(merged, "|") {
+			if strings.TrimSpace(existing) == pattern {
+				present = true
+				break
+			}
+		}
+		if !present {
+			if merged != "" {
+				merged += "|"
+			}
+			merged += pattern
+		}
+	}
+	return merged
+}
+
 func filterGroups(groups []map[string]any, keep func(name string) bool) []map[string]any {
 	filtered := groups[:0]
 	for _, group := range groups {
@@ -876,7 +1027,10 @@ func patchProxyGroups(raw *config.RawConfig, params *PatchParams) {
 				}
 				useList, useIsList := use.([]any)
 				if len(filtered) == 0 && (!hasUse || (useIsList && len(useList) == 0)) {
-					filtered = append(filtered, "DIRECT")
+					// T86 fail-closed: a group emptied by the node
+					// exclusion filter must refuse traffic, never
+					// silently turn into a direct connection.
+					filtered = append(filtered, "REJECT")
 				}
 				group["proxies"] = filtered
 			}
@@ -909,6 +1063,86 @@ func patchProxyGroups(raw *config.RawConfig, params *PatchParams) {
 }
 
 const explicitChainGroup = "链式落地"
+
+// proxyChoiceIndex answers whether a group carries a proxy choice
+// (T85): at least one reachable member must be able to route traffic
+// through a real proxy — a proxy node whose type is not direct-capable,
+// a nested group that itself carries a proxy choice, or a provider
+// source (use / include-all*) whose runtime members are proxies.
+// Builtin actions (DIRECT, REJECT, REJECT-DROP, COMPATIBLE, PASS) and
+// direct-type adapters never count. Provider node names do not appear
+// in the raw config, so an otherwise unknown member name counts as
+// proxy evidence. The chain landing is a proxy choice, so only groups
+// passing this test may receive it: direct-only selectors (the direct
+// group) and action-only selectors (ad-block groups) must not offer a
+// chain for traffic that never proxies, and — symmetrically — the
+// chain synthesis itself never contributes a direct option anywhere.
+type proxyChoiceIndex struct {
+	proxyTypes map[string]string
+	groups     map[string]map[string]any
+}
+
+func newProxyChoiceIndex(raw *config.RawConfig, groups []map[string]any) *proxyChoiceIndex {
+	idx := &proxyChoiceIndex{
+		proxyTypes: make(map[string]string),
+		groups:     make(map[string]map[string]any),
+	}
+	for _, proxy := range raw.Proxy {
+		if name, _ := proxy["name"].(string); name != "" {
+			idx.proxyTypes[name] = strings.ToLower(fmt.Sprint(proxy["type"]))
+		}
+	}
+	for _, group := range groups {
+		if name, _ := group["name"].(string); name != "" {
+			idx.groups[name] = group
+		}
+	}
+	return idx
+}
+
+func (idx *proxyChoiceIndex) carriesProxyChoice(group map[string]any) bool {
+	return idx.carries(group, map[string]bool{})
+}
+
+func (idx *proxyChoiceIndex) carries(group map[string]any, visiting map[string]bool) bool {
+	if group == nil {
+		return false
+	}
+	if hasGroupSource(group) {
+		return true
+	}
+	for _, member := range anyStrings(group["proxies"]) {
+		name, ok := member.(string)
+		if !ok || name == "" {
+			continue
+		}
+		switch name {
+		case "DIRECT", "REJECT", "REJECT-DROP", "COMPATIBLE", "PASS":
+			continue
+		}
+		if child, isGroup := idx.groups[name]; isGroup {
+			if visiting[name] {
+				continue
+			}
+			visiting[name] = true
+			found := idx.carries(child, visiting)
+			delete(visiting, name)
+			if found {
+				return true
+			}
+			continue
+		}
+		if typ, isProxy := idx.proxyTypes[name]; isProxy {
+			if typ != "direct" && typ != "pass" && typ != "compatible" {
+				return true
+			}
+			continue
+		}
+		// Unknown names resolve against proxy providers at runtime.
+		return true
+	}
+	return false
+}
 
 // floorChainHealthCheck aligns health-check parameters on the runtime
 // copy of a chain entry group with the subscription converter's chain
@@ -1236,29 +1470,54 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 			}
 			visit(entry)
 		}
-		selectors := 0
-		for _, group := range originalGroups {
-			if group == nil {
-				continue
+		choice := newProxyChoiceIndex(raw, raw.ProxyGroup)
+		// T85: group options must match the group's traffic attribute
+		// in both directions. Only a selector that carries a proxy
+		// choice receives the chain landing; direct-only and
+		// action-only selectors (the direct group, ad-block groups)
+		// never do, and the first eligible selector is the main
+		// selector. If no selector carries a proxy choice at all,
+		// fall back to the unrestricted sweep so an exotic profile
+		// keeps the chain reachable somewhere instead of failing.
+		inject := func(eligibleOnly bool) int {
+			injected := 0
+			selectors := 0
+			for _, group := range originalGroups {
+				if group == nil {
+					continue
+				}
+				groupType, _ := group["type"].(string)
+				groupName, _ := group["name"].(string)
+				if groupType != "select" || entryGroups[groupName] {
+					continue
+				}
+				if eligibleOnly && !choice.carriesProxyChoice(group) {
+					continue
+				}
+				selectors++
+				// T40: region groups keep only their own region's
+				// nodes — the chain landing is not a region node
+				// and must not be appended there. The main selector
+				// (first) is exempt so its behaviour never changes.
+				if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+					continue
+				}
+				members := anyStrings(group["proxies"])
+				if selectors == 1 {
+					// The main selector lists the chain first so it
+					// is the default choice once a chain is
+					// configured; other selectors keep the chain as
+					// an extra option at the end without hijacking
+					// their own defaults.
+					group["proxies"] = append([]any{chainGroup}, members...)
+				} else {
+					group["proxies"] = append(members, chainGroup)
+				}
+				injected++
 			}
-			groupType, _ := group["type"].(string)
-			groupName, _ := group["name"].(string)
-			if groupType != "select" || entryGroups[groupName] {
-				continue
-			}
-			selectors++
-			members := anyStrings(group["proxies"])
-			if selectors == 1 {
-				// The main selector lists the chain first so it is the
-				// default choice once a chain is configured; other
-				// selectors keep the chain as an extra option at the end
-				// without hijacking their own defaults.
-				group["proxies"] = append([]any{chainGroup}, members...)
-			} else {
-				group["proxies"] = append(members, chainGroup)
-			}
+			return injected
 		}
-		if selectors == 0 {
+		if inject(true) == 0 && inject(false) == 0 {
 			return fmt.Errorf("the active profile has no manual selector to expose the chain")
 		}
 		return nil
@@ -1419,34 +1678,88 @@ func patchLegacyChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) err
 	}
 	chainGroup := uniqueName(explicitChainGroup)
 	raw.ProxyGroup = append(raw.ProxyGroup, providerGroup(chainGroup, landing, false))
-	selectors := 0
-	for _, group := range originalGroups {
-		if groupType, _ := group["type"].(string); groupType != "select" {
-			continue
-		}
-		var members []any
-		switch old := group["proxies"].(type) {
-		case nil:
-		case []any:
-			members = append(members, old...)
-		case []string:
-			for _, value := range old {
-				members = append(members, value)
+	choice := newProxyChoiceIndex(raw, raw.ProxyGroup)
+	// T85: same traffic-attribute match as the cross-profile path —
+	// direct-only and action-only selectors never receive the chain
+	// landing, and the first eligible selector is the main selector.
+	// If no selector carries a proxy choice at all, fall back to the
+	// unrestricted sweep so the chain stays reachable somewhere.
+	inject := func(eligibleOnly bool) int {
+		injected := 0
+		selectors := 0
+		for _, group := range originalGroups {
+			if groupType, _ := group["type"].(string); groupType != "select" {
+				continue
 			}
+			if eligibleOnly && !choice.carriesProxyChoice(group) {
+				continue
+			}
+			var members []any
+			switch old := group["proxies"].(type) {
+			case nil:
+			case []any:
+				members = append(members, old...)
+			case []string:
+				for _, value := range old {
+					members = append(members, value)
+				}
+			}
+			selectors++
+			// T40: skip region groups (see patchChainPolicy); the
+			// main selector still takes the chain first.
+			if selectors > 1 && isRegionSelectGroup(group, originalGroups) {
+				continue
+			}
+			if selectors == 1 {
+				// The main selector lists the chain first so it is
+				// the default choice once a chain is configured;
+				// other selectors keep the chain as an extra option
+				// at the end without hijacking their own defaults.
+				// Mirrors the cross-profile chain path.
+				group["proxies"] = append([]any{chainGroup}, members...)
+			} else {
+				group["proxies"] = append(members, chainGroup)
+			}
+			injected++
 		}
-		selectors++
-		if selectors == 1 {
-			// The main selector lists the chain first so it is the
-			// default choice once a chain is configured; other
-			// selectors keep the chain as an extra option at the end
-			// without hijacking their own defaults. Mirrors the
-			// cross-profile chain path.
-			group["proxies"] = append([]any{chainGroup}, members...)
-		} else {
-			group["proxies"] = append(members, chainGroup)
-		}
+		return injected
+	}
+	if inject(true) == 0 {
+		inject(false)
 	}
 	return nil
+}
+
+// isRegionSelectGroup reports whether a select group is a region
+// group (T40): the subscription converter emits every region group as
+// a select group whose members include its paired url-test group
+// named "<group>-自动选择". The signature depends only on that paired
+// structure, never on a list of region names. The chain landing is
+// not a region node — its exit is decided by the chain entry/landing
+// pair — so it must not be appended to region groups.
+func isRegionSelectGroup(group map[string]any, groups []map[string]any) bool {
+	name, _ := group["name"].(string)
+	if name == "" {
+		return false
+	}
+	paired := name + "-自动选择"
+	pairedIsURLTest := false
+	for _, other := range groups {
+		if otherName, _ := other["name"].(string); otherName == paired {
+			otherType, _ := other["type"].(string)
+			pairedIsURLTest = otherType == "url-test"
+			break
+		}
+	}
+	if !pairedIsURLTest {
+		return false
+	}
+	for _, member := range anyStrings(group["proxies"]) {
+		if text, ok := member.(string); ok && text == paired {
+			return true
+		}
+	}
+	return false
 }
 
 func anyStrings(value any) []any {
@@ -1656,6 +1969,107 @@ func patchProxies(raw *config.RawConfig) {
 			realityOpts["short-id"] = strconv.FormatUint(shortId, 10)
 		}
 	}
+}
+
+// chinaDirectArmed reports whether the system-explicit additions
+// carry the China-direct pair (GEOSITE geolocation-cn + GEOIP CN,
+// both to DIRECT). The pair is only emitted for rule mode with the
+// chinaDirect option on (direct exceptions are never emitted for the
+// synthesized global/direct modes), so its presence is the exact
+// condition under which the T87 invariant is in force.
+func chinaDirectArmed(additions []string) bool {
+	site, ip := false, false
+	for _, rule := range additions {
+		parsed := parseRule(rule)
+		if !parsed.hasTarget || !strings.EqualFold(parsed.target, "DIRECT") {
+			continue
+		}
+		switch {
+		case parsed.action == "GEOSITE" && strings.EqualFold(parsed.content, "geolocation-cn"):
+			site = true
+		case parsed.action == "GEOIP" && strings.EqualFold(parsed.content, "CN"):
+			ip = true
+		}
+	}
+	return site && ip
+}
+
+// enforceChinaRoutingTail guarantees the first MATCH rule of the
+// assembled list resolves to a proxy choice. A MATCH whose target
+// already carries a proxy choice is kept verbatim (the subscription's
+// own tail is authoritative when it satisfies the invariant); a MATCH
+// pointing at a builtin action (DIRECT/REJECT/PASS/...), at a group
+// that carries no proxy choice, or no MATCH at all is rewritten /
+// appended with the first proxy-carrying group in configuration
+// order — the same "first eligible group is the main selector"
+// convention the chain patch uses (T85). When no group carries a
+// proxy choice there is nothing lawful to point at and the list is
+// left untouched. Rules after the first MATCH are unreachable and
+// irrelevant to the guarantee.
+func enforceChinaRoutingTail(rules []string, raw *config.RawConfig, disabled map[string]bool) []string {
+	idx := newProxyChoiceIndex(raw, raw.ProxyGroup)
+	target := ""
+	for _, group := range raw.ProxyGroup {
+		name, ok := groupName(group)
+		if ok && !disabled[name] && idx.carriesProxyChoice(group) {
+			target = name
+			break
+		}
+	}
+	if target == "" {
+		return rules
+	}
+	for i, rule := range rules {
+		parsed := parseRule(rule)
+		if parsed.action != "MATCH" {
+			continue
+		}
+		if matchTargetCarriesProxy(parsed.target, idx, disabled) {
+			return rules
+		}
+		rules[i] = "MATCH," + target
+		return rules
+	}
+	return append(rules, "MATCH,"+target)
+}
+
+// matchTargetCarriesProxy classifies a MATCH target. Builtin actions
+// never qualify; a group qualifies when it carries a proxy choice
+// (T85 predicate — a selector whose members are all direct is a
+// direct route wearing a group's name); a leaf proxy qualifies when
+// its type is not direct-capable. The kernel-synthesized GLOBAL
+// (absent from the raw group list) qualifies when any real group
+// carries a proxy choice. Unknown names follow the chain predicate's
+// standing assumption: they resolve against proxy providers at
+// runtime and count as proxy evidence.
+func matchTargetCarriesProxy(target string, idx *proxyChoiceIndex, disabled map[string]bool) bool {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return false
+	}
+	for _, name := range protectedProxyNames {
+		if target == name {
+			return false
+		}
+	}
+	if disabled[target] {
+		return false
+	}
+	if group, isGroup := idx.groups[target]; isGroup {
+		return idx.carriesProxyChoice(group)
+	}
+	if typ, isProxy := idx.proxyTypes[target]; isProxy {
+		return typ != "direct" && typ != "pass" && typ != "compatible"
+	}
+	if target == "GLOBAL" {
+		for _, group := range idx.groups {
+			if idx.carriesProxyChoice(group) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }
 
 func selectGlobalTarget(groups []map[string]any, rules []string) string {

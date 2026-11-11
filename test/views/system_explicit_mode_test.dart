@@ -44,9 +44,22 @@ void main() {
     'global mode asks before enabling a route and cancellation preserves state',
     (tester) async {
       await tester.runAsync(() async {
+        // T30 class: the section's dialog is material_ui's showDialog,
+        // so the pump must use the app's exact delegate list (the
+        // fork's localizations only) — Flutter's MaterialApp with
+        // Flutter's delegates would hide the crash the app hits.
         await tester.pumpWidget(
           ProviderScope(
-            child: MaterialApp(home: Scaffold(body: generateListView([const SystemExplicitSection()]))),
+            child: mui.MaterialApp(
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                ...mui.GlobalMaterialLocalizations.delegates,
+              ],
+              locale: const Locale('en'),
+              home: mui.Scaffold(
+                body: generateListView([const SystemExplicitSection()]),
+              ),
+            ),
           ),
         );
         await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -87,6 +100,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            // T54 defect 1: changeMode resolves its dialog context
+            // from the navigator key, as the production app does
+            // (application.dart) — without it the confirmation dialog
+            // cannot be shown and the switch is refused.
+            navigatorKey: globalState.navigatorKey,
             localizationsDelegates: mui.GlobalMaterialLocalizations.delegates,
             home: Consumer(
               builder: (context, ref, child) {
@@ -106,8 +124,10 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('Change routing mode?'), findsOneWidget);
+      // T54 wording: leaving rule mode pauses only the direct
+      // exceptions; interception options keep working.
       expect(
-        find.textContaining('Direct mode bypasses the proxy'),
+        find.textContaining('pauses the system explicit direct exceptions'),
         findsOneWidget,
       );
       await tester.tap(find.text('Cancel'));
@@ -176,16 +196,75 @@ void main() {
     expect(find.text(desc), findsNothing);
   });
   test('routing preferences pause and restore without mutation', () {
+    // T54 semantics: outside rule mode the direct exceptions pause,
+    // but the interception class (here WebRTC blocking) keeps
+    // applying, terminated by a MATCH to the selected mode's target.
     final opts = SystemExplicitOptions(
       chinaDirect: true,
       blockCommonWebRtc: true,
     );
     final rule = opts.buildRuntimeRulesForMode(Mode.rule);
-    expect(rule, isNotEmpty);
-    expect(opts.buildRuntimeRulesForMode(Mode.global), isEmpty);
-    expect(opts.buildRuntimeRulesForMode(Mode.direct), isEmpty);
+    expect(rule, contains('GEOIP,CN,DIRECT,no-resolve'));
+    expect(rule, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    final global = opts.buildRuntimeRulesForMode(Mode.global);
+    expect(global, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    expect(global.last, 'MATCH,GLOBAL');
+    expect(global, isNot(contains('GEOIP,CN,DIRECT,no-resolve')));
+    final direct = opts.buildRuntimeRulesForMode(Mode.direct);
+    expect(direct, contains('DOMAIN-KEYWORD,stun,REJECT'));
+    expect(direct.last, 'MATCH,DIRECT');
+    expect(direct, isNot(contains('GEOIP,CN,DIRECT,no-resolve')));
+    // Building runtime rules never mutates the stored choices, and
+    // returning to rule mode restores the full set.
+    expect(opts.chinaDirect, isTrue);
+    expect(opts.blockCommonWebRtc, isTrue);
     expect(opts.buildRuntimeRulesForMode(Mode.rule), rule);
     final roundtrip = SystemExplicitOptions.fromJson(opts.toJson());
     expect(roundtrip.toJson(), opts.toJson());
   });
+  testWidgets(
+    'T70: display layer is gone, functional switches remain',
+    (tester) async {
+      // Global mode with a direct exception and an interception
+      // option on: exactly the state where the two standing
+      // effectiveness notes used to render above the switches.
+      SystemExplicitStore.instance.value = SystemExplicitOptions(
+        chinaDirect: true,
+        blockCommonWebRtc: true,
+      );
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: mui.MaterialApp(
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                ...mui.GlobalMaterialLocalizations.delegates,
+              ],
+              locale: const Locale('en'),
+              home: mui.Scaffold(
+                body: generateListView([const SystemExplicitSection()]),
+              ),
+            ),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump(const Duration(milliseconds: 100));
+      // Removed display layer: recommended-combination card and both
+      // standing effectiveness notes.
+      expect(find.text(appLocalizations.chinaAdaptRecommendTitle), findsNothing);
+      expect(
+        find.text(appLocalizations.systemExplicitExceptionsInactive),
+        findsNothing,
+      );
+      expect(
+        find.text(appLocalizations.systemExplicitInterceptionActive),
+        findsNothing,
+      );
+      // Functional rows stay: the auto-DNS pointer row and the first
+      // switch of the group render as before.
+      expect(find.text(appLocalizations.autoSetSystemDns), findsOneWidget);
+      expect(find.text(appLocalizations.systemExplicitPrivacy), findsOneWidget);
+    },
+  );
 }

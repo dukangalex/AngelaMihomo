@@ -169,4 +169,32 @@ void main() {
       );
     });
   });
+
+  // T73: the import flow now consumes the raw payload and routes node
+  // links to the content import, so the picker must hand them back
+  // instead of rejecting everything that is not an http(s) URL.
+  group('导入二维码图片（原始内容入口）', () {
+    test('节点链接二维码原样返回，不再被判无效', () async {
+      const link =
+          'vless://11111111-2222-3333-4444-555555555555@example.com:443?encryption=none&security=tls#node1';
+      final path = writeTempImage(
+        encodeQrImage(link),
+        'bettbox_qr_node_link.png',
+      );
+      expect(await picker.decodeProfileContentFromQrImage(path), link);
+    });
+
+    test('图片里没有二维码时仍提示「请上传有效的二维码」', () async {
+      final blank = img.Image(width: 300, height: 300, numChannels: 4);
+      img.fill(blank, color: img.ColorRgba8(255, 255, 255, 255));
+      final path = writeTempImage(
+        img.encodePng(blank),
+        'bettbox_qr_blank_raw.png',
+      );
+      await expectLater(
+        picker.decodeProfileContentFromQrImage(path),
+        throwsA(predicate<String>((e) => e.contains('二维码'), '二维码提示文案')),
+      );
+    });
+  });
 }

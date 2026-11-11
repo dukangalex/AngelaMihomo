@@ -51,7 +51,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
       try {
         await globalState.appController.updateProfile(profile);
       } on Object catch (e) {
-        messages.add('${profile.label ?? profile.id}: ${e.formatError}\n');
+        messages.add('${profile.label ?? profile.id}: ${e.formatProfileImportError}\n');
         globalState.appController.setProfile(
           profile.copyWith(isUpdating: false),
         );
@@ -276,7 +276,7 @@ class ProfileItem extends StatelessWidget {
       globalState.showMessage(
         title: appLocalizations.tip,
         message: TextSpan(
-          text: '${profile.label ?? profile.id}: ${e.formatError}',
+          text: '${profile.label ?? profile.id}: ${e.formatProfileImportError}',
         ),
         cancelable: false,
       );
@@ -331,7 +331,14 @@ class ProfileItem extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             subtitleText,
-            style: context.textTheme.labelMedium?.toLight,
+            style: context.textTheme.labelMedium?.toLight.copyWith(
+              // T57: expiry within a week (or passed) warns in place.
+              color:
+                  profile.type != ProfileType.file &&
+                      (profile.subscriptionInfo?.expireWarning ?? false)
+                  ? context.colorScheme.error
+                  : null,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -388,7 +395,11 @@ class ProfileItem extends StatelessWidget {
                                 .clamp(0.0, 1.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: context.colorScheme.primary,
+                            // T57: under a tenth of traffic left —
+                            // the bar itself turns warning-colored.
+                            color: subscriptionInfo.trafficWarning
+                                ? context.colorScheme.error
+                                : context.colorScheme.primary,
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
@@ -413,7 +424,11 @@ class ProfileItem extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           bottomText,
-          style: context.textTheme.labelMedium?.toLight,
+          style: context.textTheme.labelMedium?.toLight.copyWith(
+            color: (subscriptionInfo?.trafficWarning ?? false)
+                ? context.colorScheme.error
+                : null,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

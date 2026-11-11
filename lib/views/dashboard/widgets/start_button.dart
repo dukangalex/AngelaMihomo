@@ -220,6 +220,8 @@ class _StartButtonState extends ConsumerState<StartButton> {
                 children: [
                   Expanded(
                     child: Center(
+                      // T64: the keycap disc was retired with the
+                      // keycap style; the start key is the glass disc.
                       child: AnimatedContainer(
                         duration: midDuration,
                         decoration: BoxDecoration(
@@ -306,6 +308,9 @@ class _StartButtonState extends ConsumerState<StartButton> {
     return SizedBox(
       height: getWidgetHeight(context, 1),
       child: CommonCard(
+        // T64 round 6: the power/runtime card is the home page's
+        // current-status + main-action surface — primary tier.
+        glassTier: GlassTier.primary,
         info: Info(
           label: isSmartStopped
               ? appLocalizations.coreSuspended

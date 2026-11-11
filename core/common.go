@@ -191,10 +191,12 @@ func updateConfig(params *UpdateParams) {
 	if params.MixedPort != nil {
 		general.MixedPort = *params.MixedPort
 	}
-	if params.Sniffing != nil {
-		general.Sniffing = *params.Sniffing
-		tunnel.SetSniffing(general.Sniffing)
-	}
+	// T81 batch 3 (P-5): the half-channel UpdateParams.Sniffing field
+	// was removed. No setup path ever wrote the general sniffing flag
+	// (sniffing is governed by the sniffer section, which is setup-only)
+	// and the Dart side never sent it; keeping a field with no writer
+	// on the setup side made the hot channel pretend to a projection
+	// that does not exist.
 	if params.FindProcessMode != nil {
 		general.FindProcessMode = *params.FindProcessMode
 		tunnel.SetFindProcessMode(general.FindProcessMode)
@@ -505,7 +507,26 @@ func prepareSetup(params *SetupParams) (*preparedSetup, error) {
 	}
 
 	if params.OverrideTestUrl && rawCfg.ProxyGroup != nil {
+		// T81 C-2: a group whose url the user set explicitly in the
+		// group editor (group-overrides) keeps that url. The global
+		// test-url rewrite used to run after applyGroupOverrides and
+		// silently stomped the editor's value under the default-on
+		// "override test url" switch, so the edited url never took
+		// effect. Groups without an explicit override follow the App
+		// test address exactly as before.
+		var explicitURL map[string]bool
+		if params.Patch != nil && len(params.Patch.GroupOverrides) > 0 {
+			explicitURL = make(map[string]bool, len(params.Patch.GroupOverrides))
+			for name, patch := range params.Patch.GroupOverrides {
+				if _, ok := patch["url"]; ok {
+					explicitURL[name] = true
+				}
+			}
+		}
 		for _, group := range rawCfg.ProxyGroup {
+			if name, _ := group["name"].(string); explicitURL[name] {
+				continue
+			}
 			group["url"] = params.TestURL
 		}
 	}
