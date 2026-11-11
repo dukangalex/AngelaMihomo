@@ -34,6 +34,12 @@ func sendMessage(message Message) {
 	result.send()
 }
 
+// delayDataPlaneReady: the non-cgo server build has no app-managed TUN
+// gate, so URLTest results are always reportable (see lib_other.go).
+func delayDataPlaneReady() bool {
+	return true
+}
+
 func writeFrame(w io.Writer, data []byte) error {
 	frame := make([]byte, 4+len(data))
 	binary.LittleEndian.PutUint32(frame, uint32(len(data)))
