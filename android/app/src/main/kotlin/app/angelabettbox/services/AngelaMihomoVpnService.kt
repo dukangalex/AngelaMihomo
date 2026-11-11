@@ -15,6 +15,7 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.RunState
 import app.angelabettbox.extensions.getIpv4RouteAddress
 import app.angelabettbox.extensions.getIpv6RouteAddress
 import app.angelabettbox.extensions.toCIDR
@@ -25,12 +26,21 @@ import app.angelabettbox.R
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     companion object {
         private const val TAG = "AngelaMihomoVpnService"
+
+        // T88: grace period before the null-intent liveness check
+        // re-triggers a start, so a still-booting quick sequence is
+        // not mistaken for a dead core.
+        private const val RECOVERY_CHECK_DELAY_MS = 3000L
     }
+
+    private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override val destructionComplete = CompletableDeferred<Unit>()
 
@@ -201,8 +211,14 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
             // service instance survived, or the engine's quick start
             // had failed and stopped. Verify liveness and re-trigger
             // the start path when the core should be running but is
-            // not.
-            ensureCoreAliveAfterSystemRestart()
+            // not. Delayed slightly: a fresh engine may still be
+            // booting the quick sequence, and the engine's run state
+            // only converges to START once the Dart side confirms the
+            // VPN started — checking immediately would race it.
+            mainScope.launch {
+                delay(RECOVERY_CHECK_DELAY_MS)
+                ensureCoreAliveAfterSystemRestart()
+            }
         }
         return START_STICKY
     }
@@ -235,10 +251,17 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
             // engine present it defaults to the "quick" entry, which
             // runs the background start sequence (with T88 retries).
             GlobalState.initServiceEngine()
+        } else if (GlobalState.currentRunState == RunState.PENDING) {
+            // A start is already converging (its run state flips to
+            // START only when the Dart side confirms the VPN started).
+            // Leave it alone: the global PENDING timeout resets a
+            // stuck start to STOP, and the engine==null branch of
+            // GlobalState.handleStart would silently drop a duplicate
+            // "start" method call, wedging PENDING until that timeout.
         } else {
-            // Engine alive but its quick start failed and stopped:
-            // go through the normal start path (debounced toggle
-            // slot bypassed — this is a recovery, not a user toggle).
+            // Engine alive but not starting: go through the normal
+            // start path (debounced toggle slot bypassed — this is a
+            // recovery, not a user toggle).
             GlobalState.handleStart(skipDebounce = true)
         }
     }
@@ -399,6 +422,14 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     }
 
     override fun onRevoke() {
+        // The system revoked the VPN session (another VPN app took
+        // over, the always-on slot was reassigned, or the user
+        // confirmed the system VPN dialog). The current session must
+        // stop, but a revoke is not a user stop request: never clear
+        // the persisted is_vpn_running flag here. That flag is only
+        // cleared by a confirmed user stop (Dart handleStop), so the
+        // next system relaunch of this service can still recover the
+        // core on its own via the null-intent liveness check.
         runCatching {
             VpnPlugin.handleStop()
             getSystemService(android.app.NotificationManager::class.java)
