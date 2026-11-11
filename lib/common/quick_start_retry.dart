@@ -60,8 +60,10 @@ Future<bool> runQuickStartWithRetry(
 }
 
 /// Persistent record of an exhausted quick start sequence. Stored as
-/// JSON in the app-private data dir (see AppPath.quickStartFailurePath)
-/// and consumed once by the UI isolate on the next launch.
+/// JSON in the app-private data dir (see AppPath.quickStartFailurePath).
+/// The UI isolate surfaces it in the log on later launches but never
+/// deletes it; it is cleared by the service isolate after the next
+/// successful quick start, and attached to log exports meanwhile.
 class QuickStartFailureMarker {
   const QuickStartFailureMarker({
     required this.time,

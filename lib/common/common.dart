@@ -37,6 +37,7 @@ export 'preferences.dart';
 export 'print.dart';
 export 'process_icon.dart';
 export 'quick_start_retry.dart';
+export 'forensic_logs.dart';
 export 'protocol.dart';
 export 'proxy.dart';
 export 'qr_reader.dart';

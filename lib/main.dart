@@ -283,6 +283,19 @@ Future<void> _service(List<String> flags) async {
           commonPrint.error('Failed to persist quick start marker: $e');
         }
         await vpn?.stop();
+      } else {
+        // T88: a successful quick start is the only event that retires
+        // a failure marker left by an earlier exhausted run (the UI
+        // isolate used to delete it on read, which destroyed the
+        // evidence before the user could export it). Best-effort.
+        try {
+          final markerFile = File(await appPath.quickStartFailurePath);
+          if (await markerFile.exists()) {
+            await markerFile.delete();
+          }
+        } catch (e) {
+          commonPrint.warn('Failed to clear quick start marker: $e');
+        }
       }
     });
   }

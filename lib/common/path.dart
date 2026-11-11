@@ -212,11 +212,23 @@ class AppPath {
   }
 
   // T88: persistent marker left by the service isolate when the
-  // quick/boot start sequence exhausts its retries; the UI isolate
-  // reads and clears it on the next launch (see quick_start_retry.dart).
+  // quick/boot start sequence exhausts its retries. The UI isolate
+  // surfaces it in the log on later launches but no longer deletes
+  // it; the service isolate clears it after the next successful
+  // quick start, so it survives until the user has had a chance to
+  // export it (it is attached to log exports, see exportLogs).
   Future<String> get quickStartFailurePath async {
     final directory = await dataDir.future;
     return join(directory.path, 'quick_start_failure.json');
+  }
+
+  // T88: append-only OEM memory-callback trail written by the Kotlin
+  // FairMemoryHelper into filesDir. On Android the application
+  // support directory (dataDir) is filesDir, so this resolves to the
+  // exact file the native side writes.
+  Future<String> get fairMemoryEventsPath async {
+    final directory = await dataDir.future;
+    return join(directory.path, 'fair_memory_events.log');
   }
 
   Future<String> get controlSocketPath async {
