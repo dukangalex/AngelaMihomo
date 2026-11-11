@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // T81 batch 3 (P-2): the OverrideSnifferItem gate switch is gone —
 // the sniffer section is unconditionally App-owned.
+// T89 D-01: no sniffer field is in the hot-update projection or the
+// needSetup watch, so every item carries the same coreRestartHint
+// annotation the general page uses for its non-projected fields (P-5).
 
 class SnifferStatusItem extends ConsumerWidget {
   const SnifferStatusItem({super.key});
@@ -18,7 +21,10 @@ class SnifferStatusItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.sniffer.enable),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.snifferStatus),
+      title: InfoTitle(
+        text: appLocalizations.snifferStatus,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(appLocalizations.snifferStatusDesc),
       delegate: SwitchDelegate(
         value: enable,
@@ -41,7 +47,10 @@ class ForceDnsMappingItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.sniffer.forceDnsMapping),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.forceDnsMapping),
+      title: InfoTitle(
+        text: appLocalizations.forceDnsMapping,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: forceDnsMapping,
         onChanged: (bool value) async {
@@ -65,7 +74,10 @@ class ParsePureIpItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.sniffer.parsePureIp),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.parsePureIp),
+      title: InfoTitle(
+        text: appLocalizations.parsePureIp,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: parsePureIp,
         onChanged: (bool value) async {
@@ -89,7 +101,10 @@ class OverrideDestinationItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.sniffer.overrideDest),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.overrideDestination),
+      title: InfoTitle(
+        text: appLocalizations.overrideDestination,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: overrideDest,
         onChanged: (bool value) async {
@@ -115,7 +130,10 @@ class HttpPortSnifferItem extends ConsumerWidget {
     final ports = httpConfig?.ports.join(', ') ?? '';
 
     return ListItem(
-      title: Text(appLocalizations.httpPortSniffer),
+      title: InfoTitle(
+        text: appLocalizations.httpPortSniffer,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(ports.isEmpty ? '80, 8080-8880' : ports),
       onTap: () => _showHttpDialog(context, ref, httpConfig),
     );
@@ -167,7 +185,10 @@ class TlsPortSnifferItem extends ConsumerWidget {
     final ports = tlsConfig?.ports.join(', ') ?? '';
 
     return ListItem(
-      title: Text(appLocalizations.tlsPortSniffer),
+      title: InfoTitle(
+        text: appLocalizations.tlsPortSniffer,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(ports.isEmpty ? '443, 8443' : ports),
       onTap: () => _showTlsDialog(context, ref, tlsConfig),
     );
@@ -219,7 +240,10 @@ class QuicPortSnifferItem extends ConsumerWidget {
     final ports = quicConfig?.ports.join(', ') ?? '';
 
     return ListItem(
-      title: Text(appLocalizations.quicPortSniffer),
+      title: InfoTitle(
+        text: appLocalizations.quicPortSniffer,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(ports.isEmpty ? '443, 8443' : ports),
       onTap: () => _showQuicDialog(context, ref, quicConfig),
     );
@@ -354,7 +378,9 @@ class PortWhitelistWidget extends StatelessWidget {
     return ListItem.next(
       title: InfoTitle(
         text: appLocalizations.portWhitelist,
-        info: appLocalizations.portWhitelistInfo,
+        info:
+            '${appLocalizations.portWhitelistInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       delegate: NextDelegate(
         blur: false,
@@ -372,8 +398,7 @@ class PortWhitelistWidget extends StatelessWidget {
                 ref
                     .read(patchClashConfigProvider.notifier)
                     .updateState(
-                      (state) =>
-                          state.copyWith.sniffer(port: List.from(items)),
+                      (state) => state.copyWith.sniffer(port: List.from(items)),
                     );
               },
             );
@@ -390,7 +415,10 @@ class ForceDomainWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return ListItem.next(
-      title: Text(appLocalizations.forceDomain),
+      title: InfoTitle(
+        text: appLocalizations.forceDomain,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.forceDomain,
@@ -427,7 +455,10 @@ class SkipDomainWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return ListItem.next(
-      title: Text(appLocalizations.skipDomain),
+      title: InfoTitle(
+        text: appLocalizations.skipDomain,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipDomain,
@@ -464,7 +495,10 @@ class SkipSrcAddressWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return ListItem.next(
-      title: Text(appLocalizations.skipSrcAddress),
+      title: InfoTitle(
+        text: appLocalizations.skipSrcAddress,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipSrcAddress,
@@ -502,7 +536,10 @@ class SkipDstAddressWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return ListItem.next(
-      title: Text(appLocalizations.skipDstAddress),
+      title: InfoTitle(
+        text: appLocalizations.skipDstAddress,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipDstAddress,

@@ -71,7 +71,7 @@
 ## 7. 热更新投影与生效时机（P-5）
 
 - 热更新参数（UpdateParams）与 setup 参数同源：mode 走同一派生（批 1）、interface-name 与 setup 同口径下发（批 3 补齐）。
-- 不在热更新投影内的字段，改动在下一次 setup（重启核心/重载配置）时生效，App 已在对应设置项标注「重启核心后生效」：UA、keep-alive-interval、keep-alive-idle、bind-address、lan-allowed-ips、lan-disallowed-ips、store-fake-ip、port/socks-port/redir-port/tproxy-port（mixed-port 在投影内，热生效）。
+- 不在热更新投影内的字段，改动在下一次 setup（重启核心/重载配置）时生效，App 已在对应设置项标注「重启核心后生效」：UA、keep-alive-interval、keep-alive-idle、bind-address、lan-allowed-ips、lan-disallowed-ips、store-fake-ip、port/socks-port/redir-port/tproxy-port（mixed-port 在投影内，热生效）；ntp、sniffer、experimental 三段全部字段，以及 tunnels、hosts 的编辑面（T89 D-01 补齐，同款标注）。
 - 部分页面保存时主动触发全量重 setup（如用户认证、GEO 自动更新设置），其字段保存即生效，不属上列。
 
 ## 8. 四病收敛状态（T81 审计 19 条）
@@ -80,7 +80,7 @@
 | --- | --- | --- |
 | 冲突 C | 4 | 全部收敛：C-1 mode 同源、C-2 组 url 显式优先、C-3 exclude-filter 合并语义、C-4 链式下限回显（批 1–2）。 |
 | 冗余 R | 5 | 全部收敛：四门控旗删除（R-2 批 3）、store-selected 关闭（R-1a 批 1）、双写字段清除、默认值唯一出处（R-5 批 3）。 |
-| 优先级不明 P | 5 | 全部收敛：本文件 §3 逐对定序；P-5 热更新同源与生效时机标注（批 3）。 |
+| 优先级不明 P | 5 | 全部收敛：本文件 §3 逐对定序；P-5 热更新同源（批 3），生效时机标注收敛范围＝general 页标量（批 3）＋ntp、sniffer、experimental、tunnels、hosts 已补同款标注（T89 D-01）。 |
 | 影子路径 S | 5 | 全部收敛或登记：geosite 清零拆除（S-1 批 1）、孤儿组提示（S-5 批 2）、provider 路径与平台变换入 §6 登记表（S-2/S-4）。 |
 
 ## 9. 验证

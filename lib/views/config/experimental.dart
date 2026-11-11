@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // T81 batch 3 (P-2): the OverrideExperimentalItem gate switch is
 // gone — the experimental section is unconditionally App-owned.
+// T89 D-01: no experimental field is in the hot-update projection or
+// the needSetup watch, so every item carries the same coreRestartHint
+// annotation the general page uses for its non-projected fields (P-5).
 
 class QuicGoDisableGsoItem extends ConsumerWidget {
   const QuicGoDisableGsoItem({super.key});
@@ -18,7 +21,10 @@ class QuicGoDisableGsoItem extends ConsumerWidget {
       ),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.quicGoDisableGso),
+      title: InfoTitle(
+        text: appLocalizations.quicGoDisableGso,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {
@@ -48,7 +54,10 @@ class QuicGoDisableEcnItem extends ConsumerWidget {
       ),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.quicGoDisableEcn),
+      title: InfoTitle(
+        text: appLocalizations.quicGoDisableEcn,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {
@@ -78,7 +87,10 @@ class DialerIp4pConvertItem extends ConsumerWidget {
       ),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.dialerIp4pConvert),
+      title: InfoTitle(
+        text: appLocalizations.dialerIp4pConvert,
+        info: appLocalizations.coreRestartHint,
+      ),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {

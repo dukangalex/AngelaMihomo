@@ -108,7 +108,10 @@ state back.
   settings with "Takes effect after the core restarts": UA,
   keep-alive-interval, keep-alive-idle, bind-address, lan-allowed-ips,
   lan-disallowed-ips, store-fake-ip, and port / socks-port / redir-port /
-  tproxy-port (mixed-port is in the projection and applies live).
+  tproxy-port (mixed-port is in the projection and applies live); plus
+  every field of the ntp, sniffer, and experimental sections and the
+  tunnels and hosts editing surfaces (annotated in T89 D-01 with the
+  same marker).
 - Some pages trigger a full re-setup on save (user authentication, GEO
   auto-update settings); their fields apply on save and are not in the
   list above.
@@ -119,7 +122,7 @@ state back.
 | --- | --- | --- |
 | Conflicts (C) | 4 | All converged: C-1 same-source mode, C-2 explicit group url wins, C-3 exclude-filter merge semantics, C-4 chain floor echo (batches 1–2). |
 | Redundancies (R) | 5 | All converged: four gate flags removed (R-2, batch 3), store-selected off (R-1a, batch 1), dual-write fields cleared, single source of defaults (R-5, batch 3). |
-| Unclear precedence (P) | 5 | All converged: §3 fixes every pair; P-5 same-source hot update plus effective-timing annotations (batch 3). |
+| Unclear precedence (P) | 5 | All converged: §3 fixes every pair; P-5 same-source hot update (batch 3), with effective-timing annotations converged over the general page scalars (batch 3) plus ntp, sniffer, experimental, tunnels, and hosts annotated with the same marker (T89 D-01). |
 | Shadow paths (S) | 5 | All converged or registered: geosite wipe-out removed (S-1, batch 1), orphan-group hint (S-5, batch 2), provider-path and platform transforms registered in §6 (S-2/S-4). |
 
 ## 9. Verification

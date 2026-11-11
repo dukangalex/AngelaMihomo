@@ -168,6 +168,16 @@ class _TunnelDialogState extends State<_TunnelDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // T89 D-01: tunnels are not in the hot-update projection;
+          // same in-dialog note as the general page ports dialog (P-5).
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              appLocalizations.coreRestartHint,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _networkController,
             decoration: InputDecoration(

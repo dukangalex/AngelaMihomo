@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // T81 batch 3 (P-2): the OverrideNtpItem gate switch is gone — the
 // NTP section is unconditionally App-owned.
+// T89 D-01: no NTP field is in the hot-update projection or the
+// needSetup watch, so every item carries the same coreRestartHint
+// annotation the general page uses for its non-projected fields (P-5).
 
 class NtpStatusItem extends ConsumerWidget {
   const NtpStatusItem({super.key});
@@ -18,7 +21,10 @@ class NtpStatusItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.ntp.enable),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.ntpStatus),
+      title: InfoTitle(
+        text: appLocalizations.ntpStatus,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(appLocalizations.ntpStatusDesc),
       delegate: SwitchDelegate(
         value: enable,
@@ -46,7 +52,10 @@ class WriteToSystemItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.ntp.writeToSystem),
     );
     return ListItem.switchItem(
-      title: Text(appLocalizations.writeToSystem),
+      title: InfoTitle(
+        text: appLocalizations.writeToSystem,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(appLocalizations.writeToSystemDesc),
       delegate: SwitchDelegate(
         value: writeToSystem,
@@ -79,7 +88,10 @@ class NtpServerItem extends ConsumerWidget {
     final isPresetServer = presetNtpServers.contains(server);
 
     return ListItem<String>.options(
-      title: Text(appLocalizations.ntpServer),
+      title: InfoTitle(
+        text: appLocalizations.ntpServer,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(server),
       delegate: OptionsDelegate<String>(
         title: appLocalizations.ntpServer,
@@ -140,7 +152,10 @@ class NtpPortItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.ntp.port),
     );
     return ListItem.input(
-      title: Text(appLocalizations.ntpPort),
+      title: InfoTitle(
+        text: appLocalizations.ntpPort,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(port.toString()),
       delegate: InputDelegate(
         title: appLocalizations.ntpPort,
@@ -181,7 +196,10 @@ class NtpIntervalItem extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.ntp.interval),
     );
     return ListItem.input(
-      title: Text(appLocalizations.ntpInterval),
+      title: InfoTitle(
+        text: appLocalizations.ntpInterval,
+        info: appLocalizations.coreRestartHint,
+      ),
       subtitle: Text(interval.toString()),
       delegate: InputDelegate(
         title: appLocalizations.ntpInterval,
@@ -262,7 +280,9 @@ class _NtpDialerProxyItemState extends ConsumerState<NtpDialerProxyItem> {
     return ListItem<String>.options(
       title: InfoTitle(
         text: appLocalizations.ntpDialerProxy,
-        info: appLocalizations.ntpDialerProxyInfo,
+        info:
+            '${appLocalizations.ntpDialerProxyInfo}\n'
+            '${appLocalizations.coreRestartHint}',
       ),
       subtitle: Text(current.isEmpty ? appLocalizations.notSet : current),
       delegate: OptionsDelegate<String>(
