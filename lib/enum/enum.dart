@@ -501,7 +501,6 @@ enum PageLabel {
   script,
   toolbox,
   connections,
-  patrol,
 }
 
 extension PageLabelExtension on PageLabel {
@@ -525,8 +524,6 @@ extension PageLabelExtension on PageLabel {
         return appLocalizations.toolbox;
       case PageLabel.connections:
         return appLocalizations.navConnections;
-      case PageLabel.patrol:
-        return appLocalizations.aiPatrol;
     }
   }
 }

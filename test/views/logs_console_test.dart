@@ -1,5 +1,4 @@
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/controller.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/models/models.dart';
@@ -172,65 +171,13 @@ void main() {
     expect(_rows, findsNWidgets(2));
   });
 
-  testWidgets('展开行是 AI 巡检入口：跳巡检页且不打开任何外链', (tester) async {
-    final urls = <String>[];
-    const channel = MethodChannel('plugins.flutter.io/url_launcher');
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
-      call,
-    ) async {
-      urls.add('${(call.arguments as Map)['url']}');
-      return true;
-    });
-    addTearDown(
-      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        channel,
-        null,
-      ),
-    );
-    // Same harness as _pump, plus a captured WidgetRef so a real
-    // AppController can route the patrol button into observable state.
-    tester.view.physicalSize = const Size(360, 720);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final container = ProviderContainer(
-      overrides: [isMobileViewProvider.overrideWith((ref) => true)],
-    );
-    addTearDown(container.dispose);
-    late WidgetRef capturedRef;
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          home: Scaffold(
-            body: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return LogsConsole(onAdjustLevel: () {});
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-    globalState.appController = AppController(
-      tester.element(find.byType(LogsConsole)),
-      capturedRef,
-    );
-    container.read(logsProvider.notifier).addLogs([
-      _log('Geodata Loader mode: memconservative'),
-    ]);
-    await tester.pump();
-    await tester.pump();
+  testWidgets('展开行不再有 AI 巡检入口（巡检已拆除）', (tester) async {
+    await _pump(tester, logs: [_log('Geodata Loader mode: memconservative')]);
 
     await tester.tap(_row('Geodata'));
     await tester.pump();
     expect(find.text('搜索'), findsNothing);
-    expect(find.text('AI 巡检'), findsOneWidget);
-
-    await tester.tap(find.text('AI 巡检'));
-    await tester.pump();
-    expect(container.read(currentPageLabelProvider), PageLabel.patrol);
-    expect(urls, isEmpty);
+    expect(find.text('AI 巡检'), findsNothing);
   });
 
   testWidgets('展开时新日志不推动列表，并提示新日志数量', (tester) async {
