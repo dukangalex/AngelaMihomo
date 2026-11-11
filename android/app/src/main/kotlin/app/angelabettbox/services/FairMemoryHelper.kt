@@ -18,7 +18,7 @@ import java.util.Locale
 
 class FairMemoryHelper(private val tag: String) {
 
-    private companion object {
+    companion object {
         // T88: forensic trail for OEM (Honor ITGSA) memory callbacks.
         // The KILL pre-notice used to be a no-op, so a background kill
         // left no evidence behind. Append one line per callback to an
