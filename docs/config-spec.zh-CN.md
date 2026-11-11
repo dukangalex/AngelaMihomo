@@ -73,6 +73,7 @@
 - 热更新参数（UpdateParams）与 setup 参数同源：mode 走同一派生（批 1）、interface-name 与 setup 同口径下发（批 3 补齐）。
 - 不在热更新投影内的字段，改动在下一次 setup（重启核心/重载配置）时生效，App 已在对应设置项标注「重启核心后生效」：UA、keep-alive-interval、keep-alive-idle、bind-address、lan-allowed-ips、lan-disallowed-ips、store-fake-ip、port/socks-port/redir-port/tproxy-port（mixed-port 在投影内，热生效）；ntp、sniffer、experimental 三段全部字段，以及 tunnels、hosts 的编辑面（T89 D-01 补齐，同款标注）。
 - 部分页面保存时主动触发全量重 setup（如用户认证、GEO 自动更新设置），其字段保存即生效，不属上列。
+- 前置依赖在设置项的隐式说明中呈现（T89 D-02/D-03/D-04）：bind-address 与 lan-allowed/disallowed-ips 仅在 allow-lan 开启时影响局域网可达面（bind-address 为仅本机时名单放行也不连入）；store-fake-ip 仅在 DNS 模式为 FakeIP 时有意义；direct-nameserver-follow-policy 仅在直连域名服务器非空时有作用对象（内核仅在名单非空时构建直连解析器），该条目在名单为空时不显示。
 
 ## 8. 四病收敛状态（T81 审计 19 条）
 

@@ -425,7 +425,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bind": MessageLookupByLibrary.simpleMessage("Bind"),
     "bindAddress": MessageLookupByLibrary.simpleMessage("Bind address"),
     "bindAddressInfo": MessageLookupByLibrary.simpleMessage(
-      "Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.",
+      "Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in. It affects LAN reachability only while LAN connections are enabled; with LAN connections off, the ports listen on this device only.",
     ),
     "bindAllInterfaces": MessageLookupByLibrary.simpleMessage("All interfaces"),
     "bindThisDeviceOnly": MessageLookupByLibrary.simpleMessage(
@@ -732,6 +732,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "Direct DNS Follows Policy",
+    ),
+    "directNameserverFollowPolicyInfo": MessageLookupByLibrary.simpleMessage(
+      "When on, direct resolution applies the same routing policy as the main resolver. It only has something to act on once direct nameservers are set, so this item is hidden while that list is empty.",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("Disable QUIC"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -1351,11 +1354,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "key": MessageLookupByLibrary.simpleMessage("Key"),
     "lanAllowedIps": MessageLookupByLibrary.simpleMessage("LAN allowed IPs"),
     "lanAllowedIpsInfo": MessageLookupByLibrary.simpleMessage(
-      "Only IPs in this list may connect in and use the proxy over the LAN.",
+      "Only IPs in this list may connect in and use the proxy over the LAN. Applies only while LAN connections are enabled; if the bind address is this device only, listed devices still cannot connect in.",
     ),
     "lanDisallowedIps": MessageLookupByLibrary.simpleMessage("LAN blocked IPs"),
     "lanDisallowedIpsInfo": MessageLookupByLibrary.simpleMessage(
-      "IPs in this list are refused. The blocked list wins over the allowed list.",
+      "IPs in this list are refused. The blocked list wins over the allowed list. Applies only while LAN connections are enabled; if the bind address is this device only, LAN devices cannot connect in anyway.",
     ),
     "lanSharing": MessageLookupByLibrary.simpleMessage("LAN Sharing"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
@@ -2350,7 +2353,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Keep Fake-IP mappings",
     ),
     "storeFakeIpInfo": MessageLookupByLibrary.simpleMessage(
-      "Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.",
+      "Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again. Only meaningful when the DNS mode is Fake-IP.",
     ),
     "storeFix": MessageLookupByLibrary.simpleMessage("Store Fix"),
     "storeFixDesc": MessageLookupByLibrary.simpleMessage(

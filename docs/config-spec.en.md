@@ -115,6 +115,14 @@ state back.
 - Some pages trigger a full re-setup on save (user authentication, GEO
   auto-update settings); their fields apply on save and are not in the
   list above.
+- Preconditions are stated in each setting's implicit explanation
+  (T89 D-02/D-03/D-04): bind-address and the lan-allowed/disallowed-ips
+  lists only shape LAN reachability while allow-lan is on (with the
+  bind address set to this device only, an allowed list entry still
+  cannot connect in); store-fake-ip is only meaningful when the DNS
+  mode is Fake-IP; direct-nameserver-follow-policy only has an object
+  while the direct nameserver list is non-empty (the kernel builds a
+  direct resolver only then), and the item is hidden while it is empty.
 
 ## 8. Convergence status of the audit's 19 items
 

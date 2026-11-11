@@ -685,7 +685,15 @@ class DirectNameserverFollowPolicyItem extends ConsumerWidget {
     }
 
     return ListItem.switchItem(
-      title: Text(appLocalizations.directNameserverFollowPolicy),
+      title: InfoTitle(
+        text: appLocalizations.directNameserverFollowPolicy,
+        // T89 D-04: the kernel only builds a direct resolver when at
+        // least one direct nameserver exists (dns/resolver.go), so the
+        // policy flag has no object while that list is empty — which is
+        // also why this row above hides itself in that state. State the
+        // precondition in the implicit explanation.
+        info: appLocalizations.directNameserverFollowPolicyInfo,
+      ),
       delegate: SwitchDelegate(
         value: directNameserverFollowPolicy,
         onChanged: (bool value) async {

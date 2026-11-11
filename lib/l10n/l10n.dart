@@ -4300,6 +4300,16 @@ class AppLocalizations {
     );
   }
 
+  /// `When on, direct resolution applies the same routing policy as the main resolver. It only has something to act on once direct nameservers are set, so this item is hidden while that list is empty.`
+  String get directNameserverFollowPolicyInfo {
+    return Intl.message(
+      'When on, direct resolution applies the same routing policy as the main resolver. It only has something to act on once direct nameservers are set, so this item is hidden while that list is empty.',
+      name: 'directNameserverFollowPolicyInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Fallback`
   String get fallback {
     return Intl.message('Fallback', name: 'fallback', desc: '', args: []);
@@ -10810,10 +10820,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.`
+  /// `Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again. Only meaningful when the DNS mode is Fake-IP.`
   String get storeFakeIpInfo {
     return Intl.message(
-      'Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again.',
+      'Keep the domain to fake-IP mapping table across restarts, so a domain keeps its previous mapping when it connects again. Only meaningful when the DNS mode is Fake-IP.',
       name: 'storeFakeIpInfo',
       desc: '',
       args: [],
@@ -10830,10 +10840,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.`
+  /// `Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in. It affects LAN reachability only while LAN connections are enabled; with LAN connections off, the ports listen on this device only.`
   String get bindAddressInfo {
     return Intl.message(
-      'Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in.',
+      'Which network interface the proxy ports listen on. This device only is safer: other devices cannot connect in. It affects LAN reachability only while LAN connections are enabled; with LAN connections off, the ports listen on this device only.',
       name: 'bindAddressInfo',
       desc: '',
       args: [],
@@ -10870,10 +10880,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Only IPs in this list may connect in and use the proxy over the LAN.`
+  /// `Only IPs in this list may connect in and use the proxy over the LAN. Applies only while LAN connections are enabled; if the bind address is this device only, listed devices still cannot connect in.`
   String get lanAllowedIpsInfo {
     return Intl.message(
-      'Only IPs in this list may connect in and use the proxy over the LAN.',
+      'Only IPs in this list may connect in and use the proxy over the LAN. Applies only while LAN connections are enabled; if the bind address is this device only, listed devices still cannot connect in.',
       name: 'lanAllowedIpsInfo',
       desc: '',
       args: [],
@@ -10890,10 +10900,10 @@ class AppLocalizations {
     );
   }
 
-  /// `IPs in this list are refused. The blocked list wins over the allowed list.`
+  /// `IPs in this list are refused. The blocked list wins over the allowed list. Applies only while LAN connections are enabled; if the bind address is this device only, LAN devices cannot connect in anyway.`
   String get lanDisallowedIpsInfo {
     return Intl.message(
-      'IPs in this list are refused. The blocked list wins over the allowed list.',
+      'IPs in this list are refused. The blocked list wins over the allowed list. Applies only while LAN connections are enabled; if the bind address is this device only, LAN devices cannot connect in anyway.',
       name: 'lanDisallowedIpsInfo',
       desc: '',
       args: [],

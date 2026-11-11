@@ -318,7 +318,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bind": MessageLookupByLibrary.simpleMessage("绑定"),
     "bindAddress": MessageLookupByLibrary.simpleMessage("绑定地址"),
     "bindAddressInfo": MessageLookupByLibrary.simpleMessage(
-      "决定代理端口绑在哪张网卡上；选仅本机时别的设备连不进来，更安全。",
+      "决定代理端口绑在哪张网卡上；选仅本机时别的设备连不进来，更安全。仅在开启局域网连接时影响局域网可达性；局域网连接关闭时，端口只在本机监听。",
     ),
     "bindAllInterfaces": MessageLookupByLibrary.simpleMessage("全部网卡"),
     "bindThisDeviceOnly": MessageLookupByLibrary.simpleMessage("仅本机"),
@@ -533,6 +533,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "directNameserverDesc": MessageLookupByLibrary.simpleMessage("用于解析直连出口的域名"),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "直连DNS遵循规则",
+    ),
+    "directNameserverFollowPolicyInfo": MessageLookupByLibrary.simpleMessage(
+      "开启后，直连解析也会套用与主解析相同的分流策略。仅在已设置直连域名服务器时才有作用对象，直连域名服务器为空时本项不显示。",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("禁用QUIC"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -996,11 +999,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "key": MessageLookupByLibrary.simpleMessage("键"),
     "lanAllowedIps": MessageLookupByLibrary.simpleMessage("局域网允许名单"),
     "lanAllowedIpsInfo": MessageLookupByLibrary.simpleMessage(
-      "只有名单内的局域网 IP 能连进来用代理。",
+      "只有名单内的局域网 IP 能连进来用代理。仅在局域网连接开启时生效；绑定地址选仅本机时，名单内的设备也连不进来。",
     ),
     "lanDisallowedIps": MessageLookupByLibrary.simpleMessage("局域网禁止名单"),
     "lanDisallowedIpsInfo": MessageLookupByLibrary.simpleMessage(
-      "名单内的 IP 禁止连入，黑名单优先级高于白名单。",
+      "名单内的 IP 禁止连入，黑名单优先级高于白名单。仅在局域网连接开启时生效；绑定地址选仅本机时，局域网设备本来就连不进来。",
     ),
     "lanSharing": MessageLookupByLibrary.simpleMessage("局域网共享"),
     "language": MessageLookupByLibrary.simpleMessage("语言"),
@@ -1726,7 +1729,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "stopVpn": MessageLookupByLibrary.simpleMessage("正在停止"),
     "storeFakeIp": MessageLookupByLibrary.simpleMessage("保留 FakeIP 映射"),
     "storeFakeIpInfo": MessageLookupByLibrary.simpleMessage(
-      "重启后保留域名到假 IP 的对应表，域名再连接时沿用原映射。",
+      "重启后保留域名到假 IP 的对应表，域名再连接时沿用原映射。仅在 DNS 模式为 FakeIP 时有意义。",
     ),
     "storeFix": MessageLookupByLibrary.simpleMessage("商店修复"),
     "storeFixDesc": MessageLookupByLibrary.simpleMessage(
