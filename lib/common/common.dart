@@ -36,6 +36,7 @@ export 'picker.dart';
 export 'preferences.dart';
 export 'print.dart';
 export 'process_icon.dart';
+export 'quick_start_retry.dart';
 export 'protocol.dart';
 export 'proxy.dart';
 export 'qr_reader.dart';

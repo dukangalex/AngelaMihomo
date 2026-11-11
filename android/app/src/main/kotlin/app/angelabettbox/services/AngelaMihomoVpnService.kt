@@ -87,7 +87,11 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         fairMemoryHelper.register(
             context = this,
             onTrim = { GlobalState.getCurrentVPNPlugin()?.requestGc() },
-            onKill = { /* system will kill process; service has no extra state to save */ }
+            onKill = {
+                // T88: leave forensic evidence of the OEM kill
+                // pre-notice; nothing else — the process is going away.
+                FairMemoryHelper.recordCallback(this, TAG, "KILL")
+            }
         )
     }
 
@@ -188,7 +192,55 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
                 }
             }
         }
+        if (intent == null) {
+            // T88: START_STICKY redelivery after the system killed the
+            // process (e.g. OEM power management) while always-on VPN
+            // was armed. onCreate already re-created the service
+            // engine, but two windows used to stay dead until the user
+            // opened the app: the engine was destroyed again while the
+            // service instance survived, or the engine's quick start
+            // had failed and stopped. Verify liveness and re-trigger
+            // the start path when the core should be running but is
+            // not.
+            ensureCoreAliveAfterSystemRestart()
+        }
         return START_STICKY
+    }
+
+    // "Should run" state source: the Dart side persists
+    // is_vpn_running=true in shared preferences when a start is
+    // confirmed (state.dart handleStart) and clears it on a confirmed
+    // stop (handleStop) — the same flag the abnormal-exit detector
+    // reads. shared_preferences stores it in the
+    // "FlutterSharedPreferences" file under the "flutter." prefix.
+    // "Core alive" state source: VpnPlugin.getStatus() — run state
+    // START with a bound VPN service instance.
+    private fun ensureCoreAliveAfterSystemRestart() {
+        val shouldRun = runCatching {
+            getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+                .getBoolean("flutter.is_vpn_running", false)
+        }.getOrDefault(false)
+        if (!shouldRun) return
+        val coreAlive = GlobalState.getCurrentVPNPlugin()?.getStatus() ?: false
+        if (coreAlive) return
+        Log.w(
+            TAG,
+            "onStartCommand(null intent): is_vpn_running set but core not " +
+                "alive (serviceEngine=${GlobalState.isServiceEngineRunning()}); " +
+                "re-triggering start",
+        )
+        if (!GlobalState.isServiceEngineRunning()) {
+            // Engine gone (destroyed via handleTryDestroy while this
+            // service instance lived on): recreate it — with no UI
+            // engine present it defaults to the "quick" entry, which
+            // runs the background start sequence (with T88 retries).
+            GlobalState.initServiceEngine()
+        } else {
+            // Engine alive but its quick start failed and stopped:
+            // go through the normal start path (debounced toggle
+            // slot bypassed — this is a recovery, not a user toggle).
+            GlobalState.handleStart(skipDebounce = true)
+        }
     }
 
     internal suspend fun restoreNotification() {

@@ -211,6 +211,14 @@ class AppPath {
     return join(directory.path, '${AppIdentity.dataDirName}.lock');
   }
 
+  // T88: persistent marker left by the service isolate when the
+  // quick/boot start sequence exhausts its retries; the UI isolate
+  // reads and clears it on the next launch (see quick_start_retry.dart).
+  Future<String> get quickStartFailurePath async {
+    final directory = await dataDir.future;
+    return join(directory.path, 'quick_start_failure.json');
+  }
+
   Future<String> get controlSocketPath async {
     final directory = await dataDir.future;
     return join(directory.path, '${AppIdentity.dataDirName}.control.sock');

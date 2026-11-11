@@ -11,10 +11,31 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Parcel
 import android.util.Log
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class FairMemoryHelper(private val tag: String) {
 
-    companion object {
+    private companion object {
+        // T88: forensic trail for OEM (Honor ITGSA) memory callbacks.
+        // The KILL pre-notice used to be a no-op, so a background kill
+        // left no evidence behind. Append one line per callback to an
+        // app-private log; evidence only, no other work on this path.
+        fun recordCallback(context: Context, tag: String, kind: String) {
+            runCatching {
+                val file = File(context.filesDir, "fair_memory_events.log")
+                val stamp = SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                    Locale.US,
+                ).format(Date())
+                file.appendText("$stamp $kind service=$tag\n")
+            }.onFailure {
+                Log.e(tag, "Failed to record FairMemory $kind callback", it)
+            }
+        }
+
         private const val ACTION_TRIM = "itgsa.intent.action.TRIM"
         private const val ACTION_KILL = "itgsa.intent.action.KILL"
         private const val KEY_COMMON = "common"

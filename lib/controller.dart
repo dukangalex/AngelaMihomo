@@ -1671,6 +1671,32 @@ class AppController {
 
     final needRecovery = await _detectAbnormalExit();
 
+    // T88: surface a quick-start failure marker left by the service
+    // isolate (background restart exhausted its retries). Consumed
+    // once: logged here, then deleted.
+    if (system.isAndroid) {
+      try {
+        final markerFile = File(await appPath.quickStartFailurePath);
+        if (await markerFile.exists()) {
+          final marker = QuickStartFailureMarker.tryParse(
+            await markerFile.readAsString(),
+          );
+          if (marker != null) {
+            commonPrint.error(
+              'Previous background quick start failed permanently: $marker',
+            );
+          } else {
+            commonPrint.warn(
+              'Previous background quick start left an unreadable failure marker',
+            );
+          }
+          await markerFile.delete();
+        }
+      } catch (e) {
+        commonPrint.warn('Failed to read quick start failure marker: $e');
+      }
+    }
+
     if (needRecovery) {
       commonPrint.warn('Abnormal exit detected');
       if (system.isAndroid) {
