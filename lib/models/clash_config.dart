@@ -385,6 +385,8 @@ abstract class Dns with _$Dns {
     @Default(true) @JsonKey(name: 'use-system-hosts') bool useSystemHosts,
     @Default(false) @JsonKey(name: 'respect-rules') bool respectRules,
     @Default(false) bool ipv6,
+    // Plaintext is kept ONLY for this bootstrap list: it exists solely to
+    // resolve the DoH servers' own hostnames before encrypted DNS is up.
     @Default(['114.114.114.114'])
     @JsonKey(name: 'default-nameserver')
     List<String> defaultNameserver,
@@ -410,13 +412,13 @@ abstract class Dns with _$Dns {
     @Default(1) @JsonKey(name: 'fake-ip-ttl') int fakeIpTtl,
     @Default({
       '+.internal.corp.com': '10.0.0.1',
-      'geosite:cn': '119.29.29.29',
+      'geosite:cn': 'https://doh.pub/dns-query',
       'geosite:private': 'system',
       '*': 'system',
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
-    @Default(['1.1.1.1']) List<String> nameserver,
+    @Default(['https://cloudflare-dns.com/dns-query']) List<String> nameserver,
     @Default([]) List<String> fallback,
     @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
     @JsonKey(name: 'proxy-server-nameserver')

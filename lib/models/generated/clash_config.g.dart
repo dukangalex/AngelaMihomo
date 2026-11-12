@@ -300,7 +300,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       ) ??
       const {
         '+.internal.corp.com': '10.0.0.1',
-        'geosite:cn': '119.29.29.29',
+        'geosite:cn': 'https://doh.pub/dns-query',
         'geosite:private': 'system',
         '*': 'system',
       },
@@ -308,7 +308,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['1.1.1.1'],
+      const ['https://cloudflare-dns.com/dns-query'],
   fallback:
       (json['fallback'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
