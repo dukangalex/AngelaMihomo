@@ -1,5 +1,6 @@
 import 'package:bett_box/common/app_lock.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/passkey.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -198,6 +199,44 @@ class _AppLockScreenState extends State<AppLockScreen> {
     }
   }
 
+  /// Passkey unlock (T74): the system prompt runs, then the
+  /// assertion is verified locally. Success resets the failure
+  /// counters like a correct PIN; a failed verification counts
+  /// toward the same backoff; cancelling is not a failure and an
+  /// unavailable provider just leaves the PIN pad in place.
+  Future<void> _tryPasskey() async {
+    final config = widget.config;
+    if (!config.hasPasskey) return;
+    final outcome = await PasskeyService.authenticate(
+      PasskeyRecord(
+        credentialId: config.passkeyCredentialId,
+        publicKeyX: config.passkeyPublicKeyX,
+        publicKeyY: config.passkeyPublicKeyY,
+      ),
+    );
+    if (!mounted) return;
+    switch (outcome) {
+      case PasskeyAuthOutcome.success:
+        await AppLockStore.recordPasskeySuccess();
+        if (mounted) widget.onUnlocked();
+      case PasskeyAuthOutcome.invalid:
+        final updated = await AppLockStore.recordPasskeyFailure();
+        if (!mounted) return;
+        setState(() {
+          _lockedUntilMs = updated.lockedUntilMs;
+          _error = _waitSeconds > 0
+              ? appLocalizations.appLockWait
+              : appLocalizations.appLockPasskeyInvalid;
+        });
+      case PasskeyAuthOutcome.unavailable:
+        setState(
+          () => _error = appLocalizations.appLockPasskeyUnavailable,
+        );
+      case PasskeyAuthOutcome.cancelled:
+        break;
+    }
+  }
+
   Future<void> _submit() async {
     if (_entered.length < 4 || _waitSeconds > 0) return;
     final result = await AppLockStore.verify(_entered);
@@ -276,6 +315,17 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     onPressed: _tryBiometric,
                     icon: const Icon(Icons.fingerprint),
                     label: Text(appLocalizations.appLockUnlockBiometric),
+                  ),
+                ],
+                if (passkeyUnlockAllowed(
+                  config: widget.config,
+                  isAndroid: system.isAndroid,
+                )) ...[
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: _waitSeconds > 0 ? null : _tryPasskey,
+                    icon: const Icon(Icons.key_outlined),
+                    label: Text(appLocalizations.appLockUnlockPasskey),
                   ),
                 ],
               ],
@@ -450,6 +500,46 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
   Future<void> _load() async {
     final config = await AppLockStore.load();
     if (mounted) setState(() => _config = config);
+  }
+
+  /// Adds a passkey through the system Credential Manager (T74).
+  /// Only the credential id and public key come back to the app;
+  /// cancelling the system prompt is silent, and every failure
+  /// leaves the existing setup untouched.
+  Future<void> _addPasskey() async {
+    try {
+      final record = await PasskeyService.register();
+      await AppLockStore.registerPasskey(
+        credentialId: record.credentialId,
+        publicKeyX: record.publicKeyX,
+        publicKeyY: record.publicKeyY,
+      );
+      await _load();
+      if (mounted) {
+        globalState.showNotifier(appLocalizations.appLockPasskeyAdded);
+      }
+    } on PasskeyPlatformException catch (e) {
+      if (!mounted || e.error == PasskeyPlatformError.cancelled) return;
+      globalState.showNotifier(
+        e.error == PasskeyPlatformError.unsupported
+            ? appLocalizations.appLockPasskeyUnsupported
+            : appLocalizations.appLockPasskeyFailed,
+      );
+    } catch (_) {
+      if (mounted) {
+        globalState.showNotifier(appLocalizations.appLockPasskeyFailed);
+      }
+    }
+  }
+
+  Future<void> _removePasskey() async {
+    final res = await globalState.showMessage(
+      title: appLocalizations.appLockPasskeyRemove,
+      message: TextSpan(text: appLocalizations.appLockPasskeyRemoveConfirm),
+    );
+    if (res != true) return;
+    await AppLockStore.removePasskey();
+    await _load();
   }
 
   Future<void> _submitFlow() async {
@@ -643,6 +733,34 @@ class _AppLockSettingsViewState extends ConsumerState<AppLockSettingsView> {
                               : null,
                         ),
                       ),
+                      // Passkey (T74, Android first): the row only
+                      // exists where the Credential Manager bridge
+                      // does, carries the live registration status,
+                      // and adds/removes in place — the credential
+                      // itself lives in the user's system provider,
+                      // the app keeps only its public key.
+                      if (system.isAndroid)
+                        ListItem(
+                          title: Text(appLocalizations.appLockPasskey),
+                          subtitle: Text(
+                            config.hasPasskey
+                                ? appLocalizations.appLockPasskeyAdded
+                                : appLocalizations.appLockPasskeyNotAdded,
+                          ),
+                          trailing: config.hasPasskey
+                              ? TextButton(
+                                  onPressed: _removePasskey,
+                                  child: Text(
+                                    appLocalizations.appLockPasskeyRemove,
+                                  ),
+                                )
+                              : TextButton(
+                                  onPressed: _addPasskey,
+                                  child: Text(
+                                    appLocalizations.appLockPasskeyAdd,
+                                  ),
+                                ),
+                        ),
                     ],
                   ],
                 ),

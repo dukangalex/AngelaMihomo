@@ -26,6 +26,14 @@ class AppLockConfig {
   final int failedAttempts;
   final int lockedUntilMs;
 
+  /// The registered passkey (T74): credential id plus the public
+  /// key coordinates (base64url). Only public material — the
+  /// private key never leaves the user's system credential
+  /// provider. Empty means no passkey is registered.
+  final String passkeyCredentialId;
+  final String passkeyPublicKeyX;
+  final String passkeyPublicKeyY;
+
   const AppLockConfig({
     this.enabled = false,
     this.salt = '',
@@ -34,9 +42,17 @@ class AppLockConfig {
     this.biometricEnabled = false,
     this.failedAttempts = 0,
     this.lockedUntilMs = 0,
+    this.passkeyCredentialId = '',
+    this.passkeyPublicKeyX = '',
+    this.passkeyPublicKeyY = '',
   });
 
   bool get hasPin => salt.isNotEmpty && pinHash.isNotEmpty;
+
+  bool get hasPasskey =>
+      passkeyCredentialId.isNotEmpty &&
+      passkeyPublicKeyX.isNotEmpty &&
+      passkeyPublicKeyY.isNotEmpty;
 
   AppLockConfig copyWith({
     bool? enabled,
@@ -46,6 +62,9 @@ class AppLockConfig {
     bool? biometricEnabled,
     int? failedAttempts,
     int? lockedUntilMs,
+    String? passkeyCredentialId,
+    String? passkeyPublicKeyX,
+    String? passkeyPublicKeyY,
   }) => AppLockConfig(
     enabled: enabled ?? this.enabled,
     salt: salt ?? this.salt,
@@ -54,6 +73,9 @@ class AppLockConfig {
     biometricEnabled: biometricEnabled ?? this.biometricEnabled,
     failedAttempts: failedAttempts ?? this.failedAttempts,
     lockedUntilMs: lockedUntilMs ?? this.lockedUntilMs,
+    passkeyCredentialId: passkeyCredentialId ?? this.passkeyCredentialId,
+    passkeyPublicKeyX: passkeyPublicKeyX ?? this.passkeyPublicKeyX,
+    passkeyPublicKeyY: passkeyPublicKeyY ?? this.passkeyPublicKeyY,
   );
 
   Map<String, dynamic> toJson() => {
@@ -64,6 +86,9 @@ class AppLockConfig {
     'biometricEnabled': biometricEnabled,
     'failedAttempts': failedAttempts,
     'lockedUntilMs': lockedUntilMs,
+    'passkeyCredentialId': passkeyCredentialId,
+    'passkeyPublicKeyX': passkeyPublicKeyX,
+    'passkeyPublicKeyY': passkeyPublicKeyY,
   };
 
   factory AppLockConfig.fromJson(Map<String, dynamic> json) => AppLockConfig(
@@ -74,8 +99,20 @@ class AppLockConfig {
     biometricEnabled: json['biometricEnabled'] == true,
     failedAttempts: (json['failedAttempts'] as num?)?.toInt() ?? 0,
     lockedUntilMs: (json['lockedUntilMs'] as num?)?.toInt() ?? 0,
+    passkeyCredentialId: json['passkeyCredentialId']?.toString() ?? '',
+    passkeyPublicKeyX: json['passkeyPublicKeyX']?.toString() ?? '',
+    passkeyPublicKeyY: json['passkeyPublicKeyY']?.toString() ?? '',
   );
 }
+
+/// The T74 offer decision, kept pure like the biometric one: the
+/// passkey option exists only when the lock is on with a PIN (the
+/// PIN stays the fallback), a passkey is registered, and the build
+/// is Android — the first platform with a Credential Manager bridge.
+bool passkeyUnlockAllowed({
+  required AppLockConfig config,
+  required bool isAndroid,
+}) => config.enabled && config.hasPin && config.hasPasskey && isAndroid;
 
 String hashAppLockPin(String salt, String pin) =>
     sha256.convert(utf8.encode('$salt:$pin')).toString();
@@ -174,8 +211,7 @@ class AppLockStore {
   static Directory? storageDirOverride;
 
   static Future<File> _file() async {
-    final dir =
-        storageDirOverride ?? await getApplicationSupportDirectory();
+    final dir = storageDirOverride ?? await getApplicationSupportDirectory();
     return File('${dir.path}/$_fileName');
   }
 
@@ -264,5 +300,62 @@ class AppLockStore {
     }
     await save(config);
     return (ok: ok, config: config);
+  }
+
+  /// Stores the locally kept part of a freshly created passkey
+  /// (T74): credential id and public key only.
+  static Future<AppLockConfig> registerPasskey({
+    required String credentialId,
+    required String publicKeyX,
+    required String publicKeyY,
+  }) async {
+    final config = (await load()).copyWith(
+      passkeyCredentialId: credentialId,
+      passkeyPublicKeyX: publicKeyX,
+      passkeyPublicKeyY: publicKeyY,
+    );
+    await save(config);
+    return config;
+  }
+
+  /// Removes the local passkey record. The credential itself stays
+  /// in the user's system provider (the app cannot delete it), but
+  /// with no local record the app never offers or accepts it again.
+  static Future<AppLockConfig> removePasskey() async {
+    final config = (await load()).copyWith(
+      passkeyCredentialId: '',
+      passkeyPublicKeyX: '',
+      passkeyPublicKeyY: '',
+    );
+    await save(config);
+    return config;
+  }
+
+  /// A passkey assertion verified locally: same effect as a correct
+  /// PIN or a biometric success — the failure counters reset.
+  static Future<AppLockConfig> recordPasskeySuccess() async {
+    final config = (await load()).copyWith(failedAttempts: 0, lockedUntilMs: 0);
+    await save(config);
+    return config;
+  }
+
+  /// A passkey assertion that failed local verification counts
+  /// exactly like a wrong PIN: the same persisted backoff policy
+  /// applies, and no extra attempt is squeezed in during an active
+  /// backoff window.
+  static Future<AppLockConfig> recordPasskeyFailure() async {
+    var config = await load();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (config.lockedUntilMs > now) return config;
+    final attempts = config.failedAttempts + 1;
+    final backoff = appLockBackoff(attempts);
+    config = config.copyWith(
+      failedAttempts: attempts,
+      lockedUntilMs: backoff == Duration.zero
+          ? 0
+          : now + backoff.inMilliseconds,
+    );
+    await save(config);
+    return config;
   }
 }

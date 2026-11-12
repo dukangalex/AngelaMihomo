@@ -1048,5 +1048,16 @@
   "appLockBiometricNotEnrolled": "No fingerprint or face is enrolled on this device yet — add one in the system settings first.",
   "appLockBiometricNoHardware": "This device has no fingerprint or face hardware.",
   "appLockBiometricUnsupported": "Biometric unlock is not supported on this platform.",
-  "appLockUnlockBiometric": "Unlock with biometrics"
+  "appLockUnlockBiometric": "Unlock with biometrics",
+  "appLockPasskey": "Passkey",
+  "appLockPasskeyAdd": "Add",
+  "appLockPasskeyAdded": "Added",
+  "appLockPasskeyNotAdded": "Not added",
+  "appLockPasskeyRemove": "Remove",
+  "appLockPasskeyRemoveConfirm": "After removal you can no longer unlock with a passkey. Your PIN still works.",
+  "appLockUnlockPasskey": "Unlock with passkey",
+  "appLockPasskeyUnsupported": "Passkeys are not supported on this device",
+  "appLockPasskeyFailed": "Passkey operation failed. Try again.",
+  "appLockPasskeyInvalid": "Passkey verification failed",
+  "appLockPasskeyUnavailable": "Passkey unavailable. Use your PIN."
 }

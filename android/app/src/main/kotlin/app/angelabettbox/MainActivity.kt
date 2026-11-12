@@ -9,7 +9,25 @@ import android.os.Bundle
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.credentials.CreateCredentialResponse
+import androidx.credentials.CreatePublicKeyCredentialRequest
+import androidx.credentials.CreatePublicKeyCredentialResponse
+import androidx.credentials.CredentialManager
+import androidx.credentials.CredentialManagerCallback
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.PublicKeyCredential
+import androidx.credentials.exceptions.CreateCredentialCancellationException
+import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.CreateCredentialNoCreateOptionException
+import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.NoCredentialException
 import app.angelabettbox.plugins.AppPlugin
 import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
@@ -107,8 +125,93 @@ class MainActivity : FlutterFragmentActivity() {
         }
 
         setupHapticsChannel(flutterEngine)
+        setupPasskeyChannel(flutterEngine)
 
         GlobalState.flutterEngine = flutterEngine
+    }
+
+    // App-lock passkeys (T74): a thin bridge to the system
+    // Credential Manager. Only the WebAuthn request/response JSON
+    // crosses this channel; the app verifies every assertion
+    // signature locally and never sends credential data anywhere.
+    // Error codes are the small stable set the Dart side maps:
+    // cancelled / unsupported / no_credential / failed.
+    private fun setupPasskeyChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.angelabettbox/passkey")
+            .setMethodCallHandler { call, result ->
+                val requestJson = call.argument<String>("requestJson")
+                if (requestJson == null) {
+                    result.error("failed", "missing requestJson", null)
+                    return@setMethodCallHandler
+                }
+                val manager = CredentialManager.create(this)
+                val executor = ContextCompat.getMainExecutor(this)
+                when (call.method) {
+                    "create" -> manager.createCredentialAsync(
+                        this,
+                        CreatePublicKeyCredentialRequest(requestJson),
+                        null,
+                        executor,
+                        object :
+                            CredentialManagerCallback<CreateCredentialResponse, CreateCredentialException> {
+                            override fun onResult(response: CreateCredentialResponse) {
+                                val json =
+                                    (response as? CreatePublicKeyCredentialResponse)
+                                        ?.registrationResponseJson
+                                if (json != null) {
+                                    result.success(json)
+                                } else {
+                                    result.error("failed", "unexpected credential type", null)
+                                }
+                            }
+
+                            override fun onError(e: CreateCredentialException) {
+                                result.error(passkeyErrorCode(e), e.message, null)
+                            }
+                        },
+                    )
+
+                    "get" -> manager.getCredentialAsync(
+                        this,
+                        GetCredentialRequest(
+                            listOf(GetPublicKeyCredentialOption(requestJson)),
+                        ),
+                        null,
+                        executor,
+                        object :
+                            CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
+                            override fun onResult(response: GetCredentialResponse) {
+                                val json =
+                                    (response.credential as? PublicKeyCredential)
+                                        ?.authenticationResponseJson
+                                if (json != null) {
+                                    result.success(json)
+                                } else {
+                                    result.error("failed", "unexpected credential type", null)
+                                }
+                            }
+
+                            override fun onError(e: GetCredentialException) {
+                                result.error(passkeyErrorCode(e), e.message, null)
+                            }
+                        },
+                    )
+
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun passkeyErrorCode(e: Exception): String = when (e) {
+        is CreateCredentialCancellationException,
+        is GetCredentialCancellationException -> "cancelled"
+
+        is CreateCredentialNoCreateOptionException,
+        is CreateCredentialProviderConfigurationException,
+        is GetCredentialProviderConfigurationException -> "unsupported"
+
+        is NoCredentialException -> "no_credential"
+        else -> "failed"
     }
 
     private fun setupHapticsChannel(flutterEngine: FlutterEngine) {

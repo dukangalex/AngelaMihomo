@@ -1180,5 +1180,16 @@
   "appLockRelock5m": "5 minutes",
   "appLockBiometric": "Use biometrics",
   "appLockBiometricUnavailable": "Biometrics are not available on this device",
-  "appLockUnlockBiometric": "Unlock with biometrics"
+  "appLockUnlockBiometric": "Unlock with biometrics",
+  "appLockPasskey": "通行金鑰",
+  "appLockPasskeyAdd": "新增",
+  "appLockPasskeyAdded": "已新增",
+  "appLockPasskeyNotAdded": "未新增",
+  "appLockPasskeyRemove": "刪除",
+  "appLockPasskeyRemoveConfirm": "刪除後將無法再用通行金鑰解鎖，PIN 仍可使用。",
+  "appLockUnlockPasskey": "使用通行金鑰解鎖",
+  "appLockPasskeyUnsupported": "這台裝置不支援通行金鑰",
+  "appLockPasskeyFailed": "通行金鑰操作失敗，請重試",
+  "appLockPasskeyInvalid": "通行金鑰驗證未通過",
+  "appLockPasskeyUnavailable": "通行金鑰不可用，請使用 PIN"
 }

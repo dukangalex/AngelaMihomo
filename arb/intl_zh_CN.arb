@@ -1048,5 +1048,16 @@
   "appLockBiometricNotEnrolled": "这台设备还没有录入指纹或面部——先去系统设置里录一个。",
   "appLockBiometricNoHardware": "这台设备没有指纹或面部识别硬件。",
   "appLockBiometricUnsupported": "当前平台不支持生物识别解锁。",
-  "appLockUnlockBiometric": "用生物识别解锁"
+  "appLockUnlockBiometric": "用生物识别解锁",
+  "appLockPasskey": "通行密钥",
+  "appLockPasskeyAdd": "添加",
+  "appLockPasskeyAdded": "已添加",
+  "appLockPasskeyNotAdded": "未添加",
+  "appLockPasskeyRemove": "删除",
+  "appLockPasskeyRemoveConfirm": "删除后将无法再用通行密钥解锁，PIN 仍可使用。",
+  "appLockUnlockPasskey": "使用通行密钥解锁",
+  "appLockPasskeyUnsupported": "这台设备不支持通行密钥",
+  "appLockPasskeyFailed": "通行密钥操作失败，请重试",
+  "appLockPasskeyInvalid": "通行密钥验证未通过",
+  "appLockPasskeyUnavailable": "通行密钥不可用，请使用 PIN"
 }

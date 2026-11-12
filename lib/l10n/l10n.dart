@@ -8127,6 +8127,75 @@ class AppLocalizations {
     );
   }
 
+  String get appLockPasskey {
+    return Intl.message('Passkey', name: 'appLockPasskey', desc: '', args: []);
+  }
+
+  String get appLockPasskeyAdd {
+    return Intl.message('Add', name: 'appLockPasskeyAdd', desc: '', args: []);
+  }
+
+  String get appLockPasskeyAdded {
+    return Intl.message('Added', name: 'appLockPasskeyAdded', desc: '', args: []);
+  }
+
+  String get appLockPasskeyNotAdded {
+    return Intl.message('Not added', name: 'appLockPasskeyNotAdded', desc: '', args: []);
+  }
+
+  String get appLockPasskeyRemove {
+    return Intl.message('Remove', name: 'appLockPasskeyRemove', desc: '', args: []);
+  }
+
+  String get appLockPasskeyRemoveConfirm {
+    return Intl.message(
+      'After removal you can no longer unlock with a passkey. Your PIN still works.',
+      name: 'appLockPasskeyRemoveConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get appLockUnlockPasskey {
+    return Intl.message('Unlock with passkey', name: 'appLockUnlockPasskey', desc: '', args: []);
+  }
+
+  String get appLockPasskeyUnsupported {
+    return Intl.message(
+      'Passkeys are not supported on this device',
+      name: 'appLockPasskeyUnsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get appLockPasskeyFailed {
+    return Intl.message(
+      'Passkey operation failed. Try again.',
+      name: 'appLockPasskeyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get appLockPasskeyInvalid {
+    return Intl.message(
+      'Passkey verification failed',
+      name: 'appLockPasskeyInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get appLockPasskeyUnavailable {
+    return Intl.message(
+      'Passkey unavailable. Use your PIN.',
+      name: 'appLockPasskeyUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get localPingStart {
     return Intl.message(
       'Start ping',

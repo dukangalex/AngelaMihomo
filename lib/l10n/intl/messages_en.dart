@@ -2062,5 +2062,24 @@ class MessageLookup extends MessageLookupByLibrary {
       "Too many attempts. Wait a while and try again.",
     ),
     "appLockWrongPin": MessageLookupByLibrary.simpleMessage("Wrong PIN"),
+    "appLockPasskey": MessageLookupByLibrary.simpleMessage("Passkey"),
+    "appLockPasskeyAdd": MessageLookupByLibrary.simpleMessage("Add"),
+    "appLockPasskeyAdded": MessageLookupByLibrary.simpleMessage("Added"),
+    "appLockPasskeyNotAdded": MessageLookupByLibrary.simpleMessage("Not added"),
+    "appLockPasskeyRemove": MessageLookupByLibrary.simpleMessage("Remove"),
+    "appLockPasskeyRemoveConfirm": MessageLookupByLibrary.simpleMessage(
+      "After removal you can no longer unlock with a passkey. Your PIN still works.",
+    ),
+    "appLockUnlockPasskey": MessageLookupByLibrary.simpleMessage("Unlock with passkey"),
+    "appLockPasskeyUnsupported": MessageLookupByLibrary.simpleMessage(
+      "Passkeys are not supported on this device",
+    ),
+    "appLockPasskeyFailed": MessageLookupByLibrary.simpleMessage(
+      "Passkey operation failed. Try again.",
+    ),
+    "appLockPasskeyInvalid": MessageLookupByLibrary.simpleMessage("Passkey verification failed"),
+    "appLockPasskeyUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Passkey unavailable. Use your PIN.",
+    ),
   };
 }

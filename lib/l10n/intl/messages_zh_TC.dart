@@ -1732,5 +1732,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Too many attempts. Wait a while and try again.",
     ),
     "appLockWrongPin": MessageLookupByLibrary.simpleMessage("Wrong PIN"),
+    "appLockPasskey": MessageLookupByLibrary.simpleMessage("通行金鑰"),
+    "appLockPasskeyAdd": MessageLookupByLibrary.simpleMessage("新增"),
+    "appLockPasskeyAdded": MessageLookupByLibrary.simpleMessage("已新增"),
+    "appLockPasskeyNotAdded": MessageLookupByLibrary.simpleMessage("未新增"),
+    "appLockPasskeyRemove": MessageLookupByLibrary.simpleMessage("刪除"),
+    "appLockPasskeyRemoveConfirm": MessageLookupByLibrary.simpleMessage("刪除後將無法再用通行金鑰解鎖，PIN 仍可使用。"),
+    "appLockUnlockPasskey": MessageLookupByLibrary.simpleMessage("使用通行金鑰解鎖"),
+    "appLockPasskeyUnsupported": MessageLookupByLibrary.simpleMessage("這台裝置不支援通行金鑰"),
+    "appLockPasskeyFailed": MessageLookupByLibrary.simpleMessage("通行金鑰操作失敗，請重試"),
+    "appLockPasskeyInvalid": MessageLookupByLibrary.simpleMessage("通行金鑰驗證未通過"),
+    "appLockPasskeyUnavailable": MessageLookupByLibrary.simpleMessage("通行金鑰不可用，請使用 PIN"),
   };
 }

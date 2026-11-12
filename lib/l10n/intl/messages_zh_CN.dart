@@ -1521,5 +1521,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "appLockUnlockBiometric": MessageLookupByLibrary.simpleMessage("用生物识别解锁"),
     "appLockWait": MessageLookupByLibrary.simpleMessage("尝试次数过多，请稍后再试。"),
     "appLockWrongPin": MessageLookupByLibrary.simpleMessage("PIN 不正确"),
+    "appLockPasskey": MessageLookupByLibrary.simpleMessage("通行密钥"),
+    "appLockPasskeyAdd": MessageLookupByLibrary.simpleMessage("添加"),
+    "appLockPasskeyAdded": MessageLookupByLibrary.simpleMessage("已添加"),
+    "appLockPasskeyNotAdded": MessageLookupByLibrary.simpleMessage("未添加"),
+    "appLockPasskeyRemove": MessageLookupByLibrary.simpleMessage("删除"),
+    "appLockPasskeyRemoveConfirm": MessageLookupByLibrary.simpleMessage("删除后将无法再用通行密钥解锁，PIN 仍可使用。"),
+    "appLockUnlockPasskey": MessageLookupByLibrary.simpleMessage("使用通行密钥解锁"),
+    "appLockPasskeyUnsupported": MessageLookupByLibrary.simpleMessage("这台设备不支持通行密钥"),
+    "appLockPasskeyFailed": MessageLookupByLibrary.simpleMessage("通行密钥操作失败，请重试"),
+    "appLockPasskeyInvalid": MessageLookupByLibrary.simpleMessage("通行密钥验证未通过"),
+    "appLockPasskeyUnavailable": MessageLookupByLibrary.simpleMessage("通行密钥不可用，请使用 PIN"),
   };
 }

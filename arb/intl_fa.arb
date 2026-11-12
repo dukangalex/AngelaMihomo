@@ -1178,5 +1178,16 @@
   "appLockRelock5m": "5 minutes",
   "appLockBiometric": "Use biometrics",
   "appLockBiometricUnavailable": "Biometrics are not available on this device",
-  "appLockUnlockBiometric": "Unlock with biometrics"
+  "appLockUnlockBiometric": "Unlock with biometrics",
+  "appLockPasskey": "Passkey",
+  "appLockPasskeyAdd": "Add",
+  "appLockPasskeyAdded": "Added",
+  "appLockPasskeyNotAdded": "Not added",
+  "appLockPasskeyRemove": "Remove",
+  "appLockPasskeyRemoveConfirm": "After removal you can no longer unlock with a passkey. Your PIN still works.",
+  "appLockUnlockPasskey": "Unlock with passkey",
+  "appLockPasskeyUnsupported": "Passkeys are not supported on this device",
+  "appLockPasskeyFailed": "Passkey operation failed. Try again.",
+  "appLockPasskeyInvalid": "Passkey verification failed",
+  "appLockPasskeyUnavailable": "Passkey unavailable. Use your PIN."
 }

@@ -100,6 +100,11 @@ dependencies {
         exclude(group = "com.google.guava", module = "guava")
     }
     implementation("androidx.core:core-splashscreen:1.0.1")
+    // App-lock passkeys (T74): system Credential Manager. The
+    // play-services provider supplies passkey create/get on Android;
+    // all signature verification happens locally in the app.
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
 }
 
 configurations.all {
