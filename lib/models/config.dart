@@ -164,7 +164,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool showLabel,
     @Default(false) bool disclaimerAccepted,
     @Default(true) bool minimizeOnExit,
-    @Default(false) bool hidden,
+    @Default(true) bool hidden,
     @Default(true) bool keepDockIcon,
     @Default(false) bool developerMode,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,

@@ -48,7 +48,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
   showLabel: json['showLabel'] as bool? ?? false,
   disclaimerAccepted: json['disclaimerAccepted'] as bool? ?? false,
   minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
-  hidden: json['hidden'] as bool? ?? false,
+  hidden: json['hidden'] as bool? ?? true,
   keepDockIcon: json['keepDockIcon'] as bool? ?? true,
   developerMode: json['developerMode'] as bool? ?? false,
   recoveryStrategy:
