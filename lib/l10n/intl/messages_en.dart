@@ -105,13 +105,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m39(statusCode) =>
       "Failed to import profile. Please check your network status or try resetting the subscription link ( HTTP error code: ${statusCode} )";
 
-  static String m40(index, time) => "Resolved by rule #${index} · ${time} ms";
 
-  static String m41(ips) => "Hosts hit: ${ips}";
 
-  static String m42(total, index) => "${total} rules, matched #${index}";
 
-  static String m43(total) => "${total} rules";
 
   static String m44(count) => "${count} items selected";
 
@@ -1534,60 +1530,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "ripple": MessageLookupByLibrary.simpleMessage("Ripple"),
     "rotatingCircle": MessageLookupByLibrary.simpleMessage("Rotating Circle"),
     "rotatingPlain": MessageLookupByLibrary.simpleMessage("Rotating Plain"),
-    "routeTrace": MessageLookupByLibrary.simpleMessage("Route Trace"),
-    "routeTraceChain": MessageLookupByLibrary.simpleMessage("Proxy Chain"),
-    "routeTraceCheckedRules": MessageLookupByLibrary.simpleMessage(
-      "Checked Rules",
-    ),
-    "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "See how the core resolves and matches a domain or IP",
-    ),
-    "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS Resolution"),
-    "routeTraceDnsBy": m40,
-    "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage(
-      "The target is an IP, no resolution needed",
-    ),
-    "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
-      "No IP resolution was needed while matching",
-    ),
-    "routeTraceFinal": MessageLookupByLibrary.simpleMessage("Final Outbound"),
-    "routeTraceHint": MessageLookupByLibrary.simpleMessage("Domain, IP or URL"),
-    "routeTraceHostsHit": m41,
-    "routeTraceInput": MessageLookupByLibrary.simpleMessage("Target"),
-    "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage(
-      "Direct mode: all traffic goes direct",
-    ),
-    "routeTraceModeGlobal": MessageLookupByLibrary.simpleMessage(
-      "Global mode: all traffic uses GLOBAL",
-    ),
-    "routeTraceNoMatch": MessageLookupByLibrary.simpleMessage(
-      "No rule matched, using DIRECT",
-    ),
-    "routeTraceRules": MessageLookupByLibrary.simpleMessage("Rule Matching"),
-    "routeTraceRulesSummary": m42,
-    "routeTraceRulesTotal": m43,
-    "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage(
-      "Skipped, target not found",
-    ),
-    "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage(
-      "Skipped by PASS",
-    ),
-    "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage(
-      "Skipped, no UDP support",
-    ),
-    "routeTraceStopped": MessageLookupByLibrary.simpleMessage(
-      "Proxy is not running, route trace is unavailable",
-    ),
-    "routeTraceTrigger": MessageLookupByLibrary.simpleMessage("Triggered DNS"),
-    "routeTraceTruncated": MessageLookupByLibrary.simpleMessage(
-      "Only the first 3000 rules are shown",
-    ),
-    "routeTraceUdpUnsupported": MessageLookupByLibrary.simpleMessage(
-      "This outbound does not support UDP",
-    ),
-    "routeTraceViewRules": MessageLookupByLibrary.simpleMessage(
-      "View checked rules",
-    ),
     "rule": MessageLookupByLibrary.simpleMessage("Rule"),
     "ruleName": MessageLookupByLibrary.simpleMessage("Rule Name"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Rule Providers"),

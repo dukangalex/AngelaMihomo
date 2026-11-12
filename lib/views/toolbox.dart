@@ -85,15 +85,6 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const SpeedTestPage()),
     ),
     _ToolItem(
-      id: 'routeTrace',
-      icon: Icons.route_rounded,
-      color: const Color(0xFF7B61FF),
-      title: appLocalizations.routeTrace,
-      description: appLocalizations.routeTraceDesc,
-      size: _TileSize.tall,
-      open: (context) => push(context, const RouteTracePage()),
-    ),
-    _ToolItem(
       id: 'ipLookup',
       icon: Icons.travel_explore_rounded,
       color: const Color(0xFF00A3A3),

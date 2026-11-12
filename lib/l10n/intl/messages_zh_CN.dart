@@ -96,13 +96,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m39(statusCode) =>
       "配置导入失败，请检查网络状况或尝试重置订阅链接( HTTP错误代码: ${statusCode} )";
 
-  static String m40(index, time) => "第 ${index} 条规则触发解析 · ${time} ms";
 
-  static String m41(ips) => "命中 Hosts：${ips}";
 
-  static String m42(total, index) => "共 ${total} 条规则，命中第 ${index} 条";
 
-  static String m43(total) => "共 ${total} 条规则";
 
   static String m44(count) => "已选择 ${count} 项";
 
@@ -1121,40 +1117,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "ripple": MessageLookupByLibrary.simpleMessage("水波荡漾"),
     "rotatingCircle": MessageLookupByLibrary.simpleMessage("单圆自转"),
     "rotatingPlain": MessageLookupByLibrary.simpleMessage("灵板翻转"),
-    "routeTrace": MessageLookupByLibrary.simpleMessage("路由追踪"),
-    "routeTraceChain": MessageLookupByLibrary.simpleMessage("代理链"),
-    "routeTraceCheckedRules": MessageLookupByLibrary.simpleMessage("已检查的规则"),
-    "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "查看域名或 IP 在内核中的 DNS 与规则匹配过程",
-    ),
-    "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解析"),
-    "routeTraceDnsBy": m40,
-    "routeTraceDnsIp": MessageLookupByLibrary.simpleMessage("目标本身是 IP，无需解析"),
-    "routeTraceDnsSkipped": MessageLookupByLibrary.simpleMessage(
-      "匹配过程中无需解析 IP",
-    ),
-    "routeTraceFinal": MessageLookupByLibrary.simpleMessage("最终出站"),
-    "routeTraceHint": MessageLookupByLibrary.simpleMessage("输入域名、IP 或网址"),
-    "routeTraceHostsHit": m41,
-    "routeTraceInput": MessageLookupByLibrary.simpleMessage("目标"),
-    "routeTraceModeDirect": MessageLookupByLibrary.simpleMessage("直连模式：所有流量直连"),
-    "routeTraceModeGlobal": MessageLookupByLibrary.simpleMessage(
-      "全局模式：所有流量走 GLOBAL",
-    ),
-    "routeTraceNoMatch": MessageLookupByLibrary.simpleMessage("没有规则命中，按直连处理"),
-    "routeTraceRules": MessageLookupByLibrary.simpleMessage("规则匹配"),
-    "routeTraceRulesSummary": m42,
-    "routeTraceRulesTotal": m43,
-    "routeTraceSkipMissing": MessageLookupByLibrary.simpleMessage("目标不存在，跳过"),
-    "routeTraceSkipPass": MessageLookupByLibrary.simpleMessage("PASS 跳过"),
-    "routeTraceSkipUdp": MessageLookupByLibrary.simpleMessage("不支持 UDP，跳过"),
-    "routeTraceStopped": MessageLookupByLibrary.simpleMessage("代理未启动，无法模拟内核路由"),
-    "routeTraceTrigger": MessageLookupByLibrary.simpleMessage("触发解析"),
-    "routeTraceTruncated": MessageLookupByLibrary.simpleMessage("仅显示前 3000 条"),
-    "routeTraceUdpUnsupported": MessageLookupByLibrary.simpleMessage(
-      "该出站不支持 UDP",
-    ),
-    "routeTraceViewRules": MessageLookupByLibrary.simpleMessage("查看已检查的规则"),
     "rule": MessageLookupByLibrary.simpleMessage("规则"),
     "ruleName": MessageLookupByLibrary.simpleMessage("规则名称"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("规则提供者"),

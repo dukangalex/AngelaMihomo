@@ -607,17 +607,6 @@ class ClashCore {
     return decoded is Map ? Map<String, Object?>.from(decoded) : {};
   }
 
-  Future<RouteTraceResult> routeTrace({
-    required String target,
-    required String network,
-    required int port,
-  }) async => RouteTraceResult.fromJson(
-    await _toolboxJson(
-      ActionMethod.routeTrace,
-      data: json.encode({'target': target, 'network': network, 'port': port}),
-    ),
-  );
-
   Future<DnsQueryResult> dnsQuery({
     required String domain,
     required String type,

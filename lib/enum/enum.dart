@@ -284,7 +284,6 @@ enum ActionMethod {
   getSpeedTestServers,
   startStunTest,
   cancelStunTest,
-  routeTrace,
   dnsQuery,
   mrsPrepare,
   mrsLookup,

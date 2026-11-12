@@ -498,15 +498,6 @@ class TrackerInfoDetailView extends ConsumerWidget {
               runSpacing: 8,
               alignment: WrapAlignment.end,
               children: [
-                chip(
-                  Icons.route_rounded,
-                  appLocalizations.routeTrace,
-                  () => RouteTracePage(
-                    initialTarget: target,
-                    initialNetwork: metadata.network,
-                    initialPort: int.tryParse(metadata.destinationPort),
-                  ),
-                ),
                 if (isDomain)
                   chip(
                     Icons.dns_rounded,
