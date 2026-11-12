@@ -545,6 +545,12 @@ func handleUpdateGeoData(geoType string, geoName string, fn func(value string)) 
 				fn(err.Error())
 				return
 			}
+		case "CITY":
+			err := updater.UpdateCityWithPath(path)
+			if err != nil {
+				fn(err.Error())
+				return
+			}
 		}
 		fn("")
 	}()
@@ -729,6 +735,46 @@ func handleGetCountryCode(ip string, fn func(value string)) {
 		}
 		fn(codes[0])
 	}()
+}
+
+// ipGeoResult is the JSON payload of the queryIpGeo bridge method. All
+// fields are resolved from local databases only; the query never leaves
+// the device.
+type ipGeoResult struct {
+	IP            string `json:"ip"`
+	CountryCode   string `json:"countryCode"`
+	Country       string `json:"country,omitempty"`
+	Province      string `json:"province,omitempty"`
+	City          string `json:"city,omitempty"`
+	ASN           string `json:"asn,omitempty"`
+	ASName        string `json:"asName,omitempty"`
+	ContinentCode string `json:"continentCode,omitempty"`
+	// HasCityDb reports whether the on-demand city database is present;
+	// without it the result degrades to country/ASN level.
+	HasCityDb bool `json:"hasCityDb"`
+}
+
+// handleQueryIpGeo resolves ip from the local MMDB databases only (see
+// mmdb.LookupGeo). It runs synchronously on demand — nothing is
+// prefetched or cached.
+func handleQueryIpGeo(ip string) string {
+	result := ipGeoResult{IP: ip}
+	if parsed := net.ParseIP(ip); parsed != nil {
+		geo := mmdb.LookupGeo(parsed)
+		result.CountryCode = geo.CountryCode
+		result.Country = geo.Country
+		result.Province = geo.Province
+		result.City = geo.City
+		result.ASN = geo.ASN
+		result.ASName = geo.ASName
+		result.ContinentCode = geo.ContinentCode
+		result.HasCityDb = geo.HasCityDb
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
 
 func handleGetMemory(fn func(value string)) {

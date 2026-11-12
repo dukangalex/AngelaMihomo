@@ -68,6 +68,24 @@ func SetASNUrl(url string) {
 	asnUrl = url
 }
 
+// CityUrls returns the candidate download URLs for the DB-IP Free City
+// Lite database, newest first. The official free download is published
+// under a month-stamped file name (dbip-city-lite-YYYY-MM.mmdb.gz) and
+// has no stable alias, so the current UTC month is tried first and the
+// previous month second (publication lag / month boundary). Only the
+// most recent two months are kept on the official server.
+func CityUrls() []string {
+	now := time.Now().UTC()
+	urlFor := func(t time.Time) string {
+		return "https://download.db-ip.com/free/dbip-city-lite-" +
+			t.Format("2006-01") + ".mmdb.gz"
+	}
+	return []string{
+		urlFor(now),
+		urlFor(now.AddDate(0, -1, 0)),
+	}
+}
+
 func downloadToPath(url string, path string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*90)
 	defer cancel()

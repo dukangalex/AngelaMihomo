@@ -23,6 +23,12 @@ var (
 	asnReader ASNReader
 	ipOnce    sync.Once
 	asnOnce   sync.Once
+
+	// cityReader is opened lazily on the first lookup and held as a
+	// memory-mapped handle; cityMu guards it against concurrent
+	// lookups and reloads.
+	cityReader *CityReader
+	cityMu     sync.RWMutex
 )
 
 func LoadFromBytes(buffer []byte) {
@@ -93,4 +99,48 @@ func ReloadIP() {
 
 func ReloadASN() {
 	mihomoOnce.Reset(&asnOnce)
+}
+
+// CityInstance returns the city database reader, opening it on first
+// use. Unlike IPInstance/ASNInstance it never aborts the process: the
+// city database is an optional on-demand download, so a missing or
+// invalid file simply yields nil and lookups degrade to country/ASN
+// level. The file is opened with maxminddb.Open, which memory-maps it;
+// the (large) database is never read into memory as a whole, and no
+// background loading or preheating takes place — the handle is created
+// only when a lookup is actually requested.
+func CityInstance() *CityReader {
+	cityMu.RLock()
+	reader := cityReader
+	cityMu.RUnlock()
+	if reader != nil {
+		return reader
+	}
+
+	cityMu.Lock()
+	defer cityMu.Unlock()
+	if cityReader != nil {
+		return cityReader
+	}
+	cityPath := C.Path.City()
+	mmdb, err := maxminddb.Open(cityPath)
+	if err != nil {
+		log.Debugln("City database unavailable at %s: %s", cityPath, err.Error())
+		return nil
+	}
+	log.Infoln("Load City MMDB file: %s", cityPath)
+	cityReader = &CityReader{Reader: mmdb}
+	return cityReader
+}
+
+// ReloadCity drops the current city reader (closing its mapping) so the
+// next lookup reopens the database file. The updater calls it before
+// replacing the file on disk.
+func ReloadCity() {
+	cityMu.Lock()
+	defer cityMu.Unlock()
+	if cityReader != nil {
+		_ = cityReader.Close()
+		cityReader = nil
+	}
 }

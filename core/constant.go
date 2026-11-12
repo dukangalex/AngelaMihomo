@@ -129,6 +129,7 @@ const (
 	getExternalProvidersMethod           Method = "getExternalProviders"
 	getExternalProviderMethod            Method = "getExternalProvider"
 	getCountryCodeMethod                 Method = "getCountryCode"
+	queryIpGeoMethod                     Method = "queryIpGeo"
 	getMemoryMethod                      Method = "getMemory"
 	updateGeoDataMethod                  Method = "updateGeoData"
 	updateExternalProviderMethod         Method = "updateExternalProvider"

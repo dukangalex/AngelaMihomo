@@ -324,6 +324,10 @@ func handleAction(action *Action, result ActionResult) {
 			result.success(value)
 		})
 		return
+	case queryIpGeoMethod:
+		ip := action.Data.(string)
+		result.success(handleQueryIpGeo(ip))
+		return
 	case getMemoryMethod:
 		handleGetMemory(func(value string) {
 			result.success(value)

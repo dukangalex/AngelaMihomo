@@ -18,6 +18,7 @@ var (
 	GeositeName   = "GeoSite.dat"
 	GeoipName     = "GeoIP.dat"
 	ASNName       = "ASN.mmdb"
+	CityName      = "City.mmdb"
 	BundleMRSName = "BundleMRS.7z"
 )
 
@@ -161,6 +162,22 @@ func (p *path) ASN() string {
 		}
 	}
 	return P.Join(p.homeDir, ASNName)
+}
+
+func (p *path) City() string {
+	files, err := os.ReadDir(p.homeDir)
+	if err != nil {
+		return P.Join(p.homeDir, CityName)
+	}
+	for _, fi := range files {
+		if fi.IsDir() {
+			continue
+		}
+		if strings.EqualFold(fi.Name(), CityName) {
+			return P.Join(p.homeDir, fi.Name())
+		}
+	}
+	return P.Join(p.homeDir, CityName)
 }
 
 func (p *path) BundleMRS() string {
