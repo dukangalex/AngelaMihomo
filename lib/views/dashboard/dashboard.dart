@@ -300,7 +300,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       ),
     );
 
-    final spacing = 12.mAp;
+    // Home is the hierarchy ruler; its grid breathes one notch wider.
+    final spacing = 16.mAp;
     final sizes = ref.watch(
       appSettingProvider.select(
         (state) => system.isAndroid
@@ -335,94 +336,97 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             )
           : null,
       actions: _buildActions(showStartSwitch, isDark),
-      body: ScrollEdgeRise(
-        builder: (_, rise) => Align(
-          alignment: Alignment.topCenter,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final contentWidth = math.min(
-                constraints.maxWidth,
-                dashboardMaxGridWidth,
-              );
-              final int columns = isMobileView
-                  ? 8
-                  : DashboardGridBand.of(contentWidth).columns;
-              final bottomReserve = isMobileView
-                  ? getFloatingBottomBarReserveHeight(context)
-                  : 0.0;
-              final verticalPadding = 32.0 + bottomReserve;
-              final unitHeight = dashboardUnitHeight(
-                contentWidth,
-                availableHeight: constraints.hasBoundedHeight
-                    ? constraints.maxHeight - rise
-                    : null,
-                spacing: spacing,
-                verticalPadding: verticalPadding,
-              );
+      body: GlassScope(
+        live: true,
+        child: ScrollEdgeRise(
+          builder: (_, rise) => Align(
+            alignment: Alignment.topCenter,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentWidth = math.min(
+                  constraints.maxWidth,
+                  dashboardMaxGridWidth,
+                );
+                final int columns = isMobileView
+                    ? 8
+                    : DashboardGridBand.of(contentWidth).columns;
+                final bottomReserve = isMobileView
+                    ? getFloatingBottomBarReserveHeight(context)
+                    : 0.0;
+                final verticalPadding = 32.0 + bottomReserve;
+                final unitHeight = dashboardUnitHeight(
+                  contentWidth,
+                  availableHeight: constraints.hasBoundedHeight
+                      ? constraints.maxHeight - rise
+                      : null,
+                  spacing: spacing,
+                  verticalPadding: verticalPadding,
+                );
 
-              final dashboardContent = ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: dashboardMaxGridWidth,
-                ),
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    16 + rise,
-                    16,
-                    16 + bottomReserve,
+                final dashboardContent = ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: dashboardMaxGridWidth,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildIsEdit(
-                        (isEdit) => isEdit
-                            ? SystemBackBlock(
-                                child: CommonPopScope(
-                                  onPop: () {
-                                    _handleUpdateIsEdit();
-                                    return false;
-                                  },
-                                  child: const SizedBox.shrink(),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      _buildIsEdit(
-                        (isEdit) => EditableGrid<DashboardTile>(
-                          key: const ValueKey('dashboard-grid'),
-                          items: children,
-                          editing: isEdit,
-                          crossAxisCount: columns,
-                          crossAxisSpacing: spacing,
-                          mainAxisSpacing: spacing,
-                          keyOf: (tile) => tile.widget.family,
-                          crossAxisCellCountOf: (tile) => tile.size.cross * 4,
-                          itemBuilder: (_, tile) => buildDashboardTile(tile),
-                          canResize: (tile) => tile.widget.resizable,
-                          onResize: _resizeWidget,
-                          canDelete: (tile) => tile.widget.widget.isDeletable,
-                          onDelete: _deleteWidget,
-                          onMove: _moveWidget,
-                          overlayWrapper: (child) => DashboardWidgetMetrics(
-                            unitHeight: unitHeight,
-                            spacing: spacing,
-                            columns: columns,
-                            child: child,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      20 + rise,
+                      20,
+                      20 + bottomReserve,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildIsEdit(
+                          (isEdit) => isEdit
+                              ? SystemBackBlock(
+                                  child: CommonPopScope(
+                                    onPop: () {
+                                      _handleUpdateIsEdit();
+                                      return false;
+                                    },
+                                    child: const SizedBox.shrink(),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        _buildIsEdit(
+                          (isEdit) => EditableGrid<DashboardTile>(
+                            key: const ValueKey('dashboard-grid'),
+                            items: children,
+                            editing: isEdit,
+                            crossAxisCount: columns,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            keyOf: (tile) => tile.widget.family,
+                            crossAxisCellCountOf: (tile) => tile.size.cross * 4,
+                            itemBuilder: (_, tile) => buildDashboardTile(tile),
+                            canResize: (tile) => tile.widget.resizable,
+                            onResize: _resizeWidget,
+                            canDelete: (tile) => tile.widget.widget.isDeletable,
+                            onDelete: _deleteWidget,
+                            onMove: _moveWidget,
+                            overlayWrapper: (child) => DashboardWidgetMetrics(
+                              unitHeight: unitHeight,
+                              spacing: spacing,
+                              columns: columns,
+                              child: child,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
 
-              return DashboardWidgetMetrics(
-                unitHeight: unitHeight,
-                spacing: spacing,
-                columns: columns,
-                child: dashboardContent,
-              );
-            },
+                return DashboardWidgetMetrics(
+                  unitHeight: unitHeight,
+                  spacing: spacing,
+                  columns: columns,
+                  child: dashboardContent,
+                );
+              },
+            ),
           ),
         ),
       ),

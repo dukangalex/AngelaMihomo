@@ -1,6 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
+import 'package:bett_box/widgets/glass.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -86,6 +87,7 @@ class CommonCard extends StatelessWidget {
     this.onLongPress,
     this.selectWidget,
     this.radius,
+    this.glassTier,
     required this.child,
     this.padding,
     this.enterAnimated = false,
@@ -104,56 +106,22 @@ class CommonCard extends StatelessWidget {
   final Info? info;
   final CommonCardType type;
   final double? radius;
+
+  /// Explicit glass hierarchy tier. Defaults to the home-page ruler:
+  /// selected cards read as the primary layer, everything else secondary.
+  final GlassTier? glassTier;
   final Clip clipBehavior;
   final bool elevated;
 
-  // final WidgetStateProperty<Color?>? backgroundColor;
-  // final WidgetStateProperty<BorderSide?>? borderSide;
-
-  BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
-    final colorScheme = context.colorScheme;
-    final hoverColor = isSelected
-        ? colorScheme.primary.opacity80
-        : colorScheme.primary.opacity60;
-    if (states.contains(WidgetState.hovered) ||
-        states.contains(WidgetState.focused) ||
-        states.contains(WidgetState.pressed)) {
-      return BorderSide(
-        color: hoverColor,
-        strokeAlign: BorderSide.strokeAlignInside,
-      );
-    }
-    final isLight = colorScheme.brightness == Brightness.light;
-    return BorderSide(
-      color: isSelected
-          ? colorScheme.primary
-          : colorScheme.outlineVariant.withValues(
-              alpha: elevated ? (isLight ? 0.65 : 0.35) : (isLight ? 0.8 : 0.4),
-            ),
-      strokeAlign: BorderSide.strokeAlignInside,
-    );
-  }
-
-  Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
-    final colorScheme = context.colorScheme;
-    if (isSelected) {
-      return type == CommonCardType.filled
-          ? colorScheme.secondaryContainer.opacity80
-          : colorScheme.secondaryContainer;
-    }
-    final isLight = colorScheme.brightness == Brightness.light;
-    return isLight
-        ? Color.lerp(
-            colorScheme.surface,
-            colorScheme.surfaceContainerLowest,
-            0.5,
-          )
-        : colorScheme.surfaceContainerHigh;
-  }
+  GlassTier get tier =>
+      glassTier ?? (isSelected ? GlassTier.primary : GlassTier.secondary);
 
   @override
   Widget build(BuildContext context) {
-    final actualRadius = radius ?? 20.0;
+    final cardTier = tier;
+    // Primary cards carry the landed 30px corner token.
+    final actualRadius =
+        radius ?? (cardTier == GlassTier.primary ? 30.0 : 20.0);
     var childWidget = child;
 
     if (info != null) {
@@ -177,32 +145,57 @@ class CommonCard extends StatelessWidget {
     }
 
     final isInteractive = onPressed != null || onLongPress != null;
-    final isLight = context.colorScheme.brightness == Brightness.light;
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
     final shape = RoundedSuperellipseBorder(
       borderRadius: BorderRadius.circular(actualRadius),
     );
-    Widget card = OutlinedButton(
-      onLongPress: onLongPress,
-      clipBehavior: clipBehavior,
-      style: ButtonStyle(
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        shape: WidgetStatePropertyAll(shape),
-        iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
-        iconSize: WidgetStateProperty.all(20),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states),
+    // The glass surface paints fill, rim and sheen; the button layer is
+    // fully transparent and only contributes interaction and ink.
+    Widget card = Stack(
+      children: [
+        Positioned.fill(
+          child: GlassSurface(
+            tier: cardTier,
+            radius: actualRadius,
+            clipShape: shape,
+          ),
         ),
-        side: WidgetStateProperty.resolveWith(
-          (states) => getBorderSide(context, states),
+        OutlinedButton(
+          onLongPress: onLongPress,
+          clipBehavior: clipBehavior,
+          style: ButtonStyle(
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            shape: WidgetStatePropertyAll(shape),
+            iconColor: WidgetStatePropertyAll(colorScheme.primary),
+            iconSize: WidgetStateProperty.all(20),
+            backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return colorScheme.primary.withValues(alpha: 0.08);
+              }
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.focused)) {
+                return colorScheme.primary.withValues(alpha: 0.05);
+              }
+              return null;
+            }),
+            side: const WidgetStatePropertyAll(BorderSide.none),
+            minimumSize: WidgetStatePropertyAll(
+              isInteractive ? null : Size.zero,
+            ),
+            tapTargetSize: isInteractive
+                ? null
+                : MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: onPressed,
+          child: childWidget,
         ),
-        minimumSize: WidgetStatePropertyAll(isInteractive ? null : Size.zero),
-        tapTargetSize: isInteractive ? null : MaterialTapTargetSize.shrinkWrap,
-      ),
-      onPressed: onPressed,
-      child: childWidget,
+      ],
     );
 
     if (elevated) {
+      final tint = GlassTint.resolve(colorScheme);
       card = DecoratedBox(
         decoration: ShapeDecoration(
           shape: shape,
@@ -212,6 +205,19 @@ class CommonCard extends StatelessWidget {
               offset: const Offset(0, 2),
               color: Colors.black.withValues(alpha: isLight ? 0.045 : 0.25),
             ),
+            // The primary layer glows in its rim color (round-7 structure).
+            if (cardTier == GlassTier.primary) ...[
+              BoxShadow(
+                blurRadius: 36,
+                offset: const Offset(0, 14),
+                color: tint.rim.withValues(alpha: isLight ? 0.22 : 0.20),
+              ),
+              BoxShadow(
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+                color: tint.rim.withValues(alpha: isLight ? 0.16 : 0.14),
+              ),
+            ],
           ],
         ),
         child: card,

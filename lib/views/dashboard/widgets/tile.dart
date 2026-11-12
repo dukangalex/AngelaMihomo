@@ -135,6 +135,7 @@ class DashboardTileCard extends StatelessWidget {
   final VoidCallback? onLongPress;
   final List<Widget> actions;
   final Widget child;
+  final GlassTier? glassTier;
 
   const DashboardTileCard({
     super.key,
@@ -147,6 +148,7 @@ class DashboardTileCard extends StatelessWidget {
     this.onPressed,
     this.onLongPress,
     this.actions = const [],
+    this.glassTier,
   });
 
   @override
@@ -156,6 +158,7 @@ class DashboardTileCard extends StatelessWidget {
       child: CommonCard(
         onPressed: onPressed,
         onLongPress: onLongPress,
+        glassTier: glassTier,
         child: DashboardDecor(
           mark: mark,
           bottom: markBottom,

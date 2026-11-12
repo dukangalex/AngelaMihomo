@@ -21,6 +21,7 @@ Widget _buildApp({
   required Widget body,
   bool mobile = true,
   bool scrollEdgeFade = true,
+  Color? backgroundColor,
 }) {
   return ProviderScope(
     overrides: [isMobileViewProvider.overrideWith((ref) => mobile)],
@@ -28,6 +29,7 @@ Widget _buildApp({
       home: CommonScaffold(
         title: 'title',
         scrollEdgeFade: scrollEdgeFade,
+        backgroundColor: backgroundColor,
         body: body,
       ),
     ),
@@ -79,7 +81,12 @@ void main() {
   });
 
   testWidgets('纯色背景下只在内容滚离顶部时叠加渐隐，且不改变布局', (tester) async {
-    await tester.pumpWidget(_buildApp(body: _list()));
+    // Explicit opaque background = the remaining solid-color mode; the
+    // default (no background) now sits on the glass field and fades by
+    // mask instead, covered by the transparent-background test below.
+    await tester.pumpWidget(
+      _buildApp(body: _list(), backgroundColor: const Color(0xFFEEEEEE)),
+    );
     await tester.pumpAndSettle();
     final appBarBottom = tester.getBottomLeft(find.byType(AppBar)).dy;
     expect(tester.getTopLeft(find.byType(ListView)).dy, appBarBottom);
@@ -149,6 +156,7 @@ void main() {
 
     await tester.pumpWidget(
       _buildApp(
+        backgroundColor: const Color(0xFFEEEEEE),
         body: ListView.builder(
           padding: const EdgeInsets.only(top: 8),
           itemCount: 100,
@@ -161,7 +169,9 @@ void main() {
     final appBarBottom = tester.getBottomLeft(find.byType(AppBar)).dy;
     final plainTop = tester.getTopLeft(find.text('item 0')).dy;
 
-    await tester.pumpWidget(_buildApp(body: risen()));
+    await tester.pumpWidget(
+      _buildApp(body: risen(), backgroundColor: const Color(0xFFEEEEEE)),
+    );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(find.text('item 0')).dy, plainTop);
     expect(
