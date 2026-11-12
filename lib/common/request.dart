@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
@@ -269,26 +270,11 @@ class Request {
     return null;
   }
 
-  List<String> _getPrimaryIpSources() {
-    // HTTPS only: the exit IP is sensitive, so it is never requested over
-    // plaintext HTTP (the previous plaintext source had no TLS endpoint).
-    return ['https://get.geojs.io/v1/ip/geo.json', 'https://api.ip.sb/geoip'];
-  }
-
-  final List<String> _domesticIpSources = [
-    'https://myip.ipip.net/json',
-    'https://uapis.cn/api/v1/network/myip',
-  ];
-
-  final List<String> _cloudflareIpInfoSources = [
-    'https://ip.sb/cdn-cgi/trace',
-    'https://api.ip.sb/cdn-cgi/trace',
-  ];
-
-  final List<String> _cloudflareDomesticIpSources = [
-    'https://www.qualcomm.cn/cdn-cgi/trace',
-    'https://www.teamviewer.cn/cdn-cgi/trace',
-  ];
+  // Exit IP discovery uses only Cloudflare's official trace endpoint:
+  // the service sees nothing beyond the exit IP itself. All geo
+  // enrichment (country/province/city/ASN) is resolved on-device from
+  // the core's local databases; no third-party geo API is ever queried.
+  static const _exitIpTraceSources = ['https://cloudflare.com/cdn-cgi/trace'];
 
   Future<Result<IpInfo?>> _checkIpFromSources(
     List<String> sources,
@@ -414,15 +400,37 @@ class Request {
     );
   }
 
+  Future<Result<IpInfo?>> _checkIpWithLocalGeo({
+    CancelToken? cancelToken,
+    Duration? timeout,
+    void Function(IpInfo info)? onUpdate,
+  }) async {
+    final res = await _checkIpFromSources(
+      _exitIpTraceSources,
+      cancelToken,
+      timeout,
+      onUpdate: onUpdate,
+    );
+    final traceInfo = res.data;
+    if (res.isError || traceInfo == null || traceInfo.ip.isEmpty) {
+      return res;
+    }
+    final enriched = await clashCore.queryIpGeo(traceInfo.ip);
+    if (enriched == null) {
+      return res;
+    }
+    onUpdate?.call(enriched);
+    return Result.success(enriched);
+  }
+
   Future<Result<IpInfo?>> checkIp({
     CancelToken? cancelToken,
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
   }) async {
-    return _checkIpFromSources(
-      _getPrimaryIpSources(),
-      cancelToken,
-      timeout,
+    return _checkIpWithLocalGeo(
+      cancelToken: cancelToken,
+      timeout: timeout,
       onUpdate: onUpdate,
     );
   }
@@ -432,29 +440,10 @@ class Request {
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
   }) async {
-    return _checkIpFromSources(
-      _domesticIpSources,
-      cancelToken,
-      timeout,
+    return _checkIpWithLocalGeo(
+      cancelToken: cancelToken,
+      timeout: timeout,
       onUpdate: onUpdate,
-    );
-  }
-
-  Future<Result<IpInfo?>> checkIpCloudflare({
-    CancelToken? cancelToken,
-    Duration? timeout,
-  }) async {
-    return _checkIpFromSources(_cloudflareIpInfoSources, cancelToken, timeout);
-  }
-
-  Future<Result<IpInfo?>> checkIpDomesticCloudflare({
-    CancelToken? cancelToken,
-    Duration? timeout,
-  }) async {
-    return _checkIpFromSources(
-      _cloudflareDomesticIpSources,
-      cancelToken,
-      timeout,
     );
   }
 
@@ -585,39 +574,15 @@ class Request {
       return Result.success(cached);
     }
 
-    final effectiveTimeout = timeout ?? const Duration(seconds: 5);
-    // HTTPS only (see _getPrimaryIpSources).
-    final url = 'https://get.geojs.io/v1/ip/geo/$ip.json';
-
-    try {
-      final res = await _dio.get<Map<String, dynamic>>(
-        url,
-        cancelToken: cancelToken,
-        options: Options(
-          responseType: ResponseType.json,
-          receiveTimeout: effectiveTimeout,
-          sendTimeout: effectiveTimeout,
-        ),
-      );
-
-      if (res.statusCode == HttpStatus.ok && res.data != null) {
-        final data = res.data!;
-        final status = data['status']?.toString();
-        if (status == 'fail') {
-          final message = data['message']?.toString() ?? 'query failed';
-          return Result.error(message);
-        }
-        final ipInfo = IpInfo.fromJson(data);
-        await _saveCachedIp(cacheKey, ipInfo);
-        return Result.success(ipInfo);
-      }
+    // Fully local: the detail is resolved from the on-device GeoIP
+    // databases through the core bridge. No online geo service is
+    // queried, so the lookup leaks nothing and also works offline.
+    final ipInfo = await clashCore.queryIpGeo(ip);
+    if (ipInfo == null) {
       return Result.error('query failed');
-    } catch (e) {
-      if (e is DioException && e.type == DioExceptionType.cancel) {
-        return Result.error('cancelled');
-      }
-      return Result.error(e.toString());
     }
+    await _saveCachedIp(cacheKey, ipInfo);
+    return Result.success(ipInfo);
   }
 }
 

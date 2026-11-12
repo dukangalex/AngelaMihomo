@@ -124,21 +124,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
     );
   }
 
-  Widget _buildIconButton({
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onPressed,
-  }) {
-    return IconButton(
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-      icon: Icon(icon, size: 15, color: context.colorScheme.onSurfaceVariant),
-      tooltip: tooltip,
-      onPressed: onPressed,
-    );
-  }
-
   void _showMoreIpInfoDialog() {
     final rawIpInfo = detectionState.rawIpInfo;
     if (rawIpInfo == null) return;
@@ -186,14 +171,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
         iconColor: context.colorScheme.primary,
         label: appLocalizations.ipAddress,
         value: rawIpInfo.ip,
-        action: _buildIconButton(
-          icon: Icons.open_in_new,
-          tooltip: appLocalizations.viewDetailedIpData,
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop();
-            globalState.openUrl('https://www.ip2location.com/demo');
-          },
-        ),
       ),
       if (countryContinent.isNotEmpty || flagEmoji.isNotEmpty)
         _buildStatTile(

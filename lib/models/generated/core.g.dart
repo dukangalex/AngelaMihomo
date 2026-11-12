@@ -359,6 +359,7 @@ const _$ActionMethodEnumMap = {
   ActionMethod.startListener: 'startListener',
   ActionMethod.stopListener: 'stopListener',
   ActionMethod.getCountryCode: 'getCountryCode',
+  ActionMethod.queryIpGeo: 'queryIpGeo',
   ActionMethod.getMemory: 'getMemory',
   ActionMethod.crash: 'crash',
   ActionMethod.setupConfig: 'setupConfig',

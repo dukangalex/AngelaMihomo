@@ -716,6 +716,32 @@ class IpInfo {
     return country;
   }
 
+  /// Builds an [IpInfo] from the core bridge's local geo lookup payload
+  /// (the queryIpGeo action): country/province/city come from the
+  /// on-device city database with a country-database fallback, ASN and
+  /// organization from the ASN database. Producing this data involved
+  /// no network request at all.
+  factory IpInfo.fromLocalGeo(String ip, Map<String, dynamic> data) {
+    String text(String key) => data[key]?.toString() ?? '';
+    String? opt(String key) {
+      final value = text(key);
+      return value.isEmpty ? null : value;
+    }
+
+    final asName = opt('asName');
+    return IpInfo(
+      ip: ip,
+      countryCode: text('countryCode'),
+      country: opt('country'),
+      province: opt('province'),
+      city: opt('city'),
+      isp: asName,
+      asn: opt('asn'),
+      asName: asName,
+      continentCode: opt('continentCode'),
+    );
+  }
+
   static IpInfo fromJson(Map<String, dynamic> json) {
     if (json['ret'] == 'ok' && json['data'] is Map) {
       final data = json['data'] as Map;
@@ -815,7 +841,7 @@ class IpInfo {
         json['status'] != null) {
       if (json['status'] != null && json['status'] != 'success') {
         throw FormatException(
-          'ip-api.com status not success: ${json['message']}',
+          'IP geo status not success: ${json['message']}',
         );
       }
       final ip = (json['query'] ?? json['ip'])?.toString() ?? '';

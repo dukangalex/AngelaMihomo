@@ -465,27 +465,30 @@ func TestSpeedTesterResolvesExitIP(t *testing.T) {
 }
 
 func TestSpeedTesterProbeFetchesExitInfo(t *testing.T) {
-	var gotQuery string
-	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotQuery = r.URL.RawQuery
-		_, _ = w.Write([]byte(`{"ip":"203.0.113.9","country":"Hong Kong","country_code":"HK","country_code3":"HKG","city":"Central","organization_name":"HKT"}`))
+	// Exit info is assembled on-device: the exit IP comes from the
+	// trace echo and geo fields come from the local mmdb databases,
+	// so with no databases installed the payload still carries the IP
+	// and reports hasCityDb=false. No third-party geo API is involved.
+	echo := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ip=203.0.113.9\nloc=HK\n"))
 	}))
-	t.Cleanup(api.Close)
-	old := speedTestExitInfoURL
-	speedTestExitInfoURL = api.URL
-	t.Cleanup(func() { speedTestExitInfoURL = old })
+	t.Cleanup(echo.Close)
+	oldURLs := speedTestExitIPURLs
+	speedTestExitIPURLs = []string{echo.URL}
+	t.Cleanup(func() { speedTestExitIPURLs = oldURLs })
 
 	tester := newTestSpeedTester(newSpeedTestServer(t))
 	tester.probeOnly(context.Background())
 	state := tester.snapshot()
-	if gotQuery != "" || !strings.Contains(string(state.ExitInfo), "203.0.113.9") {
-		t.Fatalf("exit info not fetched: query=%q info=%s", gotQuery, state.ExitInfo)
+	if !strings.Contains(string(state.ExitInfo), "203.0.113.9") ||
+		!strings.Contains(string(state.ExitInfo), `"hasCityDb":false`) {
+		t.Fatalf("exit info not assembled locally: %s", state.ExitInfo)
 	}
 
-	speedTestExitInfoURL = "http://127.0.0.1:1/"
+	speedTestExitIPURLs = []string{"http://127.0.0.1:1/unreachable"}
 	failing := newTestSpeedTester(newSpeedTestServer(t))
 	failing.probeOnly(context.Background())
 	if state := failing.snapshot(); state.ExitInfo != nil || state.Error != "" {
-		t.Fatalf("unreachable api must not fail the probe: %+v", state)
+		t.Fatalf("unreachable echo must not fail the probe: %+v", state)
 	}
 }

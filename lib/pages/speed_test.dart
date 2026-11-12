@@ -631,7 +631,12 @@ class _SpeedTestPageState extends ConsumerState<SpeedTestPage>
 
   VoidCallback? _exitInfoAction(SpeedTestState? state) {
     final data = state?.exitInfo;
-    final info = data == null ? null : IpInfo.fromJson(data);
+    final exitIp = data?['ip']?.toString() ?? '';
+    // The core assembles exit info locally (same payload shape as the
+    // queryIpGeo bridge), so parse it with the local-geo factory.
+    final info = data == null || exitIp.isEmpty
+        ? null
+        : IpInfo.fromLocalGeo(exitIp, data);
     if (_preferDomesticIp(state)) return () => _showDomesticIp(info);
     if (info == null || info.ip.isEmpty) return null;
     return () => showIpDetailDialog(context, info.ip, preloaded: info);

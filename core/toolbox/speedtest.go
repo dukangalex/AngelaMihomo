@@ -22,6 +22,7 @@ import (
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/dialer"
+	"github.com/metacubex/mihomo/component/mmdb"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
@@ -69,14 +70,12 @@ const (
 	speedTestErrorCancelled   = "cancelled"
 )
 
+// Exit IP discovery uses only Cloudflare's official trace endpoint: the
+// service sees nothing beyond the exit IP itself. Geo enrichment is done
+// locally against the on-device mmdb databases and never leaves the app.
 var speedTestExitIPURLs = []string{
 	"https://cloudflare.com/cdn-cgi/trace",
-	"https://api.ip.sb/cdn-cgi/trace",
 }
-
-// HTTPS only: the exit IP is sensitive and must not be requested over
-// plaintext HTTP (the previous plaintext endpoint offers no TLS).
-var speedTestExitInfoURL = "https://get.geojs.io/v1/ip/geo.json"
 
 var (
 	speedtestNetServersURL = "https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true"
@@ -488,21 +487,33 @@ func (t *speedTester) probeOnly(ctx context.Context) {
 }
 
 func (t *speedTester) fetchExitInfo(ctx context.Context) json.RawMessage {
-	fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	resp, body, err := t.fetch(fetchCtx, t.probe, speedTestExitInfoURL, 16*1024)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	ip := t.snapshot().ExitIp
+	if ip == "" {
+		ip = t.fetchExitIP(ctx, nil)
+	}
+	if ip == "" {
 		return nil
 	}
-	var info struct {
-		Status string `json:"status"`
-		Query  string `json:"query"`
-		IP     string `json:"ip"`
-	}
-	if json.Unmarshal(body, &info) != nil || info.Status == "fail" || (info.Query == "" && info.IP == "") {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
 		return nil
 	}
-	return json.RawMessage(body)
+	geo := mmdb.LookupGeo(parsedIP)
+	payload, err := json.Marshal(map[string]any{
+		"ip":            ip,
+		"countryCode":   geo.CountryCode,
+		"country":       geo.Country,
+		"province":      geo.Province,
+		"city":          geo.City,
+		"asn":           geo.ASN,
+		"asName":        geo.ASName,
+		"continentCode": geo.ContinentCode,
+		"hasCityDb":     geo.HasCityDb,
+	})
+	if err != nil {
+		return nil
+	}
+	return json.RawMessage(payload)
 }
 
 func (t *speedTester) run(ctx context.Context, push func(SpeedTestState)) {

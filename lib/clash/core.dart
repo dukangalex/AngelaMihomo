@@ -446,6 +446,25 @@ class ClashCore {
     return IpInfo(ip: ip, countryCode: countryCode);
   }
 
+  /// Resolves [ip] against the on-device GeoIP databases (city, country
+  /// and ASN) through the core bridge. Fully local: nothing is sent
+  /// anywhere, and a missing city database simply yields coarser data.
+  Future<IpInfo?> queryIpGeo(String ip) async {
+    final res = await clashInterface.queryIpGeo(ip);
+    if (res.isEmpty) {
+      return null;
+    }
+    try {
+      final data = json.decode(res);
+      if (data is Map<String, dynamic>) {
+        return IpInfo.fromLocalGeo(ip, data);
+      }
+    } catch (e) {
+      commonPrint.warn('Failed to parse local geo result: $e');
+    }
+    return null;
+  }
+
   Future<Traffic> getTotalTraffic() async {
     final totalTrafficString = await clashInterface.getTotalTraffic();
     if (totalTrafficString.isEmpty) {
