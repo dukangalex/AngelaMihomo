@@ -2,6 +2,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/app_lock.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -618,6 +619,7 @@ class ApplicationSettingView extends StatelessWidget {
         if (system.isWindows || system.isLinux) const AlwaysShowTitleBarItem(),
       ],
       const ShowStartSwitchItem(),
+      const AppLockEntryItem(),
       if (system.isDesktop) const SidebarFlyoutItem(),
       if (system.isAndroid) const NavBarHapticFeedbackItem(),
       if (system.isMacOS) const KeepDockIconItem(),

@@ -1489,5 +1489,37 @@ class MessageLookup extends MessageLookupByLibrary {
       "文件系统不支持文件能力（xattr），已回退到 setuid",
     ),
     "years": m52,
+    "appLock": MessageLookupByLibrary.simpleMessage("应用锁"),
+    "appLockBiometric": MessageLookupByLibrary.simpleMessage("使用生物识别"),
+    "appLockBiometricNoHardware": MessageLookupByLibrary.simpleMessage(
+      "这台设备没有指纹或面部识别硬件。",
+    ),
+    "appLockBiometricNotEnrolled": MessageLookupByLibrary.simpleMessage(
+      "这台设备还没有录入指纹或面部——先去系统设置里录一个。",
+    ),
+    "appLockBiometricUnavailable": MessageLookupByLibrary.simpleMessage(
+      "此设备没有可用的生物识别",
+    ),
+    "appLockBiometricUnsupported": MessageLookupByLibrary.simpleMessage(
+      "当前平台不支持生物识别解锁。",
+    ),
+    "appLockConfirmPin": MessageLookupByLibrary.simpleMessage("再次输入 PIN"),
+    "appLockDesc": MessageLookupByLibrary.simpleMessage(
+      "打开应用时要求输入 PIN。只锁界面，VPN 服务照常运行。",
+    ),
+    "appLockEnterPin": MessageLookupByLibrary.simpleMessage("输入 PIN"),
+    "appLockNoRecovery": MessageLookupByLibrary.simpleMessage(
+      "PIN 没有找回方式。忘记后只能清除应用数据重新进入。",
+    ),
+    "appLockPinMismatch": MessageLookupByLibrary.simpleMessage("两次输入不一致"),
+    "appLockRelock": MessageLookupByLibrary.simpleMessage("离开后多久重新锁定"),
+    "appLockRelock1m": MessageLookupByLibrary.simpleMessage("1 分钟"),
+    "appLockRelock30s": MessageLookupByLibrary.simpleMessage("30 秒"),
+    "appLockRelock5m": MessageLookupByLibrary.simpleMessage("5 分钟"),
+    "appLockRelockImmediate": MessageLookupByLibrary.simpleMessage("立即"),
+    "appLockSetPin": MessageLookupByLibrary.simpleMessage("设置 PIN（4-6 位）"),
+    "appLockUnlockBiometric": MessageLookupByLibrary.simpleMessage("用生物识别解锁"),
+    "appLockWait": MessageLookupByLibrary.simpleMessage("尝试次数过多，请稍后再试。"),
+    "appLockWrongPin": MessageLookupByLibrary.simpleMessage("PIN 不正确"),
   };
 }
