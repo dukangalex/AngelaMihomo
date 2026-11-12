@@ -1193,5 +1193,6 @@
   "systemExplicitSwitch": "Switch",
   "systemExplicitTitle": "System options",
   "profileSwitchFailedRollback": "Couldn't switch to the new profile, so the previous profile was restored",
-  "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again"
+  "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again",
+  "mihomoCoreVersion": "Mihomo core version"
 }

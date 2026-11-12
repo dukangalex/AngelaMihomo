@@ -1191,5 +1191,6 @@
   "systemExplicitRuleModeTitle": "切换到规则模式？",
   "systemExplicitSubtitle": "自适应通路、防隐私、中国直连",
   "systemExplicitSwitch": "切换",
-  "systemExplicitTitle": "系统显式"
+  "systemExplicitTitle": "系统显式",
+  "mihomoCoreVersion": "Mihomo core version"
 }

@@ -5,6 +5,7 @@ export 'constant.dart';
 export 'context.dart';
 export 'dashboard_metrics.dart';
 export 'converter.dart';
+export 'core_version.dart';
 export 'datetime.dart';
 export 'fixed.dart';
 export 'identity.dart';

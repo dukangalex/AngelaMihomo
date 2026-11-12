@@ -1675,6 +1675,11 @@ class AppLocalizations {
     return Intl.message('Couldn\'t switch profiles. The current profile is unchanged; check it and try again', name: 'profileSwitchFailed', desc: '', args: []);
   }
 
+  /// `Mihomo core version`
+  String get mihomoCoreVersion {
+    return Intl.message('Mihomo core version', name: 'mihomoCoreVersion', desc: '', args: []);
+  }
+
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);

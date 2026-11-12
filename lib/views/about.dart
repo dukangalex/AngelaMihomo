@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/config.dart';
@@ -7,14 +6,6 @@ import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-@immutable
-class Contributor {
-  final String avatar;
-  final String name;
-
-  const Contributor({required this.avatar, required this.name});
-}
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
@@ -58,19 +49,6 @@ class AboutView extends StatelessWidget {
         icon: Icons.groups_outlined,
         onTap: () => globalState.openUrl('https://t.me/AngelaMihomoGroup'),
       ),
-      _LinkTile(
-        prefix: 'Forked from',
-        title: 'Bettbox',
-        icon: Icons.code,
-        onTap: () =>
-            globalState.openUrl('https://github.com/appshubcc/Bettbox'),
-      ),
-      _LinkTile(
-        prefix: 'Powered by',
-        title: 'Mihomo',
-        icon: Icons.memory,
-        onTap: () => globalState.openUrl('https://github.com/MetaCubeX/mihomo'),
-      ),
     ];
     return generateSection(
       title: appLocalizations.more,
@@ -81,78 +59,6 @@ class AboutView extends StatelessWidget {
             right: i + 1 < links.length ? links[i + 1] : null,
           ),
       ],
-    );
-  }
-
-  List<Widget> _buildContributorsSection() {
-    final contributors = [
-      const Contributor(
-        avatar: 'assets/images/avatars/june2.jpg',
-        name: 'June2',
-      ),
-      const Contributor(avatar: 'assets/images/avatars/arue.jpg', name: 'Arue'),
-      const Contributor(
-        avatar: 'assets/images/avatars/dabaozi.jpg',
-        name: '大包子',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/xiaolou.png',
-        name: '小楼',
-      ),
-      const Contributor(avatar: 'assets/images/avatars/www.jpg', name: 'Www'),
-      const Contributor(
-        avatar: 'assets/images/avatars/AIsouler.jpg',
-        name: 'AIsouler',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/songchenwen.jpg',
-        name: 'songchenwen',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/EriDeLee.jpg',
-        name: 'EriDeLee',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/AdySnowflake.png',
-        name: 'AdySnowflake',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/CyberVacation.jpg',
-        name: 'CyberVacation',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/VillagerTom.png',
-        name: 'VillagerTom',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/ZeonX.jpg',
-        name: 'ZeonX',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/feitianmoo.png',
-        name: 'feitianmoo',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/kouhe3.jpg',
-        name: 'kouhe3',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/soffchen.png',
-        name: 'soffchen',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/utafrali.jpg',
-        name: 'utafrali',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/wfion.png',
-        name: 'wfion',
-      ),
-    ]..shuffle();
-    return generateSection(
-      separated: false,
-      title: appLocalizations.otherContributors,
-      items: [ListItem(title: _ContributorsRow(contributors: contributors))],
     );
   }
 
@@ -189,6 +95,18 @@ class AboutView extends StatelessWidget {
                             '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
+                          // T61: the bundled Mihomo core version, fed from
+                          // core/CORE_VERSION by setup.dart (same source
+                          // as the value injected into the core binary).
+                          Text(
+                            '${appLocalizations.mihomoCoreVersion} $bundledCoreVersion',
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ],
                       ),
                     ],
@@ -216,30 +134,8 @@ class AboutView extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       ..._buildMoreSection(context),
-      ..._buildContributorsSection(),
     ];
     return generateListView(items);
-  }
-}
-
-class Avatar extends StatelessWidget {
-  final Contributor contributor;
-
-  const Avatar({super.key, required this.contributor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: 36,
-          height: 36,
-          child: CircleAvatar(foregroundImage: AssetImage(contributor.avatar)),
-        ),
-        const SizedBox(height: 4),
-        Text(contributor.name, style: context.textTheme.bodySmall),
-      ],
-    );
   }
 }
 
@@ -289,79 +185,6 @@ class _DeveloperModeDetectorState extends State<_DeveloperModeDetector> {
   }
 }
 
-class _ContributorsRow extends StatefulWidget {
-  final List<Contributor> contributors;
-
-  const _ContributorsRow({required this.contributors});
-
-  @override
-  State<_ContributorsRow> createState() => _ContributorsRowState();
-}
-
-class _ContributorsRowState extends State<_ContributorsRow> {
-  final _controller = ScrollController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Shader _createEdgeShader(Rect rect) {
-    final position = _controller.hasClients ? _controller.position : null;
-    final hasBefore = position != null && position.extentBefore > 0;
-    final hasAfter = position == null || position.extentAfter > 0;
-    return LinearGradient(
-      colors: [
-        hasBefore ? Colors.transparent : Colors.white,
-        Colors.white,
-        Colors.white,
-        hasAfter ? Colors.transparent : Colors.white,
-      ],
-      stops: const [0, 0.1, 0.9, 1],
-    ).createShader(rect);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScrollConfiguration(
-      behavior: ScrollConfiguration.of(context).copyWith(
-        scrollbars: false,
-        dragDevices: PointerDeviceKind.values.toSet(),
-      ),
-      child: MediaQuery.removePadding(
-        context: context,
-        removeLeft: true,
-        removeTop: true,
-        removeRight: true,
-        removeBottom: true,
-        child: Scrollbar(
-          controller: _controller,
-          thumbVisibility: true,
-          thickness: 4,
-          radius: const Radius.circular(2),
-          child: ShaderMask(
-            shaderCallback: _createEdgeShader,
-            blendMode: BlendMode.dstIn,
-            child: SingleChildScrollView(
-              controller: _controller,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Wrap(
-                spacing: 24,
-                children: [
-                  for (final contributor in widget.contributors)
-                    Avatar(contributor: contributor),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _LinkGridRow extends StatelessWidget {
   final _LinkTile left;
   final _LinkTile? right;
@@ -393,14 +216,12 @@ class _LinkGridRow extends StatelessWidget {
 }
 
 class _LinkTile extends StatelessWidget {
-  final String? prefix;
   final String title;
   final IconData icon;
   final bool external;
   final VoidCallback onTap;
 
   const _LinkTile({
-    this.prefix,
     required this.title,
     required this.icon,
     this.external = true,
@@ -410,7 +231,6 @@ class _LinkTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final prefix = this.prefix;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -441,19 +261,8 @@ class _LinkTile extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    if (prefix != null)
-                      TextSpan(
-                        text: '$prefix ',
-                        style: context.textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant.opacity80,
-                        ),
-                      ),
-                    TextSpan(text: title),
-                  ],
-                ),
+              child: Text(
+                title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyMedium?.copyWith(

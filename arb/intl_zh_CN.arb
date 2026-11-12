@@ -1193,5 +1193,6 @@
   "systemExplicitSwitch": "切换",
   "systemExplicitTitle": "系统显式",
   "profileSwitchFailedRollback": "新配置切换失败，已切回原来的配置",
-  "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试"
+  "profileSwitchFailed": "配置切换失败，当前配置未变更，请检查后重试",
+  "mihomoCoreVersion": "Mihomo 内核版本"
 }

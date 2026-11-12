@@ -1193,5 +1193,6 @@
   "systemExplicitRuleModeTitle": "Switch to rule mode?",
   "systemExplicitSubtitle": "Adaptive path, privacy, China direct",
   "systemExplicitSwitch": "Switch",
-  "systemExplicitTitle": "System options"
+  "systemExplicitTitle": "System options",
+  "mihomoCoreVersion": "Mihomo core version"
 }

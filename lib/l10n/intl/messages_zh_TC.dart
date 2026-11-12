@@ -134,6 +134,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "mihomoCoreVersion": MessageLookupByLibrary.simpleMessage("Mihomo core version"),
     "about": MessageLookupByLibrary.simpleMessage("關於"),
     "accessControl": MessageLookupByLibrary.simpleMessage("分應用代理"),
     "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
