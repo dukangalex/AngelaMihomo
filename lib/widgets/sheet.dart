@@ -5,6 +5,7 @@ import 'package:bett_box/state.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'glass.dart';
 import 'pop_scope.dart';
 import 'scaffold.dart';
 import 'side_sheet.dart';
@@ -355,16 +356,14 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
       );
     }
 
-    final backgroundColor = context.colorScheme.surfaceContainerLow;
     final isTv = globalState.isAndroidTV;
 
-    final sheetContent = Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: ShapeDecoration(
-        color: backgroundColor,
-        shape: const RoundedSuperellipseBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
-        ),
+    final sheetContent = GlassSurface(
+      tier: GlassTier.dialog,
+      radius: 28,
+      live: true,
+      clipShape: const RoundedSuperellipseBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -1,5 +1,6 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/common.dart';
+import 'package:bett_box/widgets/glass.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CommonPopupRoute<T> extends PopupRoute<T> {
@@ -333,36 +334,37 @@ class CommonPopupMenu extends StatelessWidget {
     final isLight = colorScheme.brightness == Brightness.light;
     return IntrinsicHeight(
       child: IntrinsicWidth(
-        child: Material(
-          elevation: 8,
-          shadowColor: Colors.black.withValues(alpha: isLight ? 0.5 : 0.8),
-          color: isLight
-              ? colorScheme.surfaceContainerLowest
-              : colorScheme.surfaceContainerHighest,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedSuperellipseBorder(
-            borderRadius: BorderRadius.circular(26),
-            side: BorderSide(
-              color: colorScheme.outlineVariant.withValues(
-                alpha: isLight ? 0.45 : 0.25,
-              ),
+        child: GlassSurface(
+          tier: GlassTier.dialog,
+          radius: 26,
+          live: true,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isLight ? 0.22 : 0.4),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final item in items.asMap().entries) ...[
-                  _popupMenuItem(context, item: item.value, index: item.key),
-                  if (item.value != items.last) const SizedBox(height: 2),
+          ],
+          // Transparent Material: keeps the ink surface the menu items
+          // need (the pre-glass Material provided it), paints nothing.
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final item in items.asMap().entries) ...[
+                    _popupMenuItem(context, item: item.value, index: item.key),
+                    if (item.value != items.last) const SizedBox(height: 2),
+                  ],
+                  if (footer case final footer?) ...[
+                    const Divider(height: 9, indent: 8, endIndent: 8),
+                    footer,
+                  ],
                 ],
-                if (footer case final footer?) ...[
-                  const Divider(height: 9, indent: 8, endIndent: 8),
-                  footer,
-                ],
-              ],
+              ),
             ),
           ),
         ),

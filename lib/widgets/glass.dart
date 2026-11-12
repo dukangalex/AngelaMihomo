@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart' show BackdropFilterLayer;
 import 'package:material_ui/material_ui.dart';
 
 /// Liquid glass material system (T83/T64/T82).
@@ -189,6 +190,10 @@ class GlassSurface extends StatefulWidget {
   final bool? live;
   final Widget? child;
 
+  /// Optional drop shadow for floating surfaces (popups, dialogs),
+  /// painted outside the clip.
+  final List<BoxShadow>? boxShadow;
+
   const GlassSurface({
     super.key,
     required this.tier,
@@ -196,6 +201,7 @@ class GlassSurface extends StatefulWidget {
     this.clipShape,
     this.live,
     this.child,
+    this.boxShadow,
   });
 
   @override
@@ -239,55 +245,29 @@ class _GlassSurfaceState extends State<GlassSurface> {
     final tint = GlassTint.resolve(scheme);
     final tokens = GlassTokens.of(widget.tier, scheme.brightness);
     final live = widget.live ?? GlassScope.liveOf(context);
-    return ClipPath(
+    final clipped = ClipPath(
       clipper: _ShapeClipper(_shape),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final size = constraints.biggest;
-          Widget layer;
-          final shader = _shader;
-          if (live && shader != null && size.isFinite && !size.isEmpty) {
-            shader
-              ..setFloat(0, size.width)
-              ..setFloat(1, size.height)
-              ..setFloat(2, widget.radius)
-              ..setFloat(3, tint.face.r)
-              ..setFloat(4, tint.face.g)
-              ..setFloat(5, tint.face.b)
-              ..setFloat(6, tokens.faceTintAlpha)
-              ..setFloat(7, tint.rim.r)
-              ..setFloat(8, tint.rim.g)
-              ..setFloat(9, tint.rim.b)
-              ..setFloat(10, GlassTokens.baseBand * tokens.bandScale)
-              ..setFloat(11, tokens.strength)
-              ..setFloat(12, tokens.sheen)
-              ..setFloat(13, tokens.rimAlpha)
-              ..setFloat(14, tokens.contrast)
-              ..setFloat(15, tokens.saturate)
-              ..setFloat(16, tokens.bright);
-            layer = BackdropFilter(
-              filter: ui.ImageFilter.shader(shader),
-              child: const SizedBox.expand(),
-            );
-          } else {
-            layer = CustomPaint(
-              painter: _StaticGlassPainter(
-                shape: _shape,
-                tokens: tokens,
-                tint: tint,
-                baseColor: scheme.surface,
-              ),
-              child: const SizedBox.expand(),
-            );
-          }
-          return Stack(
-            children: [
-              Positioned.fill(child: layer),
-              if (widget.child != null) widget.child!,
-            ],
-          );
-        },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: _GlassBackdrop(
+              shader: live ? _shader : null,
+              radius: widget.radius,
+              shape: _shape,
+              tokens: tokens,
+              tint: tint,
+              baseColor: scheme.surface,
+            ),
+          ),
+          if (widget.child != null) widget.child!,
+        ],
       ),
+    );
+    final shadow = widget.boxShadow;
+    if (shadow == null || shadow.isEmpty) return clipped;
+    return DecoratedBox(
+      decoration: ShapeDecoration(shape: _shape, shadows: shadow),
+      child: clipped,
     );
   }
 }
@@ -324,8 +304,11 @@ class _StaticGlassPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final path = shape.getOuterPath(rect);
-    final fill = Color.lerp(baseColor, tint.face, tokens.staticDye)!
-        .withValues(alpha: tokens.staticFillAlpha);
+    final fill = Color.lerp(
+      baseColor,
+      tint.face,
+      tokens.staticDye,
+    )!.withValues(alpha: tokens.staticFillAlpha);
     canvas.drawPath(path, Paint()..color = fill);
 
     canvas.save();
@@ -474,4 +457,182 @@ class _GlassFieldPainter extends CustomPainter {
   @override
   bool shouldRepaint(_GlassFieldPainter oldDelegate) =>
       isLight != oldDelegate.isLight;
+}
+
+/// The painted glass layer of a [GlassSurface].
+///
+/// A leaf render object rather than a LayoutBuilder: intrinsically
+/// sized parents (popup menus, some dialog routes) ask children for
+/// intrinsic dimensions, which a LayoutBuilder cannot answer. Here the
+/// exact size is known at paint time, which is also when the shader
+/// uniforms are configured, so resizing surfaces (expanding sheets)
+/// never lag a frame.
+class _GlassBackdrop extends LeafRenderObjectWidget {
+  final ui.FragmentShader? shader;
+  final double radius;
+  final ShapeBorder shape;
+  final GlassTokens tokens;
+  final GlassTint tint;
+  final Color baseColor;
+
+  const _GlassBackdrop({
+    required this.shader,
+    required this.radius,
+    required this.shape,
+    required this.tokens,
+    required this.tint,
+    required this.baseColor,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderGlassBackdrop(
+    shader: shader,
+    radius: radius,
+    shape: shape,
+    tokens: tokens,
+    tint: tint,
+    baseColor: baseColor,
+  );
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderGlassBackdrop renderObject,
+  ) {
+    renderObject
+      ..shader = shader
+      ..radius = radius
+      ..shape = shape
+      ..tokens = tokens
+      ..tint = tint
+      ..baseColor = baseColor;
+  }
+}
+
+class _RenderGlassBackdrop extends RenderBox {
+  _RenderGlassBackdrop({
+    required ui.FragmentShader? shader,
+    required double radius,
+    required ShapeBorder shape,
+    required GlassTokens tokens,
+    required GlassTint tint,
+    required Color baseColor,
+  }) : _shader = shader,
+       _radius = radius,
+       _shape = shape,
+       _tokens = tokens,
+       _tint = tint,
+       _baseColor = baseColor;
+
+  ui.FragmentShader? _shader;
+  set shader(ui.FragmentShader? value) {
+    if (value == _shader) return;
+    final wasLive = _shader != null;
+    _shader = value;
+    if ((value != null) != wasLive) markNeedsCompositingBitsUpdate();
+    markNeedsPaint();
+  }
+
+  double _radius;
+  set radius(double value) {
+    if (value == _radius) return;
+    _radius = value;
+    markNeedsPaint();
+  }
+
+  ShapeBorder _shape;
+  set shape(ShapeBorder value) {
+    if (value == _shape) return;
+    _shape = value;
+    markNeedsPaint();
+  }
+
+  GlassTokens _tokens;
+  set tokens(GlassTokens value) {
+    if (identical(value, _tokens)) return;
+    _tokens = value;
+    markNeedsPaint();
+  }
+
+  GlassTint _tint;
+  set tint(GlassTint value) {
+    if (identical(value, _tint)) return;
+    _tint = value;
+    markNeedsPaint();
+  }
+
+  Color _baseColor;
+  set baseColor(Color value) {
+    if (value == _baseColor) return;
+    _baseColor = value;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  bool get alwaysNeedsCompositing => _shader != null;
+
+  @override
+  BackdropFilterLayer? get layer => super.layer as BackdropFilterLayer?;
+
+  /// Set once [ui.ImageFilter.shader] proves unsupported (software /
+  /// non-Impeller renderers throw at filter creation): the static
+  /// painter is the permanent fallback there, never a crash.
+  bool _shaderUnsupported = false;
+
+  void _paintStatic(PaintingContext context, Offset offset) {
+    final canvas = context.canvas;
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    _StaticGlassPainter(
+      shape: _shape,
+      tokens: _tokens,
+      tint: _tint,
+      baseColor: _baseColor,
+    ).paint(canvas, size);
+    canvas.restore();
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final shader = _shader;
+    if (shader == null || size.isEmpty || _shaderUnsupported) {
+      _paintStatic(context, offset);
+      return;
+    }
+    shader
+      ..setFloat(0, size.width)
+      ..setFloat(1, size.height)
+      ..setFloat(2, _radius)
+      ..setFloat(3, _tint.face.r)
+      ..setFloat(4, _tint.face.g)
+      ..setFloat(5, _tint.face.b)
+      ..setFloat(6, _tokens.faceTintAlpha)
+      ..setFloat(7, _tint.rim.r)
+      ..setFloat(8, _tint.rim.g)
+      ..setFloat(9, _tint.rim.b)
+      ..setFloat(10, GlassTokens.baseBand * _tokens.bandScale)
+      ..setFloat(11, _tokens.strength)
+      ..setFloat(12, _tokens.sheen)
+      ..setFloat(13, _tokens.rimAlpha)
+      ..setFloat(14, _tokens.contrast)
+      ..setFloat(15, _tokens.saturate)
+      ..setFloat(16, _tokens.bright);
+    final ui.ImageFilter filter;
+    try {
+      filter = ui.ImageFilter.shader(shader);
+    } on UnsupportedError {
+      _shaderUnsupported = true;
+      _paintStatic(context, offset);
+      return;
+    }
+    layer ??= BackdropFilterLayer();
+    layer!.filter = filter;
+    context.pushLayer(layer!, (context, offset) {}, offset);
+  }
 }
