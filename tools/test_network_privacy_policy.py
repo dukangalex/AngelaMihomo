@@ -9,6 +9,11 @@ These guard the 2026-11 security remediation decisions:
   official trace echo, which sees nothing beyond the exit IP itself.
 - Dead telemetry/token build defines (SENTRY_DSN, IPINFO_TOKEN) stay removed:
   nothing in the app consumed them, so they must not be embedded in artifacts.
+- T101 batch-1 privacy defaults (chain.22) stay pinned: no media-unlock
+  detection suite, encrypted default DNS, no forced update check, NTP off
+  by default, own neutral UA, geo auto-update off, external controller
+  closed, hide-from-recents on by default. The quarterly privacy re-scan
+  treats any failure here as release-blocking (fail-closed).
 """
 import re
 import unittest
@@ -122,6 +127,72 @@ class DeadTelemetryDefineTest(unittest.TestCase):
             self.assertNotIn('SENTRY_DSN', text, rel)
             self.assertNotIn('IPINFO_TOKEN', text, rel)
             self.assertNotIn('ipInfoToken', text, rel)
+
+
+class PrivacyDefaultsTest(unittest.TestCase):
+    """T101 batch-1 factory defaults, pinned for the quarterly re-scan."""
+
+    def test_no_media_unlock_suite(self):
+        for rel in (
+            'lib/common/media_unlock_checker.dart',
+            'lib/models/media_unlock.dart',
+            'lib/pages/media_unlock.dart',
+            'lib/views/dashboard/widgets/media_unlock.dart',
+            'lib/views/dashboard/widgets/media_unlock_small.dart',
+        ):
+            self.assertFalse((ROOT / rel).exists(), rel)
+        for rel in (
+            'lib/models/config.dart',
+            'lib/enum/enum.dart',
+            'lib/manager/app_manager.dart',
+            'lib/state.dart',
+            'lib/providers/state.dart',
+            'lib/views/toolbox.dart',
+        ):
+            self.assertNotIn('mediaUnlock', read(rel), rel)
+            self.assertNotIn('MediaUnlock', read(rel), rel)
+        self.assertNotIn('"mediaUnlock"', read('arb/intl_en.arb'))
+
+    def test_default_dns_is_encrypted(self):
+        text = read('lib/models/clash_config.dart')
+        self.assertIn(
+            "@Default(['https://cloudflare-dns.com/dns-query'])", text
+        )
+        self.assertIn("'geosite:cn': 'https://doh.pub/dns-query'", text)
+        self.assertNotIn("@Default(['1.1.1.1'])", text)
+        self.assertNotIn("'geosite:cn': '119.29.29.29'", text)
+
+    def test_no_forced_update_check(self):
+        text = read('lib/controller.dart')
+        self.assertNotIn('forceCheck', text)
+        self.assertNotIn('days: 28', text)
+
+    def test_ntp_default_off(self):
+        text = read('lib/models/clash_config.dart')
+        ntp = text[text.index('abstract class Ntp'):]
+        ntp = ntp[:ntp.index('factory Ntp.fromJson')]
+        self.assertIn('@Default(false) bool enable', ntp)
+        self.assertNotIn('@Default(true) bool enable', ntp)
+
+    def test_own_user_agent(self):
+        package = read('lib/common/package.dart')
+        self.assertIn("=> 'AngelaMihomo'", package)
+        self.assertNotIn('FlClash', package)
+        kernel = read('core/Clash.Meta/config/config.go')
+        self.assertNotIn('FlClash', kernel)
+        self.assertRegex(kernel, r'GlobalUA:\s+"AngelaMihomo"')
+
+    def test_geo_auto_update_default_off(self):
+        kernel = read('core/Clash.Meta/config/config.go')
+        self.assertRegex(kernel, r'GeoAutoUpdate:\s+false')
+
+    def test_external_controller_default_closed(self):
+        text = read('lib/models/clash_config.dart')
+        self.assertIn('@Default(ExternalControllerStatus.close)', text)
+
+    def test_hide_from_recents_default_on(self):
+        text = read('lib/models/config.dart')
+        self.assertIn('@Default(true) bool hidden', text)
 
 
 if __name__ == '__main__':
