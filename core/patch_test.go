@@ -157,6 +157,38 @@ rules:
 	}
 }
 
+// T86 regression: when the node exclusion filter empties a group's
+// member list, the fallback member must be REJECT (fail-closed), never
+// DIRECT — an emptied proxy group must not silently become a direct
+// connection. A group the filter only partially empties keeps its
+// surviving members with no fallback appended.
+func TestApplyPatchExcludeFilterEmptiesGroupRejects(t *testing.T) {
+	rawCfg := parsePatchProfile(t, `
+proxies:
+  - {name: A, type: trojan, server: a.example.com, port: 443, password: p}
+  - {name: B, type: vless, server: b.example.com, port: 443, uuid: u}
+  - {name: C, type: vless, server: c.example.com, port: 443, uuid: u}
+proxy-groups:
+  - {name: Emptied, type: select, proxies: [A, B]}
+  - {name: Partial, type: select, proxies: [A, C]}
+rules:
+  - MATCH,Emptied
+`)
+	params := patchParams(t, `{"node-exclude-filter":"^[AB]$"}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	if got := findGroup(rawCfg.ProxyGroup, "Emptied")["proxies"]; !reflect.DeepEqual(got, []any{"REJECT"}) {
+		t.Errorf("emptied group proxies = %v, want [REJECT] (fail-closed)", got)
+	}
+	if got := findGroup(rawCfg.ProxyGroup, "Partial")["proxies"]; !reflect.DeepEqual(got, []any{"C"}) {
+		t.Errorf("partial group proxies = %v, want [C] with no fallback appended", got)
+	}
+	if _, err := config.ParseRawConfig(rawCfg); err != nil {
+		t.Errorf("patched config should load in the kernel: %v", err)
+	}
+}
+
 func TestApplyPatchAndroidDns(t *testing.T) {
 	previous := patchForAndroid
 	patchForAndroid = true
