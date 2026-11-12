@@ -789,7 +789,7 @@ final class SortedGroupProxiesProvider
 }
 
 String _$sortedGroupProxiesHash() =>
-    r'1bd3bcbd085a31091125c00dac75dba27f7bfd03';
+    r'a0cbf26d56c09b2e215529b54dd14dcce3194132';
 
 final class SortedGroupProxiesFamily extends $Family
     with
@@ -2278,47 +2278,6 @@ final class CheckIpProvider
 }
 
 String _$checkIpHash() => r'07ebf8d032349e2b3adda483e68b1936ffbed68d';
-
-@ProviderFor(checkMediaUnlock)
-final checkMediaUnlockProvider = CheckMediaUnlockProvider._();
-
-final class CheckMediaUnlockProvider
-    extends $FunctionalProvider<VM2<int, bool>, VM2<int, bool>, VM2<int, bool>>
-    with $Provider<VM2<int, bool>> {
-  CheckMediaUnlockProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'checkMediaUnlockProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$checkMediaUnlockHash();
-
-  @$internal
-  @override
-  $ProviderElement<VM2<int, bool>> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  VM2<int, bool> create(Ref ref) {
-    return checkMediaUnlock(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(VM2<int, bool> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<VM2<int, bool>>(value),
-    );
-  }
-}
-
-String _$checkMediaUnlockHash() => r'6487b5f673e9092c48978ec82f79d9a4f0fd078a';
 
 @ProviderFor(genColorScheme)
 final genColorSchemeProvider = GenColorSchemeFamily._();

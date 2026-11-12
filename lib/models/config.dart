@@ -70,47 +70,42 @@ const List<DashboardWidget> defaultAndroidDashboardWidgets = [
   DashboardWidget.startButton,
 ];
 
+List<DashboardWidget> _decodeDashboardWidgets(
+  List<dynamic>? dashboardWidgets,
+  List<DashboardWidget> fallback,
+) {
+  if (dashboardWidgets == null) return fallback;
+  final decoded = <DashboardWidget>[];
+  for (final e in dashboardWidgets) {
+    try {
+      decoded.add($enumDecode(_$DashboardWidgetEnumMap, e));
+    } catch (_) {
+      // Skip entries whose widget type no longer exists (e.g. a widget
+      // removed in a newer version) instead of resetting the user's
+      // whole dashboard layout to defaults.
+    }
+  }
+  return decoded.isEmpty ? fallback : decoded;
+}
+
 List<DashboardWidget> dashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        (system.isAndroid
-            ? defaultAndroidDashboardWidgets
-            : defaultDashboardWidgets);
-  } catch (_) {
-    return system.isAndroid
+  return _decodeDashboardWidgets(dashboardWidgets, system.isAndroid
         ? defaultAndroidDashboardWidgets
-        : defaultDashboardWidgets;
-  }
+        : defaultDashboardWidgets);
 }
 
 List<DashboardWidget> mobileDashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        defaultAndroidDashboardWidgets;
-  } catch (_) {
-    return defaultAndroidDashboardWidgets;
-  }
+  return _decodeDashboardWidgets(dashboardWidgets, defaultAndroidDashboardWidgets);
 }
 
 List<DashboardWidget> desktopDashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        defaultDashboardWidgets;
-  } catch (_) {
-    return defaultDashboardWidgets;
-  }
+  return _decodeDashboardWidgets(dashboardWidgets, defaultDashboardWidgets);
 }
 
 const List<SidebarFlyoutEntry> defaultSidebarFlyoutEntries = [
@@ -137,45 +132,6 @@ List<SidebarFlyoutEntry> sidebarFlyoutEntriesSafeFromJson(
   }
 }
 
-const List<MediaPlatform> defaultPinnedMediaPlatforms = [
-  MediaPlatform.reddit,
-  MediaPlatform.gemini,
-  MediaPlatform.cloudflare,
-];
-
-List<MediaPlatform> pinnedMediaPlatformsSafeFromJson(
-  List<dynamic>? pinnedMediaPlatforms,
-) {
-  try {
-    if (pinnedMediaPlatforms == null) return defaultPinnedMediaPlatforms;
-    final list = <MediaPlatform>[];
-    for (final e in pinnedMediaPlatforms) {
-      final str = e.toString();
-      if (str == 'chatgpt') {
-        list.add(MediaPlatform.openai);
-        continue;
-      }
-      if (str == 'qqnews') {
-        list.add(MediaPlatform.tencent);
-        continue;
-      }
-      if (str == 'alidnsprobe') {
-        list.add(MediaPlatform.alibaba);
-        continue;
-      }
-      if (str == 'bytedance') {
-        list.add(MediaPlatform.douyin);
-        continue;
-      }
-      final p = MediaPlatform.values.where((v) => v.name == str).firstOrNull;
-      if (p != null) list.add(p);
-    }
-    return list.isEmpty ? defaultPinnedMediaPlatforms : list;
-  } catch (_) {
-    return defaultPinnedMediaPlatforms;
-  }
-}
-
 @freezed
 abstract class AppSettingProps with _$AppSettingProps {
   const factory AppSettingProps({
@@ -189,14 +145,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(defaultDashboardWidgets)
     @JsonKey(fromJson: desktopDashboardWidgetsSafeFromJson)
     List<DashboardWidget> desktopDashboardWidgets,
-    @Default(defaultPinnedMediaPlatforms)
-    @JsonKey(fromJson: pinnedMediaPlatformsSafeFromJson)
-    List<MediaPlatform> pinnedMediaPlatforms,
-    @Default(false) bool mediaUnlockMoreStreamingPlatforms,
-    @Default(false) bool mediaUnlockExtraDetails,
-    @Default(true) bool mediaUnlockRefreshOnNodeChange,
-    @Default(true) bool mediaUnlockColorfulIcons,
-    @Default(true) bool mediaUnlockRefreshByCategory,
     @Default(true) bool onlyStatisticsProxy,
     @Default(false) bool autoLaunch,
     @Default(false) bool silentLaunch,
