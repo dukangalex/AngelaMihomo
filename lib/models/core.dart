@@ -20,7 +20,6 @@ abstract mixin class AppMessageListener {
 
   void onStunTest(StunTestState state) {}
 
-  void onIperf(IperfState state) {}
 
   void onLocalPing(LocalPingState state) {}
 }

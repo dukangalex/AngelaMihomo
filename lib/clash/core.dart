@@ -572,47 +572,6 @@ class ClashCore {
     await clashInterface.cancelStunTest();
   }
 
-  Future<IperfServerInfo> startIperfServer(int port) async {
-    final value = await clashInterface.startIperfServer(
-      json.encode({'port': port}),
-    );
-    final decoded = value.isEmpty ? null : json.decode(value);
-    if (decoded is! Map) return const IperfServerInfo(error: 'listen');
-    return IperfServerInfo.fromJson(Map<String, dynamic>.from(decoded));
-  }
-
-  Future<void> stopIperfServer() async {
-    await clashInterface.stopIperfServer();
-  }
-
-  Future<IperfState?> startIperfClient({
-    required List<String> hosts,
-    required int port,
-    required IperfOptions options,
-  }) async {
-    final value = await clashInterface.startIperfClient(
-      json.encode({
-        'hosts': hosts,
-        'port': port,
-        'protocol': options.protocol.name,
-        'direction': options.direction.name,
-        'parallel': options.parallel,
-        'duration': options.duration,
-        'bandwidth': options.protocol == IperfProtocol.udp
-            ? options.bandwidth * 1e6
-            : 0,
-      }),
-      Duration(seconds: options.duration + 45),
-    );
-    final decoded = value.isEmpty ? null : json.decode(value);
-    if (decoded is! Map) return null;
-    return IperfState.fromJson(Map<String, dynamic>.from(decoded));
-  }
-
-  Future<void> cancelIperfClient() async {
-    await clashInterface.cancelIperfClient();
-  }
-
   Future<LocalPingState?> startLocalPing({
     required String target,
     required LocalPingOptions options,

@@ -97,14 +97,6 @@ mixin ClashInterface {
 
   FutureOr<bool> cancelStunTest();
 
-  Future<String> startIperfServer(String params);
-
-  FutureOr<bool> stopIperfServer();
-
-  Future<String> startIperfClient(String params, Duration timeout);
-
-  FutureOr<bool> cancelIperfClient();
-
   Future<String> startLocalPing(String params, Duration timeout);
 
   FutureOr<bool> cancelLocalPing();
@@ -643,37 +635,6 @@ abstract class ClashHandlerInterface with ClashInterface {
   @override
   FutureOr<bool> cancelStunTest() {
     return invoke<bool>(method: ActionMethod.cancelStunTest);
-  }
-
-  @override
-  Future<String> startIperfServer(String params) {
-    return invoke<String>(
-      method: ActionMethod.startIperfServer,
-      data: params,
-      timeout: const Duration(seconds: 15),
-    );
-  }
-
-  @override
-  FutureOr<bool> stopIperfServer() {
-    return invoke<bool>(
-      method: ActionMethod.stopIperfServer,
-      timeout: const Duration(seconds: 15),
-    );
-  }
-
-  @override
-  Future<String> startIperfClient(String params, Duration timeout) {
-    return invoke<String>(
-      method: ActionMethod.startIperfClient,
-      data: params,
-      timeout: timeout,
-    );
-  }
-
-  @override
-  FutureOr<bool> cancelIperfClient() {
-    return invoke<bool>(method: ActionMethod.cancelIperfClient);
   }
 
   @override

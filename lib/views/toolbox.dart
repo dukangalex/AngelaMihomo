@@ -134,14 +134,6 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const LocalPingPage()),
     ),
     _ToolItem(
-      id: 'iperf',
-      icon: Icons.lan_rounded,
-      color: const Color(0xFFC2571A),
-      title: appLocalizations.iperfTest,
-      description: appLocalizations.iperfTestDesc,
-      open: (context) => push(context, const IperfPage()),
-    ),
-    _ToolItem(
       id: 'ageTool',
       icon: Icons.lock_rounded,
       color: const Color(0xFF5C6BC0),

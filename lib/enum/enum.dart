@@ -140,7 +140,6 @@ enum AppMessageType {
   loaded,
   speedTest,
   stunTest,
-  iperf,
   localPing,
 }
 
@@ -293,10 +292,6 @@ enum ActionMethod {
   startToolProxy,
   stopToolProxy,
   ageCrypt,
-  startIperfServer,
-  stopIperfServer,
-  startIperfClient,
-  cancelIperfClient,
   startLocalPing,
   cancelLocalPing,
 
@@ -312,13 +307,6 @@ enum ActionMethod {
 
 enum StunTestPhase { connecting, binding, filtering, mapping, done }
 
-enum IperfRole { client, server }
-
-enum IperfPhase { connecting, running, done }
-
-enum IperfProtocol { tcp, udp }
-
-enum IperfDirection { upload, download, bidir }
 
 enum LocalPingProtocol { icmp, tcp, udp }
 

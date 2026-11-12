@@ -184,7 +184,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(MrsRawSource.metaRulesDat)
     MrsRawSource mrsRawSource,
     @Default(true) bool mrsResolveDns,
-    @Default(IperfOptions()) IperfOptions iperfOptions,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,
     @Default(<String, String>{}) Map<String, String> desktopDashboardSizes,

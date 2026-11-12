@@ -87,9 +87,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
       ) ??
       MrsRawSource.metaRulesDat,
   mrsResolveDns: json['mrsResolveDns'] as bool? ?? true,
-  iperfOptions: json['iperfOptions'] == null
-      ? const IperfOptions()
-      : IperfOptions.fromJson(json['iperfOptions'] as Map<String, dynamic>),
   localPingOptions: json['localPingOptions'] == null
       ? const LocalPingOptions()
       : LocalPingOptions.fromJson(
@@ -157,7 +154,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'mrsCopyRawLink': instance.mrsCopyRawLink,
       'mrsRawSource': _$MrsRawSourceEnumMap[instance.mrsRawSource]!,
       'mrsResolveDns': instance.mrsResolveDns,
-      'iperfOptions': instance.iperfOptions,
       'localPingOptions': instance.localPingOptions,
       'mobileDashboardSizes': instance.mobileDashboardSizes,
       'desktopDashboardSizes': instance.desktopDashboardSizes,

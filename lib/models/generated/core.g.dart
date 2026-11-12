@@ -223,7 +223,6 @@ const _$AppMessageTypeEnumMap = {
   AppMessageType.loaded: 'loaded',
   AppMessageType.speedTest: 'speedTest',
   AppMessageType.stunTest: 'stunTest',
-  AppMessageType.iperf: 'iperf',
   AppMessageType.localPing: 'localPing',
 };
 
@@ -385,10 +384,6 @@ const _$ActionMethodEnumMap = {
   ActionMethod.startToolProxy: 'startToolProxy',
   ActionMethod.stopToolProxy: 'stopToolProxy',
   ActionMethod.ageCrypt: 'ageCrypt',
-  ActionMethod.startIperfServer: 'startIperfServer',
-  ActionMethod.stopIperfServer: 'stopIperfServer',
-  ActionMethod.startIperfClient: 'startIperfClient',
-  ActionMethod.cancelIperfClient: 'cancelIperfClient',
   ActionMethod.startLocalPing: 'startLocalPing',
   ActionMethod.cancelLocalPing: 'cancelLocalPing',
   ActionMethod.setState: 'setState',

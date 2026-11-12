@@ -48,19 +48,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m13(count) => "${Intl.plural(count, other: '小时')}";
 
-  static String m14(port) => "端口 ${port} 已被占用，请换一个端口";
 
-  static String m15(code) => "服务器拒绝了本次测试（错误码 ${code}）";
 
-  static String m16(lost, total) => "${lost}/${total} 个包";
 
-  static String m17(name) => "已扫码：${name}";
 
-  static String m18(value) => "${value} 秒";
 
-  static String m19(port) => "正在监听端口 ${port}";
 
-  static String m20(count) => "${count} 条流";
 
   static String m21(count) => "${count}";
 
@@ -679,89 +672,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipLookupResult": MessageLookupByLibrary.simpleMessage("查询结果"),
     "ipPrivacyProtection": MessageLookupByLibrary.simpleMessage("隐藏 IP 显示"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP / 掩码"),
-    "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
-      "服务器地址，例如 192.168.1.5",
-    ),
-    "iperfAddressRequired": MessageLookupByLibrary.simpleMessage("请输入服务器地址"),
-    "iperfAddresses": MessageLookupByLibrary.simpleMessage("本机地址"),
-    "iperfBandwidth": MessageLookupByLibrary.simpleMessage("发送速率"),
-    "iperfBidir": MessageLookupByLibrary.simpleMessage("双向"),
-    "iperfClient": MessageLookupByLibrary.simpleMessage("客户端"),
-    "iperfCommands": MessageLookupByLibrary.simpleMessage("官方 iperf3 命令"),
-    "iperfConnecting": MessageLookupByLibrary.simpleMessage("正在连接…"),
-    "iperfDirection": MessageLookupByLibrary.simpleMessage("方向"),
-    "iperfDone": MessageLookupByLibrary.simpleMessage("测试完成"),
-    "iperfDuration": MessageLookupByLibrary.simpleMessage("时长"),
-    "iperfErrorBusy": MessageLookupByLibrary.simpleMessage(
-      "服务器正忙，正在进行其他测试，请稍后重试",
-    ),
-    "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage("测试被中断"),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("无法启动服务端"),
-    "iperfErrorPortInUse": m14,
-    "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
-      "通信异常，对方可能不是 iPerf3 服务端",
-    ),
-    "iperfErrorRefused": MessageLookupByLibrary.simpleMessage(
-      "连接被拒绝，请确认对方已启动 iPerf3 服务端",
-    ),
-    "iperfErrorServer": m15,
-    "iperfErrorTimeout": MessageLookupByLibrary.simpleMessage("连接超时，请检查地址和网络"),
-    "iperfErrorUdp": MessageLookupByLibrary.simpleMessage("UDP 握手失败，可能被防火墙拦截"),
-    "iperfErrorUnreachable": MessageLookupByLibrary.simpleMessage("无法连接到服务器"),
-    "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "如果其他设备连接不上，请在系统防火墙中允许 Angela Mihomo 内核的传入连接。",
-    ),
-    "iperfLostPackets": m16,
-    "iperfNoAddress": MessageLookupByLibrary.simpleMessage(
-      "未检测到局域网地址，请确认已连接 Wi-Fi 或有线网络",
-    ),
-    "iperfParallel": MessageLookupByLibrary.simpleMessage("并行"),
-    "iperfPeer": MessageLookupByLibrary.simpleMessage("对端"),
-    "iperfPort": MessageLookupByLibrary.simpleMessage("端口"),
-    "iperfPortInvalid": MessageLookupByLibrary.simpleMessage(
-      "请输入 1–65535 之间的端口",
-    ),
-    "iperfProtocol": MessageLookupByLibrary.simpleMessage("协议"),
-    "iperfReady": MessageLookupByLibrary.simpleMessage("输入服务器地址或扫码后开始测试"),
-    "iperfReceive": MessageLookupByLibrary.simpleMessage("接收"),
-    "iperfResult": MessageLookupByLibrary.simpleMessage("测试结果"),
-    "iperfRetest": MessageLookupByLibrary.simpleMessage("重新测试"),
-    "iperfRetransmits": MessageLookupByLibrary.simpleMessage("重传"),
-    "iperfRtt": MessageLookupByLibrary.simpleMessage("往返延迟"),
-    "iperfRunning": MessageLookupByLibrary.simpleMessage("测试中"),
-    "iperfScan": MessageLookupByLibrary.simpleMessage("扫码连接"),
-    "iperfScanHint": MessageLookupByLibrary.simpleMessage(
-      "在另一台设备的 Angela Mihomo 中扫码，即可一键连接",
-    ),
-    "iperfScanInvalid": MessageLookupByLibrary.simpleMessage(
-      "这不是 iPerf3 连接二维码",
-    ),
-    "iperfScanned": m17,
-    "iperfSeconds": m18,
-    "iperfSend": MessageLookupByLibrary.simpleMessage("发送"),
-    "iperfServer": MessageLookupByLibrary.simpleMessage("服务端"),
-    "iperfServerListening": m19,
-    "iperfServerOff": MessageLookupByLibrary.simpleMessage("服务端未启动"),
-    "iperfServerOffHint": MessageLookupByLibrary.simpleMessage(
-      "启动后，其他设备扫码或输入本机地址即可连接",
-    ),
-    "iperfServerStart": MessageLookupByLibrary.simpleMessage("启动服务端"),
-    "iperfServerStop": MessageLookupByLibrary.simpleMessage("停止服务端"),
-    "iperfServerTip": MessageLookupByLibrary.simpleMessage(
-      "服务端只在本页面打开时运行，离开页面后会自动停止；运行期间屏幕保持常亮。",
-    ),
-    "iperfStart": MessageLookupByLibrary.simpleMessage("开始测试"),
-    "iperfStreams": m20,
-    "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 工具"),
-    "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "测试局域网内设备之间的带宽，兼容官方 iperf3",
-    ),
-    "iperfThroughput": MessageLookupByLibrary.simpleMessage("吞吐"),
-    "iperfTransferred": MessageLookupByLibrary.simpleMessage("传输量"),
-    "iperfUdpUnavailable": MessageLookupByLibrary.simpleMessage(
-      "UDP 端口被占用，只能进行 TCP 测试。",
-    ),
-    "iperfWaiting": MessageLookupByLibrary.simpleMessage("等待客户端连接"),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("开启后将可以接收 IPv6 流量"),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("允许 IPv6 入站"),
     "isp": MessageLookupByLibrary.simpleMessage("运营商"),
@@ -813,6 +723,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingRunning": MessageLookupByLibrary.simpleMessage("正在 Ping"),
     "localPingSent": MessageLookupByLibrary.simpleMessage("已发送"),
     "localPingSize": MessageLookupByLibrary.simpleMessage("包大小"),
+    "localPingPortInvalid": MessageLookupByLibrary.simpleMessage("请输入 1–65535 之间的端口"),
+    "localPingRetest": MessageLookupByLibrary.simpleMessage("重新测试"),
     "localPingStart": MessageLookupByLibrary.simpleMessage("开始 Ping"),
     "localPingStats": m26,
     "localPingSummary": m27,

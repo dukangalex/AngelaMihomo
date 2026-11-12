@@ -52,19 +52,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m13(count) =>
       "${Intl.plural(count, one: 'hour', other: 'hours')}";
 
-  static String m14(port) => "Port ${port} is already in use. Try another port";
 
-  static String m15(code) => "The server rejected the test (error ${code})";
 
-  static String m16(lost, total) => "${lost}/${total} packets";
 
-  static String m17(name) => "Scanned: ${name}";
 
-  static String m18(value) => "${value} s";
 
-  static String m19(port) => "Listening on port ${port}";
 
-  static String m20(count) => "${count} streams";
 
   static String m21(count) => "${count}";
 
@@ -921,107 +914,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Hide IP Display",
     ),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP/CIDR"),
-    "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
-      "Server address, e.g. 192.168.1.5",
-    ),
-    "iperfAddressRequired": MessageLookupByLibrary.simpleMessage(
-      "Enter a server address",
-    ),
-    "iperfAddresses": MessageLookupByLibrary.simpleMessage("This device"),
-    "iperfBandwidth": MessageLookupByLibrary.simpleMessage("Send rate"),
-    "iperfBidir": MessageLookupByLibrary.simpleMessage("Both"),
-    "iperfClient": MessageLookupByLibrary.simpleMessage("Client"),
-    "iperfCommands": MessageLookupByLibrary.simpleMessage("iperf3 commands"),
-    "iperfConnecting": MessageLookupByLibrary.simpleMessage("Connecting…"),
-    "iperfDirection": MessageLookupByLibrary.simpleMessage("Direction"),
-    "iperfDone": MessageLookupByLibrary.simpleMessage("Test complete"),
-    "iperfDuration": MessageLookupByLibrary.simpleMessage("Duration"),
-    "iperfErrorBusy": MessageLookupByLibrary.simpleMessage(
-      "The server is busy with another test. Try again later",
-    ),
-    "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
-      "The test was interrupted",
-    ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t start the server",
-    ),
-    "iperfErrorPortInUse": m14,
-    "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
-      "Unexpected response. The other side may not be an iPerf3 server",
-    ),
-    "iperfErrorRefused": MessageLookupByLibrary.simpleMessage(
-      "Connection refused. Make sure the iPerf3 server is running",
-    ),
-    "iperfErrorServer": m15,
-    "iperfErrorTimeout": MessageLookupByLibrary.simpleMessage(
-      "Connection timed out. Check the address and network",
-    ),
-    "iperfErrorUdp": MessageLookupByLibrary.simpleMessage(
-      "UDP handshake failed. It may be blocked by a firewall",
-    ),
-    "iperfErrorUnreachable": MessageLookupByLibrary.simpleMessage(
-      "Can\'t reach the server",
-    ),
-    "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "If other devices can\'t connect, allow incoming connections for the Angela Mihomo core in your system firewall.",
-    ),
-    "iperfLostPackets": m16,
-    "iperfNoAddress": MessageLookupByLibrary.simpleMessage(
-      "No LAN address found. Make sure Wi-Fi or Ethernet is connected",
-    ),
-    "iperfParallel": MessageLookupByLibrary.simpleMessage("Streams"),
-    "iperfPeer": MessageLookupByLibrary.simpleMessage("Peer"),
-    "iperfPort": MessageLookupByLibrary.simpleMessage("Port"),
-    "iperfPortInvalid": MessageLookupByLibrary.simpleMessage(
-      "Enter a port between 1 and 65535",
-    ),
-    "iperfProtocol": MessageLookupByLibrary.simpleMessage("Protocol"),
-    "iperfReady": MessageLookupByLibrary.simpleMessage(
-      "Enter a server address or scan a QR code to start",
-    ),
-    "iperfReceive": MessageLookupByLibrary.simpleMessage("Receive"),
-    "iperfResult": MessageLookupByLibrary.simpleMessage("Result"),
-    "iperfRetest": MessageLookupByLibrary.simpleMessage("Test again"),
-    "iperfRetransmits": MessageLookupByLibrary.simpleMessage("Retransmits"),
-    "iperfRtt": MessageLookupByLibrary.simpleMessage("RTT"),
-    "iperfRunning": MessageLookupByLibrary.simpleMessage("Testing"),
-    "iperfScan": MessageLookupByLibrary.simpleMessage("Scan to connect"),
-    "iperfScanHint": MessageLookupByLibrary.simpleMessage(
-      "Scan with Angela Mihomo on another device to connect in one tap",
-    ),
-    "iperfScanInvalid": MessageLookupByLibrary.simpleMessage(
-      "This isn\'t an iPerf3 connection QR code",
-    ),
-    "iperfScanned": m17,
-    "iperfSeconds": m18,
-    "iperfSend": MessageLookupByLibrary.simpleMessage("Send"),
-    "iperfServer": MessageLookupByLibrary.simpleMessage("Server"),
-    "iperfServerListening": m19,
-    "iperfServerOff": MessageLookupByLibrary.simpleMessage(
-      "Server is not running",
-    ),
-    "iperfServerOffHint": MessageLookupByLibrary.simpleMessage(
-      "Once started, other devices can scan the QR code or enter this device\'s address to connect",
-    ),
-    "iperfServerStart": MessageLookupByLibrary.simpleMessage("Start server"),
-    "iperfServerStop": MessageLookupByLibrary.simpleMessage("Stop server"),
-    "iperfServerTip": MessageLookupByLibrary.simpleMessage(
-      "The server only runs while this page is open and stops when you leave. The screen stays on while it runs.",
-    ),
-    "iperfStart": MessageLookupByLibrary.simpleMessage("Start test"),
-    "iperfStreams": m20,
-    "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 Tool"),
-    "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "Measure bandwidth between devices on your LAN, compatible with iperf3",
-    ),
-    "iperfThroughput": MessageLookupByLibrary.simpleMessage("Throughput"),
-    "iperfTransferred": MessageLookupByLibrary.simpleMessage("Data"),
-    "iperfUdpUnavailable": MessageLookupByLibrary.simpleMessage(
-      "The UDP port is in use, so only TCP tests are available.",
-    ),
-    "iperfWaiting": MessageLookupByLibrary.simpleMessage(
-      "Waiting for a client",
-    ),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage(
       "Enable IPv6 traffic routing",
     ),
@@ -1087,6 +979,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingRunning": MessageLookupByLibrary.simpleMessage("Pinging"),
     "localPingSent": MessageLookupByLibrary.simpleMessage("Sent"),
     "localPingSize": MessageLookupByLibrary.simpleMessage("Packet size"),
+    "localPingPortInvalid": MessageLookupByLibrary.simpleMessage("Enter a port between 1 and 65535"),
+    "localPingRetest": MessageLookupByLibrary.simpleMessage("Test again"),
     "localPingStart": MessageLookupByLibrary.simpleMessage("Start ping"),
     "localPingStats": m26,
     "localPingSummary": m27,
