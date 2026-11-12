@@ -44,6 +44,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     GeoItem(label: 'GeoSite', fileName: geoSiteFileName, key: 'geosite'),
     GeoItem(label: 'MMDB', fileName: mmdbFileName, key: 'mmdb'),
     GeoItem(label: 'ASN', fileName: asnFileName, key: 'asn'),
+    GeoItem(label: 'CITY', fileName: cityFileName, key: 'city'),
     GeoItem(label: 'MRS', fileName: bundleMRSFileName, key: 'mrs'),
   ];
 
@@ -381,11 +382,15 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
       geoUpdatingKeysProvider.select((s) => s.contains(geoItem.key)),
     );
     final isBundleMRS = geoItem.key == 'mrs';
+    // The city database has no user-configurable URL (the core builds
+    // the official monthly URL itself), but it still shows its file
+    // info, source attribution and a sync action like the other items.
+    final isCity = geoItem.key == 'city';
 
     return ListItem(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(geoItem.label),
-      subtitle: (url == null && !isBundleMRS)
+      subtitle: (url == null && !isBundleMRS && !isCity)
           ? const SizedBox()
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,6 +417,8 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 Text(
                   isBundleMRS
                       ? 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/BundleMRS.7z'
+                      : isCity
+                      ? 'Data by DB-IP · https://db-ip.com · CC BY 4.0'
                       : url!,
                   style: context.textTheme.bodyMedium?.toLight,
                 ),
@@ -422,13 +429,14 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                     spacing: 12,
                     runAlignment: WrapAlignment.center,
                     children: [
-                      CommonChip(
-                        avatar: const Icon(Icons.edit),
-                        label: appLocalizations.edit,
-                        onPressed: isSyncing || url == null
-                            ? null
-                            : () => _updateUrl(url),
-                      ),
+                      if (url != null)
+                        CommonChip(
+                          avatar: const Icon(Icons.edit),
+                          label: appLocalizations.edit,
+                          onPressed: isSyncing
+                              ? null
+                              : () => _updateUrl(url),
+                        ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

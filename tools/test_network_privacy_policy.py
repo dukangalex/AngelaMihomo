@@ -3,7 +3,10 @@
 These guard the 2026-11 security remediation decisions:
 - Android trusts system CAs only; cleartext is loopback-only.
 - TempActivity stays non-exported.
-- IP lookups never use plaintext HTTP endpoints.
+- IP geo enrichment is fully local (on-device mmdb databases via the
+  queryIpGeo bridge). No online geo service may be referenced anywhere
+  in the lookup path; exit IP discovery is limited to Cloudflare's
+  official trace echo, which sees nothing beyond the exit IP itself.
 - Dead telemetry/token build defines (SENTRY_DSN, IPINFO_TOKEN) stay removed:
   nothing in the app consumed them, so they must not be embedded in artifacts.
 """
@@ -61,24 +64,51 @@ class ManifestPolicyTest(unittest.TestCase):
 
 
 class IpLookupTransportTest(unittest.TestCase):
-    def test_no_plaintext_ip_lookup_endpoints(self):
-        for rel in ('lib/common/request.dart', 'core/toolbox/speedtest.go'):
+    # Every file that participates in IP detection / geo display. Online
+    # geo providers must not reappear in any of them.
+    GEO_SURFACE_FILES = (
+        'lib/common/request.dart',
+        'lib/models/common.dart',
+        'lib/pages/speed_test.dart',
+        'lib/widgets/ip_detail_dialog.dart',
+        'lib/views/dashboard/widgets/network_detection.dart',
+        'core/toolbox/speedtest.go',
+        'core/hub.go',
+    )
+    FORBIDDEN_GEO_ENDPOINTS = (
+        'geojs.io',
+        'ip.sb',
+        'ip-api',
+        'ipip.net',
+        'uapis.cn',
+        'ip2location',
+        'qualcomm.cn',
+        'teamviewer.cn',
+    )
+
+    def test_no_online_geo_endpoints(self):
+        for rel in self.GEO_SURFACE_FILES:
             text = read(rel)
-            self.assertNotIn('ip-api.com', text, rel)
+            for endpoint in self.FORBIDDEN_GEO_ENDPOINTS:
+                self.assertNotIn(endpoint, text, f'{endpoint} in {rel}')
             self.assertIsNone(
                 re.search(r'http://[^\s"\']*(?:ip|geo)', text), rel
             )
 
-    def test_ip_lookup_endpoints_are_https(self):
-        dart = read('lib/common/request.dart')
-        for url in (
-            'https://get.geojs.io/v1/ip/geo.json',
-            'https://api.ip.sb/geoip',
-            'https://get.geojs.io/v1/ip/geo/$ip.json',
-        ):
-            self.assertIn(url, dart)
-        go = read('core/toolbox/speedtest.go')
-        self.assertIn('https://get.geojs.io/v1/ip/geo.json', go)
+    def test_exit_ip_echo_is_cloudflare_trace_only(self):
+        for rel in ('lib/common/request.dart', 'core/toolbox/speedtest.go'):
+            text = read(rel)
+            self.assertIn('https://cloudflare.com/cdn-cgi/trace', text, rel)
+
+    def test_local_geo_lookup_path_exists(self):
+        # Dart bridge -> Go bridge -> local mmdb assembly -> resources UI.
+        self.assertIn('queryIpGeo', read('lib/common/request.dart'))
+        self.assertIn('queryIpGeo', read('lib/clash/core.dart'))
+        self.assertIn('handleQueryIpGeo', read('core/hub.go'))
+        self.assertIn('LookupGeo', read('core/toolbox/speedtest.go'))
+        self.assertIn('"CITY"', read('core/hub.go'))
+        self.assertIn("key: 'city'", read('lib/views/resources.dart'))
+        self.assertIn('DB-IP', read('lib/views/resources.dart'))
 
 
 class DeadTelemetryDefineTest(unittest.TestCase):
