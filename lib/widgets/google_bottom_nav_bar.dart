@@ -9,6 +9,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'glass.dart';
+
 class GoogleBottomNavBar extends ConsumerStatefulWidget {
   final List<NavigationItem> navigationItems;
   final int selectedIndex;
@@ -189,6 +191,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final primaryColor = colorScheme.primary;
+    final rimColor = GlassTint.resolve(colorScheme).rim;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
 
     // Body color matching CommonCard (widget) formula for visual harmony
@@ -366,186 +369,201 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                 _barWidth = constraints.maxWidth;
                 const barHeight = 60.0;
 
-                return RepaintBoundary(
-                  child: Container(
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: navColor,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.transparent,
-                        width: 1,
-                        strokeAlign: BorderSide.strokeAlignInside,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.08 * shadowStrength,
-                          ),
-                        ),
-                        BoxShadow(
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.04 * shadowStrength,
-                          ),
-                        ),
-                      ],
+                final barShadows = <BoxShadow>[
+                  BoxShadow(
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    color: colorScheme.shadow.withValues(
+                      alpha: 0.08 * shadowStrength,
                     ),
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        if (count > 0)
-                          Positioned.fill(
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                painter: NavBarPillPainter(
-                                  position: _posController,
-                                  lift: _liftController,
-                                  dragOffset: _dragOffset,
-                                  count: count,
-                                  slot: _clampWithResistance,
-                                  color: primaryColor,
-                                  baseAlpha: isLight ? 0.12 : 0.20,
-                                  activeAlpha: isLight ? 0.18 : 0.26,
-                                ),
-                              ),
+                  ),
+                  BoxShadow(
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                    color: colorScheme.shadow.withValues(
+                      alpha: 0.04 * shadowStrength,
+                    ),
+                  ),
+                ];
+                final barContent = Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    if (count > 0)
+                      Positioned.fill(
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: NavBarPillPainter(
+                              position: _posController,
+                              lift: _liftController,
+                              dragOffset: _dragOffset,
+                              count: count,
+                              slot: _clampWithResistance,
+                              color: Color.lerp(primaryColor, rimColor, 0.30)!,
+                              glowColor: rimColor,
+                              baseAlpha: isLight ? 0.12 : 0.20,
+                              activeAlpha: isLight ? 0.18 : 0.26,
                             ),
                           ),
-                        RepaintBoundary(
-                          child: AnimatedBuilder(
-                            animation: Listenable.merge([
-                              _posController,
-                              _dragOffset,
-                              _pressedIndex,
-                              _liftController,
-                            ]),
-                            builder: (context, _) {
-                              final currentPos = _clampWithResistance(
-                                _posController.value + _dragOffset.value,
-                                count,
-                              );
-                              final pressedIdx = _pressedIndex.value;
-                              final liftValue = _liftController.value;
-
-                              final jumpFrom = _jumpFromIndex;
-                              final jumpTo = _jumpToIndex;
-                              final isNonAdjacentJump =
-                                  jumpFrom != null &&
-                                  jumpTo != null &&
-                                  (jumpFrom - jumpTo).abs() > 1;
-                              final minJump = isNonAdjacentJump
-                                  ? math.min(jumpFrom, jumpTo)
-                                  : -1;
-                              final maxJump = isNonAdjacentJump
-                                  ? math.max(jumpFrom, jumpTo)
-                                  : -1;
-
-                              return Row(
-                                children: List.generate(count, (index) {
-                                  final item = widget.navigationItems[index];
-                                  final isPressed = index == pressedIdx;
-                                  final double itemScale;
-                                  final Color itemColor;
-                                  if (isNonAdjacentJump &&
-                                      index > minJump &&
-                                      index < maxJump) {
-                                    itemScale = 1.0;
-                                    itemColor = onSurfaceVariantColor;
-                                  } else {
-                                    final double selectFactor;
-                                    if (isNonAdjacentJump) {
-                                      if (index == jumpFrom) {
-                                        final distFromOrigin =
-                                            (currentPos - jumpFrom).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distFromOrigin,
-                                            );
-                                      } else if (index == jumpTo) {
-                                        final distToTarget =
-                                            (currentPos - jumpTo).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distToTarget,
-                                            );
-                                      } else {
-                                        selectFactor = 0.0;
-                                      }
-                                    } else {
-                                      final rawDist = (currentPos - index)
-                                          .abs();
-                                      if (rawDist >= 1.0) {
-                                        selectFactor = 0.0;
-                                      } else {
-                                        final dist = rawDist.clamp(0.0, 1.0);
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(dist);
-                                      }
-                                    }
-
-                                    if (selectFactor <= 0.0 && !isPressed) {
-                                      itemScale = 1.0;
-                                      itemColor = onSurfaceVariantColor;
-                                    } else {
-                                      itemScale = isPressed
-                                          ? (1.0 - 0.05 * liftValue)
-                                          : (1.0 + 0.04 * selectFactor);
-                                      itemColor = Color.lerp(
-                                        onSurfaceVariantColor,
-                                        primaryColor,
-                                        selectFactor,
-                                      )!;
-                                    }
-                                  }
-
-                                  return Expanded(
-                                    child: Center(
-                                      child: Transform.scale(
-                                        scale: itemScale,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconTheme(
-                                              data: IconThemeData(
-                                                color: itemColor,
-                                                size: 22,
-                                              ),
-                                              child: item.icon,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              localizedLabels[index],
-                                              style: itemTextStyle.copyWith(
-                                                color: itemColor,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              );
-                            },
-                          ),
                         ),
-                      ],
+                      ),
+                    RepaintBoundary(
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _posController,
+                          _dragOffset,
+                          _pressedIndex,
+                          _liftController,
+                        ]),
+                        builder: (context, _) {
+                          final currentPos = _clampWithResistance(
+                            _posController.value + _dragOffset.value,
+                            count,
+                          );
+                          final pressedIdx = _pressedIndex.value;
+                          final liftValue = _liftController.value;
+
+                          final jumpFrom = _jumpFromIndex;
+                          final jumpTo = _jumpToIndex;
+                          final isNonAdjacentJump =
+                              jumpFrom != null &&
+                              jumpTo != null &&
+                              (jumpFrom - jumpTo).abs() > 1;
+                          final minJump = isNonAdjacentJump
+                              ? math.min(jumpFrom, jumpTo)
+                              : -1;
+                          final maxJump = isNonAdjacentJump
+                              ? math.max(jumpFrom, jumpTo)
+                              : -1;
+
+                          return Row(
+                            children: List.generate(count, (index) {
+                              final item = widget.navigationItems[index];
+                              final isPressed = index == pressedIdx;
+                              final double itemScale;
+                              final Color itemColor;
+                              if (isNonAdjacentJump &&
+                                  index > minJump &&
+                                  index < maxJump) {
+                                itemScale = 1.0;
+                                itemColor = onSurfaceVariantColor;
+                              } else {
+                                final double selectFactor;
+                                if (isNonAdjacentJump) {
+                                  if (index == jumpFrom) {
+                                    final distFromOrigin =
+                                        (currentPos - jumpFrom).abs().clamp(
+                                          0.0,
+                                          1.0,
+                                        );
+                                    selectFactor =
+                                        1.0 -
+                                        Curves.easeOut.transform(
+                                          distFromOrigin,
+                                        );
+                                  } else if (index == jumpTo) {
+                                    final distToTarget = (currentPos - jumpTo)
+                                        .abs()
+                                        .clamp(0.0, 1.0);
+                                    selectFactor =
+                                        1.0 -
+                                        Curves.easeOut.transform(distToTarget);
+                                  } else {
+                                    selectFactor = 0.0;
+                                  }
+                                } else {
+                                  final rawDist = (currentPos - index).abs();
+                                  if (rawDist >= 1.0) {
+                                    selectFactor = 0.0;
+                                  } else {
+                                    final dist = rawDist.clamp(0.0, 1.0);
+                                    selectFactor =
+                                        1.0 - Curves.easeOut.transform(dist);
+                                  }
+                                }
+
+                                if (selectFactor <= 0.0 && !isPressed) {
+                                  itemScale = 1.0;
+                                  itemColor = onSurfaceVariantColor;
+                                } else {
+                                  itemScale = isPressed
+                                      ? (1.0 - 0.05 * liftValue)
+                                      : (1.0 + 0.04 * selectFactor);
+                                  itemColor = Color.lerp(
+                                    onSurfaceVariantColor,
+                                    primaryColor,
+                                    selectFactor,
+                                  )!;
+                                }
+                              }
+
+                              return Expanded(
+                                child: Center(
+                                  child: Transform.scale(
+                                    scale: itemScale,
+                                    alignment: Alignment.center,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconTheme(
+                                          data: IconThemeData(
+                                            color: itemColor,
+                                            size: 22,
+                                          ),
+                                          child: item.icon,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          localizedLabels[index],
+                                          style: itemTextStyle.copyWith(
+                                            color: itemColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
                     ),
+                  ],
+                );
+                return RepaintBoundary(
+                  child: SizedBox(
+                    height: barHeight,
+                    child: pureBlack && !isLight
+                        // The pure-black OLED preference keeps a solid
+                        // black bar; live glass would lift it off black.
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: navColor,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: barShadows,
+                            ),
+                            // The pre-glass Container carried a 1px
+                            // transparent border that inset the content
+                            // by 1px on every side; that inset is part
+                            // of the bar's shipped geometry, so both
+                            // hosts keep it as a 1px padding.
+                            child: Padding(
+                              padding: const EdgeInsets.all(1),
+                              child: barContent,
+                            ),
+                          )
+                        : GlassSurface(
+                            tier: GlassTier.bar,
+                            radius: 30,
+                            live: true,
+                            boxShadow: barShadows,
+                            child: Padding(
+                              padding: const EdgeInsets.all(1),
+                              child: barContent,
+                            ),
+                          ),
                   ),
                 );
               },
@@ -564,6 +582,7 @@ class NavBarPillPainter extends CustomPainter {
   final int count;
   final double Function(double slot, int count) slot;
   final Color color;
+  final Color glowColor;
   final double baseAlpha;
   final double activeAlpha;
 
@@ -574,6 +593,7 @@ class NavBarPillPainter extends CustomPainter {
     required this.count,
     required this.slot,
     required this.color,
+    required this.glowColor,
     required this.baseAlpha,
     required this.activeAlpha,
   }) : super(repaint: Listenable.merge([position, lift, dragOffset]));
@@ -601,6 +621,17 @@ class NavBarPillPainter extends CustomPainter {
         Radius.circular(size.height / 2),
       ),
     );
+    // Halo pass: the active slot glows in the glass rim tint, swelling
+    // with the press lift (0.55 at rest to full when lifted).
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        pillRect(size).inflate(5),
+        Radius.circular(radius + 5),
+      ),
+      Paint()
+        ..color = glowColor.withValues(alpha: 0.35 * (0.55 + 0.45 * t))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(pillRect(size), Radius.circular(radius)),
       Paint()..color = color.withValues(alpha: alpha),
@@ -614,6 +645,7 @@ class NavBarPillPainter extends CustomPainter {
         oldDelegate.dragOffset != dragOffset ||
         oldDelegate.count != count ||
         oldDelegate.color != color ||
+        oldDelegate.glowColor != glowColor ||
         oldDelegate.baseAlpha != baseAlpha ||
         oldDelegate.activeAlpha != activeAlpha;
   }
