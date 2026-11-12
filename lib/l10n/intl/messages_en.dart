@@ -2046,31 +2046,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "tunnelTargetHint": MessageLookupByLibrary.simpleMessage(
       "e.g.: 114.114.114.114:53",
     ),
-    "tvScanImport": MessageLookupByLibrary.simpleMessage("Scan / LAN Import"),
-    "tvScanImportDesc": MessageLookupByLibrary.simpleMessage(
-      "Scan QR or push profile to TV via LAN",
-    ),
-    "tvScanManualUrl": MessageLookupByLibrary.simpleMessage(
-      "Or enter directly in phone browser:",
-    ),
-    "tvScanNoNetwork": MessageLookupByLibrary.simpleMessage(
-      "No available LAN detected, please check Wi-Fi",
-    ),
-    "tvScanStep1": MessageLookupByLibrary.simpleMessage(
-      "Ensure phone and TV are on the same Wi-Fi network",
-    ),
-    "tvScanStep2": MessageLookupByLibrary.simpleMessage(
-      "Scan the QR code with a supported camera or browser",
-    ),
-    "tvScanStep3": MessageLookupByLibrary.simpleMessage(
-      "Paste subscription URL or upload profile on the webpage and push",
-    ),
-    "tvScanSuccess": MessageLookupByLibrary.simpleMessage(
-      "Profile received, importing...",
-    ),
-    "tvScanWaiting": MessageLookupByLibrary.simpleMessage(
-      "Waiting for profile from phone...",
-    ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2 Columns"),
     "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
       "Unable to update current profile",
