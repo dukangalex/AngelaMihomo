@@ -631,8 +631,6 @@
   "trayIconInvertDesc": "Invert the current tray icon color",
   "darkIcon": "Dark Icon",
   "darkIconDesc": "Manually switch dark app icon",
-  "harmonyFont": "Font Fix",
-  "harmonyFontDesc": "Use built-in font to fix display issues",
   "internet": "Internet",
   "systemApp": "System App",
   "noNetworkApp": "No Network App",

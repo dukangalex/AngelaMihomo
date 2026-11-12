@@ -463,13 +463,6 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         onTap: (context, _) =>
             _pushPage(context, appLocalizations.theme, const ThemeView()),
       ),
-      _SearchItem(
-        title: appLocalizations.harmonyFont,
-        subtitle: appLocalizations.harmonyFontDesc,
-        category: themeCategory,
-        onTap: (context, _) =>
-            _pushPage(context, appLocalizations.theme, const ThemeView()),
-      ),
       if (system.isAndroid)
         _SearchItem(
           title: appLocalizations.darkIcon,

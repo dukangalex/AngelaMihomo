@@ -5240,21 +5240,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Font Fix`
-  String get harmonyFont {
-    return Intl.message('Font Fix', name: 'harmonyFont', desc: '', args: []);
-  }
-
-  /// `Use built-in font to fix display issues`
-  String get harmonyFontDesc {
-    return Intl.message(
-      'Use built-in font to fix display issues',
-      name: 'harmonyFontDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Internet`
   String get internet {
     return Intl.message('Internet', name: 'internet', desc: '', args: []);

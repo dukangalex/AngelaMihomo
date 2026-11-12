@@ -111,9 +111,6 @@ flutter:
     - family: Icons
       fonts:
         - asset: assets/fonts/Icons.ttf
-    - family: HarmonyOS_Sans
-      fonts:
-        - asset: assets/fonts/HarmonyOS_Sans_SC_Regular.ttf
 ffigen:
   name: "ClashFFI"
   output: 'lib/clash/generated/clash_ffi.dart'

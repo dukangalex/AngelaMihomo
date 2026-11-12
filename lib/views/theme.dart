@@ -34,17 +34,7 @@ class ThemeView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brightness = ref.watch(currentBrightnessProvider);
-    final shouldShowHarmonyFont = ref.watch(
-      appSettingProvider.select(
-        (state) => switch (state.locale) {
-          final locale? => locale.startsWith('zh') || locale.startsWith('en'),
-          null => false,
-        },
-      ),
-    );
-
     final toggleItems = <Widget>[
-      if (shouldShowHarmonyFont) const _HarmonyFontItem(),
       if (system.isAndroid) const _DarkIconItem(),
       if (system.isWindows) const _TrayIconInvertItem(),
       const _TextScaleFactorItem(),
@@ -180,41 +170,6 @@ class _PrueBlackItem extends ConsumerWidget {
           ref
               .read(themeSettingProvider.notifier)
               .updateState((state) => state.copyWith(pureBlack: value));
-        },
-      ),
-    );
-  }
-}
-
-class _HarmonyFontItem extends ConsumerWidget {
-  const _HarmonyFontItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final useHarmonyFont = ref.watch(
-      themeSettingProvider.select((state) => state.useHarmonyFont),
-    );
-    final textTheme = Theme.of(context).textTheme;
-    final onSurfaceVariant = context.colorScheme.onSurfaceVariant;
-    return ListItem.switchItem(
-      leading: const Icon(Icons.font_download_outlined),
-      horizontalTitleGap: 12,
-      title: Text(
-        appLocalizations.harmonyFont,
-        style: textTheme.titleSmall?.copyWith(color: onSurfaceVariant),
-      ),
-      subtitle: Text(
-        appLocalizations.harmonyFontDesc,
-        style: textTheme.bodySmall?.copyWith(
-          color: onSurfaceVariant.withValues(alpha: 0.7),
-        ),
-      ),
-      delegate: SwitchDelegate(
-        value: useHarmonyFont,
-        onChanged: (value) {
-          ref
-              .read(themeSettingProvider.notifier)
-              .updateState((state) => state.copyWith(useHarmonyFont: value));
         },
       ),
     );

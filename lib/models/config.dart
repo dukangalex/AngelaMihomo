@@ -371,7 +371,6 @@ abstract class ThemeProps with _$ThemeProps {
     @Default(false) bool pureBlack,
     @Default(TextScale()) TextScale textScale,
     @Default(false) bool useDarkIcon,
-    @Default(false) bool useHarmonyFont,
     @Default(false) bool invertTrayIcon,
   }) = _ThemeProps;
 

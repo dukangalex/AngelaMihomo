@@ -266,9 +266,6 @@ class ApplicationState extends ConsumerState<Application>
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont
-                ? 'HarmonyOS_Sans'
-                : null;
 
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -321,7 +318,6 @@ class ApplicationState extends ConsumerState<Application>
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
                 ),
-                fontFamily: fontFamily,
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -425,7 +421,6 @@ class ApplicationState extends ConsumerState<Application>
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,
                 ).toPureBlack(themeProps.pureBlack),
-                fontFamily: fontFamily,
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
