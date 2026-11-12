@@ -94,6 +94,27 @@ func TestQueryIpGeoWithoutCityDbDegrades(t *testing.T) {
 	}
 }
 
+func TestQueryIpGeoWithNoDatabasesAtAll(t *testing.T) {
+	// An empty home (no city, country or ASN file) must degrade to an
+	// empty result; the bundled accessors abort on missing files, so
+	// this also proves the lookup never consults them blindly.
+	previousHome := constant.Path.HomeDir()
+	constant.SetHomeDir(t.TempDir())
+	defer func() {
+		mmdb.ReloadIP()
+		mmdb.ReloadASN()
+		mmdb.ReloadCity()
+		constant.SetHomeDir(previousHome)
+	}()
+	mmdb.ReloadIP()
+	mmdb.ReloadASN()
+	mmdb.ReloadCity()
+	result := queryIpGeo(t, "1.2.3.4")
+	if result.HasCityDb || result.CountryCode != "" || result.City != "" || result.ASN != "" {
+		t.Errorf("expected fully degraded result, got %+v", result)
+	}
+}
+
 func TestQueryIpGeoInvalidIP(t *testing.T) {
 	installGeoFixtures(t, true)
 	result := queryIpGeo(t, "not-an-ip")

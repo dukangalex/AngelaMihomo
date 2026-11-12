@@ -3,8 +3,10 @@ package mmdb
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
+	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 	"github.com/oschwald/maxminddb-golang"
 )
@@ -107,14 +109,21 @@ func LookupGeo(ipAddress net.IP) GeoInfo {
 		info.City = city.City
 		info.ContinentCode = city.ContinentCode
 	}
+	// The bundled country/ASN accessors abort the process when their
+	// file is missing, so only consult them when the file is actually
+	// there; a geo lookup must degrade, never take the process down.
 	if info.CountryCode == "" {
-		if codes := IPInstance().LookupCode(ipAddress); len(codes) > 0 {
-			info.CountryCode = strings.ToUpper(codes[0])
+		if _, err := os.Stat(C.Path.MMDB()); err == nil {
+			if codes := IPInstance().LookupCode(ipAddress); len(codes) > 0 {
+				info.CountryCode = strings.ToUpper(codes[0])
+			}
 		}
 	}
-	if asn, name := ASNInstance().LookupASN(ipAddress); asn != "" && asn != "0" {
-		info.ASN = "AS" + asn
-		info.ASName = name
+	if _, err := os.Stat(C.Path.ASN()); err == nil {
+		if asn, name := ASNInstance().LookupASN(ipAddress); asn != "" && asn != "0" {
+			info.ASN = "AS" + asn
+			info.ASName = name
+		}
 	}
 	return info
 }
