@@ -1,39 +1,10 @@
-# Code Signing Policy
+# 签名与分发说明 / Signing & Distribution
 
-This document defines the code signing policy for the **AngelaMihomo** project, specifically utilizing the free open-source code signing service provided by the [SignPath Foundation](https://signpath.org/).
+本文件说明 AngelaMihomo 各平台安装包的签名现状，与发布模板口径一致。如本文件与实际发布物不符，以实际发布物为准并请提交 Issue 指出。
 
-## 1. Scope
+- **Android**：安装包以本项目发布密钥签名，证书指纹固定不变，历版可覆盖升级；校验方式为比对 Releases 页面提供的 SHA-256。
+- **Windows**：安装包暂未做代码签名。SmartScreen 提示时点「更多信息 → 仍要运行」。下载后请核对 SHA-256。
+- **macOS**：安装包未做 Apple 公证。首次打开请在「访达 → 应用程序」中右键点应用选「打开」。
+- **Linux**：无签名机制，认准本仓库 Releases 页面下载并核对 SHA-256。
 
-This policy applies to all Windows executable artifacts distributed by the AngelaMihomo project, including but not limited to:
-- The main executable binary (`AngelaMihomo.exe`)
-- The Helper Service executable
-- The Windows Installer (`AngelaMihomo-*-setup.exe`)
-
-## 2. Roles and Responsibilities
-
-- **Project Maintainers**: Only authorized maintainers have the permission to push to the default branch (`main`), create release tags, and manage repository settings.
-- **SignPath Service**: Provides the code signing certificate and handles the cryptographic signing process securely in the cloud.
-
-## 3. Security and Branch Protection
-
-To ensure that only trusted and reviewed code gets signed, the project enforces the following repository rules:
-- **Protected Branches**: The `main` branch is protected.
-- **Code Review**: All code changes from contributors must be submitted via Pull Requests (PRs).
-- **Two-Factor Authentication (2FA)**: All maintainers with write access to the repository are highly encouraged (or required by GitHub policy) to enable 2FA.
-
-## 4. Build and Signing Process
-
-The signing process is strictly automated to prevent tampering. Manual code signing by individual developers is not permitted for official releases.
-
-- **CI/CD Automation**: All signing operations are fully automated via GitHub Actions (e.g., `.github/workflows/build.yaml`).
-- **Trigger Conditions**: Signing is only triggered during the official release process, specifically when pushing a new version tag (e.g., `v1.*.*`).
-- **Ephemeral Environments**: All builds are compiled on ephemeral, isolated GitHub-hosted runners.
-- **SignPath Integration**: Once the unsigned artifacts are compiled, the GitHub Action submits them to SignPath via their official API/Action. SignPath verifies the origin (GitHub Actions OIDC or API Token) and signs the artifacts.
-- **Distribution**: The signed artifacts are automatically downloaded back to the runner and uploaded to the GitHub Releases page.
-
-## 5. Incident Response and Revocation
-
-If a security breach, unauthorized commit, or private key compromise (related to the repository or CI tokens) is suspected:
-1. Maintainers will immediately revoke any exposed tokens.
-2. If malicious code was signed, maintainers will immediately contact the SignPath Foundation to request the revocation of the code signing certificate.
-3. An advisory will be published on the GitHub repository to notify users.
+分发渠道只有一条：本仓库 GitHub Releases。任何其他来源的同名安装包与本项目无关。

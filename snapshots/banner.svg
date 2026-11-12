@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="AngelaMihomo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fcff"/>
+      <stop offset="0.55" stop-color="#e6f4fd"/>
+      <stop offset="1" stop-color="#d3eafd"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7fd0f5" stop-opacity="0.55"/>
+      <stop offset="0.6" stop-color="#a5dcf8" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#a5dcf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="swoosh" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38b6e8" stop-opacity="0"/>
+      <stop offset="0.25" stop-color="#38b6e8" stop-opacity="0.85"/>
+      <stop offset="0.75" stop-color="#1b7fc1" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#1b7fc1" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4fc0ee"/>
+      <stop offset="1" stop-color="#1668a8"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="360" rx="28" fill="url(#bg)"/>
+
+  <!-- soft technological glow -->
+  <ellipse cx="640" cy="150" rx="430" ry="150" fill="url(#glow)"/>
+  <ellipse cx="215" cy="60" rx="150" ry="60" fill="#bfe7fb" opacity="0.5" filter="url(#soft)"/>
+  <ellipse cx="1080" cy="305" rx="190" ry="70" fill="#9fd8f7" opacity="0.45" filter="url(#soft)"/>
+
+  <!-- rounded hull-like sweeping curves -->
+  <path d="M-40 268 C 300 190, 620 320, 900 246 S 1240 190, 1330 226" fill="none" stroke="url(#swoosh)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M-40 296 C 320 226, 660 344, 940 272 S 1250 224, 1330 254" fill="none" stroke="url(#swoosh)" stroke-width="3" stroke-linecap="round" opacity="0.65"/>
+  <path d="M-40 84 C 260 150, 560 44, 880 108 S 1230 150, 1330 104" fill="none" stroke="url(#swoosh)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- abstract ring-ship motif -->
+  <g transform="translate(640 118)">
+    <ellipse cx="0" cy="0" rx="86" ry="26" fill="none" stroke="url(#ring)" stroke-width="9" stroke-linecap="round"/>
+    <ellipse cx="0" cy="0" rx="86" ry="26" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="13" fill="#1b7fc1"/>
+    <circle cx="0" cy="0" r="6.5" fill="#aee3fc"/>
+  </g>
+
+  <!-- wordmark and taglines (live text, editable) -->
+  <text x="640" y="212" text-anchor="middle" font-family="'Segoe UI','Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="62" font-weight="700" letter-spacing="1" fill="#0d3550">AngelaMihomo</text>
+  <text x="640" y="264" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei','Segoe UI',Arial,sans-serif" font-size="29" font-weight="500" fill="#17618f">导入订阅，打开就能用</text>
+  <text x="640" y="300" text-anchor="middle" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="19" letter-spacing="2.5" fill="#4a86ad">IMPORT A SUBSCRIPTION · IT JUST WORKS</text>
+</svg>

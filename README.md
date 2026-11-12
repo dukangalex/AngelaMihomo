@@ -1,132 +1,89 @@
 <h4 align="right">
-  <strong>简体中文</strong> | <a href="readme/README_en.md">English</a> | <a href="readme/README_ru.md">Русский</a> | <a href="readme/README_fa.md">فارسی</a> | <a href="readme/README_ja.md">日本語</a> | <a href="readme/README_ko.md">한국어</a>
+  <strong>简体中文</strong> | <a href="README.en.md">English</a>
 </h4>
 
-<h1 align="center">⚡ Angela Mihomo</h1>
 <p align="center">
-  <strong>链式代理增强版 Mihomo 客户端</strong>
+  <img src="snapshots/banner.svg" alt="AngelaMihomo" width="880" />
 </p>
 
-## 关于本项目
-
-**Angela Mihomo** 是一款基于 [Mihomo](https://github.com/MetaCubeX/mihomo) 内核的跨平台代理客户端，专注链式代理、系统级防泄漏与开箱即用体验，遵循 GPL-3.0 开源协议，独立开发与发布。
-
-本项目的特色：
-
-* **链式代理增强**：入口与出口均可选用策略组作为跳点；出口可跨配置选择（节点或策略组）；入口组为空时自动加固为拒绝直连，避免链式失效时流量绕行直连。
-* **独立包名**：Android 包名为 `app.angelabettbox`，可与其他同类客户端并存安装，互不影响；包名保持稳定，已安装版本可直接覆盖升级。
-* **版本与内核跟进**：内核基线与 Mihomo 官方版本对齐（当前为 Mihomo v1.19.33），内置规则数据源采用 MetaCubeX 官方源。
-* **系统显式防泄漏**：WebRTC 拦截、中国公共 DNS 直连、广告拦截等一整套显式规则，与链式代理统一联动，开箱即生效。
+<h1 align="center">AngelaMihomo</h1>
 
 <p align="center">
-  <img src="snapshots/home.png" alt="Angela Mihomo" />
+  <strong>导入订阅，打开就能用的 Mihomo 客户端</strong><br/>
+  当前版本 1.19.7-chain.18 · 内置 Mihomo 内核 1.19.34 · GPL-3.0 开源
 </p>
 
-### 📣 发布频道
+## 这是什么
 
-版本发布与更新通知见 Telegram 频道：https://t.me/AngelaNexus
+AngelaMihomo 是一个基于 Mihomo 内核的跨平台代理客户端，运行在 Android、Windows、macOS、Linux 四个平台。它要解决的是一件很具体的事：不懂代理概念的人，把订阅或节点信息导入进来，就能按自己的意图跑起来；懂行的人，则能把内核的每一项能力都在界面里找到、点开、调明白。
 
-使用交流与问题反馈见 Telegram 群组：https://t.me/AngelaMihomoGroup
+应用版本与内置内核版本在「关于」页直接可见，内核跟随 Mihomo 官方版本对齐，内置规则数据全部取自 MetaCubeX 官方源。
 
----
-## 🚀 核心特性
+## 我们的取舍
 
-* **开箱即用**：完善的权限引导与舒适的 TUN / VPN 体验，预置大量合理优化策略，安装即达最佳可用状态。
-* **轻量畅快**：深度调优系统与渲染管线，前台交互动画高帧率简洁丝滑，移动端低能耗，桌面端低资源占用。
-* **安全可信**：内核紧跟 Mihomo 主线，遵循各平台最小权限设计；代码完全开源，可自行审计。
-* **稳定容错**：优化多平台极端网络环境下的边界问题，内置双重配置检测验证与保护机制。
-* **架构优化**：桌面端原生 ARM64 架构深度支持，同时持续维护面向老旧设备的 Compatible 兼容版本。
-* **智能守护**：支持多平台无感智能启停、移动端低功耗休眠策略、一键禁用 QUIC 以及托盘菜单多维快捷控制。
-* **可视化设置**：提供丰富深入的可视化参数调节界面，支持改动即时生效。
-* **首页小组件**：内置多款 Widget 小组件，在首页直观掌控实时网速、连接与全局运行状态。
-* **个性化定制**：支持丰富的色彩主题、自定义图标与标题等，并内置 30 种精美的测速动效。
-* **生态与扩展**：支持外置 JS 覆写脚本的可视化 UI 适配与高性能代码编辑器。
-* **零隐私风险**：代码完全透明开源、无广告，零后台隐私收集。
+- **零基础优先**：默认配置开箱即对——导入后自动选可用节点、规则与中国网络适配默认到位，中途不需要你做技术决策。
+- **链式代理**：每个配置可独立设置链路，入口与出口都可选用策略组作跳点，出口可跨配置选择；链路失效时入口组自动拒绝直连，不让流量悄悄绕行。
+- **隐私优先**：非必要权限一律不索取，无广告，不收集用户数据；防泄漏是一整套显式规则（WebRTC 拦截、DNS 防污染、广告拦截）与链路统一联动，默认生效。
+- **能力不藏着**：内核能做的都摆到界面上，每项设置带简明说明；任何选项只有一个生效口径，不留互相打架的开关。
+- **长期平稳运行**：每一版先经真机试用再发布，宁可慢，不发问题版本。
 
----
-## 🛠️ 安装与下载
+## 下载与安装
 
-请前往本仓库的 **[[Releases]](https://github.com/dukangalex/AngelaMihomo/releases)** 页面下载对应平台的安装包：
+安装包只在本仓库的 [Releases](https://github.com/dukangalex/AngelaMihomo/releases) 页面发布，请认准这一处来源，并核对页面提供的 SHA-256 校验值。
 
-* **桌面端支持**: 
-  * **Windows 8.1+:** (x64 / arm64)
-  * **Linux Kernel 5.4+:** (x64 / arm64)
-  * **macOS 12.0+:** (Intel / Apple Silicon)
-* **移动端及其他**: 
-  * **Android 8.0+:** (ARMv8 / ARMv7 / x86_64 / Universal) 
-  * **Android TV:** 完整大屏适配，可选 ARMv7 32位版本
-  * **鸿蒙 NEXT:** 可配合 [[卓易通]](https://harmonyos.cool/android-app) 稳定使用
+| 平台 | 要求 | 说明 |
+|---|---|---|
+| Android | 8.0+ | ARMv8 / ARMv7 / x86_64 / Universal 四种包，TV 大屏亦适配 |
+| Windows | 8.1+ | x64 / arm64，老设备另有 Compatible 兼容版 |
+| macOS | 12.0+ | Intel / Apple Silicon |
+| Linux | 内核 5.4+ | x64 / arm64 |
 
-**从其他版本迁移（Android）**：自 v1.19.7-chain.1 起本应用使用独立包名，可直接与其他版本并存安装；如需迁移数据，请先在原应用中导出备份，再在本应用中导入恢复。
+先把分发短板说在前面：本项目**未上架任何应用商店**，只经 GitHub 分发；**Windows 安装包未做代码签名**，SmartScreen 提示时点「更多信息 → 仍要运行」；**macOS 未做 Apple 公证**，首次打开请在「访达 → 应用程序」里右键点应用选「打开」。源码全量在本仓库，可自行审计后构建。
 
----
-## 💡 常见问题
+Android 包名为 `app.angelabettbox`，可与其他同类客户端并存安装；从其他版本迁移时，先在原应用导出备份，再在本应用导入恢复。
 
-1. **安装环境与兼容版本**：
-   - 安卓端设备请检查是否授予了充足的后台运行权限，系统需满足 Android 8.0+。
-   - 桌面端老旧硬件请根据 CPU 指令集架构选择对应的 Compatible 兼容版本。
-   - 安全相关：本项目全流程开源透明，零隐私收集；可对照本仓库源码自行核查。
+## 三步上手
 
-2. **桌面端权限与 TUN**：
-   - Windows 端管理员权限安装包已内置处理，日常使用无需手动再次授权。
-   - macOS / Linux 开启 TUN 虚拟网卡时，请在系统提示时输入正确的系统密码以完成授权。
-   - 如遇其他报错，请先确认后台没有其他代理工具冲突占用端口，并附带 Debug 日志提交反馈。
+1. 按上表下载对应平台的安装包并安装。
+2. 在「配置」页粘贴或扫码导入你的订阅（也可以导入单个节点信息）。
+3. 回到首页打开开关。剩下的——选节点、分流、防泄漏——按默认配置自动工作。
 
-3. **macOS 首次安装指南**：
-   - 根据平台 (Intel / Apple Silicon) 下载并打开 `.dmg` 安装包，将 Angela Mihomo 图标拖入 Applications 文件夹。
-   - **避开系统安全拦截**（本项目未购买 Apple 商业开发者证书）：
-     - **推荐**：在“访达 - 应用程序”中，**右键点击 Angela Mihomo 图标选择“打开”**，在系统弹窗中确认点击“打开”即可。
-     - **备选**：若被阻止，可前往系统“设置 -> 隐私与安全性”，找到 Angela Mihomo 点击“仍要打开”。
-   - 首次开启 TUN 模式时，系统会提示密码授权，请输入密码允许创建虚拟网络接口。
+## 功能面
 
-4. **订阅导入与排障**：
-   - 若导入失败，请优先在服务商后台重置订阅链接后重新尝试。
-   - 如持续异常，请先向节点服务商核对节点格式，确认属客户端问题可随时提交 Issue。
+- **连接**：规则 / 全局 / 直连三种模式，TUN 与系统代理，运行中切换配置自动生效。
+- **链式代理**：按配置独立设置入口与出口跳点，支持跨配置出口与策略组跳点。
+- **订阅**：多配置管理、自动更新、导入归一化（把各家格式整理成统一可用的配置）。
+- **分流与防护**：中国流量直连、非中国流量代理的规则基线；WebRTC 拦截、广告拦截、DNS 防污染成套生效。
+- **内核能力显式化**：测速、健康检查、DNS、嗅探等内核参数均有可视化设置项与说明，改动按明确的生效口径执行。
+- **脚本扩展**：支持外置 JS 覆写脚本，并为脚本开关提供可视化界面适配（见「开发者」一节）。
+- **数据自理**：配置与备份可导出、可 WebDAV 备份恢复，数据始终在你自己手里。
 
----
-## 💻 开发构建与 UI 适配
+## 联系方式
 
-本项目的环境准备、回归测试和 Linux 构建说明见 [DEVELOPMENT.md](DEVELOPMENT.md)。
+- 发布频道（版本与更新通知）：Telegram [@AngelaNexus](https://t.me/AngelaNexus)
+- 交流群（使用交流与问题反馈）：Telegram [AngelaMihomoGroup](https://t.me/AngelaMihomoGroup)
+- 缺陷与建议：本仓库 [Issues](https://github.com/dukangalex/AngelaMihomo/issues)，提交时请附版本与复现步骤。
 
-以 Windows 平台构建为例：
+## 开发者
 
-* 系统需求：Windows 10 及以上
-* 依赖环境：Git, Visual Studio, Flutter 3.47.x, Golang, Inno Setup, Rust
-```bash
-* flutter pub get (获取相关依赖)
-* dart .\setup.dart windows --arch amd64 --out core (仅构建Core核心)
-* dart .\setup.dart windows --arch amd64 --out app --compatible (可选兼容版本)
-* 构建完成后，最终产物位于 `dist/` 目录
-```
+构建环境、回归测试与各平台打包说明见 [DEVELOPMENT.md](DEVELOPMENT.md)（Flutter 3.47.x、Go、Rust，`dart setup.dart` 一键装配核心与应用）。
 
-自定义脚本 UI 适配：
-
-* 本项目支持外置覆写脚本适配图形化 UI。以 AIsouler 的 **[脚本/配置分享](https://github.com/AIsouler/MyClash)** 为例，只需在脚本首行添加以下声明，即可直接联动内置可视化开关：
-* <code>const Compatible_With_Mihomo = { ruleOptionsEnable: true };</code>（Mihomo 系通用声明，任何支持该约定的 Mihomo 客户端均可识别）
-* Bettbox 声明同样受支持：<code>const Compatible_With_Bettbox = { ruleOptionsEnable: true };</code>
-* 若脚本开关中包含策略组与其他功能开关，可通过 `policyGroupOptions` 声明策略组开关名称；未声明的开关会自动归纳至「⚙️ 其他设置」二级菜单：
+**脚本 UI 适配**：覆写脚本在首行声明即可联动内置可视化开关——
 
 ```js
-const Compatible_With_Mihomo = {
-  ruleOptionsEnable: true,
-  // 声明属于策略组的开关名称，需与 ruleOptionsEnable 的键完全一致
-  policyGroupOptions: ['🚀 节点选择', '🛑 广告拦截'],
-};
+const Compatible_With_Mihomo = { ruleOptionsEnable: true };
 ```
-* 未声明 `policyGroupOptions` 或名称不匹配时，所有开关将平铺展示。
 
----
-## ❤️ 致谢
+脚本开关中的策略组类开关可用 `policyGroupOptions` 点名归类，未点名的自动归入「其他设置」。这套约定源自 Mihomo 系脚本生态的通行做法（如 AIsouler 的 [MyClash](https://github.com/AIsouler/MyClash) 脚本分享），支持该约定的脚本可直接使用。
 
-* **[Bettbox](https://github.com/appshubcc/Bettbox)**（原项目，本分支基于它二次开发，感谢 appshubcc 与所有上游贡献者）
-* **[FlClash GUI](https://github.com/chen08209/FlClash)**（谱系起源，向原作者的开创性探索与贡献致敬）
-* **[Mihomo Core](https://github.com/MetaCubeX/mihomo)**（强大灵活的核心驱动）
+## 致谢
 
-以及以下开源项目的启发与使用参考：
+- [Bettbox](https://github.com/appshubcc/Bettbox)：本项目的代码渊源，感谢 appshubcc 与其贡献者。
+- [FlClash GUI](https://github.com/chen08209/FlClash)：谱系起源，感谢原作者的开创性工作。
+- [Mihomo Core](https://github.com/MetaCubeX/mihomo)：本应用内置的内核，感谢 MetaCubeX 团队。
 
-[Zashboard](https://github.com/Zephyruso/zashboard), [CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid), [Sparkle](https://github.com/xishang0128/sparkle), [SFA](https://github.com/SagerNet/sing-box-for-android), [HUSI](https://github.com/xchacha20-poly1305/husi), [V2rayN](https://github.com/2dust/v2rayN)
+开发中参考与借鉴的开源项目：[Zashboard](https://github.com/Zephyruso/zashboard)、[CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid)、[Sparkle](https://github.com/xishang0128/sparkle)、[SFA](https://github.com/SagerNet/sing-box-for-android)、[HUSI](https://github.com/xchacha20-poly1305/husi)、[V2rayN](https://github.com/2dust/v2rayN)。
 
----
-## 📄 开源协议
+## 开源协议
 
-本项目采用 [GPL-3.0 License](LICENSE) 开源协议发布，完整源码即本仓库。
+本项目以 [GPL-3.0](LICENSE) 协议开源，完整源码即本仓库。

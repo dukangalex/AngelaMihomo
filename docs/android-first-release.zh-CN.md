@@ -1,5 +1,9 @@
 # Android 首次正式签名
 
+> 注记（2026-11 补）：本文是首次正式签名当时的操作记录，保留原貌供追溯。文中包名口径已过期——
+> Android 现行包名为 `app.angelabettbox`；`com.appshub.bettbox` 是 macOS 的 bundle id，不用于 Android。
+> keystore 文件名 bettbox-release.p12 为当时实录，现行维护以实际保管的发布密钥为准。
+
 这是首次正式发布，无需寻找历史正式 APK 或原签名。现有预览 APK 使用 Android Debug 证书，不能当作正式版；若已安装该预览包，正式签名不同，通常需先备份应用内配置，再卸载预览包后安装正式包（卸载可能清除数据）。包名保持 `com.appshub.bettbox` 不变。正式发布后请永久保留同一签名密钥，以支持后续覆盖升级。
 
 ## 只需在自己的电脑完成一次
