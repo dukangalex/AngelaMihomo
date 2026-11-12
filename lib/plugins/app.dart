@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bett_box/common/app_localizations.dart';
-import 'package:bett_box/common/system.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -68,12 +67,6 @@ class App {
 
   Future<void> openAppSettings() async {
     await methodChannel.invokeMethod<void>('openAppSettings');
-  }
-
-  Future<bool> openFcmDiagnostics() async {
-    if (!system.isAndroid) return false;
-    return await methodChannel.invokeMethod<bool>('openFcmDiagnostics') ??
-        false;
   }
 
   Future<List<String>> getChinaPackageNames() async {

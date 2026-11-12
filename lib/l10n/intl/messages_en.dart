@@ -747,13 +747,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("Fallback Filter"),
     "fast": MessageLookupByLibrary.simpleMessage("Fast"),
-    "fcmOptimization": MessageLookupByLibrary.simpleMessage("FCM Optimization"),
-    "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
-      "Enhance FCM connection stability",
-    ),
-    "fcmTip": MessageLookupByLibrary.simpleMessage(
-      "FCM connection and support depend on the device itself, the results are for reference only. Due to system permission reasons, you need to disable \"Allow bypass VPN\" in settings to get accurate results",
-    ),
     "fidelityScheme": MessageLookupByLibrary.simpleMessage("Fidelity"),
     "file": MessageLookupByLibrary.simpleMessage("File"),
     "fileDesc": MessageLookupByLibrary.simpleMessage("Upload profile file"),

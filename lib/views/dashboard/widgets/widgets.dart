@@ -13,7 +13,6 @@ export 'dns_override.dart';
 export 'sniffer_override.dart';
 export 'ntp_override.dart';
 export 'providers_info.dart';
-export 'fcm_status.dart';
 export 'online_panel.dart';
 export 'wakelock_switch.dart';
 export 'core_status_dialog.dart';

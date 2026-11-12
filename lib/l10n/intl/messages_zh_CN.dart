@@ -559,13 +559,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "fallbackDesc": MessageLookupByLibrary.simpleMessage("一般情况下使用境外 DNS"),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("Fallback过滤"),
     "fast": MessageLookupByLibrary.simpleMessage("快"),
-    "fcmOptimization": MessageLookupByLibrary.simpleMessage("FCM优化"),
-    "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
-      "增强 FCM 直连时的网络稳定性",
-    ),
-    "fcmTip": MessageLookupByLibrary.simpleMessage(
-      "FCM连接和支持取决于设备本身，显示结果仅供参考。因系统权限原因，您需要关闭网络中的\"允许绕过 VPN\"选项，以获得更加准确的结果",
-    ),
     "fidelityScheme": MessageLookupByLibrary.simpleMessage("高保真"),
     "file": MessageLookupByLibrary.simpleMessage("文件"),
     "fileDesc": MessageLookupByLibrary.simpleMessage("直接上传配置文件"),

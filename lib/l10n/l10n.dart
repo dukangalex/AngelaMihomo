@@ -695,26 +695,6 @@ class AppLocalizations {
     );
   }
 
-  /// `FCM Optimization`
-  String get fcmOptimization {
-    return Intl.message(
-      'FCM Optimization',
-      name: 'fcmOptimization',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enhance FCM connection stability`
-  String get fcmOptimizationDesc {
-    return Intl.message(
-      'Enhance FCM connection stability',
-      name: 'fcmOptimizationDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Quick Response`
   String get quickResponse {
     return Intl.message(
@@ -1065,16 +1045,6 @@ class AppLocalizations {
     return Intl.message(
       'Force kernel garbage collection? Experimental, use with caution.',
       name: 'forceGCDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `FCM connection and support depend on the device itself, the results are for reference only. Due to system permission reasons, you need to disable "Allow bypass VPN" in settings to get accurate results`
-  String get fcmTip {
-    return Intl.message(
-      'FCM connection and support depend on the device itself, the results are for reference only. Due to system permission reasons, you need to disable "Allow bypass VPN" in settings to get accurate results',
-      name: 'fcmTip',
       desc: '',
       args: [],
     );
