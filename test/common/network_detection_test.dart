@@ -1,13 +1,34 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:bett_box/clash/core.dart';
+import 'package:bett_box/clash/interface.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+// Detection enriches the trace result through the core bridge; install
+// a handler that answers locally so no desktop core is started. The
+// empty geo payload makes enrichment a no-op, leaving the trace data.
+class _GeoHandler extends ClashHandlerInterface {
+  @override
+  Future<String> queryIpGeo(String ip) async => '';
+
+  @override
+  Future<bool> preload() async => true;
+
+  @override
+  void reStart() {}
+
+  @override
+  bool destroy() => true;
+
+  @override
+  Future<Object?> sendMessage(String message) async => null;
+}
 
 Future<void> _waitFor(bool Function() condition) async {
   final deadline = DateTime.now().add(const Duration(seconds: 5));
@@ -56,13 +77,13 @@ void main() {
     pending.clear();
   }
 
-  // The fake proxy below stands in for the local mixed port. IP lookups are
-  // HTTPS-only, so through a proxy they arrive as CONNECT tunnels; the plain
-  // GET handler alone (used when the first source was plaintext HTTP) can no
-  // longer observe them. CONNECT tunnels are therefore relayed to a local
-  // TLS origin that serves the same gated response. The fallback source host
-  // is failed fast at the origin, mirroring the old arrangement where only
-  // the primary source was counted and the fallback errored out.
+  // The fake proxy below stands in for the local mixed port. Exit IP
+  // discovery is a single HTTPS trace echo (cloudflare.com/cdn-cgi/trace),
+  // so through a proxy it arrives as a CONNECT tunnel; the plain GET
+  // handler alone can no longer observe it. CONNECT tunnels are therefore
+  // relayed to a local TLS origin that serves the same gated trace
+  // response. Geo enrichment happens locally in the core and produces no
+  // network traffic, so exactly one request per check is expected.
   Future<void> handleDataRequest(HttpRequest request) async {
     if (request.method != 'GET') {
       request.response.statusCode = HttpStatus.badGateway;
@@ -73,17 +94,12 @@ void main() {
     final completer = Completer<void>();
     pending.add(completer);
     await completer.future;
-    request.response.write(
-      json.encode({
-        'status': 'success',
-        'query': '1.2.3.4',
-        'countryCode': 'US',
-      }),
-    );
+    request.response.write('ip=1.2.3.4\nloc=US\n');
     await request.response.close().catchError((_) {});
   }
 
   setUpAll(() async {
+    ClashCore.setHandlerForTesting(_GeoHandler());
     HttpOverrides.global = AngelaHttpOverrides();
 
     // Throwaway self-signed certificate for the fake origin, generated per
@@ -107,7 +123,7 @@ void main() {
       '-subj',
       '/CN=localhost',
       '-addext',
-      'subjectAltName=DNS:localhost,DNS:get.geojs.io,DNS:api.ip.sb',
+      'subjectAltName=DNS:localhost,DNS:cloudflare.com',
     ]);
     if (openssl.exitCode != 0) {
       fail('openssl certificate generation failed: ${openssl.stderr}');
@@ -121,12 +137,6 @@ void main() {
       securityContext,
     );
     originServer.listen((request) async {
-      final host = request.headers.value('host') ?? '';
-      if (host.contains('ip.sb')) {
-        request.response.statusCode = HttpStatus.internalServerError;
-        await request.response.close();
-        return;
-      }
       await handleDataRequest(request);
     });
 

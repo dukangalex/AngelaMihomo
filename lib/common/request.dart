@@ -415,12 +415,19 @@ class Request {
     if (res.isError || traceInfo == null || traceInfo.ip.isEmpty) {
       return res;
     }
-    final enriched = await clashCore.queryIpGeo(traceInfo.ip);
-    if (enriched == null) {
-      return res;
-    }
-    onUpdate?.call(enriched);
-    return Result.success(enriched);
+    // Local enrichment is best-effort: the databases live in the core,
+    // and a lookup that is unavailable or stuck must never block the
+    // detection result — the trace data alone is a valid answer.
+    try {
+      final enriched = await clashCore
+          .queryIpGeo(traceInfo.ip)
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      if (enriched != null) {
+        onUpdate?.call(enriched);
+        return Result.success(enriched);
+      }
+    } catch (_) {}
+    return res;
   }
 
   Future<Result<IpInfo?>> checkIp({
