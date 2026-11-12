@@ -188,22 +188,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "advancedSettings": MessageLookupByLibrary.simpleMessage(
       "Advanced Settings",
     ),
-    "ageCipherText": MessageLookupByLibrary.simpleMessage(
-      "Cipher Text (-----BEGIN AGE ENCRYPTED FILE-----)",
-    ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Decryption failed",
-    ),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Encryption failed",
-    ),
-    "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
-      "File too large (8 MB max)",
-    ),
     "ageGenerateKeyPair": MessageLookupByLibrary.simpleMessage("New Key Pair"),
-    "ageInputRequired": MessageLookupByLibrary.simpleMessage(
-      "Enter content or choose a file",
-    ),
     "ageKeyGenerateTitle": MessageLookupByLibrary.simpleMessage(
       "Age Key Generation",
     ),
@@ -214,11 +199,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "X25519 Key pair generated, please keep it safe",
     ),
     "ageKeyType": MessageLookupByLibrary.simpleMessage("Key type"),
-    "ageNotEncrypted": MessageLookupByLibrary.simpleMessage(
-      "Content is not Age encrypted",
-    ),
-    "ageOutput": MessageLookupByLibrary.simpleMessage("Result"),
-    "agePlainText": MessageLookupByLibrary.simpleMessage("Plain Text"),
     "agePrivateKeyLabel": MessageLookupByLibrary.simpleMessage(
       "Age Private Key",
     ),
@@ -226,34 +206,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please enter a correct Age private key first",
     ),
     "agePublicKeyLabel": MessageLookupByLibrary.simpleMessage("Age Public Key"),
-    "ageRecipientRequired": MessageLookupByLibrary.simpleMessage(
-      "Add at least one recipient public key",
-    ),
-    "ageRecipients": MessageLookupByLibrary.simpleMessage(
-      "Recipient Public Keys",
-    ),
-    "ageRecipientsHint": MessageLookupByLibrary.simpleMessage(
-      "One age1… key per line, multiple allowed",
-    ),
     "ageSecretKeyInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a valid Age secret key (must start with AGE-SECRET-KEY-)",
     ),
     "ageSecretKeyOptional": MessageLookupByLibrary.simpleMessage(
       "Age Secret Key (Optional)",
     ),
-    "ageTabDecrypt": MessageLookupByLibrary.simpleMessage("Decrypt"),
-    "ageTabEncrypt": MessageLookupByLibrary.simpleMessage("Encrypt"),
-    "ageTabKeys": MessageLookupByLibrary.simpleMessage("Keys"),
-    "ageTool": MessageLookupByLibrary.simpleMessage("Age Encrypt / Decrypt"),
-    "ageToolDesc": MessageLookupByLibrary.simpleMessage(
-      "Generate keys, encrypt or decrypt text and configs",
-    ),
+    "ageTool": MessageLookupByLibrary.simpleMessage("Age Keys"),
+    "ageToolDesc": MessageLookupByLibrary.simpleMessage("Generate and export Age keys"),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "Everything runs locally. Private keys are never stored or uploaded.",
-    ),
-    "ageUseForEncrypt": MessageLookupByLibrary.simpleMessage("Use to Encrypt"),
-    "ageUseProfileKey": MessageLookupByLibrary.simpleMessage(
-      "Use Current Profile Key",
     ),
     "ago": MessageLookupByLibrary.simpleMessage(" ago"),
     "agree": MessageLookupByLibrary.simpleMessage("Agree"),

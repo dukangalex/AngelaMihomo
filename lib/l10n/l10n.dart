@@ -8340,11 +8340,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Keys`
-  String get ageTabKeys {
-    return Intl.message('Keys', name: 'ageTabKeys', desc: '', args: []);
-  }
-
   /// `Key type`
   String get ageKeyType {
     return Intl.message('Key type', name: 'ageKeyType', desc: '', args: []);
@@ -8360,141 +8355,11 @@ class AppLocalizations {
     );
   }
 
-  /// `Encrypt`
-  String get ageTabEncrypt {
-    return Intl.message('Encrypt', name: 'ageTabEncrypt', desc: '', args: []);
-  }
-
-  /// `Decrypt`
-  String get ageTabDecrypt {
-    return Intl.message('Decrypt', name: 'ageTabDecrypt', desc: '', args: []);
-  }
-
   /// `New Key Pair`
   String get ageGenerateKeyPair {
     return Intl.message(
       'New Key Pair',
       name: 'ageGenerateKeyPair',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Use to Encrypt`
-  String get ageUseForEncrypt {
-    return Intl.message(
-      'Use to Encrypt',
-      name: 'ageUseForEncrypt',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Plain Text`
-  String get agePlainText {
-    return Intl.message('Plain Text', name: 'agePlainText', desc: '', args: []);
-  }
-
-  /// `Cipher Text (-----BEGIN AGE ENCRYPTED FILE-----)`
-  String get ageCipherText {
-    return Intl.message(
-      'Cipher Text (-----BEGIN AGE ENCRYPTED FILE-----)',
-      name: 'ageCipherText',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Recipient Public Keys`
-  String get ageRecipients {
-    return Intl.message(
-      'Recipient Public Keys',
-      name: 'ageRecipients',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `One age1… key per line, multiple allowed`
-  String get ageRecipientsHint {
-    return Intl.message(
-      'One age1… key per line, multiple allowed',
-      name: 'ageRecipientsHint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add at least one recipient public key`
-  String get ageRecipientRequired {
-    return Intl.message(
-      'Add at least one recipient public key',
-      name: 'ageRecipientRequired',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter content or choose a file`
-  String get ageInputRequired {
-    return Intl.message(
-      'Enter content or choose a file',
-      name: 'ageInputRequired',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Result`
-  String get ageOutput {
-    return Intl.message('Result', name: 'ageOutput', desc: '', args: []);
-  }
-
-  /// `Encryption failed`
-  String get ageEncryptFailed {
-    return Intl.message(
-      'Encryption failed',
-      name: 'ageEncryptFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Decryption failed`
-  String get ageDecryptFailed {
-    return Intl.message(
-      'Decryption failed',
-      name: 'ageDecryptFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Content is not Age encrypted`
-  String get ageNotEncrypted {
-    return Intl.message(
-      'Content is not Age encrypted',
-      name: 'ageNotEncrypted',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `File too large (8 MB max)`
-  String get ageFileTooLarge {
-    return Intl.message(
-      'File too large (8 MB max)',
-      name: 'ageFileTooLarge',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Use Current Profile Key`
-  String get ageUseProfileKey {
-    return Intl.message(
-      'Use Current Profile Key',
-      name: 'ageUseProfileKey',
       desc: '',
       args: [],
     );
