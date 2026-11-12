@@ -9,6 +9,23 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'tile.dart';
 
+/// Card-face location text: country · city (city only when the local
+/// GeoIP lookup produced one and it differs from the country name).
+String networkDetectionLocationText(IpInfo ipInfo) {
+  return [
+    ipInfo.country,
+    if (ipInfo.city != ipInfo.country) ipInfo.city,
+  ].where((item) => item?.isNotEmpty ?? false).join(' · ');
+}
+
+/// Card-face operator text: ASN + AS name (ISP as fallback).
+String networkDetectionOperatorText(IpInfo ipInfo) {
+  return [
+    ipInfo.asn,
+    ipInfo.asName ?? ipInfo.isp,
+  ].where((item) => item?.isNotEmpty ?? false).join(' ');
+}
+
 class NetworkDetection extends ConsumerStatefulWidget {
   final DashboardTileSize? size;
 
@@ -346,16 +363,10 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           final masked = detectionState.isIpMasked;
           final location = ipInfo == null
               ? ''
-              : [
-                  ipInfo.country,
-                  if (ipInfo.city != ipInfo.country) ipInfo.city,
-                ].where((item) => item?.isNotEmpty ?? false).join(' · ');
+              : networkDetectionLocationText(ipInfo);
           final operator = ipInfo == null
               ? ''
-              : [
-                  ipInfo.asn,
-                  ipInfo.asName ?? ipInfo.isp,
-                ].where((item) => item?.isNotEmpty ?? false).join(' ');
+              : networkDetectionOperatorText(ipInfo);
           final countryCode = ipInfo?.countryCode ?? '';
           final ipText = ipInfo != null
               ? Text(
@@ -471,6 +482,13 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
         builder: (_, state, _) {
           final ipInfo = state.ipInfo;
           final isLoading = state.isLoading;
+          final masked = detectionState.isIpMasked;
+          final locationText = ipInfo == null
+              ? ''
+              : [
+                  networkDetectionLocationText(ipInfo),
+                  networkDetectionOperatorText(ipInfo),
+                ].where((item) => item.isNotEmpty).join(' · ');
           return CommonCard(
             onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
             child: Column(
@@ -537,41 +555,67 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                   padding: baseInfoEdgeInsets.copyWith(top: 0),
                   child: SizedBox(
                     height: globalState.measure.bodyMediumHeight + 2,
-                    child: FadeThroughBox(
-                      child: ipInfo != null
-                          ? TooltipText(
-                              text: Text(
-                                ipInfo.ip,
-                                style: context.textTheme.bodyMedium?.toLight
-                                    .adjustSize(1),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            )
-                          : FadeThroughBox(
-                              child: isLoading == false && ipInfo == null
-                                  ? Text(
-                                      state.errorMessage ?? 'timeout',
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(color: Colors.red)
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Flexible(
+                          child: FadeThroughBox(
+                            child: ipInfo != null
+                                ? TooltipText(
+                                    text: Text(
+                                      ipInfo.ip,
+                                      style: context
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.toLight
                                           .adjustSize(1),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                    )
-                                  : Container(
-                                      padding: const EdgeInsets.all(2),
-                                      child: Center(
-                                        child: OverflowBox(
-                                          maxWidth: 30,
-                                          maxHeight: 16,
-                                          child: SpinKitThreeBounce(
-                                            color: context.colorScheme.primary,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
                                     ),
+                                  )
+                                : FadeThroughBox(
+                                    child: isLoading == false && ipInfo == null
+                                        ? Text(
+                                            state.errorMessage ?? 'timeout',
+                                            style: context.textTheme.bodyMedium
+                                                ?.copyWith(color: Colors.red)
+                                                .adjustSize(1),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        : Container(
+                                            padding: const EdgeInsets.all(2),
+                                            child: Center(
+                                              child: OverflowBox(
+                                                maxWidth: 30,
+                                                maxHeight: 16,
+                                                child: SpinKitThreeBounce(
+                                                  color: context
+                                                      .colorScheme
+                                                      .primary,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                  ),
+                          ),
+                        ),
+                        if (!masked && locationText.isNotEmpty) ...[
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              locationText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.textTheme.bodySmall?.copyWith(
+                                color: context.colorScheme.onSurfaceVariant,
+                              ),
                             ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
