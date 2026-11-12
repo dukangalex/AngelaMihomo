@@ -439,7 +439,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "closeAll": MessageLookupByLibrary.simpleMessage("Close All"),
     "collapse": MessageLookupByLibrary.simpleMessage("Collapse"),
     "color": MessageLookupByLibrary.simpleMessage("Color"),
-    "colorSchemes": MessageLookupByLibrary.simpleMessage("Color Schemes"),
     "columns": MessageLookupByLibrary.simpleMessage("Columns"),
     "compatible": MessageLookupByLibrary.simpleMessage("Compatible Mode"),
     "compatibleDesc": MessageLookupByLibrary.simpleMessage(
@@ -466,7 +465,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectivity": MessageLookupByLibrary.simpleMessage("Connectivity:"),
     "contactMe": MessageLookupByLibrary.simpleMessage("Contact Me"),
     "content": MessageLookupByLibrary.simpleMessage("Content"),
-    "contentScheme": MessageLookupByLibrary.simpleMessage("Content"),
     "continent": MessageLookupByLibrary.simpleMessage("Continent"),
     "controlSecret": MessageLookupByLibrary.simpleMessage("Control Secret"),
     "controlSecretDesc": MessageLookupByLibrary.simpleMessage(
@@ -710,7 +708,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "exportFile": MessageLookupByLibrary.simpleMessage("Export File"),
     "exportLogs": MessageLookupByLibrary.simpleMessage("Export Logs"),
     "exportSuccess": MessageLookupByLibrary.simpleMessage("Export Successful"),
-    "expressiveScheme": MessageLookupByLibrary.simpleMessage("Expressive"),
     "externalController": MessageLookupByLibrary.simpleMessage(
       "External Controller",
     ),
@@ -747,7 +744,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("Fallback Filter"),
     "fast": MessageLookupByLibrary.simpleMessage("Fast"),
-    "fidelityScheme": MessageLookupByLibrary.simpleMessage("Fidelity"),
     "file": MessageLookupByLibrary.simpleMessage("File"),
     "fileDesc": MessageLookupByLibrary.simpleMessage("Upload profile file"),
     "fileIsUpdate": MessageLookupByLibrary.simpleMessage(
@@ -788,7 +784,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please check the format",
     ),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4 Columns"),
-    "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Fruit Salad"),
     "general": MessageLookupByLibrary.simpleMessage("General"),
     "generalDesc": MessageLookupByLibrary.simpleMessage(
       "Modify global settings",
@@ -1051,7 +1046,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "minutes": m29,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Mixed Port"),
     "mode": MessageLookupByLibrary.simpleMessage("Mode"),
-    "monochromeScheme": MessageLookupByLibrary.simpleMessage("Monochrome"),
     "months": m30,
     "more": MessageLookupByLibrary.simpleMessage("More"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("More IP Information"),
@@ -1213,7 +1207,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Show speed and subscription info in notification bar",
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("Network Type"),
-    "neutralScheme": MessageLookupByLibrary.simpleMessage("Neutral"),
     "newLogsCount": m33,
     "noAnimation": MessageLookupByLibrary.simpleMessage("Default"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage(
@@ -1342,7 +1335,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "packageListPermissionRequired": MessageLookupByLibrary.simpleMessage(
       "Permission to access installed apps is required. Grant now?",
     ),
-    "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "parsePureIp": MessageLookupByLibrary.simpleMessage("Parse Pure IP"),
     "parsePureIpDesc": MessageLookupByLibrary.simpleMessage(
       "Parse pure IP connections",
@@ -1471,7 +1463,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "quickResponseDesc": MessageLookupByLibrary.simpleMessage(
       "Disconnect on network change (WiFi/Mobile)",
     ),
-    "rainbowScheme": MessageLookupByLibrary.simpleMessage("Rainbow"),
     "realTimeSpeed": MessageLookupByLibrary.simpleMessage("Real-time Speed"),
     "reclaimableMemory": MessageLookupByLibrary.simpleMessage("Reclaimable"),
     "recovery": MessageLookupByLibrary.simpleMessage("Restore"),
@@ -1975,7 +1966,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "testUrl": MessageLookupByLibrary.simpleMessage("Test URL"),
     "textScale": MessageLookupByLibrary.simpleMessage("Text Scaling"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
-    "themeColor": MessageLookupByLibrary.simpleMessage("Theme Color"),
     "themeDesc": MessageLookupByLibrary.simpleMessage(
       "Set theme color options",
     ),
@@ -1991,7 +1981,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "tlsPortSniffer": MessageLookupByLibrary.simpleMessage("TLS Port Sniffing"),
     "toggle": MessageLookupByLibrary.simpleMessage("Toggle"),
-    "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Tonal Spot"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("Max 5 rules allowed"),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage("Clear history"),
     "toolSpeedTestDesc": MessageLookupByLibrary.simpleMessage(
@@ -2115,7 +2104,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Username cannot contain colons",
     ),
     "value": MessageLookupByLibrary.simpleMessage("Value"),
-    "vibrantScheme": MessageLookupByLibrary.simpleMessage("Vibrant"),
     "view": MessageLookupByLibrary.simpleMessage("View"),
     "viewDetailedIpData": MessageLookupByLibrary.simpleMessage(
       "View Detailed IP Data",

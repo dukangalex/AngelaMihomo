@@ -133,30 +133,6 @@ final mainIsolate = 'AngelaMihomoMainIsolate';
 
 final serviceIsolate = 'AngelaMihomoServiceIsolate';
 
-const defaultPrimaryColors = [
-  0xFF1E293B,
-  0xFF1976D2,
-  defaultPrimaryColor,
-  0xFFE91E63,
-  0xFF7B1FA2,
-  0xFFD97706,
-  0xFF4F46E5,
-  0xFF008FB6,
-  0xFF388E3C,
-  0xFF827717,
-  0xFF795548,
-];
-
-const legacyPrimaryColors = [
-  0xFF1E293B,
-  0xFF1976D2,
-  defaultPrimaryColor,
-  0xFFE91E63,
-  0xFF7B1FA2,
-  0xFFD97706,
-  0xFF334155,
-];
-
 const scriptTemplate = '''
 const main = (config) => {
   return config;

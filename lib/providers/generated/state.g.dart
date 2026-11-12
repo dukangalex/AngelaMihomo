@@ -2287,7 +2287,7 @@ final class GenColorSchemeProvider
     with $Provider<ColorScheme> {
   GenColorSchemeProvider._({
     required GenColorSchemeFamily super.from,
-    required (Brightness, {Color? color, bool ignoreConfig}) super.argument,
+    required Brightness super.argument,
   }) : super(
          retry: null,
          name: r'genColorSchemeProvider',
@@ -2303,7 +2303,7 @@ final class GenColorSchemeProvider
   String toString() {
     return r'genColorSchemeProvider'
         ''
-        '$argument';
+        '($argument)';
   }
 
   @$internal
@@ -2313,14 +2313,8 @@ final class GenColorSchemeProvider
 
   @override
   ColorScheme create(Ref ref) {
-    final argument =
-        this.argument as (Brightness, {Color? color, bool ignoreConfig});
-    return genColorScheme(
-      ref,
-      argument.$1,
-      color: argument.color,
-      ignoreConfig: argument.ignoreConfig,
-    );
+    final argument = this.argument as Brightness;
+    return genColorScheme(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -2342,14 +2336,10 @@ final class GenColorSchemeProvider
   }
 }
 
-String _$genColorSchemeHash() => r'b403acf45af1aa48c94d103dde83191a7fbc1d27';
+String _$genColorSchemeHash() => r'95fdd3695a095ae8ff4d9588fec230bcbe9a40a9';
 
 final class GenColorSchemeFamily extends $Family
-    with
-        $FunctionalFamilyOverride<
-          ColorScheme,
-          (Brightness, {Color? color, bool ignoreConfig})
-        > {
+    with $FunctionalFamilyOverride<ColorScheme, Brightness> {
   GenColorSchemeFamily._()
     : super(
         retry: null,
@@ -2359,14 +2349,8 @@ final class GenColorSchemeFamily extends $Family
         isAutoDispose: true,
       );
 
-  GenColorSchemeProvider call(
-    Brightness brightness, {
-    Color? color,
-    bool ignoreConfig = false,
-  }) => GenColorSchemeProvider._(
-    argument: (brightness, color: color, ignoreConfig: ignoreConfig),
-    from: this,
-  );
+  GenColorSchemeProvider call(Brightness brightness) =>
+      GenColorSchemeProvider._(argument: brightness, from: this);
 
   @override
   String toString() => r'genColorSchemeProvider';

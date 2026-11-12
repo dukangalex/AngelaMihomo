@@ -45,7 +45,7 @@ const defaultNetworkProps = NetworkProps();
 const defaultProxiesStyle = ProxiesStyle();
 const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
-final defaultThemeProps = ThemeProps(primaryColor: defaultPrimaryColor);
+final defaultThemeProps = ThemeProps();
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
@@ -367,10 +367,7 @@ abstract class TextScale with _$TextScale {
 @freezed
 abstract class ThemeProps with _$ThemeProps {
   const factory ThemeProps({
-    int? primaryColor,
-    @Default(defaultPrimaryColors) List<int> primaryColors,
     @Default(ThemeMode.system) ThemeMode themeMode,
-    @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,
     @Default(false) bool pureBlack,
     @Default(TextScale()) TextScale textScale,
     @Default(false) bool useDarkIcon,
@@ -546,18 +543,6 @@ abstract class Config with _$Config {
               profile['id'] = id.toString();
             }
           }
-        }
-      }
-    } catch (_) {}
-
-    try {
-      final themeProps = json['themeProps'];
-      if (themeProps is Map &&
-          themeProps['primaryColor'] != legacyPrimaryColors.last) {
-        final colors = themeProps['primaryColors'];
-        if (colors is List &&
-            intListEquality.equals(colors.cast<int>(), legacyPrimaryColors)) {
-          themeProps.remove('primaryColors');
         }
       }
     } catch (_) {}

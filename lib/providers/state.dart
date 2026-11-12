@@ -4,8 +4,6 @@ import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_color_utilities/material_color_utilities.dart'
-    show DynamicScheme, Variant;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -949,40 +947,11 @@ VM2<int, bool> checkIp(Ref ref) {
 }
 
 @riverpod
-ColorScheme genColorScheme(
-  Ref ref,
-  Brightness brightness, {
-  Color? color,
-  bool ignoreConfig = false,
-}) {
-  final vm2 = ref.watch(
-    themeSettingProvider.select(
-      (state) => VM2(a: state.primaryColor, b: state.schemeVariant),
-    ),
-  );
-  if (color == null && (ignoreConfig == true || vm2.a == null)) {
-    if (globalState.corePalette case final palette?) {
-      return DynamicScheme(
-        sourceColorHct: palette.primary.keyColor,
-        variant: Variant.tonalSpot,
-        isDark: brightness == Brightness.dark,
-        primaryPalette: palette.primary,
-        secondaryPalette: palette.secondary,
-        tertiaryPalette: palette.tertiary,
-        neutralPalette: palette.neutral,
-        neutralVariantPalette: palette.neutralVariant,
-      ).toColorScheme();
-    }
-    return ColorScheme.fromSeed(
-      seedColor: globalState.accentColor,
-      brightness: brightness,
-      dynamicSchemeVariant: vm2.b,
-    );
-  }
+ColorScheme genColorScheme(Ref ref, Brightness brightness) {
   return ColorScheme.fromSeed(
-    seedColor: color ?? Color(vm2.a!),
+    seedColor: const Color(defaultPrimaryColor),
     brightness: brightness,
-    dynamicSchemeVariant: vm2.b,
+    dynamicSchemeVariant: DynamicSchemeVariant.content,
   );
 }
 

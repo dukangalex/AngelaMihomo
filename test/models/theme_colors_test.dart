@@ -1,55 +1,37 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/constant.dart';
 import 'package:bett_box/models/config.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Config _restore(ThemeProps themeProps) {
-  final json =
-      jsonDecode(jsonEncode(Config(themeProps: themeProps).toJson()))
-          as Map<String, Object?>;
-  return Config.compatibleFromJson(json);
-}
-
 void main() {
-  group('预设主题色', () {
-    test('新增颜色不重复且保留原有顺序', () {
-      expect(defaultPrimaryColors.toSet().length, defaultPrimaryColors.length);
-      expect(defaultPrimaryColors.length, 11);
-      expect(
-        defaultPrimaryColors.take(6),
-        legacyPrimaryColors.take(6),
-      );
+  group('配色存量降级（T102 砍配色方案后）', () {
+    test('存量自定义配色键被安全忽略，其余主题设置原样保留', () {
+      final json = jsonDecode(
+        jsonEncode({
+          'themeProps': {
+            'primaryColor': 0xFF123456,
+            'primaryColors': [0xFF1E293B, 0xFF123456],
+            'schemeVariant': 'expressive',
+            'themeMode': 'dark',
+            'pureBlack': true,
+          },
+        }),
+      ) as Map<String, Object?>;
+      final config = Config.compatibleFromJson(json);
+      expect(config.themeProps.themeMode, ThemeMode.dark);
+      expect(config.themeProps.pureBlack, isTrue);
     });
 
-    test('未改动过的旧预设升级为新预设', () {
-      final config = _restore(
-        ThemeProps(
-          primaryColor: defaultPrimaryColor,
-          primaryColors: legacyPrimaryColors,
-        ),
-      );
-
-      expect(config.themeProps.primaryColors, defaultPrimaryColors);
-      expect(config.themeProps.primaryColor, defaultPrimaryColor);
-    });
-
-    test('自定义过的列表和正在使用被替换颜色的配置保持不变', () {
-      const custom = [0xFF1E293B, 0xFF123456];
+    test('默认主题配置往返稳定且不再写出配色键', () {
+      final json =
+          jsonDecode(jsonEncode(Config(themeProps: ThemeProps()).toJson()))
+              as Map<String, Object?>;
+      final restored = Config.compatibleFromJson(json);
+      expect(restored.themeProps, ThemeProps());
       expect(
-        _restore(
-          ThemeProps(primaryColor: custom.last, primaryColors: custom),
-        ).themeProps.primaryColors,
-        custom,
-      );
-      expect(
-        _restore(
-          ThemeProps(
-            primaryColor: legacyPrimaryColors.last,
-            primaryColors: legacyPrimaryColors,
-          ),
-        ).themeProps.primaryColors,
-        legacyPrimaryColors,
+        (json['themeProps'] as Map<String, Object?>).keys,
+        isNot(anyOf(contains('primaryColor'), contains('primaryColors'))),
       );
     });
   });

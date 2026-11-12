@@ -5,7 +5,6 @@ import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/theme.dart';
 import 'package:bett_box/enum/enum.dart';
@@ -20,7 +19,6 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
-import 'package:material_color_utilities/palettes/core_palette.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -66,9 +64,6 @@ class GlobalState {
   bool isDashboardStartSwitchFocused = false;
   late Measure measure;
   late CommonTheme theme;
-  late Color accentColor;
-  // ignore: deprecated_member_use
-  CorePalette? corePalette;
   DateTime? startTime;
   // Retained across failed/unknown channel results, even when UI time is cleared.
   bool vpnTransitionUnconfirmed = false;
@@ -155,7 +150,6 @@ class GlobalState {
       totalTraffic: Traffic(),
       systemUiOverlayStyle: const SystemUiOverlayStyle(),
     );
-    await _initDynamicColor();
     await init();
   }
 
@@ -207,15 +201,6 @@ class GlobalState {
       commonPrint.warn('Failed to calculate core SHA256: $e');
       return null;
     }
-  }
-
-  Future<void> _initDynamicColor() async {
-    try {
-      corePalette = await DynamicColorPlugin.getCorePalette();
-      accentColor =
-          await DynamicColorPlugin.getAccentColor() ??
-          Color(defaultPrimaryColor);
-    } catch (_) {}
   }
 
   Future<void> init() async {

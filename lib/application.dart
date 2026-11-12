@@ -39,10 +39,7 @@ class ApplicationState extends ConsumerState<Application>
     },
   );
 
-  ColorScheme _getAppColorScheme({
-    required Brightness brightness,
-    int? primaryColor,
-  }) {
+  ColorScheme _getAppColorScheme({required Brightness brightness}) {
     return ref.read(genColorSchemeProvider(brightness));
   }
 
@@ -308,7 +305,6 @@ class ApplicationState extends ConsumerState<Application>
                 pageTransitionsTheme: _pageTransitionsTheme,
                 scaffoldBackgroundColor: _getAppColorScheme(
                   brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
                 ).surfaceContainer,
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Colors.transparent,
@@ -324,7 +320,6 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
                 ),
                 fontFamily: fontFamily,
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -337,7 +332,6 @@ class ApplicationState extends ConsumerState<Application>
                 dialogTheme: DialogThemeData(
                   backgroundColor: _getAppColorScheme(
                     brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
                   ).surfaceContainerLowest,
                   surfaceTintColor: Colors.transparent,
                   elevation: 10,
@@ -347,7 +341,6 @@ class ApplicationState extends ConsumerState<Application>
                     side: BorderSide(
                       color: _getAppColorScheme(
                         brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
                       ).outlineVariant.withValues(alpha: 0.6),
                     ),
                   ),
@@ -368,7 +361,6 @@ class ApplicationState extends ConsumerState<Application>
                 dividerTheme: DividerThemeData(
                   color: _getAppColorScheme(
                     brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
                   ).outlineVariant.withValues(alpha: 0.45),
                   thickness: 1,
                   space: 1,
@@ -376,13 +368,11 @@ class ApplicationState extends ConsumerState<Application>
                 inputDecorationTheme: _inputDecorationTheme(
                   _getAppColorScheme(
                     brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
                   ),
                 ),
                 switchTheme: _switchTheme(
                   _getAppColorScheme(
                     brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
                   ),
                 ),
                 chipTheme: ChipThemeData(
@@ -392,7 +382,6 @@ class ApplicationState extends ConsumerState<Application>
                   side: BorderSide(
                     color: _getAppColorScheme(
                       brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
                     ).outlineVariant.withValues(alpha: 0.6),
                   ),
                 ),
@@ -400,7 +389,6 @@ class ApplicationState extends ConsumerState<Application>
                   decoration: BoxDecoration(
                     color: _getAppColorScheme(
                       brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
                     ).inverseSurface,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
@@ -411,7 +399,6 @@ class ApplicationState extends ConsumerState<Application>
                   textStyle: TextStyle(
                     color: _getAppColorScheme(
                       brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
                     ).onInverseSurface,
                     fontSize: 13,
                   ),
@@ -422,7 +409,6 @@ class ApplicationState extends ConsumerState<Application>
                 pageTransitionsTheme: _pageTransitionsTheme,
                 scaffoldBackgroundColor: _getAppColorScheme(
                   brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
                 ).toPureBlack(themeProps.pureBlack).surfaceContainer,
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Colors.transparent,
@@ -438,7 +424,6 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
                 ).toPureBlack(themeProps.pureBlack),
                 fontFamily: fontFamily,
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -451,7 +436,6 @@ class ApplicationState extends ConsumerState<Application>
                 dialogTheme: DialogThemeData(
                   backgroundColor: _getAppColorScheme(
                     brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
                   ).toPureBlack(themeProps.pureBlack).surfaceContainerHigh,
                   surfaceTintColor: Colors.transparent,
                   elevation: 10,
@@ -462,7 +446,6 @@ class ApplicationState extends ConsumerState<Application>
                       color:
                           _getAppColorScheme(
                                 brightness: Brightness.dark,
-                                primaryColor: themeProps.primaryColor,
                               )
                               .toPureBlack(themeProps.pureBlack)
                               .outlineVariant
@@ -487,7 +470,6 @@ class ApplicationState extends ConsumerState<Application>
                   color:
                       _getAppColorScheme(
                             brightness: Brightness.dark,
-                            primaryColor: themeProps.primaryColor,
                           )
                           .toPureBlack(themeProps.pureBlack)
                           .outlineVariant
@@ -498,13 +480,11 @@ class ApplicationState extends ConsumerState<Application>
                 inputDecorationTheme: _inputDecorationTheme(
                   _getAppColorScheme(
                     brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
                   ).toPureBlack(themeProps.pureBlack),
                 ),
                 switchTheme: _switchTheme(
                   _getAppColorScheme(
                     brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
                   ).toPureBlack(themeProps.pureBlack),
                 ),
                 chipTheme: ChipThemeData(
@@ -515,7 +495,6 @@ class ApplicationState extends ConsumerState<Application>
                     color:
                         _getAppColorScheme(
                               brightness: Brightness.dark,
-                              primaryColor: themeProps.primaryColor,
                             )
                             .toPureBlack(themeProps.pureBlack)
                             .outlineVariant
@@ -526,7 +505,6 @@ class ApplicationState extends ConsumerState<Application>
                   decoration: BoxDecoration(
                     color: _getAppColorScheme(
                       brightness: Brightness.dark,
-                      primaryColor: themeProps.primaryColor,
                     ).toPureBlack(themeProps.pureBlack).inverseSurface,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
@@ -537,7 +515,6 @@ class ApplicationState extends ConsumerState<Application>
                   textStyle: TextStyle(
                     color: _getAppColorScheme(
                       brightness: Brightness.dark,
-                      primaryColor: themeProps.primaryColor,
                     ).toPureBlack(themeProps.pureBlack).onInverseSurface,
                     fontSize: 13,
                   ),

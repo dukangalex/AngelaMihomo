@@ -1325,11 +1325,6 @@ class AppLocalizations {
     return Intl.message('Theme Mode', name: 'themeMode', desc: '', args: []);
   }
 
-  /// `Theme Color`
-  String get themeColor {
-    return Intl.message('Theme Color', name: 'themeColor', desc: '', args: []);
-  }
-
   /// `Preview`
   String get preview {
     return Intl.message('Preview', name: 'preview', desc: '', args: []);
@@ -5130,86 +5125,6 @@ class AppLocalizations {
     return Intl.message(
       'Are you sure you want to save?',
       name: 'saveTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Color Schemes`
-  String get colorSchemes {
-    return Intl.message(
-      'Color Schemes',
-      name: 'colorSchemes',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Palette`
-  String get palette {
-    return Intl.message('Palette', name: 'palette', desc: '', args: []);
-  }
-
-  /// `Tonal Spot`
-  String get tonalSpotScheme {
-    return Intl.message(
-      'Tonal Spot',
-      name: 'tonalSpotScheme',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fidelity`
-  String get fidelityScheme {
-    return Intl.message('Fidelity', name: 'fidelityScheme', desc: '', args: []);
-  }
-
-  /// `Monochrome`
-  String get monochromeScheme {
-    return Intl.message(
-      'Monochrome',
-      name: 'monochromeScheme',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Neutral`
-  String get neutralScheme {
-    return Intl.message('Neutral', name: 'neutralScheme', desc: '', args: []);
-  }
-
-  /// `Vibrant`
-  String get vibrantScheme {
-    return Intl.message('Vibrant', name: 'vibrantScheme', desc: '', args: []);
-  }
-
-  /// `Expressive`
-  String get expressiveScheme {
-    return Intl.message(
-      'Expressive',
-      name: 'expressiveScheme',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Content`
-  String get contentScheme {
-    return Intl.message('Content', name: 'contentScheme', desc: '', args: []);
-  }
-
-  /// `Rainbow`
-  String get rainbowScheme {
-    return Intl.message('Rainbow', name: 'rainbowScheme', desc: '', args: []);
-  }
-
-  /// `Fruit Salad`
-  String get fruitSaladScheme {
-    return Intl.message(
-      'Fruit Salad',
-      name: 'fruitSaladScheme',
       desc: '',
       args: [],
     );
