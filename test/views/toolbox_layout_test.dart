@@ -49,29 +49,29 @@ Future<void> _pump(WidgetTester tester, List<String> tiles) async {
 }
 
 void main() {
-  testWidgets('默认布局：测速横跨两列，路由追踪占两行，其余为小卡', (tester) async {
+  testWidgets('默认布局：测速横跨两列，其余为小卡两列排布', (tester) async {
     await _pump(tester, const []);
     Rect card(String title) => tester.getRect(
       find.ancestor(of: find.text(title), matching: find.byType(CommonCard)),
     );
     final speed = card(appLocalizations.speedTest);
-    final route = card(appLocalizations.routeTrace);
     final ip = card(appLocalizations.ipLookup);
-    final mrs = card(appLocalizations.mrsLookup);
     final dns = card(appLocalizations.dnsQuery);
     final nat = card(appLocalizations.natTest);
+    final ping = card(appLocalizations.localPing);
+    final age = card(appLocalizations.ageTool);
     expect(speed.width, greaterThan(ip.width * 1.9));
-    expect(route.height, greaterThan(ip.height * 1.9));
-    expect(route.top, greaterThan(speed.bottom));
-    expect(ip.top, route.top);
-    expect(ip.left, greaterThan(route.right));
-    expect(mrs.left, ip.left);
-    expect(mrs.bottom, route.bottom);
-    expect(dns.left, route.left);
-    expect(dns.top, greaterThan(route.bottom));
-    expect(nat.top, dns.top);
+    expect(ip.top, greaterThan(speed.bottom));
+    expect(dns.top, ip.top);
+    expect(dns.left, greaterThan(ip.left));
+    expect(nat.left, ip.left);
+    expect(nat.top, greaterThan(ip.bottom));
+    expect(ping.top, nat.top);
+    expect(age.left, ip.left);
+    expect(age.top, greaterThan(nat.bottom));
     expect(find.byIcon(Icons.speed_rounded), findsNWidgets(2));
-    expect(find.byIcon(Icons.route_rounded), findsNWidgets(2));
+    expect(find.byIcon(Icons.route_rounded), findsNothing);
+    expect(find.byIcon(Icons.manage_search_rounded), findsNothing);
     expect(find.byIcon(Icons.dns_rounded), findsOneWidget);
   });
 
