@@ -409,8 +409,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "destinationIPASN": MessageLookupByLibrary.simpleMessage("目标 IP ASN"),
     "details": MessageLookupByLibrary.simpleMessage("详情"),
     "detectionTip": MessageLookupByLibrary.simpleMessage("依赖第三方 API，仅供参考"),
-    "developerMode": MessageLookupByLibrary.simpleMessage("开发者模式"),
-    "developerModeEnableTip": MessageLookupByLibrary.simpleMessage("开发者模式已启用。"),
     "dialerIp4pConvert": MessageLookupByLibrary.simpleMessage("启用拨号 IP4P 地址转换"),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
       "启用拨号器的 IP4P 地址转换功能",
@@ -733,7 +731,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "logcatDesc": MessageLookupByLibrary.simpleMessage("开启后将会显示日志入口"),
     "logs": MessageLookupByLibrary.simpleMessage("日志"),
     "logsDesc": MessageLookupByLibrary.simpleMessage("查看日志捕获记录"),
-    "logsTest": MessageLookupByLibrary.simpleMessage("日志测试"),
     "loopback": MessageLookupByLibrary.simpleMessage("回环解锁工具"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("用于 UWP 回环解锁"),
     "loopbackProtection": MessageLookupByLibrary.simpleMessage("回环保护"),
@@ -754,8 +751,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "memoryInfoDesc": MessageLookupByLibrary.simpleMessage(
       "当前内存信息数值显示为内核运行时的动态堆栈内存占用，非完整 App 内存统计，仅供参考。",
     ),
-    "messageTest": MessageLookupByLibrary.simpleMessage("消息测试"),
-    "messageTestTip": MessageLookupByLibrary.simpleMessage("这是一条消息。"),
     "mihomoCoreVersion": MessageLookupByLibrary.simpleMessage("Mihomo 内核版本"),
     "min": MessageLookupByLibrary.simpleMessage("最小"),
     "minimize": MessageLookupByLibrary.simpleMessage("最小化"),

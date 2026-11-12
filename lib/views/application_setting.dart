@@ -585,6 +585,25 @@ class AutoCheckUpdateItem extends ConsumerWidget {
   }
 }
 
+class ClearDataItem extends StatelessWidget {
+  const ClearDataItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem(
+      title: Text(appLocalizations.clearData),
+      onTap: () async {
+        final res = await globalState.showMessage(
+          title: appLocalizations.clearDataTipTitle,
+          message: TextSpan(text: appLocalizations.clearDataTipDesc),
+        );
+        if (res != true) return;
+        await globalState.appController.handleClear();
+      },
+    );
+  }
+}
+
 class ApplicationSettingView extends StatelessWidget {
   const ApplicationSettingView({super.key});
 
@@ -604,6 +623,7 @@ class ApplicationSettingView extends StatelessWidget {
       if (system.isMacOS) const KeepDockIconItem(),
       UsageItem(),
       AutoCheckUpdateItem(),
+      const ClearDataItem(),
     ];
     return generateListView(generateSection(items: items));
   }

@@ -5130,46 +5130,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Developer Mode`
-  String get developerMode {
-    return Intl.message(
-      'Developer Mode',
-      name: 'developerMode',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Developer mode is enabled.`
-  String get developerModeEnableTip {
-    return Intl.message(
-      'Developer mode is enabled.',
-      name: 'developerModeEnableTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Message Test`
-  String get messageTest {
-    return Intl.message(
-      'Message Test',
-      name: 'messageTest',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `This is a message.`
-  String get messageTestTip {
-    return Intl.message(
-      'This is a message.',
-      name: 'messageTestTip',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Crash Test`
   String get crashTest {
     return Intl.message('Crash Test', name: 'crashTest', desc: '', args: []);
@@ -5313,11 +5273,6 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
-  }
-
-  /// `Logs Test`
-  String get logsTest {
-    return Intl.message('Logs Test', name: 'logsTest', desc: '', args: []);
   }
 
   /// `{label} cannot be empty`

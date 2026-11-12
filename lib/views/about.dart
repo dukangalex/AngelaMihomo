@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -71,8 +70,7 @@ class AboutView extends StatelessWidget {
           children: [
             Consumer(
               builder: (_, ref, _) {
-                return _DeveloperModeDetector(
-                  child: Wrap(
+                return Wrap(
                     spacing: 16,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
@@ -110,18 +108,7 @@ class AboutView extends StatelessWidget {
                         ],
                       ),
                     ],
-                  ),
-                  onEnterDeveloperMode: () {
-                    ref
-                        .read(appSettingProvider.notifier)
-                        .updateState(
-                          (state) => state.copyWith(developerMode: true),
-                        );
-                    context.showNotifier(
-                      appLocalizations.developerModeEnableTip,
-                    );
-                  },
-                );
+                  );
               },
             ),
             const SizedBox(height: 24),
@@ -136,52 +123,6 @@ class AboutView extends StatelessWidget {
       ..._buildMoreSection(context),
     ];
     return generateListView(items);
-  }
-}
-
-class _DeveloperModeDetector extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onEnterDeveloperMode;
-
-  const _DeveloperModeDetector({
-    required this.child,
-    required this.onEnterDeveloperMode,
-  });
-
-  @override
-  State<_DeveloperModeDetector> createState() => _DeveloperModeDetectorState();
-}
-
-class _DeveloperModeDetectorState extends State<_DeveloperModeDetector> {
-  int _counter = 0;
-  Timer? _timer;
-
-  void _handleTap() {
-    _counter++;
-    if (_counter >= 5) {
-      widget.onEnterDeveloperMode();
-      _resetCounter();
-    } else {
-      _timer?.cancel();
-      _timer = Timer(Duration(seconds: 1), _resetCounter);
-    }
-  }
-
-  void _resetCounter() {
-    _counter = 0;
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(onTap: _handleTap, child: widget.child);
   }
 }
 

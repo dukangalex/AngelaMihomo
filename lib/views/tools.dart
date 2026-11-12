@@ -30,7 +30,6 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' show dirname, join;
 
 import 'backup_and_recovery.dart';
-import 'developer.dart';
 
 import 'theme.dart';
 
@@ -437,16 +436,6 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         leading: const Icon(Icons.info),
         onTap: (context, _) =>
             _pushPage(context, appLocalizations.about, const AboutView()),
-      ),
-      _SearchItem(
-        title: appLocalizations.developerMode,
-        category: otherCategory,
-        leading: const Icon(Icons.developer_board),
-        onTap: (context, _) => _pushPage(
-          context,
-          appLocalizations.developerMode,
-          const DeveloperView(),
-        ),
       ),
     ]);
 
@@ -1486,11 +1475,6 @@ class _ToolViewState extends ConsumerState<ToolsView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm2 = ref.watch(
-      appSettingProvider.select(
-        (state) => VM2(a: state.locale, b: state.developerMode),
-      ),
-    );
     final isMobileView = ref.watch(isMobileViewProvider);
     final moreItems = ref.watch(
       moreToolsSelectorStateProvider.select((state) => state.navigationItems),
@@ -1541,7 +1525,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
       _buildModernSection(
         context,
         title: appLocalizations.other,
-        items: [_DisclaimerItem(), if (vm2.b) _DeveloperItem(), _InfoItem()],
+        items: [_DisclaimerItem(), _InfoItem()],
       ),
     ];
 
@@ -1818,18 +1802,3 @@ class _InfoItem extends StatelessWidget {
   }
 }
 
-class _DeveloperItem extends StatelessWidget {
-  const _DeveloperItem();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListItem.next(
-      leading: const Icon(Icons.developer_board),
-      title: Text(appLocalizations.developerMode),
-      delegate: NextDelegate(
-        title: appLocalizations.developerMode,
-        builder: (_) => const DeveloperView(),
-      ),
-    );
-  }
-}

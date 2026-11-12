@@ -551,10 +551,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "detectionTip": MessageLookupByLibrary.simpleMessage(
       "Third-party API result (for reference only)",
     ),
-    "developerMode": MessageLookupByLibrary.simpleMessage("Developer Mode"),
-    "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
-      "Developer mode is enabled.",
-    ),
     "dialerIp4pConvert": MessageLookupByLibrary.simpleMessage(
       "Enable Dialer IP4P Conversion",
     ),
@@ -997,7 +993,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "logs": MessageLookupByLibrary.simpleMessage("Logs"),
     "logsDesc": MessageLookupByLibrary.simpleMessage("View captured logs"),
-    "logsTest": MessageLookupByLibrary.simpleMessage("Logs Test"),
     "loopback": MessageLookupByLibrary.simpleMessage("Loopback Unlock"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage(
       "UWP loopback unlocking tool",
@@ -1025,10 +1020,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "memoryInfo": MessageLookupByLibrary.simpleMessage("Memory"),
     "memoryInfoDesc": MessageLookupByLibrary.simpleMessage(
       "The current memory information value displayed is the dynamic stack memory usage of the core during runtime, not the complete APP memory statistics, for reference only.",
-    ),
-    "messageTest": MessageLookupByLibrary.simpleMessage("Message Test"),
-    "messageTestTip": MessageLookupByLibrary.simpleMessage(
-      "This is a message.",
     ),
     "mihomoCoreVersion": MessageLookupByLibrary.simpleMessage(
       "Mihomo core version",

@@ -166,7 +166,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(true) bool minimizeOnExit,
     @Default(true) bool hidden,
     @Default(true) bool keepDockIcon,
-    @Default(false) bool developerMode,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default('') String backupPassword,
     @Default(false) bool enableHighPriority,

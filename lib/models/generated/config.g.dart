@@ -50,7 +50,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
   minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
   hidden: json['hidden'] as bool? ?? true,
   keepDockIcon: json['keepDockIcon'] as bool? ?? true,
-  developerMode: json['developerMode'] as bool? ?? false,
   recoveryStrategy:
       $enumDecodeNullable(
         _$RecoveryStrategyEnumMap,
@@ -137,7 +136,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'minimizeOnExit': instance.minimizeOnExit,
       'hidden': instance.hidden,
       'keepDockIcon': instance.keepDockIcon,
-      'developerMode': instance.developerMode,
       'recoveryStrategy': _$RecoveryStrategyEnumMap[instance.recoveryStrategy]!,
       'backupPassword': instance.backupPassword,
       'enableHighPriority': instance.enableHighPriority,
