@@ -459,7 +459,7 @@ extension DnsExt on Dns {
 @freezed
 abstract class Ntp with _$Ntp {
   const factory Ntp({
-    @Default(true) bool enable,
+    @Default(false) bool enable,
     @Default(false) @JsonKey(name: 'write-to-system') bool writeToSystem,
     @Default('time.apple.com') String server,
     @Default(123) int port,
