@@ -124,6 +124,7 @@ class _HomePageState extends State<HomePage> {
             );
             bodyWidget = Stack(
               children: [
+                const Positioned.fill(child: GlassField()),
                 Positioned.fill(child: RepaintBoundary(child: pageContent)),
                 Positioned(
                   left: 0,
@@ -135,9 +136,7 @@ class _HomePageState extends State<HomePage> {
             );
           }
           return Material(
-            color: isMobile
-                ? context.colorScheme.surfaceContainer
-                : Colors.transparent,
+            color: Colors.transparent,
             child: bodyWidget,
           );
         },

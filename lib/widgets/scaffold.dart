@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'chip.dart';
+import 'glass.dart';
 import 'text.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
@@ -373,15 +374,22 @@ class CommonScaffoldState extends State<CommonScaffold> {
       child: Consumer(
         builder: (context, ref, _) {
           final isMobileView = ref.watch(isMobileViewProvider);
+          // Mobile pages without an explicit background sit on the glass
+          // color field; the scaffold itself stays transparent so the
+          // field (and the glass above it) reads as one material.
+          final fieldActive = isMobileView && widget.backgroundColor == null;
           return Scaffold(
             appBar: _buildAppBar(),
-            body: body,
+            body: fieldActive
+                ? Stack(
+                    children: [
+                      const Positioned.fill(child: GlassField()),
+                      Positioned.fill(child: body),
+                    ],
+                  )
+                : body,
             resizeToAvoidBottomInset: true,
-            backgroundColor:
-                widget.backgroundColor ??
-                (isMobileView
-                    ? context.colorScheme.surfaceContainer
-                    : Colors.transparent),
+            backgroundColor: widget.backgroundColor ?? Colors.transparent,
             floatingActionButton:
                 widget.floatingActionButton ??
                 ValueListenableBuilder<Widget?>(
@@ -457,11 +465,9 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        widget.backgroundColor ??
-        (ref.watch(isMobileViewProvider)
-            ? context.colorScheme.surfaceContainer
-            : null);
+    // With no explicit background the page sits on the glass field, so
+    // the edge fade runs in mask mode instead of painting a solid wedge.
+    final color = widget.backgroundColor;
     final opaque = color != null && color.a == 1;
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) => _handleScroll(

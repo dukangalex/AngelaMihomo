@@ -3,6 +3,7 @@ export 'google_bottom_nav_bar.dart';
 export 'pop_scope.dart';
 export 'builder.dart';
 export 'card.dart';
+export 'glass.dart';
 export 'chip.dart';
 export 'disabled_mask.dart';
 export 'fade_box.dart';

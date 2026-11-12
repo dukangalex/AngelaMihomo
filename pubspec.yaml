@@ -96,6 +96,8 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  shaders:
+    - shaders/glass_refraction.frag
   assets:
     - assets/data/
     - assets/fonts/
