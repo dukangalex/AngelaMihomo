@@ -624,23 +624,6 @@ class ClashCore {
     ),
   );
 
-  Future<MrsPrepareResult> mrsPrepare() async =>
-      MrsPrepareResult.fromJson(await _toolboxJson(ActionMethod.mrsPrepare));
-
-  Future<MrsLookupResult> mrsLookup(
-    String target, {
-    bool resolve = true,
-  }) async => MrsLookupResult.fromJson(
-    await _toolboxJson(
-      ActionMethod.mrsLookup,
-      data: json.encode({'target': target, 'resolve': resolve}),
-    ),
-  );
-
-  Future<void> cancelMrsLookup() async {
-    await clashInterface.toolboxInvoke(ActionMethod.cancelMrsLookup);
-  }
-
   Future<int> startToolProxy() async {
     final value = await clashInterface.toolboxInvoke(
       ActionMethod.startToolProxy,

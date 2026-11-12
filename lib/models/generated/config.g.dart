@@ -77,15 +77,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
           ?.map((e) => e as String)
           .toList() ??
       const <String>[],
-  mrsCopyRawLink: json['mrsCopyRawLink'] as bool? ?? false,
-  mrsRawSource:
-      $enumDecodeNullable(
-        _$MrsRawSourceEnumMap,
-        json['mrsRawSource'],
-        unknownValue: MrsRawSource.metaRulesDat,
-      ) ??
-      MrsRawSource.metaRulesDat,
-  mrsResolveDns: json['mrsResolveDns'] as bool? ?? true,
   localPingOptions: json['localPingOptions'] == null
       ? const LocalPingOptions()
       : LocalPingOptions.fromJson(
@@ -149,9 +140,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
           .toList(),
       'dashboardTitle': instance.dashboardTitle,
       'toolboxTiles': instance.toolboxTiles,
-      'mrsCopyRawLink': instance.mrsCopyRawLink,
-      'mrsRawSource': _$MrsRawSourceEnumMap[instance.mrsRawSource]!,
-      'mrsResolveDns': instance.mrsResolveDns,
       'localPingOptions': instance.localPingOptions,
       'mobileDashboardSizes': instance.mobileDashboardSizes,
       'desktopDashboardSizes': instance.desktopDashboardSizes,
@@ -172,8 +160,6 @@ const _$SidebarFlyoutDelayEnumMap = {
   SidebarFlyoutDelay.standard: 'standard',
   SidebarFlyoutDelay.slow: 'slow',
 };
-
-const _$MrsRawSourceEnumMap = {MrsRawSource.metaRulesDat: 'metaRulesDat'};
 
 const _$DashboardWidgetEnumMap = {
   DashboardWidget.networkSpeed: 'networkSpeed',

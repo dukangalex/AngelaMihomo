@@ -93,14 +93,6 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const IpLookupPage()),
     ),
     _ToolItem(
-      id: 'mrsLookup',
-      icon: Icons.manage_search_rounded,
-      color: const Color(0xFFE58A00),
-      title: appLocalizations.mrsLookup,
-      description: appLocalizations.mrsLookupDesc,
-      open: (context) => push(context, const MrsLookupPage()),
-    ),
-    _ToolItem(
       id: 'dnsQuery',
       icon: Icons.dns_rounded,
       color: const Color(0xFF3B9C4A),

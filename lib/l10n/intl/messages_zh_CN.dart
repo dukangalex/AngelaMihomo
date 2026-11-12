@@ -77,9 +77,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m30(count) => "${Intl.plural(count, other: '月')}";
 
-  static String m31(count) => "${count} 条";
 
-  static String m32(ip) => "经 ${ip} 匹配";
 
   static String m33(count) => "${count} 条新日志";
 
@@ -758,22 +756,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "months": m30,
     "more": MessageLookupByLibrary.simpleMessage("查看"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("更多 IP 信息"),
-    "mrsCopyRawLink": MessageLookupByLibrary.simpleMessage("复制为 GitHub Raw 链接"),
-    "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS 速查"),
-    "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "快速查询域名或 IP 所属的 GEODATA / RULE-SET 规则集",
-    ),
-    "mrsLookupHint": MessageLookupByLibrary.simpleMessage("输入域名或 IP"),
-    "mrsMissing": MessageLookupByLibrary.simpleMessage("未找到内置的 BundleMRS"),
-    "mrsNoMatch": MessageLookupByLibrary.simpleMessage("未匹配到任何规则集"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("规则集数据加载失败"),
-    "mrsReferenced": MessageLookupByLibrary.simpleMessage("配置已引用"),
-    "mrsResolveDns": MessageLookupByLibrary.simpleMessage("使用 DNS 规则解析域名"),
-    "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
-      "开启后，针对域名按当前 DNS 配置解析出 IP 并进行匹配",
-    ),
-    "mrsRules": m31,
-    "mrsVia": m32,
     "name": MessageLookupByLibrary.simpleMessage("名称"),
     "nameSort": MessageLookupByLibrary.simpleMessage("按名称排序"),
     "nameserver": MessageLookupByLibrary.simpleMessage("域名服务器"),

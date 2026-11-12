@@ -178,11 +178,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     List<SidebarFlyoutEntry> sidebarFlyoutEntries,
     String? dashboardTitle,
     @Default(<String>[]) List<String> toolboxTiles,
-    @Default(false) bool mrsCopyRawLink,
-    @JsonKey(unknownEnumValue: MrsRawSource.metaRulesDat)
-    @Default(MrsRawSource.metaRulesDat)
-    MrsRawSource mrsRawSource,
-    @Default(true) bool mrsResolveDns,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,
     @Default(<String, String>{}) Map<String, String> desktopDashboardSizes,

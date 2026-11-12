@@ -85,9 +85,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m30(count) =>
       "${Intl.plural(count, one: 'month', other: 'months')}";
 
-  static String m31(count) => "${count} entries";
 
-  static String m32(ip) => "via ${ip}";
 
   static String m33(count) => "${count} new logs";
 
@@ -1032,30 +1030,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "months": m30,
     "more": MessageLookupByLibrary.simpleMessage("More"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("More IP Information"),
-    "mrsCopyRawLink": MessageLookupByLibrary.simpleMessage(
-      "Copy as GitHub Raw link",
-    ),
-    "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS Lookup"),
-    "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "Find the GEODATA / RULE-SET rule sets for a domain or IP",
-    ),
-    "mrsLookupHint": MessageLookupByLibrary.simpleMessage("Domain or IP"),
-    "mrsMissing": MessageLookupByLibrary.simpleMessage(
-      "Bundled BundleMRS not found",
-    ),
-    "mrsNoMatch": MessageLookupByLibrary.simpleMessage("No rule set matched"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "Failed to load rule sets",
-    ),
-    "mrsReferenced": MessageLookupByLibrary.simpleMessage("In use"),
-    "mrsResolveDns": MessageLookupByLibrary.simpleMessage(
-      "Resolve domains with DNS rules",
-    ),
-    "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
-      "When on, domains are resolved to IPs with the current DNS config and the IPs are matched too",
-    ),
-    "mrsRules": m31,
-    "mrsVia": m32,
     "name": MessageLookupByLibrary.simpleMessage("Name"),
     "nameSort": MessageLookupByLibrary.simpleMessage("Sort by Name"),
     "nameserver": MessageLookupByLibrary.simpleMessage("Nameserver"),

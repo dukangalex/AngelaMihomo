@@ -42,51 +42,6 @@ abstract class DnsQueryResult with _$DnsQueryResult {
 }
 
 @freezed
-abstract class MrsPrepareResult with _$MrsPrepareResult {
-  const factory MrsPrepareResult({
-    @Default('') String version,
-    @Default(0) int geosite,
-    @Default(0) int geoip,
-    @Default(false) bool extracted,
-    @Default(0) double elapsed,
-    @Default('') String error,
-  }) = _MrsPrepareResult;
-
-  factory MrsPrepareResult.fromJson(Map<String, Object?> json) =>
-      _$MrsPrepareResultFromJson(json);
-}
-
-@freezed
-abstract class MrsMatch with _$MrsMatch {
-  const factory MrsMatch({
-    @Default('') String kind,
-    @Default('') String name,
-    @Default('') String file,
-    @Default(0) int count,
-    @Default('') String via,
-    @Default(false) bool referenced,
-  }) = _MrsMatch;
-
-  factory MrsMatch.fromJson(Map<String, Object?> json) =>
-      _$MrsMatchFromJson(json);
-}
-
-@freezed
-abstract class MrsLookupResult with _$MrsLookupResult {
-  const factory MrsLookupResult({
-    @Default('') String target,
-    @Default('') String host,
-    @Default([]) List<String> ips,
-    @Default([]) List<MrsMatch> matches,
-    @Default(0) double elapsed,
-    @Default('') String error,
-  }) = _MrsLookupResult;
-
-  factory MrsLookupResult.fromJson(Map<String, Object?> json) =>
-      _$MrsLookupResultFromJson(json);
-}
-
-@freezed
 abstract class AgeCryptResult with _$AgeCryptResult {
   const factory AgeCryptResult({
     @Default('') String data,

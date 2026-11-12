@@ -285,9 +285,6 @@ enum ActionMethod {
   startStunTest,
   cancelStunTest,
   dnsQuery,
-  mrsPrepare,
-  mrsLookup,
-  cancelMrsLookup,
   startToolProxy,
   stopToolProxy,
   ageCrypt,
@@ -655,14 +652,3 @@ enum DelayAnimationType {
   waveSpinner,
 }
 
-enum MrsRawSource {
-  metaRulesDat(
-    'meta-rules-dat',
-    'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/',
-  );
-
-  final String label;
-  final String baseUrl;
-
-  const MrsRawSource(this.label, this.baseUrl);
-}

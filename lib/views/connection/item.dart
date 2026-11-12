@@ -505,11 +505,6 @@ class TrackerInfoDetailView extends ConsumerWidget {
                     () => DnsQueryPage(initialDomain: target),
                   ),
                 chip(
-                  Icons.manage_search_rounded,
-                  appLocalizations.mrsLookup,
-                  () => MrsLookupPage(initialQuery: target),
-                ),
-                chip(
                   Icons.travel_explore_rounded,
                   appLocalizations.ipLookup,
                   () => IpLookupPage(initialQuery: target),
