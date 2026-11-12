@@ -260,9 +260,11 @@ class SettingsBlock extends StatelessWidget {
       child: Column(
         children: [
           InfoHeader(info: Info(label: title)),
-          Card(
-            color: context.colorScheme.surfaceContainer,
-            clipBehavior: Clip.antiAlias,
+          // Settings lists are long surfaces: static glass, secondary
+          // tier, same material language as the rest of the app.
+          GlassSurface(
+            tier: GlassTier.secondary,
+            radius: 20,
             child: Column(children: settings),
           ),
         ],
