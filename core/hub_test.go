@@ -90,3 +90,31 @@ func TestMarshalYamlNodeKeepingSupplementary(t *testing.T) {
 		t.Fatalf("entries changed: %#v", parsed["entries"])
 	}
 }
+
+// T89 D-08: a URLTest failure observed before the data plane is ready
+// must not be reported (it would park a false -1/"Timeout" in the UI
+// delay map); every other combination must be reported so genuine
+// timeouts still surface once the TUN is up.
+func TestShouldReportDelay(t *testing.T) {
+	cases := []struct {
+		name  string
+		delay uint16
+		ready bool
+		want  bool
+	}{
+		{"failure before data plane ready is dropped", 0, false, false},
+		{"failure after data plane ready is reported", 0, true, true},
+		{"success before data plane ready is reported", 120, false, true},
+		{"success after data plane ready is reported", 120, true, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := shouldReportDelay(tc.delay, tc.ready); got != tc.want {
+				t.Fatalf(
+					"shouldReportDelay(%d, %v) = %v, want %v",
+					tc.delay, tc.ready, got, tc.want,
+				)
+			}
+		})
+	}
+}
