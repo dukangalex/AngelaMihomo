@@ -1330,14 +1330,12 @@ class AppController {
 
   Future<void> autoCheckUpdate() async {
     final prefs = await preferences.sharedPreferencesCompleter.future;
-    final lastCheckTime = prefs?.getInt('last_check_update_time') ?? 0;
     final now = DateTime.now().millisecondsSinceEpoch;
     final isAutoCheck = _ref.read(appSettingProvider).autoCheckUpdate;
 
-    final forceCheck =
-        (now - lastCheckTime) > const Duration(days: 28).inMilliseconds;
-
-    if (!isAutoCheck && !forceCheck) return;
+    // An explicit user opt-out of automatic update checks is final:
+    // there is no time-based override that checks anyway.
+    if (!isAutoCheck) return;
 
     final res = await request.checkForUpdate();
     if (res != null) {
