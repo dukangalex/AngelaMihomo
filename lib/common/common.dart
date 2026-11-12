@@ -39,6 +39,7 @@ export 'render.dart';
 export 'request.dart';
 export 'scroll.dart';
 export 'string.dart';
+export 'linux_dns.dart';
 export 'system_explicit.dart';
 export 'system.dart';
 export 'text.dart';

@@ -2062,6 +2062,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System App"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
+    "systemDnsRestoreFailed": MessageLookupByLibrary.simpleMessage(
+      "Failed to restore your previous system DNS settings. The saved settings will be retried on the next launch. If name resolution is broken, restart NetworkManager.",
+    ),
+    "systemDnsSetFailedBroken": MessageLookupByLibrary.simpleMessage(
+      "Failed to set the system DNS automatically, and your previous DNS settings could not be restored. If name resolution stops working, restart NetworkManager.",
+    ),
+    "systemDnsSetFailedKept": MessageLookupByLibrary.simpleMessage(
+      "Failed to set the system DNS automatically. Your previous DNS settings were kept.",
+    ),
     "systemExplicitAdapt": MessageLookupByLibrary.simpleMessage(
       "Adaptive path",
     ),
