@@ -281,4 +281,27 @@ void main() {
     expect(builds, initial + 2);
     expect(find.text('b'), findsOneWidget);
   });
+
+  testWidgets('玻璃场上的页眉用反相前景色，标题与图标不被底色吞掉 (T106)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_buildApp(body: _list()));
+    await tester.pumpAndSettle();
+    final appBarContext = tester.element(find.byType(AppBar));
+    final colorScheme = Theme.of(appBarContext).colorScheme;
+    final appBar = tester.widget<AppBar>(find.byType(AppBar));
+    expect(appBar.foregroundColor, colorScheme.onInverseSurface);
+    expect(appBar.titleTextStyle?.color, colorScheme.onInverseSurface);
+    expect(appBar.iconTheme?.color, colorScheme.onInverseSurface);
+  });
+
+  testWidgets('纯色背景的页眉保持原有前景，不加反相衬底 (T106)', (tester) async {
+    await tester.pumpWidget(
+      _buildApp(body: _list(), backgroundColor: const Color(0xFFEEEEEE)),
+    );
+    await tester.pumpAndSettle();
+    final appBar = tester.widget<AppBar>(find.byType(AppBar));
+    expect(appBar.foregroundColor, isNull);
+    expect(appBar.titleTextStyle, isNull);
+  });
 }

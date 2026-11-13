@@ -96,7 +96,10 @@ class CommonScaffoldState extends State<CommonScaffold> {
     }
   }
 
-  Widget _buildSearchingAppBarTheme(Widget child) {
+  Widget _buildSearchingAppBarTheme(
+    Widget child, {
+    required bool inverseHeader,
+  }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     return Theme(
@@ -104,9 +107,15 @@ class CommonScaffoldState extends State<CommonScaffold> {
         appBarTheme: theme.appBarTheme.copyWith(
           backgroundColor: Colors.transparent,
           iconTheme: theme.primaryIconTheme.copyWith(
-            color: colorScheme.onSurfaceVariant,
+            color: inverseHeader
+                ? colorScheme.onInverseSurface
+                : colorScheme.onSurfaceVariant,
           ),
-          titleTextStyle: theme.textTheme.titleLarge,
+          titleTextStyle: inverseHeader
+              ? theme.textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onInverseSurface,
+                )
+              : theme.textTheme.titleLarge,
           toolbarTextStyle: theme.textTheme.bodyMedium,
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -250,8 +259,10 @@ class CommonScaffoldState extends State<CommonScaffold> {
     ]);
   }
 
-  Widget _buildAppBarWrap(Widget child) {
-    final appBar = _isSearch ? _buildSearchingAppBarTheme(child) : child;
+  Widget _buildAppBarWrap(Widget child, {required bool inverseHeader}) {
+    final appBar = _isSearch
+        ? _buildSearchingAppBarTheme(child, inverseHeader: inverseHeader)
+        : child;
     if (_isEdit || _isSearch) {
       return SystemBackBlock(
         child: CommonPopScope(
@@ -282,31 +293,85 @@ class CommonScaffoldState extends State<CommonScaffold> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar({required bool inverseHeader}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    // T106: pages on the glass field get an inverse-tone header bar —
+    // a deep surface with light content on light backgrounds, a light
+    // surface with dark content on dark backgrounds — so the title
+    // and action icons never wash out against the field (real-device
+    // screenshots showed dark-on-dark headers in light mode).
+    final headerForeground = inverseHeader
+        ? colorScheme.onInverseSurface
+        : null;
+    final headerTitleStyle = inverseHeader
+        ? theme.textTheme.titleLarge?.copyWith(color: headerForeground)
+        : null;
+    final Widget appBarWidget;
+    if (widget.appBar != null) {
+      appBarWidget = inverseHeader
+          ? Theme(
+              data: theme.copyWith(
+                appBarTheme: theme.appBarTheme.copyWith(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: headerForeground,
+                  titleTextStyle: headerTitleStyle,
+                  iconTheme: IconThemeData(color: headerForeground),
+                  actionsIconTheme: IconThemeData(color: headerForeground),
+                ),
+              ),
+              child: widget.appBar!,
+            )
+          : widget.appBar!;
+    } else {
+      appBarWidget = ValueListenableBuilder<AppBarState>(
+        valueListenable: _appBarState,
+        builder: (_, state, _) {
+          return _buildAppBarWrap(
+            AppBar(
+              centerTitle: widget.centerTitle ?? false,
+              leading: _buildLeading(),
+              title: _buildTitle(state.searchState),
+              actions: _buildActions(
+                state.searchState != null,
+                state.actions.isNotEmpty ? state.actions : widget.actions ?? [],
+              ),
+              backgroundColor: inverseHeader ? Colors.transparent : null,
+              foregroundColor: headerForeground,
+              titleTextStyle: headerTitleStyle,
+              iconTheme: inverseHeader
+                  ? IconThemeData(color: headerForeground)
+                  : null,
+              actionsIconTheme: inverseHeader
+                  ? IconThemeData(color: headerForeground)
+                  : null,
+            ),
+            inverseHeader: inverseHeader,
+          );
+        },
+      );
+    }
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          widget.appBar ??
-              ValueListenableBuilder<AppBarState>(
-                valueListenable: _appBarState,
-                builder: (_, state, _) {
-                  return _buildAppBarWrap(
-                    AppBar(
-                      centerTitle: widget.centerTitle ?? false,
-                      leading: _buildLeading(),
-                      title: _buildTitle(state.searchState),
-                      actions: _buildActions(
-                        state.searchState != null,
-                        state.actions.isNotEmpty
-                            ? state.actions
-                            : widget.actions ?? [],
-                      ),
+          if (inverseHeader)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.inverseSurface.withValues(alpha: 0.94),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: GlassTint.resolve(
+                        colorScheme,
+                      ).rim.withValues(alpha: 0.7),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
+            ),
+          appBarWidget,
           _buildLoading(),
         ],
       ),
@@ -379,7 +444,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
           // field (and the glass above it) reads as one material.
           final fieldActive = isMobileView && widget.backgroundColor == null;
           return Scaffold(
-            appBar: _buildAppBar(),
+            appBar: _buildAppBar(inverseHeader: fieldActive),
             body: fieldActive
                 ? Stack(
                     children: [
