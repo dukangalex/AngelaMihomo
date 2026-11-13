@@ -21,15 +21,45 @@ void main() {
       }
     });
 
-    test('face tint stays near zero so the face cannot read as frosted', () {
+    test('face tint stays restrained so the face cannot read as frosted', () {
       for (final tier in GlassTier.values) {
         for (final brightness in Brightness.values) {
           final tokens = GlassTokens.of(tier, brightness);
-          expect(tokens.faceTintAlpha, lessThanOrEqualTo(0.07));
+          expect(tokens.faceTintAlpha, lessThanOrEqualTo(0.20));
           expect(tokens.contrast, greaterThan(1.0));
           expect(tokens.saturate, greaterThan(1.0));
         }
       }
+    });
+
+    test('tone inverts against the background (T106)', () {
+      for (final tier in GlassTier.values) {
+        final light = GlassTokens.of(tier, Brightness.light);
+        final dark = GlassTokens.of(tier, Brightness.dark);
+        // Light background: deeper glass — more tint, negative bright,
+        // denser static fill. Dark background: lifted glass.
+        expect(light.faceTintAlpha, greaterThan(dark.faceTintAlpha));
+        expect(light.bright, lessThan(0.0));
+        expect(dark.bright, greaterThan(0.0));
+        expect(light.staticFillAlpha, greaterThan(dark.staticFillAlpha));
+        expect(light.staticDye, greaterThan(dark.staticDye));
+      }
+      // The rim line is darker on light, brighter on dark.
+      final lightScheme = ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.light,
+      );
+      final darkScheme = ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
+      );
+      final lightRim = HSLColor.fromColor(
+        GlassTint.resolve(lightScheme).rim,
+      ).lightness;
+      final darkRim = HSLColor.fromColor(
+        GlassTint.resolve(darkScheme).rim,
+      ).lightness;
+      expect(lightRim, lessThan(darkRim));
     });
 
     test('bar and dialog sit between primary and secondary', () {
@@ -62,7 +92,7 @@ void main() {
           final tint = GlassTint.resolve(scheme);
           final rimHsl = HSLColor.fromColor(tint.rim);
           expect(rimHsl.saturation, inInclusiveRange(0.45, 0.90));
-          expect(rimHsl.lightness, inInclusiveRange(0.55, 0.75));
+          expect(rimHsl.lightness, inInclusiveRange(0.45, 0.75));
           final seedHue = HSLColor.fromColor(scheme.primary).hue;
           var delta = (rimHsl.hue - seedHue).abs();
           if (delta > 180) delta = 360 - delta;
@@ -79,7 +109,7 @@ void main() {
       final tint = GlassTint.resolve(scheme);
       final rimHsl = HSLColor.fromColor(tint.rim);
       expect(rimHsl.saturation, greaterThanOrEqualTo(0.45));
-      expect(rimHsl.lightness, greaterThanOrEqualTo(0.55));
+      expect(rimHsl.lightness, greaterThanOrEqualTo(0.45));
     });
   });
 

@@ -18,6 +18,14 @@ import 'package:material_ui/material_ui.dart';
 /// [ColorScheme.primary], with saturation / lightness clamped so tier
 /// deltas never collapse. Under the default azure theme this reproduces
 /// the Orville reference form (white + blue-cyan, soft tech glow).
+///
+/// Tone inverts against the background (T106, real-device verdict):
+/// on a light background the glass sits one step deeper (darker face
+/// tint, stronger dye, negative crystal bright, darker rim line), and
+/// on a dark background it lifts (lighter tint, positive bright,
+/// brighter rim), so surfaces, card edges and dialog faces keep a
+/// readable contrast step in both themes instead of washing out or
+/// reading as fog.
 enum GlassTier { primary, secondary, bar, dialog }
 
 /// Where a surface sits in the hierarchy. The home page is the ruler.
@@ -28,7 +36,8 @@ class GlassTokens {
   /// Max backdrop displacement in the bevel band (px).
   final double strength;
 
-  /// Face tint alpha (kept near zero; the face must stay clear).
+  /// Face tint alpha (restrained; the face must stay clear, never
+  /// frosted — deepened on light backgrounds, lifted on dark, T106).
   final double faceTintAlpha;
 
   /// Rim bright-line strength.
@@ -70,54 +79,54 @@ class GlassTokens {
       GlassTier.primary => GlassTokens(
         bandScale: 1.0,
         strength: 13,
-        faceTintAlpha: light ? 0.05 : 0.07,
-        rimAlpha: light ? 0.95 : 0.85,
+        faceTintAlpha: light ? 0.16 : 0.13,
+        rimAlpha: light ? 1.0 : 0.95,
         sheen: 0.85,
-        contrast: 1.14,
+        contrast: light ? 1.18 : 1.16,
         saturate: 1.12,
-        bright: 0.015,
-        staticDye: light ? 0.45 : 0.50,
-        staticFillAlpha: light ? 0.88 : 0.86,
-        staticRimAlpha: light ? 0.85 : 0.65,
+        bright: light ? -0.030 : 0.045,
+        staticDye: light ? 0.62 : 0.60,
+        staticFillAlpha: light ? 0.94 : 0.92,
+        staticRimAlpha: light ? 1.0 : 0.90,
       ),
       GlassTier.secondary => GlassTokens(
         bandScale: 0.8,
         strength: 9,
-        faceTintAlpha: light ? 0.03 : 0.045,
-        rimAlpha: light ? 0.62 : 0.50,
+        faceTintAlpha: light ? 0.11 : 0.09,
+        rimAlpha: light ? 0.85 : 0.72,
         sheen: 0.35,
-        contrast: 1.08,
+        contrast: light ? 1.12 : 1.10,
         saturate: 1.06,
-        bright: 0.008,
-        staticDye: 0.18,
-        staticFillAlpha: light ? 0.56 : 0.50,
-        staticRimAlpha: light ? 0.50 : 0.40,
+        bright: light ? -0.020 : 0.030,
+        staticDye: light ? 0.38 : 0.34,
+        staticFillAlpha: light ? 0.78 : 0.68,
+        staticRimAlpha: light ? 0.85 : 0.70,
       ),
       GlassTier.bar => GlassTokens(
         bandScale: 0.9,
         strength: 11,
-        faceTintAlpha: light ? 0.04 : 0.06,
-        rimAlpha: light ? 0.90 : 0.80,
+        faceTintAlpha: light ? 0.14 : 0.11,
+        rimAlpha: light ? 1.0 : 0.92,
         sheen: 0.60,
-        contrast: 1.12,
+        contrast: light ? 1.16 : 1.14,
         saturate: 1.10,
-        bright: 0.012,
-        staticDye: 0.30,
-        staticFillAlpha: 0.92,
-        staticRimAlpha: light ? 0.70 : 0.60,
+        bright: light ? -0.026 : 0.040,
+        staticDye: light ? 0.48 : 0.46,
+        staticFillAlpha: light ? 0.95 : 0.94,
+        staticRimAlpha: light ? 0.95 : 0.85,
       ),
       GlassTier.dialog => GlassTokens(
         bandScale: 0.95,
         strength: 12,
-        faceTintAlpha: light ? 0.045 : 0.06,
-        rimAlpha: light ? 0.92 : 0.82,
+        faceTintAlpha: light ? 0.20 : 0.15,
+        rimAlpha: light ? 1.0 : 0.95,
         sheen: 0.70,
-        contrast: 1.12,
+        contrast: light ? 1.16 : 1.14,
         saturate: 1.10,
-        bright: 0.012,
-        staticDye: 0.30,
-        staticFillAlpha: light ? 0.90 : 0.88,
-        staticRimAlpha: light ? 0.65 : 0.55,
+        bright: light ? -0.032 : 0.048,
+        staticDye: light ? 0.55 : 0.50,
+        staticFillAlpha: light ? 0.96 : 0.94,
+        staticRimAlpha: light ? 0.95 : 0.85,
       ),
     };
   }
@@ -140,13 +149,16 @@ class GlassTint {
     // round-trip, so a re-derived HSL never drifts past the limits.
     final saturation = hsl.saturation.clamp(0.47, 0.88);
     final light = scheme.brightness == Brightness.light;
+    // T106: the rim line inverts with the background — darker than the
+    // face on light backgrounds so card edges stay visible, brighter
+    // on dark backgrounds so the crystal line survives the fog.
     final rim = hsl
         .withSaturation(saturation)
-        .withLightness((light ? 0.60 : 0.68).clamp(0.55, 0.75))
+        .withLightness((light ? 0.48 : 0.74).clamp(0.45, 0.75))
         .toColor();
     final face = hsl
         .withSaturation(saturation * 0.85)
-        .withLightness(light ? 0.72 : 0.32)
+        .withLightness(light ? 0.50 : 0.47)
         .toColor();
     return GlassTint(face: face, rim: rim);
   }
@@ -341,16 +353,18 @@ class _StaticGlassPainter extends CustomPainter {
     canvas.drawRect(rect, topPaint);
     canvas.restore();
 
-    // Uneven rim: brightest at the top, fading downward.
+    // Uneven rim: brightest at the top, fading downward — but the
+    // fade floor stays high enough that the lower edge still reads
+    // as a card boundary (T106).
     final rimPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
+      ..strokeWidth = 1.5
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
           tint.rim.withValues(alpha: tokens.staticRimAlpha),
-          tint.rim.withValues(alpha: tokens.staticRimAlpha * 0.4),
+          tint.rim.withValues(alpha: tokens.staticRimAlpha * 0.55),
         ],
       ).createShader(rect);
     canvas.drawPath(path, rimPaint);
