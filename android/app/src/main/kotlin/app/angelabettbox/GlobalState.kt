@@ -132,8 +132,19 @@ object GlobalState {
         pendingTimeoutJob = scope.launch {
             delay(PENDING_TIMEOUT_MS)
             if (currentRunState == RunState.PENDING) {
-                android.util.Log.w("GlobalState", "PENDING state timeout, resetting to STOP")
-                updateRunState(RunState.STOP)
+                // T111 A-05: never guess STOP on timeout — a slow
+                // start may well have succeeded, and syncStatus()
+                // refuses to correct PENDING, which left the tile
+                // showing "off" while the VPN was actually running.
+                // Adopt the real service status instead, exactly
+                // like syncStatus does for non-pending states.
+                val running = runCatching { VpnPlugin.getStatus() }
+                    .getOrDefault(false)
+                android.util.Log.w(
+                    "GlobalState",
+                    "PENDING state timeout, adopting real status running=$running"
+                )
+                updateRunState(if (running) RunState.START else RunState.STOP)
             }
         }
     }
