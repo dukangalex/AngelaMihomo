@@ -1583,6 +1583,33 @@ class AppController {
 
     final needRecovery = await _detectAbnormalExit();
 
+    // T110: surface a quick-start failure marker left by the service
+    // isolate (background restart exhausted its retries). It is only
+    // surfaced here, never deleted: the marker is forensic evidence
+    // (and is attached to log exports) until the service isolate
+    // clears it after the next successful quick start.
+    if (system.isAndroid) {
+      try {
+        final markerFile = File(await appPath.quickStartFailurePath);
+        if (await markerFile.exists()) {
+          final marker = QuickStartFailureMarker.tryParse(
+            await markerFile.readAsString(),
+          );
+          if (marker != null) {
+            commonPrint.error(
+              'Previous background quick start failed permanently: $marker',
+            );
+          } else {
+            commonPrint.warn(
+              'Previous background quick start left an unreadable failure marker',
+            );
+          }
+        }
+      } catch (e) {
+        commonPrint.warn('Failed to read quick start failure marker: $e');
+      }
+    }
+
     if (needRecovery) {
       commonPrint.warn('Abnormal exit detected');
       if (system.isAndroid) {
@@ -2073,12 +2100,48 @@ class AppController {
         .logs
         .map((item) => item.line)
         .toList();
+    // T110: attach the on-device forensic records (OEM memory-callback
+    // trail and the persistent quick-start failure marker). They live
+    // outside the in-memory log, so without this the death window of
+    // a background kill never reaches an exported log. Sections get
+    // the same per-line treatment as the main body above.
+    final forensicSections = await _forensicLogSections();
     final data = await Isolate.run<List<int>>(() async {
-      final logsRawString = logsRaw.join('\n');
-      return utf8.encode(logsRawString);
+      final buffer = StringBuffer(logsRaw.join('\n'));
+      for (final section in forensicSections) {
+        buffer
+          ..write('\n\n')
+          ..write(section);
+      }
+      return utf8.encode(buffer.toString());
     });
     return await picker.saveFile(utils.logFile, Uint8List.fromList(data)) !=
         null;
+  }
+
+  /// Best-effort collection of the forensic sections for [exportLogs]:
+  /// one section per record file that exists and is non-empty.
+  Future<List<String>> _forensicLogSections() async {
+    final candidates = <(String, Future<String>)>[
+      ('fair_memory_events.log', appPath.fairMemoryEventsPath),
+      ('quick_start_failure.json', appPath.quickStartFailurePath),
+    ];
+    final sections = <String>[];
+    for (final (name, pathFuture) in candidates) {
+      try {
+        final file = File(await pathFuture);
+        if (!await file.exists()) continue;
+        final section = buildForensicLogSection(
+          fileName: name,
+          content: await file.readAsString(),
+          redactLine: (line) => line,
+        );
+        if (section != null) sections.add(section);
+      } catch (_) {
+        // Attachments are best-effort; never fail the export over them.
+      }
+    }
+    return sections;
   }
 
   Future<List<int>> backupData({String password = ''}) async {

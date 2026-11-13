@@ -30,7 +30,10 @@ class AngelaMihomoService : Service(), BaseServiceInterface {
         fairMemoryHelper.register(
             context = this,
             onTrim = { GlobalState.getCurrentVPNPlugin()?.requestGc() },
-            onKill = { /* system will kill process; service has no extra state to save */ }
+            onKill = {
+                // T110: forensic evidence only — see AngelaMihomoVpnService.
+                FairMemoryHelper.recordCallback(this, "AngelaMihomoService", "KILL")
+            }
         )
     }
 
