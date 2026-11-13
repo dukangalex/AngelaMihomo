@@ -112,8 +112,10 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
             Log.d("addAddress", "address: ${cidr.address} prefixLength:${cidr.prefixLength}")
             val routes = options.getIpv4RouteAddress()
             if (routes.isNotEmpty()) {
-                runCatching { routes.forEach { addRoute(it.address, it.prefixLength) } }
-                    .onFailure { addRoute("0.0.0.0", 0) }
+                runCatching {
+                    routes.forEach { addRoute(it.address, it.prefixLength) }
+                    if (routes.none { it.address.isAnyLocalAddress }) addRoute("0.0.0.0", 32)
+                }.onFailure { addRoute("0.0.0.0", 0) }
             } else {
                 addRoute("0.0.0.0", 0)
             }
@@ -177,7 +179,8 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         if (options.allowBypass) allowBypass()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.systemProxy) {
-            setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, options.bypassDomain))
+            val exclusionList = options.bypassDomain.filter { proxyExclusionPattern.matches(it) }
+            setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, exclusionList))
         }
 
         val fd = runCatching { establish()?.detachFd() }.getOrElse { e ->
@@ -393,6 +396,8 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         super.onTrimMemory(level)
         if (level == 10 || level == 15 || level >= 40) {
             GlobalState.getCurrentVPNPlugin()?.requestGc()
+            GlobalState.notifyLowMemory()
+            Core.purge(all = false)
         }
     }
 

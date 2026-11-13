@@ -8,16 +8,19 @@ import (
 	bridge "core/dart-bridge"
 	"core/platform"
 	"core/state"
+	"core/toolbox"
 	t "core/tun"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
+	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
+	"github.com/metacubex/mihomo/tunnel"
 	"golang.org/x/sync/semaphore"
 	"net"
 	"strconv"
@@ -131,6 +134,7 @@ func closeTunHandlerLocked() {
 	} else {
 		removeTunHook()
 	}
+	toolbox.FlushTrafficStats()
 }
 
 func closeUnclaimedTunFD(fd int) {
@@ -292,9 +296,12 @@ func handleGetAndroidVpnOptions() string {
 
 func handleUpdateDns(value string) {
 	go func() {
+		defer func() {
+			_ = recover()
+		}()
 		log.Infoln("[DNS] updateDns %s", value)
 		dns.UpdateSystemDNS(strings.Split(value, ","))
-		dns.FlushCacheWithDefaultResolver()
+		resolver.ResetConnection()
 	}()
 }
 
@@ -332,6 +339,11 @@ func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.c
 	bytes := []byte(C.GoString(paramsChar))
 	stateParams := C.GoString(stateParamsChar)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				bridge.SendToPort(i, fmt.Sprintf("panic: %v", r))
+			}
+		}()
 		res := handleInitClash(paramsString)
 		if res == false {
 			bridge.SendToPort(i, "init error")
@@ -386,6 +398,9 @@ func getRunTime() *C.char {
 
 //export stopTun
 func stopTun() {
+	defer func() {
+		_ = recover()
+	}()
 	handleStopTun()
 }
 
@@ -399,8 +414,16 @@ func getAndroidVpnOptions() *C.char {
 	return C.CString(handleGetAndroidVpnOptions())
 }
 
+//export setScreenState
+func setScreenState(on C.int) {
+	toolbox.SetTrafficScreenOn(on != 0)
+}
+
 //export setState
 func setState(s *C.char) {
+	defer func() {
+		_ = recover()
+	}()
 	paramsString := C.GoString(s)
 	handleSetState(paramsString)
 }
@@ -409,4 +432,22 @@ func setState(s *C.char) {
 func updateDns(s *C.char) {
 	dnsList := C.GoString(s)
 	handleUpdateDns(dnsList)
+}
+
+//export networkChanged
+func networkChanged() {
+	defer func() {
+		_ = recover()
+	}()
+	handleNetworkChanged()
+}
+
+func handleNetworkChanged() {
+	if !isInit || !state.CurrentState.VpnProps.QuickResponse {
+		return
+	}
+	log.Infoln("[APP] Network changed, resetting connections")
+	closeConnections()
+	closeIdleOutbounds(tunnel.Proxies(), tunnel.Providers())
+	resolver.ResetConnection()
 }

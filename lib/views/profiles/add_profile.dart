@@ -1,6 +1,6 @@
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/pages/scan.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
@@ -168,6 +168,7 @@ class AddProfileView extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );

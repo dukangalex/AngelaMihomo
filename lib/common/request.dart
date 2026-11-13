@@ -11,9 +11,29 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 
-import 'release_updates.dart';
+class _LimitedByteSink extends ByteConversionSinkBase {
+  _LimitedByteSink(this.maxBytes);
+
+  final int maxBytes;
+  final BytesBuilder _builder = BytesBuilder(copy: false);
+
+  Uint8List takeBytes() => _builder.takeBytes();
+
+  @override
+  void add(List<int> chunk) {
+    if (_builder.length + chunk.length > maxBytes) {
+      throw const FormatException('Decompressed data exceeds limit');
+    }
+    _builder.add(chunk);
+  }
+
+  @override
+  void close() {}
+}
 
 class Request {
+  static const _maxDecompressedBytes = 64 * 1024 * 1024;
+
   late final Dio _dio;
   late final Dio _clashDio;
   String? userAgent;
@@ -41,6 +61,17 @@ class Request {
     );
   }
 
+  Uint8List _decodeWithLimit(
+    Converter<List<int>, List<int>> decoder,
+    Uint8List input,
+  ) {
+    final sink = _LimitedByteSink(_maxDecompressedBytes);
+    final inputSink = decoder.startChunkedConversion(sink);
+    inputSink.add(input);
+    inputSink.close();
+    return sink.takeBytes();
+  }
+
   Uint8List _decompressIfNeeded(Uint8List bytes, Headers headers) {
     final encodings =
         headers['content-encoding']?.map((e) => e.toLowerCase()).toList() ?? [];
@@ -57,7 +88,7 @@ class Request {
           break;
         }
         try {
-          current = Uint8List.fromList(gzip.decode(current));
+          current = _decodeWithLimit(gzip.decoder, current);
           wantGzip = false;
           continue;
         } catch (_) {
@@ -66,14 +97,12 @@ class Request {
       }
       if (wantDeflate) {
         try {
-          current = Uint8List.fromList(zlib.decode(current));
+          current = _decodeWithLimit(zlib.decoder, current);
           wantDeflate = false;
           continue;
         } catch (_) {
           try {
-            current = Uint8List.fromList(
-              ZLibDecoder(raw: true).convert(current),
-            );
+            current = _decodeWithLimit(ZLibDecoder(raw: true), current);
             wantDeflate = false;
             continue;
           } catch (_) {
@@ -92,10 +121,7 @@ class Request {
     return Uint8List.fromList((data as List).cast<int>());
   }
 
-  Future<Response> _getFileResponseForUrl(
-    String url,
-    ResponseType responseType,
-  ) async {
+  Future<({File file, String? fileName})> _localFileForUrl(String url) async {
     final uri = Uri.parse(url);
     final segments = uri.pathSegments
         .where((segment) => segment.isNotEmpty)
@@ -110,13 +136,29 @@ class Request {
     if (!await file.exists()) {
       throw Exception('Local file not found: $filePath');
     }
+    return (file: file, fileName: segments.lastOrNull);
+  }
 
-    final bytes = await file.readAsBytes();
+  Headers? _fileHeaders(String? fileName) {
+    if (fileName == null) return null;
+    return Headers.fromMap({
+      'content-disposition': [
+        'attachment; filename*=UTF-8\'\'${Uri.encodeComponent(fileName)}',
+      ],
+    });
+  }
+
+  Future<Response> _getFileResponseForUrl(
+    String url,
+    ResponseType responseType,
+  ) async {
+    final local = await _localFileForUrl(url);
+    final bytes = await local.file.readAsBytes();
     return _buildResponseFromBytes(
       url: url,
       bytes: bytes,
       responseType: responseType,
-      fileName: segments.lastOrNull,
+      fileName: local.fileName,
     );
   }
 
@@ -141,14 +183,7 @@ class Request {
     String? fileName,
   }) {
     final requestOptions = RequestOptions(path: url);
-    final disposition = fileName == null
-        ? null
-        : 'attachment; filename*=UTF-8\'\'${Uri.encodeComponent(fileName)}';
-    final headers = disposition == null
-        ? null
-        : Headers.fromMap({
-            'content-disposition': [disposition],
-          });
+    final headers = _fileHeaders(fileName);
     if (responseType == ResponseType.plain) {
       return Response(
         requestOptions: requestOptions,
@@ -165,14 +200,7 @@ class Request {
     );
   }
 
-  Future<Response> _getResponseForUrl(
-    String url,
-    ResponseType responseType,
-  ) async {
-    if (url.isFileUrl) {
-      return _getFileResponseForUrl(url, responseType);
-    }
-
+  (String, Map<String, dynamic>) _authorizedRequest(String url) {
     String? userInfo;
     String requestUrl = url;
 
@@ -202,9 +230,68 @@ class Request {
       headers['Authorization'] = 'Basic $auth';
     }
 
-    final response = await _clashDio.get(
-      requestUrl,
-      options: Options(responseType: ResponseType.bytes, headers: headers),
+    return (requestUrl, headers);
+  }
+
+  Future<T> _withPlainEncodingRetry<T>(
+    Map<String, dynamic> headers,
+    Future<T> Function(Map<String, dynamic> requestHeaders) send,
+  ) async {
+    try {
+      return await send(headers);
+    } on DioException catch (e) {
+      final error = e.error;
+      if (error is! HttpException ||
+          !error.message.contains(HttpHeaders.contentEncodingHeader)) {
+        rethrow;
+      }
+      return send({...headers, HttpHeaders.acceptEncodingHeader: 'identity'});
+    }
+  }
+
+  Future<({String path, Headers? headers, bool remote})> fetchProfileSource(
+    String url,
+    String downloadPath,
+  ) async {
+    if (url.isFileUrl) {
+      final local = await _localFileForUrl(url);
+      await local.file.copy(downloadPath);
+      return (
+        path: downloadPath,
+        headers: _fileHeaders(local.fileName),
+        remote: false,
+      );
+    }
+    final (requestUrl, headers) = _authorizedRequest(url);
+    final response = await _withPlainEncodingRetry(
+      headers,
+      (requestHeaders) => _clashDio.download(
+        requestUrl,
+        downloadPath,
+        options: Options(headers: requestHeaders),
+      ),
+    );
+    return (path: downloadPath, headers: response.headers, remote: true);
+  }
+
+  Future<Response> _getResponseForUrl(
+    String url,
+    ResponseType responseType,
+  ) async {
+    if (url.isFileUrl) {
+      return _getFileResponseForUrl(url, responseType);
+    }
+
+    final (requestUrl, headers) = _authorizedRequest(url);
+    final response = await _withPlainEncodingRetry(
+      headers,
+      (requestHeaders) => _clashDio.get(
+        requestUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: requestHeaders,
+        ),
+      ),
     );
 
     final rawBytes = _bytesFromResponse(response);
@@ -236,10 +323,6 @@ class Request {
     }
   }
 
-  Future<Response> getFileResponseForUrl(String url) async {
-    return _getResponseForUrl(url, ResponseType.bytes);
-  }
-
   Future<Response> getTextResponseForUrl(String url) async {
     return _getResponseForUrl(url, ResponseType.plain);
   }
@@ -254,6 +337,17 @@ class Request {
     if (data == null) return null;
     final bytes = _decompressIfNeeded(data, response.headers);
     return MemoryImage(bytes);
+  }
+
+  Future<Uint8List?> getBytes(String url, {CancelToken? cancelToken}) async {
+    final response = await _dio.get<Uint8List>(
+      url,
+      cancelToken: cancelToken,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final data = response.data;
+    if (data == null) return null;
+    return _decompressIfNeeded(data, response.headers);
   }
 
   Future<Map<String, dynamic>?> checkForUpdate() async {
@@ -281,6 +375,7 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout, {
     void Function(IpInfo info)? onUpdate,
+    String? proxy,
   }) async {
     final effectiveTimeout = timeout ?? const Duration(seconds: 5);
 
@@ -296,6 +391,7 @@ class Request {
         final client = HttpClient();
         client.autoUncompress = false;
         client.connectionTimeout = effectiveTimeout;
+        if (proxy != null) client.findProxy = (_) => proxy;
         return client;
       },
     );
@@ -404,12 +500,14 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
+    String? proxy,
   }) async {
     final res = await _checkIpFromSources(
       _exitIpTraceSources,
       cancelToken,
       timeout,
       onUpdate: onUpdate,
+      proxy: proxy,
     );
     final traceInfo = res.data;
     if (res.isError || traceInfo == null || traceInfo.ip.isEmpty) {
@@ -434,11 +532,13 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
+    String? proxy,
   }) async {
     return _checkIpWithLocalGeo(
       cancelToken: cancelToken,
       timeout: timeout,
       onUpdate: onUpdate,
+      proxy: proxy,
     );
   }
 

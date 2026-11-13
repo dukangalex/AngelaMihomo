@@ -45,11 +45,16 @@ abstract class Metadata with _$Metadata {
   const factory Metadata({
     @Default(0) int uid,
     @Default('') String network,
+    @Default('') String type,
     @Default('') String sourceIP,
     @Default('') String sourcePort,
     @Default('') String destinationIP,
     @Default('') String destinationPort,
     @Default('') String host,
+    @Default('') String sniffHost,
+    @Default('') String inboundName,
+    @Default('') String inboundPort,
+    @Default('') String inboundUser,
     DnsMode? dnsMode,
     @Default('') String process,
     @Default('') String processPath,
@@ -304,6 +309,17 @@ abstract class NetworkInfo with _$NetworkInfo {
 }
 
 @freezed
+abstract class CoreInterface with _$CoreInterface {
+  const factory CoreInterface({
+    required String name,
+    @Default([]) List<String> addresses,
+  }) = _CoreInterface;
+
+  factory CoreInterface.fromJson(Map<String, Object?> json) =>
+      _$CoreInterfaceFromJson(json);
+}
+
+@freezed
 abstract class VersionInfo with _$VersionInfo {
   const factory VersionInfo({
     @Default('') String clashName,
@@ -555,10 +571,10 @@ class IpInfo {
     this.asDomain,
     this.continent,
     this.continentCode,
-  }) : countryCode = _normalizeCountryCode(countryCode, country, province),
-       country = _normalizeCountry(
+  }) : countryCode = normalizeCountryCode(countryCode, country, province),
+       country = normalizeCountry(
          country,
-         _normalizeCountryCode(countryCode, country, province),
+         normalizeCountryCode(countryCode, country, province),
          province,
        );
 
@@ -604,11 +620,11 @@ class IpInfo {
     return false;
   }
 
-  static String _normalizeCountryCode(
-    String countryCode,
+  static String normalizeCountryCode(
+    String countryCode, [
     String? country,
     String? province,
-  ) {
+  ]) {
     final clean = countryCode.trim().toUpperCase();
     if (clean.length == 2 && RegExp(r'^[A-Z]{2}$').hasMatch(clean)) {
       if (clean == 'CN') {
@@ -646,7 +662,7 @@ class IpInfo {
     return clean;
   }
 
-  static String? _normalizeCountry(
+  static String? normalizeCountry(
     String? country, [
     String? countryCode,
     String? province,
@@ -1119,12 +1135,16 @@ class PopupMenuItemData {
   const PopupMenuItemData({
     this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
+    this.trailing,
+    this.children,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final Widget? trailing;
+  final List<PopupMenuItemData>? children;
 }
 
 @freezed
@@ -1193,6 +1213,7 @@ abstract class Script with _$Script {
 
 final volatileScriptPattern = RegExp(r'\bDate\b|Math\s*\.\s*random');
 
+
 extension ScriptExt on Script {
   Future<String> readContent() async {
     if (content.isNotEmpty) return content;
@@ -1223,4 +1244,27 @@ extension ScriptExt on Script {
       await file.delete();
     }
   }
+}
+
+@freezed
+abstract class IconSetIcon with _$IconSetIcon {
+  const factory IconSetIcon({required String name, required String url}) =
+      _IconSetIcon;
+
+  factory IconSetIcon.fromJson(Map<String, Object?> json) =>
+      _$IconSetIconFromJson(json);
+}
+
+@freezed
+abstract class IconSet with _$IconSet {
+  const factory IconSet({
+    required String id,
+    required String name,
+    @Default('') String url,
+    @Default([]) List<IconSetIcon> icons,
+    DateTime? lastUpdateTime,
+  }) = _IconSet;
+
+  factory IconSet.fromJson(Map<String, Object?> json) =>
+      _$IconSetFromJson(json);
 }

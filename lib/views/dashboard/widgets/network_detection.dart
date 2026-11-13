@@ -257,6 +257,37 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
     );
   }
 
+
+  Widget _buildSettingsButton(BuildContext context) {
+    return CommonPopupBox(
+      targetBuilder: (open) => IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => open(offset: const Offset(0, 20)),
+        icon: Icon(
+          size: 16.ap,
+          Icons.settings_outlined,
+          color: context.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      popup: CommonPopupMenu(
+        items: [
+          PopupMenuItemData(
+            icon: Icons.sync,
+            label: appLocalizations.manualRefreshIp,
+            onPressed: detectionState.manualRefresh,
+          ),
+          PopupMenuItemData(
+            icon: detectionState.isIpMasked
+                ? Icons.check_circle_rounded
+                : Icons.security,
+            label: appLocalizations.ipPrivacyProtection,
+            onPressed: detectionState.toggleIpPrivacy,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatTile({
     required IconData icon,
     required Color iconColor,
@@ -548,11 +579,17 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           final countryCode = ipInfo?.countryCode ?? '';
           final ipText = ipInfo != null
               ? Text(
-                  ipInfo.ip,
-                  style: context.textTheme.bodyMedium?.toLight.adjustSize(1),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
+                    ipInfo.ip,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      fontFeatures: const [
+                        FontFeature.tabularFigures(),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
               : state.isLoading == false
               ? Text(
                   state.errorMessage ?? 'timeout',
@@ -571,7 +608,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                   ),
                 );
           return CommonCard(
-            onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
             child: DashboardDecor(
               mark: countryCode.length == 2
                   ? DashboardDecor.flag(countryCode, 80)
@@ -591,7 +628,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            height: globalState.measure.bodyMediumHeight + 2,
+                            height: globalState.measure.titleMediumHeight + 2,
                             child: Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: ipText,
@@ -664,7 +701,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
               ? ''
               : networkDetectionOperatorText(ipInfo);
           return CommonCard(
-            onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -716,15 +753,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                       SizedBox(width: 2),
                       AspectRatio(
                         aspectRatio: 1,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: _showIpClickBehaviorSettings,
-                          icon: Icon(
-                            size: 16.ap,
-                            Icons.settings_outlined,
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+                        child: _buildSettingsButton(context),
                       ),
                     ],
                   ),

@@ -256,9 +256,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
       body: ScrollEdgeRise(
         builder: (context, rise) => ListView(
           padding: EdgeInsets.only(
-            bottom:
-                (globalState.isAndroidTV ? 48.0 : 16.0) +
-                MediaQuery.of(context).padding.bottom,
+            bottom: 16.0 + MediaQuery.paddingOf(context).bottom,
             top: 8 + rise,
           ),
           children: [
@@ -270,6 +268,11 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
                 top: 4,
                 bottom: 8,
               ),
+              actions: [
+                if (Theme.of(context).materialTapTargetSize ==
+                    MaterialTapTargetSize.padded)
+                  const SizedBox(height: kMinInteractiveDimension),
+              ],
             ),
             ...generateSection(
               items: geoItems.map(
@@ -611,6 +614,12 @@ class _UpdateGeoUrlFormDialogState extends State<UpdateGeoUrlFormDialog> {
   void initState() {
     super.initState();
     urlController = TextEditingController(text: widget.url);
+  }
+
+  @override
+  void dispose() {
+    urlController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleReset() async {

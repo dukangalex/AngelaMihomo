@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
@@ -8,8 +10,11 @@ import 'package:flutter/foundation.dart';
 
 class DelayTestCoordinator extends ChangeNotifier {
   String? _testingGroupName;
+  int _epoch = 0;
 
   String? get testingGroupName => _testingGroupName;
+
+  int get epoch => _epoch;
 
   bool get isTesting => _testingGroupName != null;
 
@@ -20,15 +25,25 @@ class DelayTestCoordinator extends ChangeNotifier {
       return false;
     }
 
+    final epoch = _epoch;
     _testingGroupName = groupName;
     notifyListeners();
     try {
       await action();
       return true;
     } finally {
-      _testingGroupName = null;
-      notifyListeners();
+      if (epoch == _epoch) {
+        _testingGroupName = null;
+        notifyListeners();
+      }
     }
+  }
+
+  void cancel() {
+    _epoch++;
+    if (_testingGroupName == null) return;
+    _testingGroupName = null;
+    notifyListeners();
   }
 }
 
@@ -55,6 +70,9 @@ class DelayTestRequestPool {
 
   int get pendingCount => _pendingRequests.length;
 
+  Future<Delay>? pendingRequest(DelayTestTarget target) =>
+      _pendingRequests[target];
+
   Future<Delay> run(DelayTestTarget target, Future<Delay> Function() action) {
     final pendingRequest = _pendingRequests[target];
     if (pendingRequest != null) {
@@ -69,9 +87,16 @@ class DelayTestRequestPool {
       }
     });
   }
+
+  void clear() => _pendingRequests.clear();
 }
 
 final _delayTestRequestPool = DelayTestRequestPool();
+
+void cancelDelayTests() {
+  delayTestCoordinator.cancel();
+  _delayTestRequestPool.clear();
+}
 
 double get listHeaderHeight {
   final measure = globalState.measure;
@@ -105,14 +130,19 @@ Future<void> proxyDelayTest(Proxy proxy, [String? testUrl]) async {
 }
 
 Future<Delay> _testProxyDelay(DelayTestTarget target) {
+  final epoch = delayTestCoordinator.epoch;
   return _delayTestRequestPool.run(target, () async {
     final appController = globalState.appController;
     appController.setDelay(Delay(url: target.url, name: target.name, value: 0));
     final delay = await clashCore.getDelay(target.url, target.name);
-    appController.setDelay(delay);
+    if (epoch == delayTestCoordinator.epoch) {
+      appController.setDelay(delay);
+    }
     return delay;
   });
 }
+
+
 
 bool _isNonTestableProxyName(String proxyName) {
   final name = proxyName.toUpperCase();

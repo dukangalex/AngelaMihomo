@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -129,6 +130,7 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 		}
 	}
 	patchTunRouteExclude(raw)
+	restrictProfileServices(raw, defaults)
 	if hasPatchValue(params.GeoXUrl) {
 		raw.GeoXUrl = defaults.GeoXUrl
 		if err := yaml.Unmarshal(params.GeoXUrl, &raw.GeoXUrl); err != nil {
@@ -140,6 +142,9 @@ func applyPatch(raw *config.RawConfig, params *PatchParams) (string, error) {
 	hostOrder := patchHosts(raw, params.Hosts)
 	if err := patchDns(raw, params, defaults, hostOrder); err != nil {
 		return "", err
+	}
+	if !raw.AllowLan {
+		raw.DNS.Listen = loopbackAddress(raw.DNS.Listen)
 	}
 	if hasPatchValue(params.Ntp) {
 		raw.NTP = defaults.NTP
@@ -435,9 +440,13 @@ func patchProviderPaths(providers map[string]map[string]any, base string, kind s
 		if !ok {
 			continue
 		}
-		sum := md5.Sum([]byte(url))
-		provider["path"] = filepath.Join(base, kind, hex.EncodeToString(sum[:]))
+		provider["path"] = providerFilePath(base, kind, url)
 	}
+}
+
+func providerFilePath(base string, kind string, url string) string {
+	sum := md5.Sum([]byte(url))
+	return filepath.Join(base, kind, hex.EncodeToString(sum[:]))
 }
 
 func patchHosts(raw *config.RawConfig, hosts []PatchHost) []string {
@@ -477,6 +486,10 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 		}
 	}
 	raw.DNS.FallbackFilter.GeoSite = []string{}
+	raw.DNS.FallbackFilter.Domain = []string{}
+	if !raw.IPv6 {
+		raw.DNS.IPv6 = false
+	}
 
 	if !patchForAndroid {
 		return nil
@@ -497,6 +510,41 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 		raw.DNS.Listen = "127.0.0.1" + strings.TrimPrefix(listen, "0.0.0.0")
 	}
 	return nil
+}
+
+func restrictProfileServices(raw *config.RawConfig, defaults *config.RawConfig) {
+	raw.ExternalControllerTLS = ""
+	raw.ExternalControllerUnix = ""
+	raw.ExternalControllerPipe = ""
+	raw.ExternalDohServer = ""
+	raw.ShadowSocksConfig = ""
+	raw.VmessConfig = ""
+	raw.TuicServer = defaults.TuicServer
+	listeners := raw.Listeners[:0]
+	for _, item := range raw.Listeners {
+		if kind, _ := item["type"].(string); strings.EqualFold(kind, "tun") {
+			continue
+		}
+		if !raw.AllowLan {
+			item["listen"] = "127.0.0.1"
+		}
+		listeners = append(listeners, item)
+	}
+	raw.Listeners = listeners
+	if raw.AllowLan {
+		return
+	}
+	for i := range raw.Tunnels {
+		raw.Tunnels[i].Address = loopbackAddress(raw.Tunnels[i].Address)
+	}
+}
+
+func loopbackAddress(address string) string {
+	_, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return address
+	}
+	return net.JoinHostPort("127.0.0.1", port)
 }
 
 func applyDnsNodeOverride(raw *config.RawConfig, original *config.RawDNS, hostOrder []string) {

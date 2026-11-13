@@ -27,11 +27,16 @@ Map<String, dynamic> _$PackageToJson(_Package instance) => <String, dynamic>{
 _Metadata _$MetadataFromJson(Map<String, dynamic> json) => _Metadata(
   uid: (json['uid'] as num?)?.toInt() ?? 0,
   network: json['network'] as String? ?? '',
+  type: json['type'] as String? ?? '',
   sourceIP: json['sourceIP'] as String? ?? '',
   sourcePort: json['sourcePort'] as String? ?? '',
   destinationIP: json['destinationIP'] as String? ?? '',
   destinationPort: json['destinationPort'] as String? ?? '',
   host: json['host'] as String? ?? '',
+  sniffHost: json['sniffHost'] as String? ?? '',
+  inboundName: json['inboundName'] as String? ?? '',
+  inboundPort: json['inboundPort'] as String? ?? '',
+  inboundUser: json['inboundUser'] as String? ?? '',
   dnsMode: $enumDecodeNullable(_$DnsModeEnumMap, json['dnsMode']),
   process: json['process'] as String? ?? '',
   processPath: json['processPath'] as String? ?? '',
@@ -55,11 +60,16 @@ _Metadata _$MetadataFromJson(Map<String, dynamic> json) => _Metadata(
 Map<String, dynamic> _$MetadataToJson(_Metadata instance) => <String, dynamic>{
   'uid': instance.uid,
   'network': instance.network,
+  'type': instance.type,
   'sourceIP': instance.sourceIP,
   'sourcePort': instance.sourcePort,
   'destinationIP': instance.destinationIP,
   'destinationPort': instance.destinationPort,
   'host': instance.host,
+  'sniffHost': instance.sniffHost,
+  'inboundName': instance.inboundName,
+  'inboundPort': instance.inboundPort,
+  'inboundUser': instance.inboundUser,
   'dnsMode': _$DnsModeEnumMap[instance.dnsMode],
   'process': instance.process,
   'processPath': instance.processPath,
@@ -162,6 +172,19 @@ Map<String, dynamic> _$NetworkInfoToJson(_NetworkInfo instance) =>
       'gateway': instance.gateway,
       'dns': instance.dns,
     };
+
+_CoreInterface _$CoreInterfaceFromJson(Map<String, dynamic> json) =>
+    _CoreInterface(
+      name: json['name'] as String,
+      addresses:
+          (json['addresses'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+    );
+
+Map<String, dynamic> _$CoreInterfaceToJson(_CoreInterface instance) =>
+    <String, dynamic>{'name': instance.name, 'addresses': instance.addresses};
 
 _VersionInfo _$VersionInfoFromJson(Map<String, dynamic> json) => _VersionInfo(
   clashName: json['clashName'] as String? ?? '',
@@ -294,4 +317,32 @@ Map<String, dynamic> _$ScriptToJson(_Script instance) => <String, dynamic>{
   'digest': instance.digest,
   'compatible': instance.compatible,
   'volatile': instance.volatile,
+};
+
+_IconSetIcon _$IconSetIconFromJson(Map<String, dynamic> json) =>
+    _IconSetIcon(name: json['name'] as String, url: json['url'] as String);
+
+Map<String, dynamic> _$IconSetIconToJson(_IconSetIcon instance) =>
+    <String, dynamic>{'name': instance.name, 'url': instance.url};
+
+_IconSet _$IconSetFromJson(Map<String, dynamic> json) => _IconSet(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  url: json['url'] as String? ?? '',
+  icons:
+      (json['icons'] as List<dynamic>?)
+          ?.map((e) => IconSetIcon.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  lastUpdateTime: json['lastUpdateTime'] == null
+      ? null
+      : DateTime.parse(json['lastUpdateTime'] as String),
+);
+
+Map<String, dynamic> _$IconSetToJson(_IconSet instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'url': instance.url,
+  'icons': instance.icons,
+  'lastUpdateTime': instance.lastUpdateTime?.toIso8601String(),
 };

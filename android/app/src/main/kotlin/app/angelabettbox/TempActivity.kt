@@ -11,6 +11,7 @@ class TempActivity : Activity() {
             wrapAction("START") -> GlobalState.handleStart()
             wrapAction("STOP") -> GlobalState.handleStop()
             wrapAction("CHANGE") -> GlobalState.handleToggle()
+            wrapAction(HomeWidgetRenderer.REFRESH_ACTION) -> HomeWidgets.refresh(this)
         }
         finishAndRemoveTask()
     }

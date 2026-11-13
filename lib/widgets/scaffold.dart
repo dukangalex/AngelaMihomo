@@ -35,6 +35,7 @@ class CommonScaffold extends StatefulWidget {
   final AppBarSearchState? searchState;
   final OnKeywordsUpdateCallback? onKeywordsUpdate;
   final bool scrollEdgeFade;
+  final VoidCallback? onAppBarDoubleTap;
 
   const CommonScaffold({
     super.key,
@@ -51,6 +52,7 @@ class CommonScaffold extends StatefulWidget {
     this.floatingActionButton,
     this.onKeywordsUpdate,
     this.scrollEdgeFade = true,
+    this.onAppBarDoubleTap,
   });
 
   @override
@@ -175,6 +177,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
     _appBarState.dispose();
     _textController.dispose();
     _floatingActionButton.dispose();
+    _keywordsNotifier.dispose();
     super.dispose();
   }
 

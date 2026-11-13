@@ -45,7 +45,7 @@ const defaultNetworkProps = NetworkProps();
 const defaultProxiesStyle = ProxiesStyle();
 const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
-final defaultThemeProps = ThemeProps();
+const defaultThemeProps = ThemeProps();
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
@@ -153,7 +153,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
     @Default(true) bool logAiSearch,
-    @Default(false) bool flushDnsOnNetworkChange,
     @Default(defaultTestUrl) String testUrl,
     @Default(true) bool showStartSwitch,
     @Default(StartSwitchStyle.outlined) StartSwitchStyle startSwitchStyle,
@@ -177,6 +176,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @JsonKey(fromJson: sidebarFlyoutEntriesSafeFromJson)
     List<SidebarFlyoutEntry> sidebarFlyoutEntries,
     String? dashboardTitle,
+    @Default(false) bool dashboardWatermark,
     @Default(<String>[]) List<String> toolboxTiles,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,
@@ -301,6 +301,11 @@ List<String> bypassDomainSafeFromJson(List<dynamic>? bypassDomain) {
   }
 }
 
+int concurrencyLimitFromJson(Object? value) {
+  if (value is! int || value > 32) return maxDelayTestConcurrency;
+  return value < 1 ? 1 : value;
+}
+
 @freezed
 abstract class NetworkProps with _$NetworkProps {
   const factory NetworkProps({
@@ -310,7 +315,7 @@ abstract class NetworkProps with _$NetworkProps {
     List<String> bypassDomain,
     @Default(true) bool bypassPrivateRoute,
     @Default([]) List<String> bypassPrivateRouteAddress,
-    @Default(true) bool autoSetSystemDns,
+    @Default(ProfileSwitchMode.hotReload) ProfileSwitchMode profileSwitchMode,
   }) = _NetworkProps;
 
   factory NetworkProps.fromJson(Map<String, Object?>? json) =>
@@ -337,9 +342,12 @@ abstract class ProxiesStyle with _$ProxiesStyle {
     @Default(DelayAnimationType.pulse) DelayAnimationType delayAnimation,
     @Default(true) bool syncDelayAnimation,
     @Default({}) Map<String, String> iconMap,
-    @Default(250) int concurrencyLimit,
+    @Default(maxDelayTestConcurrency)
+    @JsonKey(fromJson: concurrencyLimitFromJson)
+    int concurrencyLimit,
     @Default(false) bool autoStickyHeader,
     @Default(false) bool showHiddenItems,
+    @Default(false) bool hideTimeoutProxies,
     @Default(false) bool hasCustomizedStyle,
   }) = _ProxiesStyle;
 
@@ -363,6 +371,7 @@ abstract class ThemeProps with _$ThemeProps {
   const factory ThemeProps({
     @Default(ThemeMode.system) ThemeMode themeMode,
     @Default(false) bool pureBlack,
+    @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,
     @Default(TextScale()) TextScale textScale,
     @Default(false) bool useDarkIcon,
     @Default(false) bool invertTrayIcon,
@@ -386,7 +395,11 @@ abstract class ThemeProps with _$ThemeProps {
 @freezed
 abstract class ScriptProps with _$ScriptProps {
   const factory ScriptProps({
-    String? currentId,
+    // Legacy global script id: read from stored configs so the
+    // one-time migration in Config.compatibleFromJson can move it
+    // onto each profile, but never written back — after migration
+    // the per-profile scriptId is the only storage.
+    @JsonKey(includeToJson: false) String? currentId,
     @Default([]) List<Script> scripts,
   }) = _ScriptProps;
 
@@ -410,6 +423,12 @@ extension ScriptPropsExt on ScriptProps {
     }
     return null;
   }
+
+  Script? findScript(String? id) =>
+      scripts.where((script) => script.id == id).firstOrNull;
+
+  Script? scriptOf(Profile profile) =>
+      profile.isManaged ? null : findScript(profile.scriptId);
 
   Script? scriptById(String id) {
     final index = scripts.indexWhere((script) => script.id == id);
@@ -463,12 +482,10 @@ abstract class Config with _$Config {
     @Default([]) List<Profile> profiles,
     @Default([]) List<HotKeyAction> hotKeyActions,
     String? currentProfileId,
-    @Default(false) bool overrideDns,
     @Default(false) bool overrideNtp,
     @Default(false) bool overrideSniffer,
     @Default(false) bool overrideTunnel,
     @Default(false) bool overrideExperimental,
-    @Default(true) bool overrideTestUrl,
     DAV? dav,
     @Default(defaultNetworkProps) NetworkProps networkProps,
     @JsonKey(fromJson: VpnProps.safeFromJson)
@@ -476,6 +493,7 @@ abstract class Config with _$Config {
     VpnProps vpnProps,
     @JsonKey(fromJson: ThemeProps.safeFromJson) required ThemeProps themeProps,
     @Default(defaultProxiesStyle) ProxiesStyle proxiesStyle,
+    @Default(defaultTrafficStatsProps) TrafficStatsProps trafficStatsProps,
     @Default(defaultWindowProps) WindowProps windowProps,
     @JsonKey(fromJson: ClashConfig.safeFormJson)
     @Default(defaultClashConfig)
@@ -573,6 +591,24 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
+    try {
+      final scriptProps = json['scriptProps'];
+      final profiles = json['profiles'];
+      if (scriptProps is Map && profiles is List) {
+        final currentId = scriptProps.remove('currentId');
+        for (final profile in profiles) {
+          if (profile is! Map) continue;
+          final enabled = profile.remove('useScriptOverride') != false;
+          if (currentId is String &&
+              enabled &&
+              profile['scriptId'] == null &&
+              profile['bundle'] == null) {
+            profile['scriptId'] = currentId;
+          }
+        }
+      }
+    } catch (_) {}
+
     // Migrate a stored TUN device name that still carries the legacy
     // product name to the current one. Only the exact legacy value is
     // rewritten; a device name set on purpose is kept.
@@ -582,6 +618,18 @@ abstract class Config with _$Config {
         final tun = patchConfig['tun'];
         if (tun is Map && tun['device'] == 'Bettbox') {
           tun['device'] = 'AngelaMihomo';
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final themeProps = json['themeProps'];
+      if (themeProps is Map &&
+          themeProps['primaryColor'] != legacyPrimaryColors.last) {
+        final colors = themeProps['primaryColors'];
+        if (colors is List &&
+            intListEquality.equals(colors.cast<int>(), legacyPrimaryColors)) {
+          themeProps.remove('primaryColors');
         }
       }
     } catch (_) {}

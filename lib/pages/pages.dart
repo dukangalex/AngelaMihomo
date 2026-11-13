@@ -7,4 +7,5 @@ export 'toolbox/ip_lookup.dart';
 export 'toolbox/dns_query.dart';
 export 'toolbox/age_tool.dart';
 export 'toolbox/local_ping.dart';
+export 'toolbox/traffic_stats.dart';
 export 'speed_test.dart';

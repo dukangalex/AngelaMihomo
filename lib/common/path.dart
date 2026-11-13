@@ -266,6 +266,11 @@ class AppPath {
     return join(directory.path, 'toolbox_history.json');
   }
 
+  Future<String> get iconSetsPath async {
+    final directory = await dataDir.future;
+    return join(directory.path, 'icon_sets.json');
+  }
+
   Future<String> get helperAuthKeyPath async {
     final directory = await dataDir.future;
     return join(directory.path, 'helper_auth.key');

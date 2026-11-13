@@ -106,10 +106,7 @@ void main() {
       InternetAddress.loopbackIPv4,
       0,
     );
-    final webDavServer = await HttpServer.bind(
-      InternetAddress.loopbackIPv4,
-      0,
-    );
+    final webDavServer = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     var storageReceivedAuthorization = false;
 
     final storageSubscription = storageServer.listen((request) async {

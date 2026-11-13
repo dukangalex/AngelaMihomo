@@ -34,6 +34,7 @@ import app.angelabettbox.services.FairMemoryHelper
 import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
+import app.angelabettbox.widget.HomeWidgets
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
@@ -82,6 +83,7 @@ class MainActivity : FlutterFragmentActivity() {
             "ON_CREATE engineCached=$isEngineCached",
         )
         Log.i("MainActivity", "onCreate engineCached=$isEngineCached")
+        HomeWidgets.handleIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -93,6 +95,8 @@ class MainActivity : FlutterFragmentActivity() {
             "ON_NEW_INTENT engineCached=$isEngineCached",
         )
         Log.i("MainActivity", "onNewIntent engineCached=$isEngineCached")
+        setIntent(intent)
+        HomeWidgets.handleIntent(intent)
     }
 
     override fun onResume() {

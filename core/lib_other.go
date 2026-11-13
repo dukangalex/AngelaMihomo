@@ -12,3 +12,4 @@ func nextHandle(action *Action, result ActionResult) bool {
 func delayDataPlaneReady() bool {
 	return true
 }
+func purgeNativeMemory() {}

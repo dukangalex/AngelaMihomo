@@ -78,6 +78,7 @@ class InfoHeader extends StatelessWidget {
   }
 }
 
+
 class CommonCard extends StatelessWidget {
   const CommonCard({
     super.key,
@@ -94,6 +95,7 @@ class CommonCard extends StatelessWidget {
     this.info,
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
+    this.subtle = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -112,6 +114,7 @@ class CommonCard extends StatelessWidget {
   final GlassTier? glassTier;
   final Clip clipBehavior;
   final bool elevated;
+  final bool subtle;
 
   GlassTier get tier =>
       glassTier ?? (isSelected ? GlassTier.primary : GlassTier.secondary);
@@ -228,6 +231,51 @@ class CommonCard extends StatelessWidget {
       true => FadeScaleEnterBox(child: card),
       false => card,
     };
+  }
+}
+
+class _CardPressScale extends StatefulWidget {
+  const _CardPressScale({required this.builder});
+
+  final Widget Function(WidgetStatesController controller) builder;
+
+  @override
+  State<_CardPressScale> createState() => _CardPressScaleState();
+}
+
+class _CardPressScaleState extends State<_CardPressScale> {
+  final _controller = WidgetStatesController();
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleStates);
+  }
+
+  void _handleStates() {
+    final pressed = _controller.value.contains(WidgetState.pressed);
+    if (pressed == _pressed) return;
+    setState(() => _pressed = pressed);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleStates);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: _pressed ? 0.98 : 1.0,
+      duration: _pressed
+          ? const Duration(milliseconds: 100)
+          : const Duration(milliseconds: 260),
+      curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
+      child: widget.builder(_controller),
+    );
   }
 }
 
