@@ -24,12 +24,14 @@ import app.angelabettbox.core.Core
 import app.angelabettbox.extensions.awaitResult
 import app.angelabettbox.extensions.asSocketAddressText
 import app.angelabettbox.extensions.resolveDns
+import app.angelabettbox.extensions.trafficSpeedInfo
 import app.angelabettbox.models.StartForegroundParams
 import app.angelabettbox.models.VpnOptions
 import app.angelabettbox.modules.SuspendModule
 import app.angelabettbox.services.BaseServiceInterface
 import app.angelabettbox.services.AngelaMihomoService
 import app.angelabettbox.services.AngelaMihomoVpnService
+import app.angelabettbox.services.ServiceRecovery
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
@@ -704,7 +706,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun isInteractive(): Boolean =
-        BettboxApplication.getAppContext().getSystemService<PowerManager>()?.isInteractive != false
+        AngelaMihomoApplication.getAppContext().getSystemService<PowerManager>()?.isInteractive != false
 
     private fun ensureSpeedTicker() {
         synchronized(speedTickerLock) {
@@ -963,14 +965,6 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             return false
         }
 
-        val canStart = GlobalState.runLock.withLock {
-            if (GlobalState.currentRunState != RunState.START) {
-                bettBoxService?.stop()
-                false
-            } else true
-        }
-        if (!canStart) return
-
         tunStartedAt = SystemClock.elapsedRealtime()
         val coreStarted = app.angelabettbox.core.Core.startTun(
             fd = fd ?: 0,
@@ -1157,6 +1151,10 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 bindingRegistered = false
                 isBind = false
             }
+            ServiceRecovery.noteActiveService(
+                AngelaMihomoApplication.getAppContext(),
+                options?.enable == true,
+            )
             val intent = Intent(
                 AngelaMihomoApplication.getAppContext(),
                 if (options?.enable == true) AngelaMihomoVpnService::class.java else AngelaMihomoService::class.java

@@ -38,52 +38,31 @@ suspend fun Service.createNotificationBuilder(
     isHighPriority: Boolean = GlobalState.isNotificationHighPriority
 ): NotificationCompat.Builder =
     withContext(Dispatchers.IO) {
-        val defaultComponent = ComponentName(packageName, "app.angelabettbox.MainActivity")
-        val lightComponent = ComponentName(packageName, "app.angelabettbox.MainActivityLight")
-        val darkComponent = ComponentName(packageName, "app.angelabettbox.MainActivityDark")
-
-        val targetComponent = NotificationComponentCache.get(packageManager, defaultComponent, lightComponent, darkComponent)
-
-        android.util.Log.d("Notification", "Using ${targetComponent.className}")
-
-        // T110: build the launch intent through the official
-        // cached-engine intent builder instead of a hand-rolled
-        // explicit intent. The host is a FlutterFragmentActivity with
-        // a manually cached engine; when the activity had been
-        // destroyed while the engine stayed cached, a plain
-        // NEW_TASK|CLEAR_TOP intent made the delegate rebuild the
-        // FlutterFragment outside the cached-engine path — the
-        // combination behind the tap-notification process death. The
-        // builder's intent carries the cached engine id (and
-        // destroyEngineWithActivity=false, matching
-        // shouldDestroyEngineWithHost), so the delegate attaches the
-        // cached engine through its documented path; on a cache miss
-        // it still falls back to provideFlutterEngine. The component
-        // override keeps the light/dark alias selection working.
-        val intent = FlutterFragmentActivity.CachedEngineIntentBuilder(
-            MainActivity::class.java,
-            MainActivity.MAIN_ENGINE_ID,
-        )
-            .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.opaque)
-            .destroyEngineWithActivity(false)
-            .build(this@createNotificationBuilder)
-            .apply {
-                component = targetComponent
-                action = Intent.ACTION_MAIN
-                addCategory(Intent.CATEGORY_LAUNCHER)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-
         val flags = if (Build.VERSION.SDK_INT >= 31) {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
+        // T110: the content intent targets the trampoline activity,
+        // not the Flutter host directly — the trampoline re-arms the
+        // core's recovery before forwarding to MainActivity through
+        // the same cached-engine intent, so a fragile UI cold start
+        // can no longer take the recovering core down with it.
+        val trampolineIntent = Intent(
+            this@createNotificationBuilder,
+            app.angelabettbox.NotificationTrampolineActivity::class.java,
+        )
         val pendingIntent = withContext(Dispatchers.Main) {
-            PendingIntent.getActivity(this@createNotificationBuilder, 0, intent, flags)
+            PendingIntent.getActivity(this@createNotificationBuilder, 0, trampolineIntent, flags)
         }
 
-        val isDark = targetComponent == darkComponent
+        val targetComponent = NotificationComponentCache.get(
+            packageManager,
+            ComponentName(packageName, "app.angelabettbox.MainActivity"),
+            ComponentName(packageName, "app.angelabettbox.MainActivityLight"),
+            ComponentName(packageName, "app.angelabettbox.MainActivityDark"),
+        )
+        val isDark = targetComponent.className.endsWith("MainActivityDark")
         val largeIconRes = if (isDark) {
             R.mipmap.ic_launcher
         } else {
@@ -205,4 +184,45 @@ fun Service.startForeground(notification: Notification, useSpecialType: Boolean 
             android.util.Log.e("BaseServiceInterface", "startForeground fallback failed: ${fallbackErr.message}")
         }
     }
+}
+
+/**
+ * The MainActivity launch intent the notification used to fire
+ * directly (T110: now fired by NotificationTrampolineActivity after
+ * it re-arms the core). Built through the official cached-engine
+ * intent builder instead of a hand-rolled explicit intent: the host
+ * is a FlutterFragmentActivity with a manually cached engine, and
+ * when the activity had been destroyed while the engine stayed
+ * cached, a plain NEW_TASK|CLEAR_TOP intent made the delegate
+ * rebuild the FlutterFragment outside the cached-engine path — the
+ * combination behind the tap-notification process death. The
+ * builder's intent carries the cached engine id (and
+ * destroyEngineWithActivity=false, matching
+ * shouldDestroyEngineWithHost), so the delegate attaches the cached
+ * engine through its documented path; on a cache miss it still falls
+ * back to provideFlutterEngine. The component override keeps the
+ * light/dark alias selection working.
+ */
+fun buildMainActivityLaunchIntent(context: android.content.Context): Intent {
+    val defaultComponent = ComponentName(context.packageName, "app.angelabettbox.MainActivity")
+    val lightComponent = ComponentName(context.packageName, "app.angelabettbox.MainActivityLight")
+    val darkComponent = ComponentName(context.packageName, "app.angelabettbox.MainActivityDark")
+
+    val targetComponent = NotificationComponentCache.get(context.packageManager, defaultComponent, lightComponent, darkComponent)
+
+    android.util.Log.d("Notification", "Using ${targetComponent.className}")
+
+    return FlutterFragmentActivity.CachedEngineIntentBuilder(
+        MainActivity::class.java,
+        MainActivity.MAIN_ENGINE_ID,
+    )
+        .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.opaque)
+        .destroyEngineWithActivity(false)
+        .build(context)
+        .apply {
+            component = targetComponent
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
 }

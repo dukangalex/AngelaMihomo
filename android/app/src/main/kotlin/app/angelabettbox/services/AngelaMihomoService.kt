@@ -15,8 +15,12 @@ import android.text.Spanned
 import android.text.style.RelativeSizeSpan
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.core.Core
 import app.angelabettbox.R
 import app.angelabettbox.models.VpnOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AngelaMihomoService : Service(), BaseServiceInterface {
     override val destructionComplete = kotlinx.coroutines.CompletableDeferred<Unit>()
@@ -201,6 +205,26 @@ class AngelaMihomoService : Service(), BaseServiceInterface {
             GlobalState.notifyLowMemory()
             Core.purge(all = false)
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null || intent.action == ServiceRecovery.ACTION_RECOVER) {
+            // T110: mirror of the VPN service's recovery path — after
+            // a system relaunch, verify the core is alive and
+            // re-trigger the start path when it should be running.
+            CoroutineScope(Dispatchers.Main).launch {
+                ServiceRecovery.runRecoveryCheck()
+                ServiceRecovery.releaseIfIdle(this@AngelaMihomoService, hasStartedForeground)
+            }
+        }
+        return START_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // T110: arm the system-held relaunch fallback (see the VPN
+        // service) while this service still lives.
+        ServiceRecovery.rearmAfterTaskRemoval(this, AngelaMihomoService::class.java)
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onBind(intent: Intent): IBinder = binder

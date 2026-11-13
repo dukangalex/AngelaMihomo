@@ -144,6 +144,14 @@
         </activity-alias>
 
         <activity
+            android:name=".NotificationTrampolineActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/TransparentTheme" />
+
+        <activity
             android:name=".TempActivity"
             android:exported="false"
             android:theme="@style/TransparentTheme">
@@ -221,6 +229,7 @@
             android:name=".services.AngelaMihomoVpnService"
             android:exported="false"
             android:foregroundServiceType="specialUse"
+            android:stopWithTask="false"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
@@ -232,6 +241,7 @@
         <service
             android:name=".services.AngelaMihomoService"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Proxy" />
         </service>

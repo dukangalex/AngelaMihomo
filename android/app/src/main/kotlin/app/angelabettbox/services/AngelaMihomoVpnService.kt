@@ -15,6 +15,7 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.core.Core
 import app.angelabettbox.RunState
 import app.angelabettbox.extensions.getIpv4RouteAddress
 import app.angelabettbox.extensions.getIpv6RouteAddress
@@ -34,10 +35,11 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     companion object {
         private const val TAG = "AngelaMihomoVpnService"
 
-        // T110: grace period before the null-intent liveness check
-        // re-triggers a start, so a still-booting quick sequence is
-        // not mistaken for a dead core.
-        private const val RECOVERY_CHECK_DELAY_MS = 3000L
+        // Hostname pattern accepted by ProxyInfo's exclusion list;
+        // bypass domains that do not match are dropped instead of
+        // failing the whole VPN configuration.
+        private val proxyExclusionPattern =
+            Regex("[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*(\\.[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*)*")
     }
 
     private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -205,68 +207,23 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
                 }
             }
         }
-        if (intent == null) {
-            // T110: START_STICKY redelivery after the system killed the
-            // process (e.g. OEM power management) while always-on VPN
-            // was armed. onCreate already re-created the service
-            // engine, but two windows used to stay dead until the user
-            // opened the app: the engine was destroyed again while the
-            // service instance survived, or the engine's quick start
-            // had failed and stopped. Verify liveness and re-trigger
+        if (intent == null || intent.action == ServiceRecovery.ACTION_RECOVER) {
+            // T110: system relaunch (START_STICKY redelivery after the
+            // process was killed, e.g. by an OEM task swipe) or an
+            // explicit recovery intent (task-removal alarm fallback,
+            // notification trampoline). Verify liveness and re-trigger
             // the start path when the core should be running but is
-            // not. Delayed slightly: a fresh engine may still be
-            // booting the quick sequence, and the engine's run state
-            // only converges to START once the Dart side confirms the
-            // VPN started — checking immediately would race it.
+            // not; release this instance afterwards if it turns out to
+            // be a redundant foreground-service start.
             mainScope.launch {
-                delay(RECOVERY_CHECK_DELAY_MS)
-                ensureCoreAliveAfterSystemRestart()
+                ServiceRecovery.runRecoveryCheck()
+                ServiceRecovery.releaseIfIdle(
+                    this@AngelaMihomoVpnService,
+                    hasStartedForeground,
+                )
             }
         }
         return START_STICKY
-    }
-
-    // "Should run" state source: the Dart side persists
-    // is_vpn_running=true in shared preferences when a start is
-    // confirmed (state.dart handleStart) and clears it on a confirmed
-    // stop (handleStop) — the same flag the abnormal-exit detector
-    // reads. shared_preferences stores it in the
-    // "FlutterSharedPreferences" file under the "flutter." prefix.
-    // "Core alive" state source: VpnPlugin.getStatus() — run state
-    // START with a bound VPN service instance.
-    private fun ensureCoreAliveAfterSystemRestart() {
-        val shouldRun = runCatching {
-            getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
-                .getBoolean("flutter.is_vpn_running", false)
-        }.getOrDefault(false)
-        if (!shouldRun) return
-        val coreAlive = GlobalState.getCurrentVPNPlugin()?.getStatus() ?: false
-        if (coreAlive) return
-        Log.w(
-            TAG,
-            "onStartCommand(null intent): is_vpn_running set but core not " +
-                "alive (serviceEngine=${GlobalState.isServiceEngineRunning()}); " +
-                "re-triggering start",
-        )
-        if (!GlobalState.isServiceEngineRunning()) {
-            // Engine gone (destroyed via handleTryDestroy while this
-            // service instance lived on): recreate it — with no UI
-            // engine present it defaults to the "quick" entry, which
-            // runs the background start sequence (with T110 retries).
-            GlobalState.initServiceEngine()
-        } else if (GlobalState.currentRunState == RunState.PENDING) {
-            // A start is already converging (its run state flips to
-            // START only when the Dart side confirms the VPN started).
-            // Leave it alone: the global PENDING timeout resets a
-            // stuck start to STOP, and the engine==null branch of
-            // GlobalState.handleStart would silently drop a duplicate
-            // "start" method call, wedging PENDING until that timeout.
-        } else {
-            // Engine alive but not starting: go through the normal
-            // start path (debounced toggle slot bypassed — this is a
-            // recovery, not a user toggle).
-            GlobalState.handleStart(skipDebounce = true)
-        }
     }
 
     internal suspend fun restoreNotification() {
@@ -441,6 +398,15 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
                 ?.cancel(GlobalState.NOTIFICATION_ID)
         }.onFailure { Log.e(TAG, "onRevoke error: ${it.message}") }
         super.onRevoke()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // T110: the confirmed kill path — the user swipes the task
+        // away and the OEM kills the whole process, VPN included.
+        // Arm the system-held relaunch fallback while this service
+        // still lives; START_STICKY remains the primary mechanism.
+        ServiceRecovery.rearmAfterTaskRemoval(this, AngelaMihomoVpnService::class.java)
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {
