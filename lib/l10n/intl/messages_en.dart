@@ -1364,6 +1364,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Profile modified. Disable auto-update?",
     ),
     "profileImportFailed": m39,
+    "profileUpdateApplied": MessageLookupByLibrary.simpleMessage(
+      "Profile updated and applied",
+    ),
+    "profileUpdateApplyFailed": MessageLookupByLibrary.simpleMessage(
+      "Profile downloaded, but applying it failed. Check the profile and try again.",
+    ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),

@@ -1002,6 +1002,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "配置文件已经修改，是否关闭自动更新？",
     ),
     "profileImportFailed": m39,
+    "profileUpdateApplied": MessageLookupByLibrary.simpleMessage("订阅已更新并生效"),
+    "profileUpdateApplyFailed": MessageLookupByLibrary.simpleMessage(
+      "订阅已下载，但重新装配失败，请检查配置后重试",
+    ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入配置名称",
     ),

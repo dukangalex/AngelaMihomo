@@ -594,9 +594,25 @@ class AppController {
       if (modified != null && modified == await profile.profileLastModified) {
         return;
       }
-      applyProfileDebounce(silence: true);
+      // T111 B-11: re-assembling the CURRENT profile rebuilds the
+      // TUN/listeners on Android (a brief connectivity gap), so it
+      // must not happen silently — surface progress and outcome.
+      unawaited(_reapplyUpdatedCurrentProfile());
     } finally {
       _updatingProfileIds.remove(profile.id);
+    }
+  }
+
+  Future<void> _reapplyUpdatedCurrentProfile() async {
+    try {
+      final applied = await applyProfileChecked();
+      globalState.showNotifier(
+        applied
+            ? appLocalizations.profileUpdateApplied
+            : appLocalizations.profileUpdateApplyFailed,
+      );
+    } catch (_) {
+      // applyProfileChecked already surfaced the error itself.
     }
   }
 

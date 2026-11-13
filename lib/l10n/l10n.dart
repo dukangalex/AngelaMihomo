@@ -3030,6 +3030,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Profile updated and applied`
+  String get profileUpdateApplied {
+    return Intl.message(
+      'Profile updated and applied',
+      name: 'profileUpdateApplied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Profile downloaded, but applying it failed. Check the profile and try again.`
+  String get profileUpdateApplyFailed {
+    return Intl.message(
+      'Profile downloaded, but applying it failed. Check the profile and try again.',
+      name: 'profileUpdateApplyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Auto backup failed: {error}`
   String autoBackupFailed(Object error) {
     return Intl.message(

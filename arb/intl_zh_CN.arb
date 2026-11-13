@@ -367,6 +367,8 @@
   "autoBackup": "自动备份",
   "autoBackupDesc": "配置新增或修改后自动备份",
   "autoBackupSuccess": "已自动备份到 WebDAV",
+  "profileUpdateApplied": "订阅已更新并生效",
+  "profileUpdateApplyFailed": "订阅已下载，但重新装配失败，请检查配置后重试",
   "autoBackupFailed": "自动备份失败：{error}",
   "localBackupDesc": "备份数据到本地",
   "localRecoveryDesc": "通过文件恢复数据",

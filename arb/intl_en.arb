@@ -367,6 +367,8 @@
   "autoBackup": "Auto Backup",
   "autoBackupDesc": "Auto back up on profile changes",
   "autoBackupSuccess": "Auto backed up to WebDAV",
+  "profileUpdateApplied": "Profile updated and applied",
+  "profileUpdateApplyFailed": "Profile downloaded, but applying it failed. Check the profile and try again.",
   "autoBackupFailed": "Auto backup failed: {error}",
   "localBackupDesc": "Backup data locally",
   "localRecoveryDesc": "Restore data from file",
