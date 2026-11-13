@@ -22,6 +22,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import app.angelabettbox.AngelaMihomoApplication
 import app.angelabettbox.GlobalState
+import app.angelabettbox.widget.HomeWidgets
 import app.angelabettbox.R
 import app.angelabettbox.extensions.awaitResult
 import app.angelabettbox.extensions.getActionIntent
@@ -213,12 +214,12 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         when (call.method) {
             "updateHomeWidget" -> {
                 val data = call.arguments as? String
-                if (data != null) HomeWidgets.save(BettboxApplication.getAppContext(), data)
+                if (data != null) HomeWidgets.save(AngelaMihomoApplication.getAppContext(), data)
                 result.success(null)
             }
 
             "hasHomeWidgets" -> {
-                result.success(HomeWidgets.hasWidgets(BettboxApplication.getAppContext()))
+                result.success(HomeWidgets.hasWidgets(AngelaMihomoApplication.getAppContext()))
             }
 
             "consumeHomeWidgetAction" -> {

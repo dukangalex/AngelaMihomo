@@ -10,6 +10,7 @@ import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
 import app.angelabettbox.services.AngelaMihomoTileService
+import app.angelabettbox.widget.HomeWidgets
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -102,7 +103,7 @@ object GlobalState {
         currentRunState = newState
         _runState.value = newState
         requestTileUpdate()
-        mainHandler.post { HomeWidgets.refreshAll(BettboxApplication.getAppContext()) }
+        mainHandler.post { HomeWidgets.refreshAll(AngelaMihomoApplication.getAppContext()) }
     }
 
     private val tileRetryRunnable = Runnable {

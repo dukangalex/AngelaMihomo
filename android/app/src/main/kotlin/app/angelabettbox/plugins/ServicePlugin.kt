@@ -22,7 +22,7 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         private val gson = Gson()
         private const val TAG = "ServicePlugin"
 
-        private fun notify(method: String, stillCurrent: () -> Boolean = { true }) {
+        private fun notify(method: String, arguments: Any? = null, stillCurrent: () -> Boolean = { true }) {
             mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
@@ -34,11 +34,9 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         fun notifyNetworkChanged() = notify("networkChanged")
         fun notifyQuickResponse() = notify("quickResponse")
-        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", stillCurrent)
-        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {
-        fun notifyVpnStartFailed() = notify("vpnStartFailed")
+        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", null, stillCurrent)
         fun notifyScreenStateChanged(isOn: Boolean) = notify("screenStateChanged", isOn)
-        fun notifyRunStateChanged(state: RunState) {
+        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {
             mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
@@ -81,6 +79,7 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "setSmartStopped" -> {
                 GlobalState.isSmartStopped = call.argument<Boolean>("value") ?: false
                 result.success(true)
+            }
             "resumeCore" -> {
                 Thread {
                     VpnPlugin.resumeCore()

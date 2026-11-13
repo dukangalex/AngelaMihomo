@@ -174,7 +174,12 @@ Future<void> _service(List<String> flags) async {
             await vpn?.smartResume(clashLibHandler.getAndroidVpnOptions());
             return;
           }
-          if (defaultChanged) {
+          // The quickResponse setting gates the trigger here: the
+          // merged upstream mechanism invokes quickResponse from Dart,
+          // and this call site is its single gate (the pre-merge
+          // native-side flag was removed upstream with its setter
+          // channel; restoring it would duplicate the mechanism).
+          if (defaultChanged && vpnProps.quickResponse) {
             await vpn?.quickResponse();
           }
         });
