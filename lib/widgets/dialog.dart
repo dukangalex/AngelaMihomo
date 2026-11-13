@@ -36,14 +36,17 @@ class CommonDialog extends ConsumerWidget {
       return actions;
     }
     final colorScheme = context.colorScheme;
-    final backgroundColor = colorScheme.primary.opacity12;
+    // T106: the confirm action used to sit on a 12%-alpha primary wash
+    // over the translucent glass face and washed out on real devices.
+    // Solid primary with onPrimary is the designed full-contrast pair.
+    final backgroundColor = colorScheme.primary;
     return [
       ...actions.take(actions.length - 1),
       FilledButtonTheme(
         data: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: backgroundColor,
-            foregroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             elevation: 0,
           ),
         ),
@@ -51,6 +54,7 @@ class CommonDialog extends ConsumerWidget {
           data: TextButtonThemeData(
             style: TextButton.styleFrom(
               backgroundColor: backgroundColor,
+              foregroundColor: colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 24),
             ),
           ),
@@ -69,8 +73,10 @@ class CommonDialog extends ConsumerWidget {
       fontSize: 19,
       fontWeight: FontWeight.w600,
     );
+    // T106: dialog body text takes the full onSurface color, not the
+    // variant — over the glass face the variant grey washed out.
     final contentStyle = context.textTheme.bodyMedium?.copyWith(
-      color: context.colorScheme.onSurfaceVariant,
+      color: context.colorScheme.onSurface,
     );
     final titleWidget = titleTrailing == null
         ? EmojiText(title)
