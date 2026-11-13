@@ -11,7 +11,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.MainActivity
 import app.angelabettbox.R
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs
+import io.flutter.embedding.android.FlutterFragmentActivity
 import app.angelabettbox.models.VpnOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -43,12 +46,33 @@ suspend fun Service.createNotificationBuilder(
 
         android.util.Log.d("Notification", "Using ${targetComponent.className}")
 
-        val intent = Intent().apply {
-            component = targetComponent
-            action = Intent.ACTION_MAIN
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        // T110: build the launch intent through the official
+        // cached-engine intent builder instead of a hand-rolled
+        // explicit intent. The host is a FlutterFragmentActivity with
+        // a manually cached engine; when the activity had been
+        // destroyed while the engine stayed cached, a plain
+        // NEW_TASK|CLEAR_TOP intent made the delegate rebuild the
+        // FlutterFragment outside the cached-engine path — the
+        // combination behind the tap-notification process death. The
+        // builder's intent carries the cached engine id (and
+        // destroyEngineWithActivity=false, matching
+        // shouldDestroyEngineWithHost), so the delegate attaches the
+        // cached engine through its documented path; on a cache miss
+        // it still falls back to provideFlutterEngine. The component
+        // override keeps the light/dark alias selection working.
+        val intent = FlutterFragmentActivity.CachedEngineIntentBuilder(
+            MainActivity::class.java,
+            MainActivity.MAIN_ENGINE_ID,
+        )
+            .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.opaque)
+            .destroyEngineWithActivity(false)
+            .build(this@createNotificationBuilder)
+            .apply {
+                component = targetComponent
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
 
         val flags = if (Build.VERSION.SDK_INT >= 31) {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
