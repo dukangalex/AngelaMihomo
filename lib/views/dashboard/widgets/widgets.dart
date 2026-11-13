@@ -1,5 +1,6 @@
 export 'intranet_ip.dart';
 export 'network_detection.dart';
+export 'node_health.dart';
 export 'network_speed.dart';
 export 'network_speed_small.dart';
 export 'outbound_mode.dart';

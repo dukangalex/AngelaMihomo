@@ -4,6 +4,7 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 
+import 'node_health.dart';
 import 'quick_options.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,6 +100,10 @@ class OutboundMode extends StatelessWidget {
                         ),
                       ),
                     ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16, right: 16, top: 10),
+                    child: CurrentNodeHealthLamp(),
+                  ),
                 ],
               ),
             ),
@@ -284,6 +289,8 @@ class _OutboundStatusChips extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const CurrentNodeHealthLamp(),
+        const SizedBox(width: 10),
         _StatusChip(
           label: system.isAndroid ? 'VPN' : 'TUN',
           active: isStart && tunEnable && (system.isAndroid || realTunEnable),
