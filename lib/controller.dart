@@ -31,6 +31,7 @@ import 'package:yaml/yaml.dart';
 import 'common/archive.dart'
     show
         BackupPasswordException,
+        EmptyBackupArchiveException,
         decodeBackupArchive,
         readBackupFile,
         restoreBackupFiles;
@@ -2454,6 +2455,14 @@ class AppController {
           userInput = true;
         }
       }
+    } on EmptyBackupArchiveException catch (e) {
+      // T108: zero decoded entries is its own diagnosis (empty or
+      // non-backup bytes), not corruption — report it as such, with
+      // the number of bytes that were actually read.
+      commonPrint.error('Recovery failed: $e');
+      throw 'Backup file is empty: it contains no files '
+          '(${e.byteCount} bytes were read). The selected file is '
+          'not a usable backup.';
     } catch (e) {
       commonPrint.error('Recovery failed: $e');
       throw 'Backup file is corrupted or invalid: $e';
@@ -2497,6 +2506,10 @@ class AppController {
             input.close();
           }
         } on BackupPasswordException {
+          rethrow;
+        } on EmptyBackupArchiveException {
+          // Definitive answer from the stream decode; the byte-wise
+          // fallback would only decode the same bytes again.
           rethrow;
         } catch (e) {
           commonPrint.warn('Stream decoding failed: $e');

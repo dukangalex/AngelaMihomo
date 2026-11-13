@@ -174,4 +174,49 @@ void main() {
       });
     },
   );
+
+  test('decodeBackupArchive rejects non-zip bytes as empty, with size', () {
+    final notZip = utf8.encode('<html>404 Not Found</html>');
+    expect(
+      () => decodeBackupArchive(InputMemoryStream(notZip), null),
+      throwsA(
+        isA<EmptyBackupArchiveException>().having(
+          (e) => e.byteCount,
+          'byteCount',
+          notZip.length,
+        ),
+      ),
+    );
+  });
+
+  test('decodeBackupArchive rejects a valid zip with zero entries', () {
+    final emptyZip = ZipEncoder().encode(Archive());
+    expect(
+      () => decodeBackupArchive(InputMemoryStream(emptyZip), null),
+      throwsA(isA<EmptyBackupArchiveException>()),
+    );
+  });
+
+  test('decodeBackupArchive rejects zero-byte input as empty', () {
+    expect(
+      () => decodeBackupArchive(InputMemoryStream(const <int>[]), null),
+      throwsA(
+        isA<EmptyBackupArchiveException>().having(
+          (e) => e.byteCount,
+          'byteCount',
+          0,
+        ),
+      ),
+    );
+  });
+
+  test('decodeBackupArchive accepts a real backup-shaped archive', () {
+    final archive = Archive()
+      ..addFile(entry('.angelamihomo_marker', ''))
+      ..addFile(entry('config.json', '{}'));
+    final bytes = ZipEncoder().encode(archive);
+    final decoded = decodeBackupArchive(InputMemoryStream(bytes), null);
+    expect(decoded.archive.files, hasLength(2));
+    expect(decoded.encrypted, isFalse);
+  });
 }

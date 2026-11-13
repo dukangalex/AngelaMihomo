@@ -164,6 +164,23 @@ class BackupPasswordException implements Exception {
   const BackupPasswordException({required this.wrong});
 }
 
+/// The input bytes decoded to zero file entries (T108). Kept distinct
+/// from entry corruption: the zip decoder silently returns an empty
+/// directory for non-zip bytes (an HTML error page, a truncated
+/// upload, a zero-byte placeholder), so without this the recovery
+/// flow reported every one of those as "empty or corrupted" with no
+/// way to tell what actually arrived. [byteCount] is the size of the
+/// input that produced no entries.
+class EmptyBackupArchiveException implements Exception {
+  final int byteCount;
+
+  const EmptyBackupArchiveException({required this.byteCount});
+
+  @override
+  String toString() =>
+      'Backup archive contains no entries (input was $byteCount bytes)';
+}
+
 bool isValidBackupPassword(String password) {
   return password.codeUnits.every((unit) => unit >= 0x20 && unit <= 0x7e);
 }
@@ -172,6 +189,10 @@ bool isValidBackupPassword(String password) {
   InputStream input,
   String? password,
 ) {
+  final inputByteCount = input.position + input.length;
+  if (inputByteCount == 0) {
+    throw const EmptyBackupArchiveException(byteCount: 0);
+  }
   final decoder = ZipDecoder();
   final archive = decoder.decodeStream(input, password: password);
   final encrypted = decoder.directory.fileHeaders.any(
@@ -189,6 +210,14 @@ bool isValidBackupPassword(String password) {
       if (encrypted) throw const BackupPasswordException(wrong: true);
       rethrow;
     }
+  }
+  if (result.files.isEmpty) {
+    // A backup this app writes always holds at least the marker and
+    // the config entry, so zero entries means the bytes were not a
+    // backup at all (empty download, server error page, placeholder
+    // left by a broken upload) — say so explicitly instead of
+    // letting callers report it as corruption.
+    throw EmptyBackupArchiveException(byteCount: inputByteCount);
   }
   return (archive: result, encrypted: encrypted);
 }
