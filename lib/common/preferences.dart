@@ -159,13 +159,22 @@ class Preferences {
         '$configFilePath.${DateTime.now().microsecondsSinceEpoch}.tmp',
       );
       await tempFile.parent.create(recursive: true);
-      await tempFile.writeAsString(jsonStr, flush: true);
+      // T111 E-03: a failed write or rename used to strand this
+      // temp file next to config.json forever; always clean it up
+      // (residue from a killed process is swept at startup by
+      // reconcileProfileStorage).
       try {
-        await tempFile.rename(configFilePath);
-      } catch (_) {
-        if (await tempFile.exists()) {
+        await tempFile.writeAsString(jsonStr, flush: true);
+        try {
+          await tempFile.rename(configFilePath);
+        } catch (_) {
           await tempFile.copy(configFilePath);
-          await tempFile.delete();
+        }
+      } finally {
+        if (await tempFile.exists()) {
+          try {
+            await tempFile.delete();
+          } catch (_) {}
         }
       }
       return true;

@@ -224,6 +224,18 @@ class GlobalState {
       await preferences.saveConfig(config);
     }
     await globalState.migrateOldData(config);
+    // T111 E-02/E-03: sweep profile files no record references and
+    // temp residue from interrupted atomic writes. Fail-safe: a
+    // sweep failure must never break startup.
+    try {
+      await reconcileProfileStorage(
+        profilesPath: await appPath.profilesPath,
+        configPath: await appPath.appConfigPath,
+        knownProfileIds: config.profiles.map((item) => item.id).toSet(),
+      );
+    } catch (e) {
+      commonPrint.warn('Storage reconcile failed: $e');
+    }
     final locale =
         utils.getLocaleForString(config.appSetting.locale) ??
         utils.getSystemLocale();
