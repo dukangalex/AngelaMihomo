@@ -451,13 +451,19 @@ class BackupVersionsDialog extends StatefulWidget {
 }
 
 class _BackupVersionsDialogState extends State<BackupVersionsDialog> {
-  late webdav.File _selectedFile;
+  webdav.File? _selectedFile;
 
   @override
   void initState() {
     super.initState();
-    _selectedFile = widget.files.first;
+    // Default to the newest restorable version (the list arrives
+    // newest-first). Suspicious files are never preselected (T108).
+    _selectedFile = widget.files
+        .where((file) => !isSuspiciousBackupSize(file.size))
+        .firstOrNull;
   }
+
+  bool _isRestorable(webdav.File file) => !isSuspiciousBackupSize(file.size);
 
   String? _subtitle(webdav.File file) {
     final sizeText = TrafficValue(value: file.size ?? 0).show;
@@ -465,6 +471,10 @@ class _BackupVersionsDialogState extends State<BackupVersionsDialog> {
     final subtitle = [
       if (sizeText.isNotEmpty) sizeText,
       if (timeText.isNotEmpty) timeText,
+      // Zero-byte / abnormally small files cannot hold a backup:
+      // label them and make them unselectable instead of letting
+      // the recovery fail later with a misleading message (T108).
+      if (!_isRestorable(file)) appLocalizations.backupVersionUnrecoverable,
     ].join('  ·  ');
     return subtitle.isEmpty ? null : subtitle;
   }
@@ -477,7 +487,9 @@ class _BackupVersionsDialogState extends State<BackupVersionsDialog> {
       padding: const EdgeInsets.fromLTRB(10, 12, 10, 14),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(_selectedFile),
+          onPressed: _selectedFile == null
+              ? null
+              : () => Navigator.of(context).pop(_selectedFile),
           child: Text(appLocalizations.confirm),
         ),
       ],
@@ -492,6 +504,7 @@ class _BackupVersionsDialogState extends State<BackupVersionsDialog> {
                   text: file.name ?? '',
                   subtitle: _subtitle(file),
                   selected: file == _selectedFile,
+                  enabled: _isRestorable(file),
                   onTap: () => setState(() => _selectedFile = file),
                 ),
             ],

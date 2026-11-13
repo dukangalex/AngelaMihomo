@@ -56,12 +56,17 @@ class OptionItem extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// Disabled rows render dimmed and ignore taps (e.g. a backup
+  /// version that is present but not restorable, T108).
+  final bool enabled;
+
   const OptionItem({
     super.key,
     required this.text,
     this.subtitle,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
   });
 
   @override
@@ -77,7 +82,7 @@ class OptionItem extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           focusColor: colorScheme.primary.withValues(alpha: 0.18),
-          onTap: onTap,
+          onTap: enabled ? onTap : null,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
@@ -85,7 +90,9 @@ class OptionItem extends StatelessWidget {
                 Icon(
                   selected ? Icons.check_circle_rounded : Icons.circle_outlined,
                   size: 21,
-                  color: selected
+                  color: !enabled
+                      ? colorScheme.onSurfaceVariant.withValues(alpha: 0.35)
+                      : selected
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
@@ -108,7 +115,13 @@ class OptionItem extends StatelessWidget {
                       else
                         EmojiText(
                           text,
-                          style: context.textTheme.bodyMedium,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: enabled
+                                ? null
+                                : colorScheme.onSurfaceVariant.withValues(
+                                    alpha: 0.55,
+                                  ),
+                          ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),

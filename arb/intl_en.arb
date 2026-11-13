@@ -226,6 +226,7 @@
   "recoveryAll": "Restore All Data",
   "selectBackupVersion": "Select Backup Version",
   "noBackupFileFound": "No backup file found",
+  "backupVersionUnrecoverable": "Not recoverable",
   "recoverySuccess": "Restore Successful",
   "backupSuccess": "Backup Successful",
   "backupPassword": "Backup Password",

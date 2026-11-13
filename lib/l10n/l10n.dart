@@ -1930,6 +1930,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Not recoverable`
+  String get backupVersionUnrecoverable {
+    return Intl.message(
+      'Not recoverable',
+      name: 'backupVersionUnrecoverable',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Restore Successful`
   String get recoverySuccess {
     return Intl.message(

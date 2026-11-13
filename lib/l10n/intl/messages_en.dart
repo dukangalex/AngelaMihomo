@@ -1169,6 +1169,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage(
       "No backup file found",
     ),
+    "backupVersionUnrecoverable": MessageLookupByLibrary.simpleMessage(
+      "Not recoverable",
+    ),
     "noData": MessageLookupByLibrary.simpleMessage("No Data"),
     "noHotKey": MessageLookupByLibrary.simpleMessage("No Hotkeys"),
     "noIcon": MessageLookupByLibrary.simpleMessage("No Icon"),

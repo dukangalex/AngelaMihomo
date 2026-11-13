@@ -859,6 +859,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "newLogsCount": m33,
     "noAnimation": MessageLookupByLibrary.simpleMessage("默认"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage("未找到备份文件"),
+    "backupVersionUnrecoverable": MessageLookupByLibrary.simpleMessage("不可恢复"),
     "noData": MessageLookupByLibrary.simpleMessage("暂无数据"),
     "noHotKey": MessageLookupByLibrary.simpleMessage("暂无快捷键"),
     "noIcon": MessageLookupByLibrary.simpleMessage("无图标"),

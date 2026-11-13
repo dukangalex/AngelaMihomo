@@ -226,6 +226,7 @@
   "recoveryAll": "恢复所有数据",
   "selectBackupVersion": "选择备份版本",
   "noBackupFileFound": "未找到备份文件",
+  "backupVersionUnrecoverable": "不可恢复",
   "recoverySuccess": "恢复成功",
   "backupSuccess": "备份成功",
   "backupPassword": "备份密码",
