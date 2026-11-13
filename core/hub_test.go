@@ -6,7 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
+	"github.com/metacubex/mihomo/constant"
+	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/log"
 	yamlv3 "go.yaml.in/yaml/v3"
 )
@@ -116,5 +119,48 @@ func TestShouldReportDelay(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+// T111 A-12: the post-ready recheck must run exactly the providers
+// that have a health-check URL; providers without one have no
+// periodic delay state to correct and must not be force-checked
+// (a check with no URL would manufacture failures).
+type fakeProxyProvider struct {
+	url     string
+	checked int
+}
+
+func (f *fakeProxyProvider) Name() string                { return "fake" }
+func (f *fakeProxyProvider) VehicleType() cp.VehicleType { return cp.Inline }
+func (f *fakeProxyProvider) Type() cp.ProviderType       { return cp.Proxy }
+func (f *fakeProxyProvider) Initial() error              { return nil }
+func (f *fakeProxyProvider) Update() error               { return nil }
+func (f *fakeProxyProvider) Proxies() []constant.Proxy   { return nil }
+func (f *fakeProxyProvider) Count() int                  { return 0 }
+func (f *fakeProxyProvider) Touch()                      {}
+func (f *fakeProxyProvider) Version() uint32             { return 0 }
+func (f *fakeProxyProvider) HealthCheckURL() string      { return f.url }
+func (f *fakeProxyProvider) HealthCheck()                { f.checked++ }
+func (f *fakeProxyProvider) RegisterHealthCheckTask(
+	string,
+	utils.IntRanges[uint16],
+	string,
+	uint,
+) {
+}
+
+func TestRecheckProviderDelaysOnlyChecksProvidersWithURL(t *testing.T) {
+	withURL := &fakeProxyProvider{url: "https://example.com/generate_204"}
+	withoutURL := &fakeProxyProvider{}
+	recheckProviderDelays(map[string]cp.ProxyProvider{
+		"with":    withURL,
+		"without": withoutURL,
+	})
+	if withURL.checked != 1 {
+		t.Fatalf("provider with URL checked %d times, want 1", withURL.checked)
+	}
+	if withoutURL.checked != 0 {
+		t.Fatalf("provider without URL checked %d times, want 0", withoutURL.checked)
 	}
 }

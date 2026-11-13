@@ -362,6 +362,10 @@ func startTUN(fd C.int, callback unsafe.Pointer, epoch C.longlong) bool {
 		closeTunHandlerLocked()
 		return false
 	}
+	// The TUN data plane is up: health checks that ran during
+	// assembly measured a dead plane, not the nodes. Correct their
+	// delays with a fresh round right away (T111 A-12).
+	recheckDelaysAfterReady()
 	return true
 }
 

@@ -563,6 +563,11 @@ func setupConfig(params *SetupParams) (string, error) {
 	}
 	patchSelectGroup(selectedMap)
 	updateListeners()
+	// Assembly started provider health checks before the data plane
+	// was usable; refresh their delays now that listeners are up
+	// (on Android the TUN-activation hook repeats this at the real
+	// ready moment). See recheckDelaysAfterReady (T111 A-12).
+	recheckDelaysAfterReady()
 	tryUnloadGeoData()
 	debug.FreeOSMemory()
 	schedulePermissionSync()

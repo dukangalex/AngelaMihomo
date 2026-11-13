@@ -1266,6 +1266,35 @@ func shouldReportDelay(delay uint16, dataPlaneReady bool) bool {
 	return delay != 0 || dataPlaneReady
 }
 
+// recheckDelaysAfterReady re-runs every proxy provider's health
+// check once the data plane is usable (T111 A-12). Provider health
+// checks start during config assembly — before listeners/TUN are
+// up — so their first round can record failure delays that say
+// nothing about the nodes. The report hook above drops those
+// failures while the plane is down, but results recorded in the
+// kernel's own delay history (and any failure that landed in the
+// race just after the gate opened) used to linger until the next
+// periodic cycle, leaving whole groups on "Timeout" while traffic
+// already flowed. A single fresh round as soon as the plane is
+// ready replaces them with real measurements; nodes that are
+// genuinely dead simply fail again, correctly this time.
+func recheckDelaysAfterReady() {
+	go func() {
+		// Let the listeners/TUN settle before measuring.
+		time.Sleep(300 * time.Millisecond)
+		recheckProviderDelays(tunnel.Providers())
+	}()
+}
+
+func recheckProviderDelays(providers map[string]cp.ProxyProvider) {
+	for _, provider := range providers {
+		if provider.HealthCheckURL() == "" {
+			continue
+		}
+		provider.HealthCheck()
+	}
+}
+
 func init() {
 	adapter.UrlTestHook = func(url string, name string, delay uint16) {
 		if !shouldReportDelay(delay, delayDataPlaneReady()) {
