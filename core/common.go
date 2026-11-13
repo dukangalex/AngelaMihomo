@@ -466,9 +466,26 @@ func setupKey(params *SetupParams, profile []byte) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
+// Group selection has exactly one authority: the App's selectedMap,
+// applied by patchSelectGroup after the core has been configured.
+// The kernel's store-selected cache must never pre-apply selections
+// during assembly: executor.updateProfile would ForceSet from the
+// single global cachefile before the App's map runs, silently
+// reverting any divergence (e.g. a selection made through the
+// external controller) at the next App re-assembly, and leaking
+// selections across profiles that happen to share a group name.
+// Force it off for every config the App assembles, whatever the
+// subscription itself declares (T111 B-07).
+func forceAppSelectedAuthority(rawCfg *config.RawConfig) {
+	if rawCfg != nil {
+		rawCfg.Profile.StoreSelected = false
+	}
+}
+
 func loadSetupConfig(params *SetupParams) (*config.RawConfig, string, string, error) {
 	if params.ScriptedConfig != "" {
 		rawCfg, global, err := loadPatchedConfig(params)
+		forceAppSelectedAuthority(rawCfg)
 		return rawCfg, global, "", err
 	}
 	if params.ProfilePath == "" {
@@ -481,9 +498,11 @@ func loadSetupConfig(params *SetupParams) (*config.RawConfig, string, string, er
 	key := setupKey(params, buf)
 	rawCfg, err := parseProfile(buf, params.AgeSecretKey)
 	if err != nil || params.Patch == nil {
+		forceAppSelectedAuthority(rawCfg)
 		return rawCfg, "", key, err
 	}
 	global, err := applyPatch(rawCfg, params.Patch)
+	forceAppSelectedAuthority(rawCfg)
 	return rawCfg, global, key, err
 }
 
