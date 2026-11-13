@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/explicit_policy.dart';
 import 'package:bett_box/enum/enum.dart';
@@ -971,6 +973,67 @@ VM4<String?, String?, Dns?, String?> needSetup(Ref ref) {
       : null;
   return VM4(a: profileId, b: scriptDigest, c: dns, d: loopbackPorts);
 }
+
+/// Fingerprint of every remaining assembly input that [needSetup]
+/// does not cover and the hot-update projection does not carry
+/// (T111 B-05/B-06, C-06). buildPatchParams consumes all of these,
+/// but editing them used to only write the persisted model: no
+/// re-assembly was triggered and nothing told the user the change
+/// was inert. ClashManager listens to this fingerprint and runs
+/// the same re-assembly path as [needSetup], so every assembly
+/// input now shares the single setup channel.
+String needSetupExtraFingerprint({
+  required ClashConfig patchConfig,
+  required bool overrideNtp,
+  required bool overrideSniffer,
+  required bool overrideExperimental,
+  required String? locale,
+}) {
+  return jsonEncode({
+    // The three override sections are only assembled while their
+    // switch is on (buildPatchParams sends null otherwise); mirror
+    // that here so editing a dormant section triggers nothing,
+    // while flipping a switch changes the fingerprint itself.
+    'ntp': overrideNtp ? patchConfig.ntp.toJson() : null,
+    'sniffer': overrideSniffer ? patchConfig.sniffer.toJson() : null,
+    'experimental': overrideExperimental
+        ? patchConfig.experimental.toJson()
+        : null,
+    // Tunnels are appended whenever the list is non-empty (the
+    // stored overrideTunnel flag has no page and gates nothing).
+    'tunnels': patchConfig.tunnels
+        .map((item) => item.toClashJson())
+        .toList(),
+    'hosts': patchConfig.hosts,
+    'geox-url': patchConfig.geoXUrl.toJson(),
+    // General-section fields the hot-update projection does not
+    // carry: the extra ports, keep-alive, UA and authentication.
+    'general-extras': {
+      'port': patchConfig.port,
+      'socks-port': patchConfig.socksPort,
+      'redir-port': patchConfig.redirPort,
+      'tproxy-port': patchConfig.tproxyPort,
+      'keep-alive-interval': patchConfig.keepAliveInterval,
+      'global-ua': patchConfig.globalUa,
+      'authentication': patchConfig.authentication,
+      'skip-auth-prefixes': patchConfig.skipAuthPrefixes,
+    },
+    // buildPatchParams derives rule variants from the locale
+    // (the QUIC block list), so a language switch must re-assemble
+    // for the derived rules to match the UI language (C-06).
+    'locale': locale,
+  });
+}
+
+final needSetupExtraProvider = Provider<String>((ref) {
+  return needSetupExtraFingerprint(
+    patchConfig: ref.watch(patchClashConfigProvider),
+    overrideNtp: ref.watch(overrideNtpProvider),
+    overrideSniffer: ref.watch(overrideSnifferProvider),
+    overrideExperimental: ref.watch(overrideExperimentalProvider),
+    locale: ref.watch(appSettingProvider.select((state) => state.locale)),
+  );
+});
 
 @riverpod
 Brightness currentBrightness(Ref ref) {

@@ -51,6 +51,26 @@ class _ClashContainerState extends ConsumerState<ClashManager>
         );
       }
     });
+    // T111 B-05/B-06/C-06: the remaining assembly inputs (override
+    // sections, tunnels, hosts, general extras, locale) re-assemble
+    // through the same path; the lifecycle lock inside
+    // handleChangeProfile serializes this with the listener above.
+    ref.listenManual(needSetupExtraProvider, (prev, next) {
+      if (prev != next) {
+        final profileId = ref.read(currentProfileIdProvider);
+        unawaited(
+          globalState.appController
+              .handleChangeProfile(
+                profileChanged: false,
+                previousProfileId: profileId,
+                requestedProfileId: profileId,
+              )
+              .catchError((Object error, StackTrace stackTrace) {
+                commonPrint.error('Profile change failed: $error');
+              }),
+        );
+      }
+    });
     ref.listenManual(coreStateProvider, (prev, next) async {
       if (prev != next) {
         await clashCore.setState(next);
