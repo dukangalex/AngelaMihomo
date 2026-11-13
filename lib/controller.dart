@@ -1065,6 +1065,9 @@ class AppController {
       }
       await GeoAutoSyncStore.saveLastSync(now);
       commonPrint.log('[GeoAutoSync] All GEO resources synced');
+      // T111 D-02: refreshed CITY/MMDB databases feed the
+      // detection card — re-run detection like the manual sync.
+      addCheckIpNumDebounce();
     } finally {
       _isGeoAutoSyncRunning = false;
     }

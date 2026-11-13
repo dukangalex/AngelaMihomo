@@ -59,6 +59,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     updatingKeysNotifier.state = syncItems.map((e) => e.key).toSet();
 
     final errors = <String>[];
+    final failedKeys = <String>{};
     try {
       await Future.wait(
         syncItems.map((geoItem) async {
@@ -71,9 +72,11 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
             );
             if (message.isNotEmpty) {
               errors.add('${geoItem.label}: $message');
+              failedKeys.add(geoItem.key);
             }
           } catch (e) {
             errors.add('${geoItem.label}: $e');
+            failedKeys.add(geoItem.key);
           } finally {
             if (mounted) {
               updatingKeysNotifier.update(
@@ -89,6 +92,13 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           message: TextSpan(text: errors.join('\n')),
           cancelable: false,
         );
+      }
+      // T111 D-02: the CITY/MMDB databases feed the detection
+      // card's local attribution — after they change, re-run the
+      // detection so the card does not keep showing the old
+      // country/city until some unrelated refresh.
+      if (!failedKeys.contains('city') || !failedKeys.contains('mmdb')) {
+        globalState.appController.addCheckIpNumDebounce();
       }
     } finally {
       if (mounted) {
@@ -452,6 +462,10 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
             ),
           );
           if (message.isNotEmpty) throw message;
+          // T111 D-02: same re-detection as sync-all.
+          if (geoItem.key == 'city' || geoItem.key == 'mmdb') {
+            globalState.appController.addCheckIpNumDebounce();
+          }
         } finally {
           if (mounted) {
             updatingKeysNotifier.update((s) => Set.of(s)..remove(geoItem.key));
