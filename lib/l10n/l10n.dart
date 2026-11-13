@@ -6530,6 +6530,126 @@ class AppLocalizations {
     );
   }
 
+  /// `Global Speed Test`
+  String get globalSpeedTest {
+    return Intl.message(
+      'Global Speed Test',
+      name: 'globalSpeedTest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{available}/{total} available · {optimized} groups optimized`
+  String globalSpeedTestSummary(Object available, Object total, Object optimized) {
+    return Intl.message(
+      '$available/$total available · $optimized groups optimized',
+      name: 'globalSpeedTestSummary',
+      desc: '',
+      args: [available, total, optimized],
+    );
+  }
+
+  /// `Start the core before running the global speed test`
+  String get globalSpeedTestNeedCore {
+    return Intl.message(
+      'Start the core before running the global speed test',
+      name: 'globalSpeedTestNeedCore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No proxies available to test`
+  String get globalSpeedTestNoProxies {
+    return Intl.message(
+      'No proxies available to test',
+      name: 'globalSpeedTestNoProxies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Global speed test failed`
+  String get globalSpeedTestFailed {
+    return Intl.message(
+      'Global speed test failed',
+      name: 'globalSpeedTestFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes tested: `
+  String get globalSpeedTestTestedLabel {
+    return Intl.message(
+      'Nodes tested: ',
+      name: 'globalSpeedTestTestedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Available: `
+  String get globalSpeedTestAvailableLabel {
+    return Intl.message(
+      'Available: ',
+      name: 'globalSpeedTestAvailableLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Groups optimized: `
+  String get globalSpeedTestOptimizedLabel {
+    return Intl.message(
+      'Groups optimized: ',
+      name: 'globalSpeedTestOptimizedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No available node, current selection kept: `
+  String get globalSpeedTestKeptLabel {
+    return Intl.message(
+      'No available node, current selection kept: ',
+      name: 'globalSpeedTestKeptLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node available`
+  String get currentNodeAvailable {
+    return Intl.message(
+      'Current node available',
+      name: 'currentNodeAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node unavailable`
+  String get currentNodeUnavailable {
+    return Intl.message(
+      'Current node unavailable',
+      name: 'currentNodeUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node status unknown`
+  String get currentNodeUnknown {
+    return Intl.message(
+      'Current node status unknown',
+      name: 'currentNodeUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `setcap is not installed, falling back to setuid`
   String get setcapNotInstalledFallback {
     return Intl.message(

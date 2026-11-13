@@ -119,6 +119,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m53(names) =>
       "部分已保存的分组选择对应的分组已不存在（${names}），这些选择已保留，分组恢复后会自动生效";
 
+  static String m54(available, total, optimized) =>
+      "可用 ${available}/${total} · 优选 ${optimized} 组";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("关于"),
@@ -592,6 +595,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoAutoSyncPeriodDaily": MessageLookupByLibrary.simpleMessage("每天"),
     "geoAutoSyncPeriodWeekly": MessageLookupByLibrary.simpleMessage("每周"),
     "geoAutoSyncPeriodMonthly": MessageLookupByLibrary.simpleMessage("每月"),
+    "globalSpeedTest": MessageLookupByLibrary.simpleMessage("全局测速"),
+    "globalSpeedTestSummary": m54,
+    "globalSpeedTestNeedCore": MessageLookupByLibrary.simpleMessage(
+      "请先启动核心，再进行全局测速",
+    ),
+    "globalSpeedTestNoProxies": MessageLookupByLibrary.simpleMessage(
+      "没有可测速的节点",
+    ),
+    "globalSpeedTestFailed": MessageLookupByLibrary.simpleMessage("全局测速失败"),
+    "globalSpeedTestTestedLabel": MessageLookupByLibrary.simpleMessage(
+      "共测节点：",
+    ),
+    "globalSpeedTestAvailableLabel": MessageLookupByLibrary.simpleMessage(
+      "可用节点：",
+    ),
+    "globalSpeedTestOptimizedLabel": MessageLookupByLibrary.simpleMessage(
+      "优选组数：",
+    ),
+    "globalSpeedTestKeptLabel": MessageLookupByLibrary.simpleMessage(
+      "无可用节点，保留原选择：",
+    ),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("当前节点可用"),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "当前节点不可用",
+    ),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("当前节点状态未知"),
     "geoData": MessageLookupByLibrary.simpleMessage("地理数据"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO 节能"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage("使用 GEO 低内存加载器"),

@@ -133,6 +133,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m53(names) =>
       "Saved choices for groups that no longer exist (${names}) are kept — they will apply again if the groups return.";
 
+  static String m54(available, total, optimized) =>
+      "${available}/${total} available · ${optimized} groups optimized";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -797,6 +800,40 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoAutoSyncPeriodWeekly": MessageLookupByLibrary.simpleMessage("Weekly"),
     "geoAutoSyncPeriodMonthly": MessageLookupByLibrary.simpleMessage(
       "Monthly",
+    ),
+    "globalSpeedTest": MessageLookupByLibrary.simpleMessage(
+      "Global Speed Test",
+    ),
+    "globalSpeedTestSummary": m54,
+    "globalSpeedTestNeedCore": MessageLookupByLibrary.simpleMessage(
+      "Start the core before running the global speed test",
+    ),
+    "globalSpeedTestNoProxies": MessageLookupByLibrary.simpleMessage(
+      "No proxies available to test",
+    ),
+    "globalSpeedTestFailed": MessageLookupByLibrary.simpleMessage(
+      "Global speed test failed",
+    ),
+    "globalSpeedTestTestedLabel": MessageLookupByLibrary.simpleMessage(
+      "Nodes tested: ",
+    ),
+    "globalSpeedTestAvailableLabel": MessageLookupByLibrary.simpleMessage(
+      "Available: ",
+    ),
+    "globalSpeedTestOptimizedLabel": MessageLookupByLibrary.simpleMessage(
+      "Groups optimized: ",
+    ),
+    "globalSpeedTestKeptLabel": MessageLookupByLibrary.simpleMessage(
+      "No available node, current selection kept: ",
+    ),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
+      "Current node available",
+    ),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Current node unavailable",
+    ),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage(
+      "Current node status unknown",
     ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),

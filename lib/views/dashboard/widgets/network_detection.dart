@@ -1,7 +1,9 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/proxies/common.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,6 +74,140 @@ class NetworkDetection extends ConsumerStatefulWidget {
 }
 
 class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
+  // T113 global speed test state: while a run is in flight the card
+  // header shows live progress; after it finishes the header keeps a
+  // one-line summary until the next run or refresh replaces it.
+  bool _globalTesting = false;
+  int _globalDone = 0;
+  int _globalTotal = 0;
+  String? _globalSummary;
+
+  String get _headerTitle {
+    if (_globalTesting) {
+      return '${appLocalizations.globalSpeedTest} $_globalDone/$_globalTotal';
+    }
+    return _globalSummary ?? appLocalizations.networkDetection;
+  }
+
+  Widget _buildGlobalSpeedTestAction(BuildContext context) {
+    if (_globalTesting) {
+      return AspectRatio(
+        aspectRatio: 1,
+        child: Center(
+          child: SizedBox.square(
+            dimension: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
+    return AspectRatio(
+      aspectRatio: 1,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        tooltip: appLocalizations.globalSpeedTest,
+        onPressed: _runGlobalSpeedTest,
+        icon: Icon(
+          size: 16.ap,
+          Icons.speed_rounded,
+          color: context.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runGlobalSpeedTest() async {
+    if (_globalTesting) return;
+    if (ref.read(runTimeProvider) == null) {
+      globalState.showNotifier(appLocalizations.globalSpeedTestNeedCore);
+      return;
+    }
+    setState(() {
+      _globalTesting = true;
+      _globalDone = 0;
+      _globalTotal = 0;
+      _globalSummary = null;
+    });
+    try {
+      final result = await runGlobalDelayTest(
+        onProgress: (done, total) {
+          if (!mounted) return;
+          setState(() {
+            _globalDone = done;
+            _globalTotal = total;
+          });
+        },
+      );
+      if (!mounted) return;
+      setState(() {
+        _globalTesting = false;
+        _globalSummary = result.totalNodes == 0
+            ? null
+            : appLocalizations.globalSpeedTestSummary(
+                result.availableNodes,
+                result.totalNodes,
+                result.optimizedSelections.length,
+              );
+      });
+      if (result.totalNodes == 0) {
+        globalState.showNotifier(appLocalizations.globalSpeedTestNoProxies);
+        return;
+      }
+      _showGlobalSpeedTestResult(result);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _globalTesting = false;
+      });
+      globalState.showNotifier(appLocalizations.globalSpeedTestFailed);
+    }
+  }
+
+  void _showGlobalSpeedTestResult(GlobalDelayTestResult result) {
+    globalState.showCommonDialog(
+      child: CommonDialog(
+        title: appLocalizations.globalSpeedTest,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+            child: Text(appLocalizations.confirm),
+          ),
+        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${appLocalizations.globalSpeedTestTestedLabel}${result.totalNodes}',
+            ),
+            Text(
+              '${appLocalizations.globalSpeedTestAvailableLabel}${result.availableNodes}',
+            ),
+            Text(
+              '${appLocalizations.globalSpeedTestOptimizedLabel}${result.optimizedSelections.length}',
+            ),
+            if (result.optimizedSelections.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              for (final entry in result.optimizedSelections.entries)
+                Text('${entry.key} → ${entry.value}'),
+            ],
+            if (result.noAvailableGroups.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${appLocalizations.globalSpeedTestKeptLabel}${result.noAvailableGroups.join(', ')}',
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   String _countryCodeToEmoji(String countryCode) {
     final String code = countryCode.toUpperCase();
     if (code.length != 2) {
@@ -340,7 +476,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           Flexible(
             child: TooltipText(
               text: Text(
-                appLocalizations.networkDetection,
+                _headerTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.titleSmall?.copyWith(
@@ -349,6 +485,8 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
               ),
             ),
           ),
+          const SizedBox(width: 2),
+          _buildGlobalSpeedTestAction(context),
           const SizedBox(width: 2),
           AspectRatio(
             aspectRatio: 1,
@@ -563,7 +701,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                         flex: 1,
                         child: TooltipText(
                           text: Text(
-                            appLocalizations.networkDetection,
+                            _headerTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.titleSmall
@@ -573,6 +711,8 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                           ),
                         ),
                       ),
+                      SizedBox(width: 2),
+                      _buildGlobalSpeedTestAction(context),
                       SizedBox(width: 2),
                       AspectRatio(
                         aspectRatio: 1,
@@ -629,8 +769,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                                                     )
                                                     .adjustSize(1),
                                                 maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               )
                                             : Container(
                                                 padding: const EdgeInsets.all(
