@@ -26,6 +26,42 @@ String networkDetectionOperatorText(IpInfo ipInfo) {
   ].where((item) => item?.isNotEmpty ?? false).join(' ');
 }
 
+/// Compact-card attribution block (T109). The location and operator
+/// used to share one ellipsized line next to the IP, which cut the
+/// city down to a stub ('United States · B…') on narrow cards. The
+/// attribution now sits full-width under the IP line, each element
+/// on its own line(s) with no ellipsis: the location (country ·
+/// city) may wrap to two lines, the operator gets a full-width line
+/// of its own.
+class NetworkDetectionAttribution extends StatelessWidget {
+  final String location;
+  final String operator;
+
+  const NetworkDetectionAttribution({
+    super.key,
+    required this.location,
+    required this.operator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.textTheme.labelSmall?.copyWith(
+      color: context.colorScheme.onSurfaceVariant,
+      height: 1.1,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (location.isNotEmpty)
+          Text(location, maxLines: 2, softWrap: true, style: style),
+        if (operator.isNotEmpty)
+          Text(operator, maxLines: 1, softWrap: true, style: style),
+      ],
+    );
+  }
+}
+
 class NetworkDetection extends ConsumerStatefulWidget {
   final DashboardTileSize? size;
 
@@ -281,7 +317,9 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
 
   Widget _buildHeader(BuildContext context, IpInfo? ipInfo) {
     return Container(
-      height: globalState.measure.titleMediumHeight + 16,
+      // T109: 6dp shorter than the shared card header so the
+      // two-line attribution block fits the one-row card height.
+      height: globalState.measure.titleMediumHeight + 10,
       padding: baseInfoEdgeInsets.copyWith(bottom: 0),
       child: Row(
         children: [
@@ -343,8 +381,10 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           ),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            // T109: detail values (location, operator) wrap to two
+            // lines instead of ellipsizing the tail away.
+            maxLines: 2,
+            softWrap: true,
             style: context.textTheme.bodyMedium?.toLight,
           ),
         ],
@@ -437,30 +477,26 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                   else
                     Padding(
                       padding: baseInfoEdgeInsets.copyWith(top: 0),
-                      child: SizedBox(
-                        height: globalState.measure.bodyMediumHeight + 2,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Flexible(child: ipText),
-                            if (!masked && ipInfo != null) ...[
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  [location, operator]
-                                      .where((item) => item.isNotEmpty)
-                                      .join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.textTheme.bodySmall?.copyWith(
-                                    color: context.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: globalState.measure.bodyMediumHeight + 2,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [Flexible(child: ipText)],
+                            ),
+                          ),
+                          if (!masked && ipInfo != null) ...[
+                            const SizedBox(height: 2),
+                            NetworkDetectionAttribution(
+                              location: location,
+                              operator: operator,
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                 ],
@@ -483,19 +519,21 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           final ipInfo = state.ipInfo;
           final isLoading = state.isLoading;
           final masked = detectionState.isIpMasked;
-          final locationText = ipInfo == null
+          final location = ipInfo == null
               ? ''
-              : [
-                  networkDetectionLocationText(ipInfo),
-                  networkDetectionOperatorText(ipInfo),
-                ].where((item) => item.isNotEmpty).join(' · ');
+              : networkDetectionLocationText(ipInfo);
+          final operator = ipInfo == null
+              ? ''
+              : networkDetectionOperatorText(ipInfo);
           return CommonCard(
             onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  height: globalState.measure.titleMediumHeight + 16,
+                  // T109: see _buildHeader — 6dp shorter so the
+                  // two-line attribution fits the one-row height.
+                  height: globalState.measure.titleMediumHeight + 10,
                   padding: baseInfoEdgeInsets.copyWith(bottom: 0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
@@ -553,70 +591,79 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                 ),
                 Container(
                   padding: baseInfoEdgeInsets.copyWith(top: 0),
-                  child: SizedBox(
-                    height: globalState.measure.bodyMediumHeight + 2,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Flexible(
-                          child: FadeThroughBox(
-                            child: ipInfo != null
-                                ? TooltipText(
-                                    text: Text(
-                                      ipInfo.ip,
-                                      style: context
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.toLight
-                                          .adjustSize(1),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
-                                : FadeThroughBox(
-                                    child: isLoading == false && ipInfo == null
-                                        ? Text(
-                                            state.errorMessage ?? 'timeout',
-                                            style: context.textTheme.bodyMedium
-                                                ?.copyWith(color: Colors.red)
-                                                .adjustSize(1),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.all(2),
-                                            child: Center(
-                                              child: OverflowBox(
-                                                maxWidth: 30,
-                                                maxHeight: 16,
-                                                child: SpinKitThreeBounce(
-                                                  color: context
-                                                      .colorScheme
-                                                      .primary,
-                                                  size: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: globalState.measure.bodyMediumHeight + 2,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(
+                              child: FadeThroughBox(
+                                child: ipInfo != null
+                                    ? TooltipText(
+                                        text: Text(
+                                          ipInfo.ip,
+                                          style: context
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.toLight
+                                              .adjustSize(1),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    : FadeThroughBox(
+                                        child:
+                                            isLoading == false && ipInfo == null
+                                            ? Text(
+                                                state.errorMessage ?? 'timeout',
+                                                style: context
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Colors.red,
+                                                    )
+                                                    .adjustSize(1),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              )
+                                            : Container(
+                                                padding: const EdgeInsets.all(
+                                                  2,
+                                                ),
+                                                child: Center(
+                                                  child: OverflowBox(
+                                                    maxWidth: 30,
+                                                    maxHeight: 16,
+                                                    child: SpinKitThreeBounce(
+                                                      color: context
+                                                          .colorScheme
+                                                          .primary,
+                                                      size: 16,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                  ),
-                          ),
-                        ),
-                        if (!masked && locationText.isNotEmpty) ...[
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              locationText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.textTheme.bodySmall?.copyWith(
-                                color: context.colorScheme.onSurfaceVariant,
+                                      ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      if (!masked &&
+                          (location.isNotEmpty || operator.isNotEmpty)) ...[
+                        const SizedBox(height: 2),
+                        NetworkDetectionAttribution(
+                          location: location,
+                          operator: operator,
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ],
