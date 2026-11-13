@@ -3030,6 +3030,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Saved choices for groups that no longer exist ({names}) are kept — they will apply again if the groups return.`
+  String orphanGroupEntriesNote(Object names) {
+    return Intl.message(
+      'Saved choices for groups that no longer exist ($names) are kept — they will apply again if the groups return.',
+      name: 'orphanGroupEntriesNote',
+      desc: '',
+      args: [names],
+    );
+  }
+
   /// `Profile updated and applied`
   String get profileUpdateApplied {
     return Intl.message(

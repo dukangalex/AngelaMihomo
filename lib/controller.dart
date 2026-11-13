@@ -63,6 +63,10 @@ class AppController {
   int _backgroundLoadVersion = 0;
 
   int _updateGroupsRetryCount = 0;
+
+  /// T111 E-04: group names already reported as orphaned, per
+  /// profile id, so the notice fires once per newly orphaned name.
+  final Map<String, Set<String>> _orphanGroupNotified = {};
   bool _isUpdatingGroups = false;
   Timer? _updateGroupsRetryTimer;
   int _coreGeneration = 0;
@@ -1229,6 +1233,35 @@ class AppController {
           _ref
               .read(profilesProvider.notifier)
               .setProfile(currentProfile.copyWith(selectedMap: selectedMap));
+        }
+      }
+
+      // T111 E-04: stored selections/switches for groups that no
+      // longer exist are kept (renaming the group back restores
+      // them) but must not go silently stale — notify once per
+      // newly orphaned name.
+      final profileAfterSync = _ref.read(currentProfileProvider);
+      if (profileAfterSync != null) {
+        final liveNames = newGroups.map((item) => item.name).toSet();
+        final orphans = orphanedGroupNames(
+          storedKeys: [
+            ...profileAfterSync.selectedMap.keys,
+            ...profileAfterSync.groupSwitches.keys,
+          ],
+          liveGroupNames: liveNames,
+        );
+        final notified = _orphanGroupNotified.putIfAbsent(
+          profileAfterSync.id,
+          () => <String>{},
+        );
+        notified.retainWhere(orphans.contains);
+        final fresh = orphans.difference(notified);
+        if (fresh.isNotEmpty) {
+          notified.addAll(fresh);
+          final names = (fresh.toList()..sort()).take(3).join(', ');
+          globalState.showNotifier(
+            appLocalizations.orphanGroupEntriesNote(names),
+          );
         }
       }
 

@@ -130,6 +130,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m52(count) =>
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
+  static String m53(names) =>
+      "Saved choices for groups that no longer exist (${names}) are kept — they will apply again if the groups return.";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -1364,6 +1367,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Profile modified. Disable auto-update?",
     ),
     "profileImportFailed": m39,
+    "orphanGroupEntriesNote": m53,
     "profileUpdateApplied": MessageLookupByLibrary.simpleMessage(
       "Profile updated and applied",
     ),

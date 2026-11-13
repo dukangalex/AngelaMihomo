@@ -368,6 +368,7 @@
   "autoBackupDesc": "Auto back up on profile changes",
   "autoBackupSuccess": "Auto backed up to WebDAV",
   "profileUpdateApplied": "Profile updated and applied",
+  "orphanGroupEntriesNote": "Saved choices for groups that no longer exist ({names}) are kept — they will apply again if the groups return.",
   "profileUpdateApplyFailed": "Profile downloaded, but applying it failed. Check the profile and try again.",
   "autoBackupFailed": "Auto backup failed: {error}",
   "localBackupDesc": "Backup data locally",

@@ -116,6 +116,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m52(count) => "${Intl.plural(count, other: '年')}";
 
+  static String m53(names) =>
+      "部分已保存的分组选择对应的分组已不存在（${names}），这些选择已保留，分组恢复后会自动生效";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("关于"),
@@ -1002,6 +1005,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "配置文件已经修改，是否关闭自动更新？",
     ),
     "profileImportFailed": m39,
+    "orphanGroupEntriesNote": m53,
     "profileUpdateApplied": MessageLookupByLibrary.simpleMessage("订阅已更新并生效"),
     "profileUpdateApplyFailed": MessageLookupByLibrary.simpleMessage(
       "订阅已下载，但重新装配失败，请检查配置后重试",
