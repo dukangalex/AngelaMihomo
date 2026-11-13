@@ -6440,6 +6440,66 @@ class AppLocalizations {
     );
   }
 
+  /// `GEO Auto Sync`
+  String get geoAutoSync {
+    return Intl.message(
+      'GEO Auto Sync',
+      name: 'geoAutoSync',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Periodically update the built-in GEO resources (GeoSite, MMDB, ASN, CITY)`
+  String get geoAutoSyncDesc {
+    return Intl.message(
+      'Periodically update the built-in GEO resources (GeoSite, MMDB, ASN, CITY)',
+      name: 'geoAutoSyncDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sync Period`
+  String get geoAutoSyncPeriod {
+    return Intl.message(
+      'Sync Period',
+      name: 'geoAutoSyncPeriod',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Daily`
+  String get geoAutoSyncPeriodDaily {
+    return Intl.message(
+      'Daily',
+      name: 'geoAutoSyncPeriodDaily',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weekly`
+  String get geoAutoSyncPeriodWeekly {
+    return Intl.message(
+      'Weekly',
+      name: 'geoAutoSyncPeriodWeekly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Monthly`
+  String get geoAutoSyncPeriodMonthly {
+    return Intl.message(
+      'Monthly',
+      name: 'geoAutoSyncPeriodMonthly',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `setcap is not installed, falling back to setuid`
   String get setcapNotInstalledFallback {
     return Intl.message(

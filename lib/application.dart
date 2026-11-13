@@ -30,6 +30,7 @@ class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
   Timer? _autoUpdateGroupTaskTimer;
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _autoSyncGeoTaskTimer;
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
@@ -175,6 +176,8 @@ class ApplicationState extends ConsumerState<Application>
       if (!system.isDesktop) {
         _autoUpdateProfilesTaskTimer?.cancel();
         _autoUpdateProfilesTaskTimer = null;
+        _autoSyncGeoTaskTimer?.cancel();
+        _autoSyncGeoTaskTimer = null;
       }
       return;
     }
@@ -183,6 +186,9 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (_autoUpdateProfilesTaskTimer == null) {
       _autoUpdateProfilesTask();
+    }
+    if (_autoSyncGeoTaskTimer == null) {
+      _autoSyncGeoTask();
     }
   }
 
@@ -197,6 +203,23 @@ class ApplicationState extends ConsumerState<Application>
     _autoUpdateProfilesTaskTimer = Timer.periodic(
       const Duration(hours: 24),
       (_) => unawaited(globalState.appController.autoUpdateProfiles()),
+    );
+  }
+
+  // T107: hourly tick for the GEO auto sync. The controller's
+  // due-check (settings + elapsed period) decides whether a run
+  // actually happens, so the tick itself is cheap; a first check
+  // on (re)start covers a period that elapsed while the app was
+  // closed. The first check is deferred to the next frame:
+  // _syncAutoUpdateTasks also runs from initState, before
+  // globalState.appController is assigned.
+  void _autoSyncGeoTask() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(globalState.appController.autoSyncGeoResources());
+    });
+    _autoSyncGeoTaskTimer = Timer.periodic(
+      const Duration(hours: 1),
+      (_) => unawaited(globalState.appController.autoSyncGeoResources()),
     );
   }
 
@@ -539,6 +562,7 @@ class ApplicationState extends ConsumerState<Application>
     linkManager.destroy();
     _autoUpdateGroupTaskTimer?.cancel();
     _autoUpdateProfilesTaskTimer?.cancel();
+    _autoSyncGeoTaskTimer?.cancel();
     ExternalControl.stop();
     if (!system.isAndroid && !globalState.isExiting) {
       unawaited(globalState.appController.handleExit());

@@ -785,6 +785,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoBuiltInResources": MessageLookupByLibrary.simpleMessage(
       "GEO Built-in Resources",
     ),
+    "geoAutoSync": MessageLookupByLibrary.simpleMessage("GEO Auto Sync"),
+    "geoAutoSyncDesc": MessageLookupByLibrary.simpleMessage(
+      "Periodically update the built-in GEO resources (GeoSite, MMDB, ASN, CITY)",
+    ),
+    "geoAutoSyncPeriod": MessageLookupByLibrary.simpleMessage("Sync Period"),
+    "geoAutoSyncPeriodDaily": MessageLookupByLibrary.simpleMessage("Daily"),
+    "geoAutoSyncPeriodWeekly": MessageLookupByLibrary.simpleMessage("Weekly"),
+    "geoAutoSyncPeriodMonthly": MessageLookupByLibrary.simpleMessage(
+      "Monthly",
+    ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(

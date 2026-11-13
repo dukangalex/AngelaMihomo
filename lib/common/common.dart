@@ -34,6 +34,7 @@ export 'print.dart';
 export 'process_icon.dart';
 export 'quick_start_retry.dart';
 export 'forensic_logs.dart';
+export 'geo_auto_sync.dart';
 export 'protocol.dart';
 export 'proxy.dart';
 export 'qr_reader.dart';

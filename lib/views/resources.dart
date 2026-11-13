@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bett_box/clash/clash.dart';
@@ -265,9 +266,114 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
                 (geoItem) => GeoDataListItem(geoItem: geoItem),
               ),
             ),
+            ListHeader(
+              title: appLocalizations.geoAutoSync,
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 8,
+                top: 12,
+                bottom: 8,
+              ),
+            ),
+            ...generateSection(items: const [GeoAutoSyncSettings()]),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Auto sync settings for the GEO resources above (T107): an
+/// opt-in switch (default off — automatic network activity is
+/// opt-in under the privacy baseline) and the sync period. Stored
+/// by GeoAutoSyncStore; the actual scheduling runs on the app's
+/// existing auto-update lifecycle in Application.
+class GeoAutoSyncSettings extends StatefulWidget {
+  const GeoAutoSyncSettings({super.key});
+
+  @override
+  State<GeoAutoSyncSettings> createState() => _GeoAutoSyncSettingsState();
+}
+
+class _GeoAutoSyncSettingsState extends State<GeoAutoSyncSettings> {
+  bool _enabled = false;
+  GeoAutoSyncPeriod _period = GeoAutoSyncPeriod.weekly;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    GeoAutoSyncStore.load().then((settings) {
+      if (!mounted) return;
+      setState(() {
+        _enabled = settings.enabled;
+        _period = settings.period;
+        _loaded = true;
+      });
+    });
+  }
+
+  String get _periodLabel => switch (_period) {
+    GeoAutoSyncPeriod.daily => appLocalizations.geoAutoSyncPeriodDaily,
+    GeoAutoSyncPeriod.weekly => appLocalizations.geoAutoSyncPeriodWeekly,
+    GeoAutoSyncPeriod.monthly => appLocalizations.geoAutoSyncPeriodMonthly,
+  };
+
+  Future<void> _handleEnabledChange(bool value) async {
+    setState(() => _enabled = value);
+    await GeoAutoSyncStore.saveEnabled(value);
+    if (value) {
+      // Turning it on may already be due (never synced, or the
+      // period elapsed while it was off): check right away.
+      unawaited(globalState.appController.autoSyncGeoResources());
+    }
+  }
+
+  Future<void> _handlePeriodChange() async {
+    final res = await globalState.showCommonDialog<GeoAutoSyncPeriod>(
+      child: OptionsDialog<GeoAutoSyncPeriod>(
+        title: appLocalizations.geoAutoSyncPeriod,
+        options: GeoAutoSyncPeriod.values,
+        textBuilder: (period) => switch (period) {
+          GeoAutoSyncPeriod.daily => appLocalizations.geoAutoSyncPeriodDaily,
+          GeoAutoSyncPeriod.weekly => appLocalizations.geoAutoSyncPeriodWeekly,
+          GeoAutoSyncPeriod.monthly =>
+            appLocalizations.geoAutoSyncPeriodMonthly,
+        },
+        value: _period,
+      ),
+    );
+    if (res == null || res == _period) return;
+    setState(() => _period = res);
+    await GeoAutoSyncStore.savePeriod(res);
+    if (_enabled) {
+      unawaited(globalState.appController.autoSyncGeoResources());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListItem.switchItem(
+          title: Text(appLocalizations.geoAutoSync),
+          subtitle: Text(appLocalizations.geoAutoSyncDesc),
+          delegate: SwitchDelegate(
+            value: _enabled,
+            onChanged: _loaded ? _handleEnabledChange : null,
+          ),
+        ),
+        ListItem(
+          onTap: _handlePeriodChange,
+          title: Text(appLocalizations.geoAutoSyncPeriod),
+          subtitle: Text(_periodLabel),
+          trailing: FilledButton(
+            onPressed: _handlePeriodChange,
+            child: Text(_periodLabel),
+          ),
+        ),
+      ],
     );
   }
 }

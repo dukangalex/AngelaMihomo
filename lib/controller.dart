@@ -994,6 +994,62 @@ class AppController {
     }
   }
 
+  bool _isGeoAutoSyncRunning = false;
+
+  /// Scheduled GEO resource sync (T107), driven by an hourly tick
+  /// from Application on the same lifecycle as the profile auto
+  /// update. Does nothing unless the user enabled it in the
+  /// Resources page and the chosen period has elapsed since the
+  /// last successful run. Each item goes through the exact same
+  /// updateGeoData call the page's manual sync uses, so core reload
+  /// behaviour is identical; failures surface via the notifier,
+  /// like the auto backup does.
+  Future<void> autoSyncGeoResources() async {
+    if (_isGeoAutoSyncRunning) return;
+    final settings = await GeoAutoSyncStore.load();
+    final now = DateTime.now();
+    if (!isGeoAutoSyncDue(
+      enabled: settings.enabled,
+      period: settings.period,
+      lastSync: settings.lastSync,
+      now: now,
+    )) {
+      return;
+    }
+    _isGeoAutoSyncRunning = true;
+    try {
+      final errors = <String>[];
+      for (final target in geoAutoSyncTargets) {
+        try {
+          final message = await clashCore.updateGeoData(
+            UpdateGeoDataParams(
+              geoName: target.fileName,
+              geoType: target.label,
+            ),
+          );
+          if (message.isNotEmpty) {
+            errors.add('${target.label}: $message');
+          }
+        } catch (e) {
+          errors.add('${target.label}: ${e.formatError}');
+        }
+      }
+      if (errors.isNotEmpty) {
+        commonPrint.error(
+          '[GeoAutoSync] Failed: ${errors.join('; ')}',
+        );
+        globalState.showNotifier(
+          '${appLocalizations.syncFailed}: ${errors.join('; ')}',
+        );
+        return;
+      }
+      await GeoAutoSyncStore.saveLastSync(now);
+      commonPrint.log('[GeoAutoSync] All GEO resources synced');
+    } finally {
+      _isGeoAutoSyncRunning = false;
+    }
+  }
+
   Future<void> checkAndUpdateMissedProfiles() async {
     final profilesToUpdate = <Profile>[];
     for (final profile in _ref.read(profilesProvider)) {
