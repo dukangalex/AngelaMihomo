@@ -1214,6 +1214,13 @@ abstract class Script with _$Script {
 final volatileScriptPattern = RegExp(r'\bDate\b|Math\s*\.\s*random');
 
 
+/// Whether a script opts into the AngelaMihomo host-state protocol
+/// (T95): only such scripts receive the injected host context.
+bool scriptDeclaresAngelaHost(String value) {
+  final head = value.length > 2000 ? value.substring(0, 2000) : value;
+  return head.contains('Compatible_With_AngelaMihomo');
+}
+
 extension ScriptExt on Script {
   Future<String> readContent() async {
     if (content.isNotEmpty) return content;
@@ -1233,7 +1240,8 @@ extension ScriptExt on Script {
       content: '',
       digest: value.toMd5(),
       compatible: head.contains('Compatible_With_Bettbox') ||
-          head.contains('Compatible_With_Mihomo'),
+          head.contains('Compatible_With_Mihomo') ||
+          head.contains('Compatible_With_AngelaMihomo'),
       volatile: volatileScriptPattern.hasMatch(value),
     );
   }

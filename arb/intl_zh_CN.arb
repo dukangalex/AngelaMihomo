@@ -1426,5 +1426,11 @@
   "iconCount": "{count} 个图标",
   "toolSpeedTestDesc": "测量下载、上传速度与网络延迟",
   "autoLaunchDesc": "跟随系统自启动",
-  "mediaBatchAll": "全部节点"
+  "mediaBatchAll": "全部节点",
+  "systemExplicitWebRtcFollowScript": "跟随脚本默认",
+  "systemExplicitWebRtcOn": "开启（应用规则）",
+  "systemExplicitWebRtcOff": "关闭",
+  "restoreBuiltinScript": "恢复内置版本",
+  "builtinScriptTag": "内置",
+  "builtinScriptUpdateTag": "有新版本"
 }

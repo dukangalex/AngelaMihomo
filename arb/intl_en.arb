@@ -1426,5 +1426,11 @@
   "iconCount": "{count} icons",
   "toolSpeedTestDesc": "Measure download, upload and latency",
   "autoLaunchDesc": "Launch on system startup",
-  "mediaBatchAll": "All nodes"
+  "mediaBatchAll": "All nodes",
+  "systemExplicitWebRtcFollowScript": "Follow script default",
+  "systemExplicitWebRtcOn": "On (app rules)",
+  "systemExplicitWebRtcOff": "Off",
+  "restoreBuiltinScript": "Restore bundled version",
+  "builtinScriptTag": "Built-in",
+  "builtinScriptUpdateTag": "Update available"
 }

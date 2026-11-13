@@ -82,6 +82,7 @@ const Compatible_With_Mihomo = { ruleOptionsEnable: true };
 - [FlClash GUI](https://github.com/chen08209/FlClash)：谱系起源，感谢原作者的开创性工作。
 - [Mihomo Core](https://github.com/MetaCubeX/mihomo)：本应用内置的内核，感谢 MetaCubeX 团队。
 - [DB-IP](https://db-ip.com)：IP 城市库数据来源（DB-IP Free IP-to-City Lite，按 CC BY 4.0 许可使用），应用内的地理信息全部在本地查询、不外发。
+- [HiClash](https://github.com/dukangalex/HiClash)：内置脚本「HiClash 内置脚本」的来源（MIT 许可，许可文本随附于 assets/data/LICENSE-HiClash-MIT.txt），其上游为 AIsouler 的 [MyClash](https://github.com/AIsouler/MyClash)（MIT），一并致谢。
 
 开发中参考与借鉴的开源项目：[Zashboard](https://github.com/Zephyruso/zashboard)、[CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid)、[Sparkle](https://github.com/xishang0128/sparkle)、[SFA](https://github.com/SagerNet/sing-box-for-android)、[HUSI](https://github.com/xchacha20-poly1305/husi)、[V2rayN](https://github.com/2dust/v2rayN)。
 

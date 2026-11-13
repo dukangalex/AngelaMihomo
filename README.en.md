@@ -82,6 +82,7 @@ Policy-group switches in a script can be named via `policyGroupOptions`; unnamed
 - [FlClash GUI](https://github.com/chen08209/FlClash): the origin of the lineage — thanks to its author for the pioneering work.
 - [Mihomo Core](https://github.com/MetaCubeX/mihomo): the core bundled in this app — thanks to the MetaCubeX team.
 - [DB-IP](https://db-ip.com): source of the IP city database (DB-IP Free IP-to-City Lite, used under CC BY 4.0); all geo lookups in the app run locally on-device and send nothing out.
+- [HiClash](https://github.com/dukangalex/HiClash): the source of the bundled "HiClash built-in script" (MIT License; license text ships in assets/data/LICENSE-HiClash-MIT.txt), itself derived from AIsouler's [MyClash](https://github.com/AIsouler/MyClash) (MIT) — thanks to both.
 
 Open-source projects consulted and learned from during development: [Zashboard](https://github.com/Zephyruso/zashboard), [CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid), [Sparkle](https://github.com/xishang0128/sparkle), [SFA](https://github.com/SagerNet/sing-box-for-android), [HUSI](https://github.com/xchacha20-poly1305/husi), [V2rayN](https://github.com/2dust/v2rayN).
 

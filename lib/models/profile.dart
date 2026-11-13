@@ -114,6 +114,11 @@ abstract class Profile with _$Profile {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       autoUpdateDuration: defaultUpdateDuration,
       ageSecretKey: ageSecretKey,
+      // T95: every fresh profile starts on the bundled HiClash script;
+      // the binding is a plain per-profile choice the user can change
+      // or drop in the profile's script settings.
+      useScriptOverride: true,
+      scriptId: BuiltinScript.id,
     );
   }
 }

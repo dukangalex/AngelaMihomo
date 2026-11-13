@@ -2003,7 +2003,25 @@ class AppController {
         }),
       );
     }
+    await _seedBuiltinScript();
     _ref.read(initProvider.notifier).value = true;
+  }
+
+  /// T95: seed/refresh the bundled HiClash script and run the one-time
+  /// stock binding migration. Best-effort: a failure here must never
+  /// block startup.
+  Future<void> _seedBuiltinScript() async {
+    try {
+      await seedBuiltinScript(
+        scripts: _ref.read(scriptStateProvider).scripts,
+        saveScript: (script) =>
+            _ref.read(scriptStateProvider.notifier).setScript(script),
+        profiles: _ref.read(profilesProvider),
+        saveProfiles: setProfiles,
+      );
+    } catch (e) {
+      commonPrint.warn('Builtin script seeding failed: $e');
+    }
   }
 
   Future<void> _initStatus() async {

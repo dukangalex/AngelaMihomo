@@ -38,6 +38,7 @@ class JavaScriptRuntimeManager {
     required String inputPath,
     required String outputPath,
     Map<String, bool>? customOptions,
+    Map<String, Object?>? hostContext,
   }) async {
     if (!await ensureRustLib()) {
       throw 'JS Script Error: script engine is unavailable';
@@ -47,8 +48,11 @@ class JavaScriptRuntimeManager {
         script: scriptContent,
         inputPath: inputPath,
         outputPath: outputPath,
-        customOptions: customOptions != null && customOptions.isNotEmpty
-            ? json.encode(customOptions)
+        customOptions: customOptions != null || hostContext != null
+            ? json.encode({
+                ...?customOptions,
+                '__angelaHost': ?hostContext,
+              })
             : null,
         token: _random.nextInt(1 << 31),
       );

@@ -12217,6 +12217,66 @@ class AppLocalizations {
   String get mediaBatchAll {
     return Intl.message('All nodes', name: 'mediaBatchAll', desc: '', args: []);
   }
+
+  /// `Follow script default`
+  String get systemExplicitWebRtcFollowScript {
+    return Intl.message(
+      'Follow script default',
+      name: 'systemExplicitWebRtcFollowScript',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On (app rules)`
+  String get systemExplicitWebRtcOn {
+    return Intl.message(
+      'On (app rules)',
+      name: 'systemExplicitWebRtcOn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get systemExplicitWebRtcOff {
+    return Intl.message(
+      'Off',
+      name: 'systemExplicitWebRtcOff',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restore bundled version`
+  String get restoreBuiltinScript {
+    return Intl.message(
+      'Restore bundled version',
+      name: 'restoreBuiltinScript',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Built-in`
+  String get builtinScriptTag {
+    return Intl.message(
+      'Built-in',
+      name: 'builtinScriptTag',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update available`
+  String get builtinScriptUpdateTag {
+    return Intl.message(
+      'Update available',
+      name: 'builtinScriptUpdateTag',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

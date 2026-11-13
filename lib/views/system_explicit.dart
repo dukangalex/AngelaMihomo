@@ -65,6 +65,21 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     await _commit();
   }
 
+  Future<void> _setWebRtcMode(String mode) async {
+    if (mode == 'on') {
+      // Turning the App-side block on needs rule mode, same gate as the
+      // other rule options.
+      await _setRuleOption(
+        true,
+        (_) => SystemExplicitStore.instance.value.webRtcMode = 'on',
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() => SystemExplicitStore.instance.value.webRtcMode = mode);
+    await _commit();
+  }
+
   Future<void> _commit() async {
     try {
       await saveAndReloadSystemExplicit(
@@ -128,6 +143,47 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
         ),
       ),
       delegate: SwitchDelegate(value: value, onChanged: onChanged),
+    );
+  }
+
+  Widget _webRtcModeItem({
+    required String id,
+    required String title,
+    required String desc,
+    required String value,
+    required ValueChanged<String> onChanged,
+  }) {
+    final expanded = _expanded.contains(id);
+    String label(String mode) => switch (mode) {
+      'on' => appLocalizations.systemExplicitWebRtcOn,
+      'off' => appLocalizations.systemExplicitWebRtcOff,
+      _ => appLocalizations.systemExplicitWebRtcFollowScript,
+    };
+    return ListItem<String>.options(
+      padding: const EdgeInsets.only(left: 16, right: 8),
+      title: Text(title),
+      subtitle: expanded ? Text(desc) : Text(label(value)),
+      trailing: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _toggleExpanded(id),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            expanded ? Icons.expand_less : Icons.expand_more,
+            size: 20,
+            color: context.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      delegate: OptionsDelegate<String>(
+        title: title,
+        options: const ['unset', 'on', 'off'],
+        textBuilder: label,
+        value: value,
+        onChanged: (String? mode) {
+          if (mode != null) onChanged(mode);
+        },
+      ),
     );
   }
 
@@ -207,15 +263,12 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
             onChanged: (on) =>
                 _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
           ),
-          _optionItem(
+          _webRtcModeItem(
             id: 'blockWebRtc',
             title: appLocalizations.systemExplicitBlockWebRtc,
             desc: appLocalizations.systemExplicitBlockWebRtcDesc,
-            value: value.blockCommonWebRtc,
-            onChanged: (on) => _setRuleOption(
-              on,
-              (valueOn) => value.blockCommonWebRtc = valueOn,
-            ),
+            value: value.webRtcMode,
+            onChanged: _setWebRtcMode,
           ),
           _optionItem(
             id: 'blockAds',

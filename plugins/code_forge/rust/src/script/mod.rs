@@ -223,7 +223,7 @@ pub fn evaluate(
             .catch(&ctx)
             .map_err(|error| sandbox.classify(error, ErrorKind::Runtime))?;
         let source = format!(
-            "(function(__config, __custom) {{ {script}\n;if (__custom && typeof ruleOptionsEnable !== 'undefined') Object.assign(ruleOptionsEnable, __custom);\nreturn {ENTRY}(__config); }})"
+            "(function(__config, __custom) {{ {script}\n;var __host = null;\nif (__custom && typeof __custom === 'object' && '__angelaHost' in __custom) {{ __host = __custom.__angelaHost; delete __custom.__angelaHost; }}\nif (__custom && typeof ruleOptionsEnable !== 'undefined') Object.assign(ruleOptionsEnable, __custom);\nreturn {ENTRY}(__config, {{ customOptions: __custom || undefined, host: __host }}); }})"
         );
         let entry: Function = ctx
             .eval(source)
@@ -304,6 +304,14 @@ if (typeof Compatible_With_Mihomo !== 'undefined' && Compatible_With_Mihomo && A
   for (var __k = 0; __k < __declaredMihomo.length; __k++) {
     if (typeof __declaredMihomo[__k] === 'string') {
       __groups.push(__declaredMihomo[__k]);
+    }
+  }
+}
+if (typeof Compatible_With_AngelaMihomo !== 'undefined' && Compatible_With_AngelaMihomo && Array.isArray(Compatible_With_AngelaMihomo.policyGroupOptions)) {
+  var __declaredAngela = Compatible_With_AngelaMihomo.policyGroupOptions;
+  for (var __m = 0; __m < __declaredAngela.length; __m++) {
+    if (typeof __declaredAngela[__m] === 'string') {
+      __groups.push(__declaredAngela[__m]);
     }
   }
 }

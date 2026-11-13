@@ -165,6 +165,7 @@ class ScriptsView extends ConsumerStatefulWidget {
 
 class _ScriptsViewState extends ConsumerState<ScriptsView> {
   ProfileScriptSelection? _selection;
+  bool _builtinUpdateAvailable = false;
 
   bool get _isProfileMode => _selection != null;
 
@@ -172,6 +173,14 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
   void initState() {
     super.initState();
     _selection = widget.profileSelection;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final available = await hasBuiltinScriptUpdate(
+        ref.read(scriptStateProvider).scripts,
+      );
+      if (mounted && available != _builtinUpdateAvailable) {
+        setState(() => _builtinUpdateAvailable = available);
+      }
+    });
   }
 
   /// The script a profile-mode page shows as picked. A stored choice
@@ -353,7 +362,8 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                     _effectiveScriptId(currentId) == script.id;
                 final hasRemote = script.url?.isNotEmpty ?? false;
                 final hasCustom = script.compatible;
-                final hasTags = hasRemote || hasCustom;
+                final isBuiltin = script.id == BuiltinScript.id;
+                final hasTags = hasRemote || hasCustom || isBuiltin;
                 return CommonCard(
                   key: ValueKey(script.id),
                   elevated: false,
@@ -418,6 +428,18 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                                           icon: Icons.tune,
                                           label: appLocalizations.custom,
                                         ),
+                                      if (isBuiltin)
+                                        _buildScriptTag(
+                                          icon: Icons.inventory_2_outlined,
+                                          label:
+                                              appLocalizations.builtinScriptTag,
+                                        ),
+                                      if (isBuiltin && _builtinUpdateAvailable)
+                                        _buildScriptTag(
+                                          icon: Icons.system_update_alt,
+                                          label: appLocalizations
+                                              .builtinScriptUpdateTag,
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -465,6 +487,14 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                                     _handleSyncScript(script.id);
                                   },
                                 ),
+                              if (script.id == BuiltinScript.id)
+                                PopupMenuItemData(
+                                  icon: Icons.restore,
+                                  label: appLocalizations.restoreBuiltinScript,
+                                  onPressed: () {
+                                    _handleRestoreBuiltinScript();
+                                  },
+                                ),
                               PopupMenuItemData(
                                 icon: Icons.file_copy_outlined,
                                 label: appLocalizations.exportFile,
@@ -492,6 +522,17 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
         );
       },
     );
+  }
+
+  Future<void> _handleRestoreBuiltinScript() async {
+    await restoreBuiltinScript(
+      scripts: ref.read(scriptStateProvider).scripts,
+      saveScript: (script) =>
+          ref.read(scriptStateProvider.notifier).setScript(script),
+    );
+    if (mounted) {
+      setState(() => _builtinUpdateAvailable = false);
+    }
   }
 
   Future<void> _handleEditorSave(

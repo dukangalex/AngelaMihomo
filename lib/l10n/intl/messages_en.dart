@@ -505,6 +505,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "blockComment": MessageLookupByLibrary.simpleMessage("Comment"),
     "builtIn": MessageLookupByLibrary.simpleMessage("Built-in"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("Built-in mode"),
+    "builtinScriptTag": MessageLookupByLibrary.simpleMessage("Built-in"),
+    "builtinScriptUpdateTag": MessageLookupByLibrary.simpleMessage(
+      "Update available",
+    ),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("Subscription link"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage(
       "Import as a new subscription and add it",
@@ -2151,6 +2155,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Restart TUN for changes to take effect",
     ),
     "restore": MessageLookupByLibrary.simpleMessage("Restore"),
+    "restoreBuiltinScript": MessageLookupByLibrary.simpleMessage(
+      "Restore bundled version",
+    ),
     "restoreBundled": MessageLookupByLibrary.simpleMessage(
       "Restore built-in version",
     ),
@@ -2594,6 +2601,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitSwitch": MessageLookupByLibrary.simpleMessage("Switch"),
     "systemExplicitTitle": MessageLookupByLibrary.simpleMessage(
       "System options",
+    ),
+    "systemExplicitWebRtcFollowScript": MessageLookupByLibrary.simpleMessage(
+      "Follow script default",
+    ),
+    "systemExplicitWebRtcOff": MessageLookupByLibrary.simpleMessage("Off"),
+    "systemExplicitWebRtcOn": MessageLookupByLibrary.simpleMessage(
+      "On (app rules)",
     ),
     "systemFont": MessageLookupByLibrary.simpleMessage("System Font"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("System Proxy"),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bett_box/common/builtin_script.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -56,11 +57,14 @@ void main() {
       );
       final profile = Profile.normal(label: 'x').copyWith(scriptId: 'b');
       expect(decode(profile).scriptId, 'b');
-      expect(Profile.normal(label: 'y').scriptId, isNull);
+      // T95: fresh profiles default to the bundled HiClash script.
+      expect(Profile.normal(label: 'y').scriptId, BuiltinScript.id);
+      expect(Profile.normal(label: 'y').useScriptOverride, isTrue);
       final legacyJson =
           jsonDecode(jsonEncode(Profile.normal(label: 'z').toJson()))
               as Map<String, dynamic>
-            ..remove('scriptId');
+            ..remove('scriptId')
+            ..remove('useScriptOverride');
       final legacy = Profile.fromJson(legacyJson);
       expect(legacy.scriptId, isNull);
       expect(legacy.useScriptOverride, isFalse);

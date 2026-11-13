@@ -934,9 +934,18 @@ class GlobalState {
         digest = content.toMd5();
         volatile = volatileScriptPattern.hasMatch(content);
       }
+      final scriptText = content ?? await script.readContent();
+      final hostContext = scriptDeclaresAngelaHost(scriptText)
+          ? buildScriptHostContext(profile)
+          : null;
       final key = !cache || volatile
           ? null
-          : await _scriptedCacheKey(profile, script, digest);
+          : await _scriptedCacheKey(
+              profile,
+              script,
+              digest,
+              hostContext: hostContext,
+            );
       final exported = File('$relayPath${separator}profile-$stamp.json');
       try {
         if (!refresh &&
@@ -949,10 +958,11 @@ class GlobalState {
         }
         await _exportProfileConfig(profile, exported.path, refresh: refresh);
         await JavaScriptRuntimeManager.evaluateScriptFile(
-          scriptContent: content ?? await script.readContent(),
+          scriptContent: scriptText,
           inputPath: exported.path,
           outputPath: file.path,
           customOptions: script.customOptions,
+          hostContext: hostContext,
         );
         if (key != null) {
           if (await cacheKey.exists()) {
@@ -989,11 +999,36 @@ class GlobalState {
     } catch (_) {}
   }
 
+  /// Host state injected into protocol-aware script runs (T95 linkage
+  /// matrix): values the App owns explicitly, so a script's conditional
+  /// transforms defer to them instead of producing a second opinion.
+  /// Only scripts declaring Compatible_With_AngelaMihomo receive this;
+  /// every other script runs exactly as before.
+  Map<String, Object?> buildScriptHostContext(Profile profile) {
+    final patchConfig = config.patchClashConfig;
+    final controllerValue = patchConfig.externalController.value;
+    return {
+      'allowLan': patchConfig.allowLan,
+      'controllerPort': controllerValue.isEmpty
+          ? null
+          : int.tryParse(controllerValue.split(':').last),
+      'disableQuic': config.vpnProps.disableQuic,
+      'webRtc': SystemExplicitStore.instance.value.webRtcMode,
+      // Geo data updates are owned by the App's resource management.
+      'geoManaged': true,
+      'disabledGroups': [
+        for (final entry in profile.groupSwitches.entries)
+          if (!entry.value) entry.key,
+      ],
+    };
+  }
+
   Future<String?> _scriptedCacheKey(
     Profile profile,
     Script script,
-    String digest,
-  ) async {
+    String digest, {
+    Map<String, Object?>? hostContext,
+  }) async {
     final profileFile = File(await appPath.getProfilePath(profile.id));
     if (!await profileFile.exists()) {
       return null;
@@ -1007,6 +1042,7 @@ class GlobalState {
       profile.ageSecretKey ?? '',
       digest,
       json.encode(script.customOptions ?? const <String, bool>{}),
+      if (hostContext != null) json.encode(hostContext),
     ].join('\n').toMd5();
   }
 

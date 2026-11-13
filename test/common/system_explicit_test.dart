@@ -11,7 +11,7 @@ void main() {
         SystemExplicitOptions(chinaDirect: true),
         SystemExplicitOptions(chinaPublicDnsDirect: true),
         SystemExplicitOptions(lanDirect: true),
-        SystemExplicitOptions(blockCommonWebRtc: true),
+        SystemExplicitOptions(webRtcMode: 'on'),
       ]) {
         expect(systemExplicitModeCompatible(options, Mode.rule), isTrue);
         for (final mode in [Mode.global, Mode.direct]) {
@@ -108,6 +108,36 @@ void main() {
     expect(legacy.blockCommonWebRtc, isFalse);
   });
 
+  test('WebRTC mode is tri-state with legacy bool migration', () {
+    expect(SystemExplicitOptions().webRtcMode, 'unset');
+    expect(SystemExplicitOptions().blockCommonWebRtc, isFalse);
+    expect(SystemExplicitOptions(webRtcMode: 'on').blockCommonWebRtc, isTrue);
+    expect(SystemExplicitOptions(webRtcMode: 'off').anyEnabled, isFalse);
+    // Legacy storage: only an explicit true carried intent.
+    expect(
+      SystemExplicitOptions.fromJson({'blockCommonWebRtc': true}).webRtcMode,
+      'on',
+    );
+    expect(
+      SystemExplicitOptions.fromJson({'blockCommonWebRtc': false}).webRtcMode,
+      'unset',
+    );
+    // Round-trip keeps the mode and the legacy mirror key.
+    final json = SystemExplicitOptions(webRtcMode: 'off').toJson();
+    expect(json['webRtcMode'], 'off');
+    expect(json['blockCommonWebRtc'], isFalse);
+    expect(SystemExplicitOptions.fromJson(json).webRtcMode, 'off');
+    // Runtime rules fire only in the explicit-on state.
+    expect(
+      SystemExplicitOptions(webRtcMode: 'unset').buildRuntimeRules(),
+      isEmpty,
+    );
+    expect(
+      SystemExplicitOptions(webRtcMode: 'on').buildRuntimeRules(),
+      isNotEmpty,
+    );
+  });
+
   test('China direct is the China domain and IP category only', () {
     final rules = SystemExplicitOptions(chinaDirect: true).buildRuntimeRules();
     expect(rules, [
@@ -147,7 +177,7 @@ void main() {
 
   test('WebRTC blocker covers STUN/TURN domains and UDP port ranges', () {
     final rules = SystemExplicitOptions(
-      blockCommonWebRtc: true,
+      webRtcMode: 'on',
     ).buildRuntimeRules();
     expect(rules, [
       'DOMAIN-KEYWORD,stun,REJECT',
@@ -207,7 +237,7 @@ void main() {
       chinaDirect: true,
       lanDirect: true,
       chinaPublicDnsDirect: true,
-      blockCommonWebRtc: true,
+      webRtcMode: 'on',
     ).buildRuntimeRules();
     expect(
       rules.indexOf('DOMAIN-KEYWORD,stun,REJECT'),
