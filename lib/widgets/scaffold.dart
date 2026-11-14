@@ -381,16 +381,16 @@ class CommonScaffoldState extends State<CommonScaffold> {
     return DesktopBackShortcutWrapper(
       child: Consumer(
         builder: (context, ref, _) {
-          final isMobileView = ref.watch(isMobileViewProvider);
           return Scaffold(
             appBar: _buildAppBar(),
             body: body,
             resizeToAvoidBottomInset: true,
             backgroundColor:
                 widget.backgroundColor ??
-                (isMobileView
-                    ? context.colorScheme.pageColor
-                    : Colors.transparent),
+                // Pages sit on the shell's zodiac backdrop (gradient or
+                // solid token background); the theme's scaffold color
+                // underneath matches its base tone.
+                Colors.transparent,
             floatingActionButton:
                 widget.floatingActionButton ??
                 ValueListenableBuilder<Widget?>(
@@ -468,6 +468,7 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
   Widget build(BuildContext context) {
     final color =
         widget.backgroundColor ??
+        context.zodiac?.variant.backgroundBase ??
         (ref.watch(isMobileViewProvider)
             ? context.colorScheme.pageColor
             : null);

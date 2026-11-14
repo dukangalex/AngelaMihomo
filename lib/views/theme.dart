@@ -1,6 +1,3 @@
-import 'dart:math';
-import 'dart:ui' as ui;
-
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/plugins/app.dart';
@@ -8,20 +5,7 @@ import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-
-class ThemeModeItem {
-  final ThemeMode themeMode;
-  final IconData iconData;
-  final String label;
-
-  const ThemeModeItem({
-    required this.themeMode,
-    required this.iconData,
-    required this.label,
-  });
-}
 
 class FontFamilyItem {
   final FontFamily fontFamily;
@@ -52,8 +36,7 @@ class ThemeView extends ConsumerWidget {
     ];
 
     final items = <Widget>[
-      const _ThemeModeItem(),
-      const _PrimaryColorItem(),
+      const _ZodiacThemeItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
     return generateListView(items);
@@ -89,240 +72,140 @@ class ItemCard extends StatelessWidget {
   }
 }
 
-class _ThemeModeItem extends ConsumerWidget {
-  const _ThemeModeItem();
+class _ZodiacThemeItem extends ConsumerWidget {
+  const _ZodiacThemeItem();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(
-      themeSettingProvider.select((state) => state.themeMode),
+    final selectedId = ref.watch(
+      themeSettingProvider.select((state) => state.zodiacTheme),
     );
-    final themeModeItems = <ThemeModeItem>[
-      ThemeModeItem(
-        iconData: Icons.auto_mode,
-        label: appLocalizations.auto,
-        themeMode: ThemeMode.system,
-      ),
-      ThemeModeItem(
-        iconData: Icons.light_mode,
-        label: appLocalizations.light,
-        themeMode: ThemeMode.light,
-      ),
-      ThemeModeItem(
-        iconData: Icons.dark_mode,
-        label: appLocalizations.dark,
-        themeMode: ThemeMode.dark,
-      ),
-    ];
+    final selected = resolveZodiacTheme(selectedId);
     return ItemCard(
-      info: Info(
-        label: appLocalizations.themeMode,
-        iconData: Icons.brightness_high,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-        child: SegmentButtonGroup<ThemeMode>(
-          maxWidth: 480,
-          options: [
-            for (final item in themeModeItems)
-              SegmentOption(
-                value: item.themeMode,
-                icon: Icon(item.iconData),
-                label: item.label,
-              ),
-          ],
-          selected: themeMode,
-          onSelected: (mode) {
-            ref
-                .read(themeSettingProvider.notifier)
-                .updateState((state) => state.copyWith(themeMode: mode));
-          },
-        ),
+      info: Info(label: appLocalizations.theme, iconData: Icons.auto_awesome),
+      child: Column(
+        children: [
+          for (final theme in zodiacThemes)
+            _ZodiacThemeRow(
+              theme: theme,
+              isSelected: theme.id == selected.id,
+              onTap: () {
+                ref
+                    .read(themeSettingProvider.notifier)
+                    .updateState(
+                      (state) => state.copyWith(zodiacTheme: theme.id),
+                    );
+              },
+            ),
+        ],
       ),
     );
   }
 }
 
-class _PrimaryColorItem extends ConsumerStatefulWidget {
-  const _PrimaryColorItem();
+class _ZodiacThemeRow extends StatelessWidget {
+  final ZodiacThemeDef theme;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  @override
-  ConsumerState<_PrimaryColorItem> createState() => _PrimaryColorItemState();
-}
+  const _ZodiacThemeRow({
+    required this.theme,
+    required this.isSelected,
+    required this.onTap,
+  });
 
-class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
-  int _calcColumns(double maxWidth) {
-    return max((maxWidth / 96).ceil(), 3);
-  }
-
-  Future<void> _handleReset() async {
-    final res = await globalState.showMessage(
-      message: TextSpan(text: appLocalizations.resetTip),
-    );
-    if (res != true) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(
-        primaryColors: defaultPrimaryColors,
-        primaryColor: null,
-        schemeVariant: DynamicSchemeVariant.content,
-      );
-    });
-  }
-
-  Future<void> _handleDel(int color) async {
-    final res = await globalState.showMessage(
-      message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.colorSchemes),
+  Widget _dot(Color color) {
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
       ),
     );
-    if (res != true) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      final newPrimaryColors = List<int>.from(state.primaryColors)
-        ..remove(color);
-      final int? newPrimaryColor = switch (state.primaryColor == color) {
-        true when newPrimaryColors.contains(defaultPrimaryColor) =>
-          defaultPrimaryColor,
-        true => null,
-        false => state.primaryColor,
-      };
-      return state.copyWith(
-        primaryColors: newPrimaryColors,
-        primaryColor: newPrimaryColor,
-      );
-    });
-  }
-
-  Future<void> _handleAdd() async {
-    final res = await globalState.showCommonDialog<int>(
-      child: const _PaletteDialog(),
-    );
-    if (res == null) {
-      return;
-    }
-    final isExists = ref.read(
-      themeSettingProvider.select((state) => state.primaryColors.contains(res)),
-    );
-    if (isExists && mounted) {
-      context.showNotifier(
-        appLocalizations.existsTip(appLocalizations.colorSchemes),
-      );
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(
-        primaryColors: List<int>.from(state.primaryColors)..add(res),
-      );
-    });
-  }
-
-  Future<void> _handleChangeSchemeVariant() async {
-    final schemeVariant = ref.read(
-      themeSettingProvider.select((state) => state.schemeVariant),
-    );
-    final value = await globalState.showAdaptiveSheet<DynamicSchemeVariant>(
-      child: OptionsDialog<DynamicSchemeVariant>(
-        title: appLocalizations.colorSchemes,
-        options: DynamicSchemeVariant.values,
-        textBuilder: (item) => Intl.message('${item.name}Scheme'),
-        value: schemeVariant,
-      ),
-    );
-    if (value == null) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(schemeVariant: value);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final (primaryColor, rawPrimaryColors, schemeVariant, isEquals) = ref.watch(
-      themeSettingProvider.select(
-        (state) => (
-          state.primaryColor,
-          state.primaryColors,
-          state.schemeVariant,
-          state.primaryColor == null &&
-              intListEquality.equals(state.primaryColors, defaultPrimaryColors),
-        ),
-      ),
-    );
-    final primaryColors = <int?>[null, ...rawPrimaryColors];
-    final isDynamic = primaryColor == null && globalState.corePalette != null;
-
-    return ItemCard(
-      info: Info(label: appLocalizations.themeColor, iconData: Icons.palette),
-      actions: genActions([
-        FilledButton(
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-          onPressed: isDynamic ? null : _handleChangeSchemeVariant,
-          child: Text(
-            isDynamic
-                ? appLocalizations.dynamicColor
-                : Intl.message('${schemeVariant.name}Scheme'),
-          ),
-        ),
-        if (!isEquals)
-          IconButton.filledTonal(
-            iconSize: 20,
-            padding: const EdgeInsets.all(4),
-            visualDensity: VisualDensity.compact,
-            onPressed: _handleReset,
-            icon: const Icon(Icons.replay),
-          ),
-      ], space: 8),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: LayoutBuilder(
-          builder: (_, constraints) {
-            final columns = _calcColumns(constraints.maxWidth);
-            final itemWidth =
-                (constraints.maxWidth - (columns - 1) * 16) / columns;
-            return Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                for (final color in primaryColors)
-                  SizedBox(
-                    width: itemWidth,
-                    height: itemWidth,
-                    child: EffectGestureDetector(
-                      onLongPress: color != null
-                          ? () {
-                              _handleDel(color);
-                            }
-                          : null,
-                      child: ColorSchemeBox(
-                        isSelected: color == primaryColor,
-                        primaryColor: color != null ? Color(color) : null,
-                        onPressed: () {
-                          ref
-                              .read(themeSettingProvider.notifier)
-                              .updateState(
-                                (state) => state.copyWith(primaryColor: color),
-                              );
-                        },
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 28,
+              child: Text(theme.sign, style: const TextStyle(fontSize: 20)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          theme.nameZh,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
                       ),
+                      if (theme.id == zodiacDefaultThemeId) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            appLocalizations.defaultText,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    theme.nameEn,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                Container(
-                  width: itemWidth,
-                  height: itemWidth,
-                  padding: const EdgeInsets.all(4),
-                  child: IconButton.filledTonal(
-                    onPressed: _handleAdd,
-                    iconSize: 32,
-                    icon: Icon(color: context.colorScheme.primary, Icons.add),
-                  ),
-                ),
-              ],
-            );
-          },
+                ],
+              ),
+            ),
+            _dot(theme.light.primary),
+            const SizedBox(width: 4),
+            _dot(theme.light.secondary),
+            const SizedBox(width: 4),
+            _dot(theme.dark.primary),
+            const SizedBox(width: 4),
+            _dot(theme.dark.secondary),
+            const SizedBox(width: 8),
+            Icon(
+              isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 20,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+          ],
         ),
       ),
     );
@@ -513,150 +396,6 @@ class _TextScaleFactorItem extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _PaletteDialog extends StatefulWidget {
-  const _PaletteDialog();
-
-  @override
-  State<_PaletteDialog> createState() => _PaletteDialogState();
-}
-
-class _PaletteDialogState extends State<_PaletteDialog> {
-  static final RegExp _hex6RegExp = RegExp(r'^#?[0-9a-f]{6}$');
-  static final RegExp _hex8RegExp = RegExp(r'^#?[0-9a-f]{8}$');
-  static final RegExp _rgbRegExp = RegExp(
-    r'^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$',
-  );
-
-  final _controller = ValueNotifier<ui.Color>(const Color(defaultPrimaryColor));
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  ui.Color? _parseColor(String input) {
-    final cleanInput = input.trim().replaceAll(' ', '').toLowerCase();
-
-    if (_hex6RegExp.hasMatch(cleanInput)) {
-      final hexString = cleanInput.startsWith('#')
-          ? cleanInput.substring(1)
-          : cleanInput;
-      final parsed = int.tryParse('FF$hexString', radix: 16);
-      return parsed != null ? ui.Color(parsed) : null;
-    }
-
-    if (_hex8RegExp.hasMatch(cleanInput)) {
-      final hexString = cleanInput.startsWith('#')
-          ? cleanInput.substring(1)
-          : cleanInput;
-      final parsed = int.tryParse(hexString, radix: 16);
-      return parsed != null ? ui.Color(parsed) : null;
-    }
-
-    if (_rgbRegExp.firstMatch(cleanInput) case final rgbMatch?) {
-      if ((rgbMatch.group(1), rgbMatch.group(2), rgbMatch.group(3)) case (
-        final rStr?,
-        final gStr?,
-        final bStr?,
-      )) {
-        final r = int.tryParse(rStr);
-        final g = int.tryParse(gStr);
-        final b = int.tryParse(bStr);
-        if ((r, g, b) case (final rVal?, final gVal?, final bVal?)) {
-          final aStr = rgbMatch.group(4);
-          final a = aStr != null ? (double.tryParse(aStr) ?? 1.0) : 1.0;
-
-          final alphaVal = (a * 255).round().clamp(0, 255);
-          return ui.Color.fromARGB(
-            alphaVal,
-            rVal.clamp(0, 255),
-            gVal.clamp(0, 255),
-            bVal.clamp(0, 255),
-          );
-        }
-      }
-    }
-
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonDialog(
-      title: appLocalizations.palette,
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(appLocalizations.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(_controller.value.toARGB32());
-          },
-          child: Text(appLocalizations.confirm),
-        ),
-      ],
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          RepaintBoundary(
-            child: SizedBox(
-              width: 250,
-              height: 250,
-              child: Palette(controller: _controller),
-            ),
-          ),
-          const SizedBox(height: 24),
-          ValueListenableBuilder<ui.Color>(
-            valueListenable: _controller,
-            builder: (_, color, _) {
-              return FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: color,
-                  foregroundColor: color.computeLuminance() > 0.5
-                      ? Colors.black
-                      : Colors.white,
-                ),
-                onPressed: () async {
-                  final customColorStr = await globalState
-                      .showCommonDialog<String>(
-                        child: InputDialog(
-                          title: appLocalizations.color,
-                          value: _controller.value.hex,
-                          hintText: '#000000 / rgb(0,0,0)',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return appLocalizations.emptyTip(
-                                appLocalizations.color,
-                              );
-                            }
-                            if (_parseColor(value) == null) {
-                              return appLocalizations.formatError;
-                            }
-                            return null;
-                          },
-                        ),
-                      );
-                  if (customColorStr != null) {
-                    final newColor = _parseColor(customColorStr);
-                    if (newColor != null) {
-                      _controller.value = newColor;
-                    }
-                  }
-                },
-                child: Text(color.hex),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }

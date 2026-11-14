@@ -636,6 +636,7 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
   useDarkIcon: json['useDarkIcon'] as bool? ?? false,
   useHarmonyFont: json['useHarmonyFont'] as bool? ?? false,
   invertTrayIcon: json['invertTrayIcon'] as bool? ?? false,
+  zodiacTheme: json['zodiacTheme'] as String? ?? zodiacDefaultThemeId,
 );
 
 Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
@@ -648,6 +649,7 @@ Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
       'useDarkIcon': instance.useDarkIcon,
       'useHarmonyFont': instance.useHarmonyFont,
       'invertTrayIcon': instance.invertTrayIcon,
+      'zodiacTheme': instance.zodiacTheme,
     };
 
 const _$ThemeModeEnumMap = {

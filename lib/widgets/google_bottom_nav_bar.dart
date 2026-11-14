@@ -196,12 +196,15 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     );
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
-    final primaryColor = colorScheme.primary;
+    // Zodiac tokens drive the bar: its body takes the navBar token and the
+    // selected item takes the family's selection color (the immersive
+    // family's arrow-teal secondary, other families' primary).
+    final primaryColor = context.zodiac?.navSelected ?? colorScheme.primary;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
 
-    final navColor = navBarBodyColor(
-      colorScheme,
-    ).withValues(alpha: 0.98);
+    final navColor =
+        (context.zodiac?.variant.navBar ?? navBarBodyColor(colorScheme))
+            .withValues(alpha: 0.98);
     final shadowStrength = isLight ? 1.0 : 3.0;
 
     const itemTextStyle = TextStyle(

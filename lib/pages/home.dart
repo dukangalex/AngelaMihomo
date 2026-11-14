@@ -161,10 +161,13 @@ class _HomePageState extends State<HomePage> {
             );
           }
           return Material(
-            color: isMobile
-                ? context.colorScheme.pageColor
-                : Colors.transparent,
-            child: bodyWidget,
+            color: Colors.transparent,
+            child: Stack(
+              children: [
+                const Positioned.fill(child: ZodiacBackdrop()),
+                bodyWidget,
+              ],
+            ),
           );
         },
         child: Consumer(

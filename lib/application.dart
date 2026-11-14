@@ -65,25 +65,35 @@ class ApplicationState extends ConsumerState<Application>
     ),
   );
 
-  final Map<Brightness, ((ColorScheme, String?), ThemeData)> _themeCache = {};
+  final Map<Brightness, ((ColorScheme, String?, String), ThemeData)>
+  _themeCache = {};
 
-  ThemeData _themeOf(ColorScheme colorScheme, String? fontFamily) {
-    final key = (colorScheme, fontFamily);
+  ThemeData _themeOf(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeExtension zodiac,
+  ) {
+    final key = (colorScheme, fontFamily, zodiac.themeId);
     final cached = _themeCache[colorScheme.brightness];
     if (cached != null && cached.$1 == key) {
       return cached.$2;
     }
-    final theme = _buildTheme(colorScheme, fontFamily);
+    final theme = _buildTheme(colorScheme, fontFamily, zodiac);
     _themeCache[colorScheme.brightness] = (key, theme);
     return theme;
   }
 
-  ThemeData _buildTheme(ColorScheme colorScheme, String? fontFamily) {
+  ThemeData _buildTheme(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeExtension zodiac,
+  ) {
     final isLight = colorScheme.brightness == Brightness.light;
     return ThemeData(
       useMaterial3: true,
+      extensions: [zodiac],
       pageTransitionsTheme: _pageTransitionsTheme,
-      scaffoldBackgroundColor: colorScheme.pageColor,
+      scaffoldBackgroundColor: zodiac.variant.backgroundBase,
       appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
       colorScheme: colorScheme,
       fontFamily: fontFamily,
@@ -376,6 +386,7 @@ class ApplicationState extends ConsumerState<Application>
             final fontFamily = themeProps.useHarmonyFont
                 ? 'HarmonyOS_Sans'
                 : null;
+            final zodiac = resolveZodiacTheme(themeProps.zodiacTheme);
             final lightColorScheme = ref.read(
               genColorSchemeProvider(Brightness.light),
             );
@@ -412,9 +423,19 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              themeMode: themeProps.themeMode,
-              theme: _themeOf(lightColorScheme, fontFamily),
-              darkTheme: _themeOf(darkColorScheme, fontFamily),
+              // Brightness follows the system only; the zodiac family has
+              // no in-app light/dark switch (DESIGN doc section 5.3).
+              themeMode: ThemeMode.system,
+              theme: _themeOf(
+                lightColorScheme,
+                fontFamily,
+                ZodiacThemeExtension.of(zodiac, Brightness.light),
+              ),
+              darkTheme: _themeOf(
+                darkColorScheme,
+                fontFamily,
+                ZodiacThemeExtension.of(zodiac, Brightness.dark),
+              ),
               home: child!,
             );
           },

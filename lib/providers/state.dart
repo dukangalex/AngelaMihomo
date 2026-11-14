@@ -4,8 +4,6 @@ import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_color_utilities/material_color_utilities.dart'
-    show DynamicScheme, Variant;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -574,8 +572,9 @@ class SortedGroupProxies extends _$SortedGroupProxies {
   @override
   List<Proxy>? build(String query, String groupName) {
     final group = ref.watch(
-      filterGroupsStateProvider(query)
-          .select((state) => state.value.getGroup(groupName)),
+      filterGroupsStateProvider(
+        query,
+      ).select((state) => state.value.getGroup(groupName)),
     );
     if (group == null) return _lastSorted = const [];
     final proxies = group.all;
@@ -1062,30 +1061,23 @@ ColorScheme genColorScheme(
       (state) => VM2(a: state.primaryColor, b: state.schemeVariant),
     ),
   );
-  if (color == null && (ignoreConfig == true || vm2.a == null)) {
-    if (globalState.corePalette case final palette?) {
-      return DynamicScheme(
-        sourceColorHct: palette.primary.keyColor,
-        variant: Variant.tonalSpot,
-        isDark: brightness == Brightness.dark,
-        primaryPalette: palette.primary,
-        secondaryPalette: palette.secondary,
-        tertiaryPalette: palette.tertiary,
-        neutralPalette: palette.neutral,
-        neutralVariantPalette: palette.neutralVariant,
-      ).toColorScheme().toNeutralSurfaces();
-    }
+  if (color != null || ignoreConfig) {
+    // Explicit-color previews keep the seed-based scheme.
     return ColorScheme.fromSeed(
-      seedColor: globalState.accentColor,
+      seedColor: color ?? Color(vm2.a ?? defaultPrimaryColor),
       brightness: brightness,
       dynamicSchemeVariant: vm2.b,
     ).toNeutralSurfaces();
   }
-  return ColorScheme.fromSeed(
-    seedColor: color ?? Color(vm2.a!),
-    brightness: brightness,
-    dynamicSchemeVariant: vm2.b,
-  ).toNeutralSurfaces();
+  // The twelve-constellation family is the only live theme source: the
+  // scheme comes straight from the selected theme's token table, and
+  // legacy upstream color/dynamic choices no longer apply.
+  final zodiacId = ref.watch(
+    themeSettingProvider.select((state) => state.zodiacTheme),
+  );
+  return resolveZodiacTheme(
+    zodiacId,
+  ).variant(brightness).toColorScheme(brightness);
 }
 
 @riverpod

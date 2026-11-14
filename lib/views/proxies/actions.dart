@@ -141,7 +141,7 @@ PopupMenuItemData _buildGroupItem(
             0 => Text('...', style: delayStyle),
             final delay => Text(
               delay < 0 ? '×' : '${delay}ms',
-              style: delayStyle?.copyWith(color: utils.getDelayColor(delay)),
+              style: delayStyle?.copyWith(color: zodiacDelayColor(context.zodiac?.variant, delay)),
             ),
           },
           onPressed: () {

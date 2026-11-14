@@ -434,6 +434,12 @@ abstract class ThemeProps with _$ThemeProps {
     @Default(false) bool useDarkIcon,
     @Default(false) bool useHarmonyFont,
     @Default(false) bool invertTrayIcon,
+
+    /// The twelve-constellation theme family selection (zodiac theme id).
+    /// Brightness always follows the system; legacy upstream color choices
+    /// above are kept only for stored-config compatibility and no longer
+    /// drive the color scheme.
+    @Default(zodiacDefaultThemeId) String zodiacTheme,
   }) = _ThemeProps;
 
   factory ThemeProps.fromJson(Map<String, Object?> json) =>
