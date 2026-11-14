@@ -97,12 +97,18 @@ class ApplicationState extends ConsumerState<Application>
       appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
       colorScheme: colorScheme,
       fontFamily: fontFamily,
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        shape: RoundedRectangleBorder(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
         elevation: 3,
         hoverElevation: 5,
+        // Bare FABs resolve their colors from the scheme, whose
+        // primaryContainer is the variant's selected face; the designed
+        // foreground on that face is onPrimary. The scheme default
+        // (onPrimaryContainer, mapped to textPrimary) fails on
+        // saturated selected faces in the light variants.
+        foregroundColor: zodiac.variant.onPrimary,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: isLight
@@ -403,19 +409,33 @@ class ApplicationState extends ConsumerState<Application>
                 ...GlobalMaterialLocalizations.delegates,
               ],
               builder: (_, child) {
-                return Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: globalState.animationEnabled,
-                    builder: (_, enabled, _) {
-                      return TickerMode(
-                        enabled: enabled,
-                        child: _buildApp(
-                          AppSidebarContainer(child: _buildPlatformApp(child!)),
-                        ),
-                      );
-                    },
-                  ),
+                // The zodiac backdrop is the single app-wide page
+                // background: it lives behind the whole navigator, not
+                // inside the home shell, so pages pushed over the shell
+                // (whose scaffolds are transparent by design) sit on it
+                // too instead of falling through to the window's black
+                // clear color.
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const ZodiacBackdrop(),
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: globalState.animationEnabled,
+                        builder: (_, enabled, _) {
+                          return TickerMode(
+                            enabled: enabled,
+                            child: _buildApp(
+                              AppSidebarContainer(
+                                child: _buildPlatformApp(child!),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
               scrollBehavior: BaseScrollBehavior(),

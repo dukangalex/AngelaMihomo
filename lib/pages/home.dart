@@ -160,15 +160,10 @@ class _HomePageState extends State<HomePage> {
               ],
             );
           }
-          return Material(
-            color: Colors.transparent,
-            child: Stack(
-              children: [
-                const Positioned.fill(child: ZodiacBackdrop()),
-                bodyWidget,
-              ],
-            ),
-          );
+          // The zodiac backdrop is painted once at the app root (see
+          // the MaterialApp builder in application.dart) so that pages
+          // pushed over the shell share it; the shell stays transparent.
+          return Material(color: Colors.transparent, child: bodyWidget);
         },
         child: Consumer(
           builder: (_, ref, _) {
