@@ -229,6 +229,7 @@ jobs:
         if: matrix.platform != 'windows'
         shell: bash
         run: |
+          set +e
           set -o pipefail
           {
             flutter pub get
