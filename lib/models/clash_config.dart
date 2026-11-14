@@ -287,9 +287,7 @@ abstract class Tun with _$Tun {
     @Default(tunDeviceName) String device,
     @JsonKey(name: 'auto-route') @Default(false) bool autoRoute,
     @Default(TunStack.mips) TunStack stack,
-    @JsonKey(name: 'congestion-controller')
-    @Default(CongestionController.bbr3)
-    CongestionController congestionController,
+    @JsonKey(name: 'dns-mode') TunDnsMode? dnsMode,
     @JsonKey(name: 'dns-hijack') @Default(['any:53']) List<String> dnsHijack,
     @JsonKey(name: 'route-address') @Default([]) List<String> routeAddress,
     @JsonKey(name: 'route-exclude-address')
@@ -328,10 +326,14 @@ extension TunExt on Tun {
     List<String>? bypassPrivateRouteAddress,
   }) {
     if (system.isDesktop) {
+      final dnsMode = dnsHijack.isNotEmpty
+          ? TunDnsMode.hijack
+          : TunDnsMode.disabled;
       if (bypassPrivateRoute) {
         return copyWith(
           autoRoute: true,
           autoRedirect: system.isLinux,
+          dnsMode: dnsMode,
           routeAddress: [],
           routeExcludeAddress:
               bypassPrivateRouteAddress ??
@@ -341,6 +343,7 @@ extension TunExt on Tun {
       return copyWith(
         autoRoute: true,
         autoRedirect: system.isLinux,
+        dnsMode: dnsMode,
         routeAddress: [],
         routeExcludeAddress: [],
       );
@@ -365,7 +368,6 @@ abstract class FallbackFilter with _$FallbackFilter {
     @Default(false) bool geoip,
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
     @Default([]) List<String> ipcidr,
-    @Default([]) List<String> domain,
   }) = _FallbackFilter;
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
       _$FallbackFilterFromJson(json);
@@ -383,7 +385,7 @@ abstract class Dns with _$Dns {
     @Default(true) @JsonKey(name: 'use-hosts') bool useHosts,
     @Default(true) @JsonKey(name: 'use-system-hosts') bool useSystemHosts,
     @Default(false) @JsonKey(name: 'respect-rules') bool respectRules,
-    @Default(false) bool ipv6,
+    @Default(true) bool ipv6,
     @Default(['114.114.114.114'])
     @JsonKey(name: 'default-nameserver')
     List<String> defaultNameserver,
@@ -399,25 +401,25 @@ abstract class Dns with _$Dns {
     FilterMode fakeIpFilterMode,
     @Default([
       '*',
-      'geosite:private',
-      'geosite:category-ntp',
-      'geosite:geolocation-cn',
-      'geosite:connectivity-check',
+      'rule-set:private_bettbox',
+      'rule-set:fakeip-filter_bettbox',
+      'rule-set:category-ntp_bettbox',
+      'rule-set:cn_bettbox',
+      'rule-set:connectivity-check_bettbox',
     ])
     @JsonKey(name: 'fake-ip-filter')
     List<String> fakeIpFilter,
     @Default(1) @JsonKey(name: 'fake-ip-ttl') int fakeIpTtl,
     @Default({
-      '+.internal.corp.com': '10.0.0.1',
-      'geosite:cn': '119.29.29.29',
-      'geosite:private': 'system',
+      'rule-set:cn_bettbox': '119.29.29.29',
+      'rule-set:private_bettbox': 'system',
       '*': 'system',
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
     @Default(['1.1.1.1']) List<String> nameserver,
     @Default([]) List<String> fallback,
-    @Default(['https://120.53.53.53/dns-query#DIRECT'])
+    @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
     @JsonKey(name: 'proxy-server-nameserver')
     List<String> proxyServerNameserver,
     @Default([])
@@ -438,11 +440,48 @@ abstract class Dns with _$Dns {
 
   factory Dns.safeDnsFromJson(Map<String, Object?> json) {
     try {
-      return Dns.fromJson(json);
+      return Dns.fromJson(_migrateLegacyGeoSite(json));
     } catch (_) {
       return const Dns();
     }
   }
+}
+
+const _legacyFakeIpFilter = {
+  'geosite:private': [
+    'rule-set:private_bettbox',
+    'rule-set:fakeip-filter_bettbox',
+  ],
+  'geosite:category-ntp': ['rule-set:category-ntp_bettbox'],
+  'geosite:geolocation-cn': ['rule-set:cn_bettbox'],
+  'geosite:connectivity-check': ['rule-set:connectivity-check_bettbox'],
+};
+
+const _legacyNameserverPolicy = {
+  'geosite:cn': 'rule-set:cn_bettbox',
+  'geosite:private': 'rule-set:private_bettbox',
+};
+
+Map<String, Object?> _migrateLegacyGeoSite(Map<String, Object?> json) {
+  final filter = json['fake-ip-filter'];
+  final policy = json['nameserver-policy'];
+  final migrateFilter =
+      filter is List && filter.any(_legacyFakeIpFilter.containsKey);
+  final migratePolicy =
+      policy is Map && policy.keys.any(_legacyNameserverPolicy.containsKey);
+  if (!migrateFilter && !migratePolicy) return json;
+  return {
+    ...json,
+    if (migrateFilter)
+      'fake-ip-filter': {
+        for (final item in filter) ...(_legacyFakeIpFilter[item] ?? [item]),
+      }.toList(),
+    if (migratePolicy)
+      'nameserver-policy': <String, Object?>{
+        for (final MapEntry(:key, :value) in policy.entries)
+          _legacyNameserverPolicy[key] ?? '$key': value,
+      },
+  };
 }
 
 extension DnsExt on Dns {
@@ -458,7 +497,7 @@ abstract class Ntp with _$Ntp {
   const factory Ntp({
     @Default(true) bool enable,
     @Default(false) @JsonKey(name: 'write-to-system') bool writeToSystem,
-    @Default('time.apple.com') String server,
+    @Default(defaultNtpServer) String server,
     @Default(123) int port,
     @Default(60) int interval,
   }) = _Ntp;
@@ -500,15 +539,15 @@ abstract class Experimental with _$Experimental {
 abstract class GeoXUrl with _$GeoXUrl {
   const factory GeoXUrl({
     @Default(
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
     )
     String mmdb,
     @Default(
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN.mmdb',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
     )
     String asn,
     @Default(
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
     )
     String geosite,
   }) = _GeoXUrl;
@@ -675,11 +714,15 @@ List<Rule> _genRule(List<dynamic>? rules) {
 }
 
 List<RuleProvider> _genRuleProviders(Map json) {
-  return json.entries.map((entry) => RuleProvider(name: entry.key.toString())).toList();
+  return json.entries
+      .map((entry) => RuleProvider(name: entry.key.toString()))
+      .toList();
 }
 
 List<SubRule> _genSubRules(Map json) {
-  return json.entries.map((entry) => SubRule(name: entry.key.toString())).toList();
+  return json.entries
+      .map((entry) => SubRule(name: entry.key.toString()))
+      .toList();
 }
 
 @freezed
@@ -699,6 +742,16 @@ abstract class ClashConfigSnippet with _$ClashConfigSnippet {
       _$ClashConfigSnippetFromJson(json);
 }
 
+extension ClashConfigExt on ClashConfig {
+  String get listenPorts => {
+    mixedPort,
+    port,
+    socksPort,
+    redirPort,
+    tproxyPort,
+  }.where((port) => port > 0).join('/');
+}
+
 @freezed
 abstract class ClashConfig with _$ClashConfig {
   const factory ClashConfig({
@@ -714,8 +767,8 @@ abstract class ClashConfig with _$ClashConfig {
     @JsonKey(name: 'skip-auth-prefixes')
     List<String> skipAuthPrefixes,
     @Default(LogLevel.error) @JsonKey(name: 'log-level') LogLevel logLevel,
-    @Default(false) bool ipv6,
-    @Default(FindProcessMode.off)
+    @Default(true) bool ipv6,
+    @Default(FindProcessMode.always)
     @JsonKey(
       name: 'find-process-mode',
       unknownEnumValue: FindProcessMode.always,
@@ -726,6 +779,7 @@ abstract class ClashConfig with _$ClashConfig {
     int keepAliveInterval,
     @Default(true) @JsonKey(name: 'unified-delay') bool unifiedDelay,
     @Default(true) @JsonKey(name: 'tcp-concurrent') bool tcpConcurrent,
+    @Default('') @JsonKey(name: 'interface-name') String interfaceName,
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,
     @Default(defaultDns) @JsonKey(fromJson: Dns.safeDnsFromJson) Dns dns,
     @Default(defaultNtp) @JsonKey(fromJson: Ntp.safeNtpFromJson) Ntp ntp,
@@ -759,16 +813,12 @@ abstract class ClashConfig with _$ClashConfig {
 
   factory ClashConfig.safeFormJson(Map<String, Object?>? json) {
     if (json == null) {
-      return system.isAndroid
-          ? const ClashConfig(findProcessMode: FindProcessMode.always)
-          : defaultClashConfig;
+      return defaultClashConfig;
     }
     try {
       return ClashConfig.fromJson(json);
     } catch (_) {
-      return system.isAndroid
-          ? const ClashConfig(findProcessMode: FindProcessMode.always)
-          : defaultClashConfig;
+      return defaultClashConfig;
     }
   }
 }

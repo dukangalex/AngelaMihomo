@@ -1,10 +1,11 @@
 // ignore_for_file: invalid_annotation_target
 
+import 'dart:io';
 import 'dart:math';
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'generated/common.freezed.dart';
@@ -15,7 +16,7 @@ abstract class NavigationItem with _$NavigationItem {
   const factory NavigationItem({
     required Icon icon,
     required PageLabel label,
-    final String? description,
+    String? description,
     required WidgetBuilder builder,
     @Default(true) bool keep,
     String? path,
@@ -44,11 +45,16 @@ abstract class Metadata with _$Metadata {
   const factory Metadata({
     @Default(0) int uid,
     @Default('') String network,
+    @Default('') String type,
     @Default('') String sourceIP,
     @Default('') String sourcePort,
     @Default('') String destinationIP,
     @Default('') String destinationPort,
     @Default('') String host,
+    @Default('') String sniffHost,
+    @Default('') String inboundName,
+    @Default('') String inboundPort,
+    @Default('') String inboundUser,
     DnsMode? dnsMode,
     @Default('') String process,
     @Default('') String processPath,
@@ -106,33 +112,105 @@ extension TrackerInfoExt on TrackerInfo {
   }
 }
 
-String _logDateTime(dynamic _) {
-  return DateTime.now().showFull;
+DateTime _logTime(Object? value) {
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  return DateTime.now();
 }
 
-// String _logId(_) {
-//   return utils.id;
-// }
+final _logModuleRegExp = RegExp(
+  r'^\[([A-Za-z][A-Za-z0-9_-]{0,15}(?: [A-Za-z0-9_-]{1,15})?)\]\s*',
+);
 
 @freezed
 abstract class Log with _$Log {
   const factory Log({
-    // @JsonKey(fromJson: _logId) required String id,
     @JsonKey(name: 'LogLevel') @Default(LogLevel.error) LogLevel logLevel,
     @JsonKey(name: 'Payload') @Default('') String payload,
-    @JsonKey(fromJson: _logDateTime) required String dateTime,
+    @JsonKey(fromJson: _logTime) required DateTime time,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    @Default(LogSource.core)
+    LogSource source,
+    @JsonKey(includeFromJson: false, includeToJson: false) String? module,
   }) = _Log;
 
-  factory Log.app(String payload) {
+  factory Log.core(Map<String, Object?> json) {
+    final raw = Log.fromJson(json);
+    final log = raw.copyWith(payload: raw.payload.trimRight());
+    final match = _logModuleRegExp.firstMatch(log.payload);
+    if (match == null) return log;
+    final module = match.group(1);
+    final payload = log.payload.substring(match.end);
+    if (module == 'APP') {
+      return log.copyWith(payload: payload, source: LogSource.app);
+    }
+    return log.copyWith(payload: payload, module: module);
+  }
+
+  factory Log.app(String payload, {LogLevel level = LogLevel.info}) {
     return Log(
-      logLevel: LogLevel.info,
-      payload: payload,
-      dateTime: _logDateTime(null),
-      // id: _logId(null),
+      logLevel: level,
+      payload: payload.trimRight(),
+      time: DateTime.now(),
+      source: LogSource.app,
     );
   }
 
   factory Log.fromJson(Map<String, Object?> json) => _$LogFromJson(json);
+}
+
+extension LogExt on Log {
+  String get tag => module ?? (source == LogSource.app ? 'APP' : 'Core');
+
+  String get raw {
+    final module = this.module;
+    return module == null ? payload : '[$module] $payload';
+  }
+
+  String get line {
+    final module = this.module;
+    final origin = module == null ? source.name : '${source.name}/$module';
+    return '${time.showFullMillis} [${logLevel.name}] [$origin] $payload';
+  }
+}
+
+typedef FilteredLogs = ({List<Log> logs, int errors, int warnings});
+
+@freezed
+abstract class LogsFilterState with _$LogsFilterState {
+  const factory LogsFilterState({
+    LogSource? source,
+    @Default({}) Set<LogLevel> levels,
+    String? module,
+    @Default('') String query,
+  }) = _LogsFilterState;
+}
+
+extension LogsFilterStateExt on LogsFilterState {
+  bool get hasFacet => source != null || levels.isNotEmpty || module != null;
+
+  FilteredLogs apply(List<Log> logs) {
+    final lowQuery = query.toLowerCase();
+    final result = <Log>[];
+    var errors = 0;
+    var warnings = 0;
+    for (final log in logs) {
+      if (source != null && log.source != source) continue;
+      if (module != null && log.tag != module) continue;
+      if (lowQuery.isNotEmpty && !log.raw.toLowerCase().contains(lowQuery)) {
+        continue;
+      }
+      if (log.logLevel == LogLevel.error) {
+        errors++;
+      } else if (log.logLevel == LogLevel.warning) {
+        warnings++;
+      }
+      if (levels.isNotEmpty && !levels.contains(log.logLevel)) continue;
+      result.add(log);
+    }
+    return (logs: result, errors: errors, warnings: warnings);
+  }
 }
 
 @freezed
@@ -199,6 +277,7 @@ abstract class DAV with _$DAV {
     required String user,
     required String password,
     @Default(defaultDavFileName) String fileName,
+    @Default(false) bool autoBackup,
   }) = _DAV;
 
   factory DAV.fromJson(Map<String, Object?> json) => _$DAVFromJson(json);
@@ -213,6 +292,31 @@ abstract class FileInfo with _$FileInfo {
 extension FileInfoExt on FileInfo {
   String get desc =>
       '${TrafficValue(value: size).show}  ·  ${lastModified.lastUpdateTimeDesc}';
+}
+
+@freezed
+abstract class NetworkInfo with _$NetworkInfo {
+  const factory NetworkInfo({
+    @Default('') String type,
+    @JsonKey(name: 'interface') @Default('') String interfaceName,
+    @Default('') String ip,
+    @Default('') String gateway,
+    @Default([]) List<String> dns,
+  }) = _NetworkInfo;
+
+  factory NetworkInfo.fromJson(Map<String, Object?> json) =>
+      _$NetworkInfoFromJson(json);
+}
+
+@freezed
+abstract class CoreInterface with _$CoreInterface {
+  const factory CoreInterface({
+    required String name,
+    @Default([]) List<String> addresses,
+  }) = _CoreInterface;
+
+  factory CoreInterface.fromJson(Map<String, Object?> json) =>
+      _$CoreInterfaceFromJson(json);
 }
 
 @freezed
@@ -298,11 +402,38 @@ abstract class Group with _$Group {
   factory Group.fromJson(Map<String, Object?> json) => _$GroupFromJson(json);
 }
 
-extension GroupsExt on List<Group> {
-  Group? getGroup(String groupName) {
-    final index = indexWhere((element) => element.name == groupName);
-    return index != -1 ? this[index] : null;
+class _GroupsIndex {
+  _GroupsIndex(this._groups) {
+    for (final group in _groups) {
+      byName.putIfAbsent(group.name, () => group);
+    }
   }
+
+  final List<Group> _groups;
+  final Map<String, Group> byName = {};
+
+  late final Map<String, Proxy> rematchProxies = () {
+    final result = <String, Proxy>{};
+    for (final group in _groups) {
+      for (final proxy in group.all) {
+        final type = proxy.type;
+        if (type.length == 7 && type.toUpperCase() == 'REMATCH') {
+          result.putIfAbsent(proxy.name, () => proxy);
+        }
+      }
+    }
+    return result;
+  }();
+}
+
+final _groupsIndexes = Expando<_GroupsIndex>();
+
+extension GroupsExt on List<Group> {
+  _GroupsIndex get _index => _groupsIndexes[this] ??= _GroupsIndex(this);
+
+  Group? getGroup(String groupName) => _index.byName[groupName];
+
+  Proxy? getRematchProxy(String proxyName) => _index.rematchProxies[proxyName];
 }
 
 extension GroupExt on Group {
@@ -415,6 +546,70 @@ extension ColorSchemesExt on ColorSchemes {
   }
 }
 
+@freezed
+abstract class IpRiskCheck with _$IpRiskCheck {
+  const factory IpRiskCheck({
+    required IpRiskGroup group,
+    required String name,
+    bool? hit,
+  }) = _IpRiskCheck;
+
+  factory IpRiskCheck.fromJson(Map<String, Object?> json) =>
+      _$IpRiskCheckFromJson(json);
+}
+
+@freezed
+abstract class IpRiskNote with _$IpRiskNote {
+  const factory IpRiskNote({
+    bool? direct,
+    @Default('') String isp,
+    IpRiskAmount? amount,
+    IpRiskShare? share,
+    @Default('') String operatorName,
+    IpRiskLevel? operatorLevel,
+    @Default('') String ownerName,
+    IpRiskLevel? ownerLevel,
+    IpRiskConnection? connection,
+    IpRiskLevel? warning,
+  }) = _IpRiskNote;
+
+  factory IpRiskNote.fromJson(Map<String, Object?> json) =>
+      _$IpRiskNoteFromJson(json);
+}
+
+@freezed
+abstract class IpRisk with _$IpRisk {
+  const factory IpRisk({
+    required String ip,
+    required int score,
+    required IpRiskLevel level,
+    @Default('') String hostname,
+    @Default('') String asn,
+    @Default('') String isp,
+    @Default('') String organization,
+    @Default('') String country,
+    @Default('') String countryCode,
+    @Default('') String region,
+    @Default('') String city,
+    @Default([]) List<IpRiskCheck> checks,
+    IpRiskNote? note,
+  }) = _IpRisk;
+
+  factory IpRisk.fromJson(Map<String, Object?> json) => _$IpRiskFromJson(json);
+}
+
+extension IpRiskExt on IpRisk {
+  bool get isHomeBroadband =>
+      checks.isNotEmpty &&
+      checks.any((check) => check.group == IpRiskGroup.datacenter) &&
+      checks.every((check) => check.hit != true);
+
+  int get displayScore => !isHomeBroadband && score == 0 ? 1 : score;
+
+  IpRisk get normalized =>
+      !isHomeBroadband && score == 0 ? copyWith(score: 1) : this;
+}
+
 class IpInfo {
   final String ip;
   final String countryCode;
@@ -430,7 +625,7 @@ class IpInfo {
 
   IpInfo({
     required this.ip,
-    required this.countryCode,
+    required String countryCode,
     String? country,
     this.province,
     this.city,
@@ -440,16 +635,163 @@ class IpInfo {
     this.asDomain,
     this.continent,
     this.continentCode,
-  }) : country = _normalizeCountry(country);
+  }) : countryCode = normalizeCountryCode(countryCode, country, province),
+       country = normalizeCountry(
+         country,
+         normalizeCountryCode(countryCode, country, province),
+         province,
+       );
 
-  static String? _normalizeCountry(String? country) {
-    if (country == null) return null;
+  static bool _isTaiwan(String? text) {
+    if (text == null || text.isEmpty) return false;
+    final trimmed = text.trim();
+    final lower = trimmed.toLowerCase();
+    if (lower == 'tw' ||
+        lower == 'twn' ||
+        lower == 'taiwan' ||
+        lower == 'taiwan (china)' ||
+        lower == 'taiwan, china' ||
+        lower == 'taiwan, province of china' ||
+        lower == 'republic of china' ||
+        lower == 'republic of china (taiwan)' ||
+        lower == 'taiwan (roc)' ||
+        lower == 'taiwan, roc' ||
+        lower == 'roc') {
+      return true;
+    }
+    if (trimmed == '台湾' ||
+        trimmed == '台灣' ||
+        trimmed == '臺灣' ||
+        trimmed == '台湾省' ||
+        trimmed == '臺灣省' ||
+        trimmed == '台湾 (中国)' ||
+        trimmed == '台灣 (中国)' ||
+        trimmed == '臺灣 (中国)' ||
+        trimmed == '中国台湾' ||
+        trimmed == '中國台灣' ||
+        trimmed == '中國臺灣' ||
+        trimmed == '中华民国' ||
+        trimmed == '中華民國') {
+      return true;
+    }
+    if (trimmed.contains('中华民国') ||
+        trimmed.contains('中華民國') ||
+        trimmed.contains('台湾') ||
+        trimmed.contains('台灣') ||
+        trimmed.contains('臺灣')) {
+      return true;
+    }
+    return false;
+  }
+
+  static String normalizeCountryCode(
+    String countryCode, [
+    String? country,
+    String? province,
+  ]) {
+    final clean = countryCode.trim().toUpperCase();
+    if (clean.length == 2 && RegExp(r'^[A-Z]{2}$').hasMatch(clean)) {
+      if (clean == 'CN') {
+        if (_isTaiwan(province) || _isTaiwan(country)) {
+          return 'TW';
+        }
+        if (province == '香港' || country == '香港') return 'HK';
+        if (province == '澳门' ||
+            province == '澳門' ||
+            country == '澳门' ||
+            country == '澳門') {
+          return 'MO';
+        }
+      }
+      return clean;
+    }
+    if (_isTaiwan(clean) || _isTaiwan(country) || _isTaiwan(province)) {
+      return 'TW';
+    }
+    if (clean == 'HK' ||
+        clean == 'HKG' ||
+        country == '香港' ||
+        province == '香港') {
+      return 'HK';
+    }
+    if (clean == 'MO' ||
+        clean == 'MAC' ||
+        clean == 'MFM' ||
+        country == '澳门' ||
+        country == '澳門' ||
+        province == '澳门' ||
+        province == '澳門') {
+      return 'MO';
+    }
+    return clean;
+  }
+
+  static String? normalizeCountry(
+    String? country, [
+    String? countryCode,
+    String? province,
+  ]) {
+    final effectiveCode = countryCode?.trim().toUpperCase();
+    if (country == null || country.trim().isEmpty) {
+      if (effectiveCode == 'TW' || _isTaiwan(province)) {
+        return '台湾 (中国)';
+      }
+      return null;
+    }
     final trimmed = country.trim();
-    if (trimmed.toLowerCase() == 'taiwan') {
+    if (trimmed == '台湾 (中国)' ||
+        trimmed == '台灣 (中国)' ||
+        trimmed == '臺灣 (中国)' ||
+        trimmed == 'Taiwan (China)' ||
+        trimmed == '中国台湾' ||
+        trimmed == '中國台灣' ||
+        trimmed == '中國臺灣') {
+      return trimmed;
+    }
+    if (trimmed.endsWith('(中国)') ||
+        trimmed.endsWith('（中国）') ||
+        trimmed.endsWith('(China)') ||
+        trimmed.endsWith('（China）') ||
+        trimmed.endsWith('(中國)') ||
+        trimmed.endsWith('（中國）')) {
+      return trimmed;
+    }
+    final lower = trimmed.toLowerCase();
+    if (lower == 'taiwan' ||
+        lower == 'republic of china' ||
+        lower == 'republic of china (taiwan)' ||
+        lower == 'taiwan (roc)' ||
+        lower == 'taiwan, roc' ||
+        lower == 'roc' ||
+        lower == 'taiwan, province of china' ||
+        lower == 'taiwan, china') {
       return 'Taiwan (China)';
     }
-    if (trimmed == '台湾' || trimmed == '台灣') {
-      return '$trimmed (中国)';
+    if (trimmed == '中華民國' ||
+        trimmed.contains('中華民國') ||
+        trimmed == '台灣' ||
+        trimmed == '臺灣') {
+      return '台灣 (中国)';
+    }
+    if (trimmed == '中华民国' || trimmed.contains('中华民国') || trimmed == '台湾') {
+      return '台湾 (中国)';
+    }
+    if (trimmed == '台湾省') {
+      return '台湾省 (中国)';
+    }
+    if (trimmed == '台灣省' || trimmed == '臺灣省') {
+      return '台灣省 (中国)';
+    }
+    if (effectiveCode == 'TW' || _isTaiwan(province)) {
+      if (trimmed == '中国' || trimmed == '中國') {
+        if (province != null &&
+            (province.contains('中華民國') ||
+                province.contains('台灣') ||
+                province.contains('臺灣'))) {
+          return '台灣 (中国)';
+        }
+        return '台湾 (中国)';
+      }
     }
     return country;
   }
@@ -461,10 +803,16 @@ class IpInfo {
       final loc = data['location'];
       if (loc is List && ip.isNotEmpty) {
         final locList = loc.map((e) => e?.toString() ?? '').toList();
-        final country = locList.isNotEmpty && locList[0].isNotEmpty ? locList[0] : null;
+        final country = locList.isNotEmpty && locList[0].isNotEmpty
+            ? locList[0]
+            : null;
         final countryCode = country == '中国' ? 'CN' : '';
-        final province = locList.length > 1 && locList[1].isNotEmpty ? locList[1] : null;
-        final city = locList.length > 2 && locList[2].isNotEmpty ? locList[2] : null;
+        final province = locList.length > 1 && locList[1].isNotEmpty
+            ? locList[1]
+            : null;
+        final city = locList.length > 2 && locList[2].isNotEmpty
+            ? locList[2]
+            : null;
         final last = locList.length > 4 && locList[4].isNotEmpty
             ? locList[4]
             : (locList.length > 3 && locList[3].isNotEmpty ? locList[3] : null);
@@ -496,6 +844,35 @@ class IpInfo {
     }
 
     final ip = json['ip']?.toString() ?? '';
+    if (json['region'] is String && json.containsKey('llc')) {
+      final region = (json['region'] as String)
+          .split(RegExp(r'\s+'))
+          .where((item) => item.isNotEmpty)
+          .toList();
+      final country = region.firstOrNull;
+      final llc = json['llc']?.toString() ?? '';
+      final isp = llc.isNotEmpty ? llc : json['isp']?.toString();
+      final rawAsn = json['asn']?.toString().trim().toUpperCase() ?? '';
+      if (ip.isNotEmpty) {
+        return IpInfo(
+          ip: ip,
+          countryCode: country == '中国'
+              ? switch (region.elementAtOrNull(1)) {
+                  '台湾' => 'TW',
+                  '香港' => 'HK',
+                  '澳门' => 'MO',
+                  _ => 'CN',
+                }
+              : '',
+          country: country,
+          province: region.elementAtOrNull(1),
+          city: region.elementAtOrNull(2),
+          isp: isp,
+          asName: isp,
+          asn: rawAsn.isEmpty ? null : rawAsn,
+        );
+      }
+    }
     if (json['location'] is Map) {
       final loc = json['location'] as Map;
       final countryCode = loc['country_code']?.toString() ?? '';
@@ -513,16 +890,21 @@ class IpInfo {
       }
     }
 
-    if (json['query'] != null || json['countryCode'] != null || json['status'] != null) {
+    if (json['query'] != null ||
+        json['countryCode'] != null ||
+        json['status'] != null) {
       if (json['status'] != null && json['status'] != 'success') {
-        throw FormatException('ip-api.com status not success: ${json['message']}');
+        throw FormatException(
+          'ip-api.com status not success: ${json['message']}',
+        );
       }
       final ip = (json['query'] ?? json['ip'])?.toString() ?? '';
       final countryCode =
           (json['countryCode'] ?? json['country_code'])?.toString() ?? '';
       final country = json['country']?.toString();
       final province =
-          (json['regionName'] ?? json['region'] ?? json['province'])?.toString();
+          (json['regionName'] ?? json['region'] ?? json['province'])
+              ?.toString();
       final city = json['city']?.toString();
       final isp = json['isp']?.toString();
       final org = json['org']?.toString();
@@ -531,8 +913,10 @@ class IpInfo {
           : (json['as_name']?.toString());
 
       final rawAs = (json['as'] ?? json['asn'])?.toString() ?? '';
-      final asnMatch =
-          RegExp(r'^(AS\d+)', caseSensitive: false).firstMatch(rawAs.trim());
+      final asnMatch = RegExp(
+        r'^(AS\d+)',
+        caseSensitive: false,
+      ).firstMatch(rawAs.trim());
       final asn = asnMatch != null
           ? asnMatch.group(1)!.toUpperCase()
           : (rawAs.isNotEmpty ? rawAs.trim().split(' ').first : null);
@@ -553,13 +937,14 @@ class IpInfo {
 
     if (json['country_code'] != null && json['country_code3'] != null) {
       final ip = json['ip']?.toString() ?? '';
-      final org = json['organization_name']?.toString() ??
+      final org =
+          json['organization_name']?.toString() ??
           json['organization']?.toString();
       final rawAsn = json['asn']?.toString() ?? '';
       final asn = rawAsn.isNotEmpty
           ? (rawAsn.toUpperCase().startsWith('AS')
-              ? rawAsn.toUpperCase()
-              : 'AS$rawAsn')
+                ? rawAsn.toUpperCase()
+                : 'AS$rawAsn')
           : null;
       if (ip.isNotEmpty) {
         return IpInfo(
@@ -631,7 +1016,8 @@ class IpInfo {
   }
 
   IpInfo merge(IpInfo other, {bool otherIsAuthoritative = false}) {
-    final isOtherPrimary = otherIsAuthoritative ||
+    final isOtherPrimary =
+        otherIsAuthoritative ||
         ((asn == null || asn!.isEmpty) &&
             (other.asn != null && other.asn!.isNotEmpty));
 
@@ -639,17 +1025,17 @@ class IpInfo {
     final secondary = isOtherPrimary ? this : other;
 
     final mergedIp = primary.ip.isNotEmpty ? primary.ip : secondary.ip;
-    final bool isSameIp = primary.ip.isEmpty ||
+    final bool isSameIp =
+        primary.ip.isEmpty ||
         secondary.ip.isEmpty ||
         primary.ip == secondary.ip;
 
     final primaryCc = primary.countryCode.trim().toUpperCase();
     final secondaryCc = secondary.countryCode.trim().toUpperCase();
 
-    final bool isSameCountry = isSameIp &&
-        (primaryCc.isEmpty ||
-            secondaryCc.isEmpty ||
-            primaryCc == secondaryCc);
+    final bool isSameCountry =
+        isSameIp &&
+        (primaryCc.isEmpty || secondaryCc.isEmpty || primaryCc == secondaryCc);
 
     final mergedCountryCode = primaryCc.isNotEmpty ? primaryCc : secondaryCc;
 
@@ -674,15 +1060,18 @@ class IpInfo {
         ? primary.city
         : (isSameCountry ? secondary.city : null);
 
-    final mergedAsn =
-        primary.asn?.isNotEmpty == true ? primary.asn : secondary.asn;
-    final mergedAsName =
-        primary.asName?.isNotEmpty == true ? primary.asName : secondary.asName;
+    final mergedAsn = primary.asn?.isNotEmpty == true
+        ? primary.asn
+        : secondary.asn;
+    final mergedAsName = primary.asName?.isNotEmpty == true
+        ? primary.asName
+        : secondary.asName;
     final mergedAsDomain = primary.asDomain?.isNotEmpty == true
         ? primary.asDomain
         : secondary.asDomain;
-    final mergedIsp =
-        primary.isp?.isNotEmpty == true ? primary.isp : secondary.isp;
+    final mergedIsp = primary.isp?.isNotEmpty == true
+        ? primary.isp
+        : secondary.isp;
     final mergedContinent = primary.continent?.isNotEmpty == true
         ? primary.continent
         : secondary.continent;
@@ -784,12 +1173,16 @@ class PopupMenuItemData {
   const PopupMenuItemData({
     this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
+    this.trailing,
+    this.children,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final Widget? trailing;
+  final List<PopupMenuItemData>? children;
 }
 
 @freezed
@@ -819,8 +1212,12 @@ abstract class Result<T> with _$Result<T> {
     @Default(false) bool needRestart,
   }) = _Result;
 
-  factory Result.success(T data, {bool needRestart = false}) =>
-      Result(data: data, type: ResultType.success, message: '', needRestart: needRestart);
+  factory Result.success(T data, {bool needRestart = false}) => Result(
+    data: data,
+    type: ResultType.success,
+    message: '',
+    needRestart: needRestart,
+  );
 
   factory Result.error(String message) =>
       Result(data: null, type: ResultType.error, message: message);
@@ -837,21 +1234,141 @@ abstract class Script with _$Script {
   const factory Script({
     required String id,
     required String label,
-    required String content,
+    @Default('') String content,
     String? url,
     @JsonKey(name: 'custom-options') Map<String, bool>? customOptions,
+    String? digest,
+    @Default(false) bool compatible,
+    bool? volatile,
   }) = _Script;
 
-  factory Script.create({required String label, required String content, String? url}) {
-    return Script(id: utils.uuidV4, label: label, content: content, url: url);
+  factory Script.create({required String label, String? url}) {
+    return Script(id: utils.uuidV4, label: label, url: url);
   }
 
   factory Script.fromJson(Map<String, Object?> json) => _$ScriptFromJson(json);
 }
 
+final volatileScriptPattern = RegExp(r'\bDate\b|Math\s*\.\s*random');
+
+@freezed
+abstract class RouteRuleSet with _$RouteRuleSet {
+  const factory RouteRuleSet({
+    required String tag,
+    @Default('geosite') String type,
+    String? name,
+    String? icon,
+    int? count,
+  }) = _RouteRuleSet;
+
+  factory RouteRuleSet.fromJson(Map<String, Object?> json) =>
+      _$RouteRuleSetFromJson(json);
+}
+
+extension RouteRuleSetExt on RouteRuleSet {
+  String get key => '$type:$tag';
+
+  String get label => name ?? tag;
+}
+
+@freezed
+abstract class RouteService with _$RouteService {
+  const factory RouteService({
+    required String name,
+    String? icon,
+    @Default([]) List<String> sets,
+    @Default([]) List<String> keywords,
+    @Default([]) List<String> groups,
+    @JsonKey(unknownEnumValue: RouteCategory.other)
+    @Default(RouteCategory.other)
+    RouteCategory category,
+  }) = _RouteService;
+
+  factory RouteService.fromJson(Map<String, Object?> json) =>
+      _$RouteServiceFromJson(json);
+}
+
+@freezed
+abstract class RouteRegion with _$RouteRegion {
+  const factory RouteRegion({
+    required String name,
+    String? icon,
+    @JsonKey(name: 'default') @Default(false) bool preset,
+  }) = _RouteRegion;
+
+  factory RouteRegion.fromJson(Map<String, Object?> json) =>
+      _$RouteRegionFromJson(json);
+}
+
+@freezed
+abstract class RouteCatalog with _$RouteCatalog {
+  const factory RouteCatalog({
+    @Default([]) List<String> targets,
+    @Default([]) List<String> reserved,
+    @Default([]) List<RouteRegion> regions,
+    @Default({}) Map<String, RouteCategory> groupCategories,
+    @Default([]) List<String> icons,
+    @Default([]) List<RouteService> services,
+    @Default([]) List<RouteRuleSet> sets,
+  }) = _RouteCatalog;
+
+  factory RouteCatalog.fromJson(Map<String, Object?> json) =>
+      _$RouteCatalogFromJson(json);
+}
+
 extension ScriptExt on Script {
-  bool get isCompatibleWithBettbox {
-    final head = content.length > 2000 ? content.substring(0, 2000) : content;
-    return head.contains('Compatible_With_Bettbox');
+  Future<String> readContent() async {
+    if (content.isNotEmpty) return content;
+    final file = File(await appPath.getScriptPath(id));
+    if (!await file.exists()) return '';
+    return file.readAsString();
   }
+
+  Future<Script> writeContent(String value) async {
+    final path = await appPath.getScriptPath(id);
+    final temp = File('$path.${DateTime.now().microsecondsSinceEpoch}.tmp');
+    await temp.parent.create(recursive: true);
+    await temp.writeAsString(value, flush: true);
+    await temp.rename(path);
+    final head = value.length > 2000 ? value.substring(0, 2000) : value;
+    return copyWith(
+      content: '',
+      digest: value.toMd5(),
+      compatible:
+          head.contains('Compatible_With_AngelaMihomo') ||
+          head.contains('Compatible_With_Bettbox') ||
+          head.contains('Compatible_With_Mihomo'),
+      volatile: volatileScriptPattern.hasMatch(value),
+    );
+  }
+
+  Future<void> deleteContent() async {
+    final file = File(await appPath.getScriptPath(id));
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+}
+
+@freezed
+abstract class IconSetIcon with _$IconSetIcon {
+  const factory IconSetIcon({required String name, required String url}) =
+      _IconSetIcon;
+
+  factory IconSetIcon.fromJson(Map<String, Object?> json) =>
+      _$IconSetIconFromJson(json);
+}
+
+@freezed
+abstract class IconSet with _$IconSet {
+  const factory IconSet({
+    required String id,
+    required String name,
+    @Default('') String url,
+    @Default([]) List<IconSetIcon> icons,
+    DateTime? lastUpdateTime,
+  }) = _IconSet;
+
+  factory IconSet.fromJson(Map<String, Object?> json) =>
+      _$IconSetFromJson(json);
 }

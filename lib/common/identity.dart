@@ -1,14 +1,21 @@
 const _useDevIdentity = bool.fromEnvironment('APP_DEV');
+const _useLiteBuild = bool.fromEnvironment('APP_LITE');
 
 class AppIdentity {
   static const isDev = _useDevIdentity;
+  static const isLite = _useLiteBuild;
 
-  static const productName = 'Bettbox';
+  // Internal plumbing name (executables, core, service, data dir). Display brand is displayName.
+  static const productName = 'AngelaMihomo';
+
+  // Pre-rebrand plumbing name, kept only so backups, stored secrets and
+  // other legacy artifacts produced by older builds stay readable.
+  static const legacyProductName = 'Bettbox';
   static const devSuffix = 'Dev';
-  static const packageId = 'com.appshub.bettbox';
+  static const packageId = 'app.angelabettbox';
 
   static const compactName = isDev ? '$productName$devSuffix' : productName;
-  static const displayName = isDev ? '$productName Dev' : productName;
+  static const displayName = isDev ? 'Angela Mihomo Dev' : 'Angela Mihomo';
   static const mainExecutableName = productName;
   static const coreExecutableName = '${compactName}Core';
   static const dataDirName = compactName;

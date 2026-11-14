@@ -1,10 +1,17 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'config.dart';
 
 part 'generated/app.g.dart';
 
@@ -28,18 +35,22 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
     return globalState.appState.logs;
   }
 
-  void addLog(Log value) {
-    Future.microtask(() {
-      state = state.copyWith()..add(value);
-    });
+  void addLogs(List<Log> values) {
+    if (values.isEmpty) return;
+    final next = state.copyWith();
+    for (final value in values) {
+      next.add(value);
+    }
+    state = next;
   }
 
-  void setLogs(List<Log> items) {
-    final newList = FixedList<Log>(maxLogLength);
-    for (final item in items) {
-      newList.add(item);
-    }
-    state = newList;
+  void mergeHistory(List<Log> history) {
+    final next = <Log>{
+      ...state.list.where((log) => log.source == LogSource.app),
+      ...history,
+    }.toList();
+    mergeSort(next, compare: (a, b) => a.time.compareTo(b.time));
+    state = FixedList(maxLogLength, list: next);
   }
 
   @override
@@ -52,30 +63,47 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
   }
 }
 
-// Search and filter providers for logs
-final logsSearchProvider = StateProvider<String>((ref) => '');
-final logsKeywordsProvider = StateProvider<List<String>>((ref) => []);
+@riverpod
+class LogsFilter extends _$LogsFilter {
+  @override
+  LogsFilterState build() {
+    return const LogsFilterState();
+  }
 
-final filteredLogsProvider = Provider<List<Log>>((ref) {
-  final logs = ref.watch(logsProvider.select((s) => s.list));
-  final query = ref.watch(logsSearchProvider).toLowerCase();
-  final keywords = ref.watch(logsKeywordsProvider);
+  void setQuery(String query) {
+    state = state.copyWith(query: query);
+  }
 
-  return logs.where((item) {
-    if (query.isNotEmpty) {
-      final matchesQuery = item.payload.toLowerCase().contains(query) ||
-          item.logLevel.name.toLowerCase().contains(query) ||
-          item.dateTime.toLowerCase().contains(query);
-      if (!matchesQuery) return false;
+  void setSource(LogSource? source) {
+    state = state.copyWith(source: source);
+  }
+
+  void setModule(String? module) {
+    state = state.copyWith(module: module);
+  }
+
+  void setScope({LogSource? source, String? module}) {
+    state = state.copyWith(source: source, module: module);
+  }
+
+  void toggleLevel(LogLevel level) {
+    final levels = {...state.levels};
+    if (!levels.remove(level)) {
+      levels.add(level);
     }
-    if (keywords.isNotEmpty) {
-      final itemStr = '${item.payload} ${item.logLevel.name} ${item.dateTime}'.toLowerCase();
-      final matchesKeywords = keywords.every((keyword) => itemStr.contains(keyword.toLowerCase()));
-      if (!matchesKeywords) return false;
-    }
-    return true;
-  }).toList();
-});
+    state = state.copyWith(levels: levels);
+  }
+
+  void clearFacets() {
+    state = LogsFilterState(query: state.query);
+  }
+}
+
+@riverpod
+FilteredLogs filteredLogs(Ref ref) {
+  final logs = ref.watch(logsProvider.select((state) => state.list));
+  return ref.watch(logsFilterProvider).apply(logs);
+}
 
 @riverpod
 class Requests extends _$Requests with AutoDisposeNotifierMixin {
@@ -89,10 +117,13 @@ class Requests extends _$Requests with AutoDisposeNotifierMixin {
     globalState.appState = globalState.appState.copyWith(requests: value);
   }
 
-  void addRequest(TrackerInfo value) {
-    Future.microtask(() {
-      state = state.copyWith()..add(value);
-    });
+  void addRequests(List<TrackerInfo> values) {
+    if (values.isEmpty) return;
+    final next = state.copyWith();
+    for (final value in values) {
+      next.add(value);
+    }
+    state = next;
   }
 
   void setRequests(List<TrackerInfo> items) {
@@ -108,37 +139,43 @@ class Requests extends _$Requests with AutoDisposeNotifierMixin {
   }
 }
 
-// Search and filter providers for requests
-final requestsSearchProvider = StateProvider<String>((ref) => '');
-final requestsKeywordsProvider = StateProvider<List<String>>((ref) => []);
+bool _matchTrackerInfo(
+  TrackerInfo item,
+  String query,
+  List<String> keywords,
+  bool udpOnly,
+) {
+  if (udpOnly && item.metadata.network != 'udp') return false;
+  if (query.isNotEmpty) {
+    final meta = item.metadata;
+    final matchesQuery =
+        meta.host.toLowerCase().contains(query) ||
+        meta.destinationIP.toLowerCase().contains(query) ||
+        meta.process.toLowerCase().contains(query) ||
+        meta.network.toLowerCase().contains(query) ||
+        item.chains.any((c) => c.toLowerCase().contains(query));
+    if (!matchesQuery) return false;
+  }
+  if (keywords.isNotEmpty) {
+    final process = item.metadata.process;
+    final chains = item.chains;
+    final matchesKeywords = keywords.every(
+      (kw) => process == kw || chains.contains(kw),
+    );
+    if (!matchesKeywords) return false;
+  }
+  return true;
+}
 
 final filteredRequestsProvider = Provider<List<TrackerInfo>>((ref) {
   final requests = ref.watch(requestsProvider.select((s) => s.list));
-  final query = ref.watch(requestsSearchProvider).toLowerCase().trim();
-  final keywords = ref.watch(requestsKeywordsProvider);
+  final query = ref.watch(connectionsSearchProvider).toLowerCase().trim();
+  final keywords = ref.watch(connectionsKeywordsProvider);
+  final udpOnly = ref.watch(connectionsUdpOnlyProvider);
 
-  return requests.where((item) {
-    if (query.isNotEmpty) {
-      final networkText = item.metadata.network.toLowerCase();
-      final hostText = item.metadata.host.toLowerCase();
-      final destinationIPText = item.metadata.destinationIP.toLowerCase();
-      final processText = item.metadata.process.toLowerCase();
-      final chainsText = item.chains.join('').toLowerCase();
-      final matchesQuery = networkText.contains(query) ||
-          hostText.contains(query) ||
-          destinationIPText.contains(query) ||
-          processText.contains(query) ||
-          chainsText.contains(query);
-      if (!matchesQuery) return false;
-    }
-    if (keywords.isNotEmpty) {
-      final chains = item.chains;
-      final process = item.metadata.process;
-      final matchesKeywords = {...chains, process}.containsAll(keywords);
-      if (!matchesKeywords) return false;
-    }
-    return true;
-  }).toList();
+  return requests
+      .where((item) => _matchTrackerInfo(item, query, keywords, udpOnly))
+      .toList();
 });
 
 @riverpod
@@ -227,21 +264,21 @@ class TotalTraffic extends _$TotalTraffic with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class LocalIp extends _$LocalIp with AutoDisposeNotifierMixin {
+class LocalNetwork extends _$LocalNetwork with AutoDisposeNotifierMixin {
   @override
-  String? build() {
-    return globalState.appState.localIp;
+  NetworkInfo? build() {
+    return globalState.appState.localNetwork;
   }
 
   @override
   onUpdate(value) {
-    globalState.appState = globalState.appState.copyWith(localIp: value);
+    globalState.appState = globalState.appState.copyWith(localNetwork: value);
   }
 
   @override
-  set state(String? value) {
+  set state(NetworkInfo? value) {
     super.state = value;
-    globalState.appState = globalState.appState.copyWith(localIp: state);
+    globalState.appState = globalState.appState.copyWith(localNetwork: state);
   }
 }
 
@@ -416,8 +453,21 @@ class Groups extends _$Groups with AutoDisposeNotifierMixin {
 
 @riverpod
 class DelayDataSource extends _$DelayDataSource with AutoDisposeNotifierMixin {
+  static const _flushDuration = Duration(milliseconds: 300);
+
+  final List<Delay> _pendingDelays = [];
+  Timer? _flushTimer;
+
   @override
   DelayMap build() {
+    ref.onDispose(() {
+      _flushTimer?.cancel();
+      _flushTimer = null;
+      final next = _merge(globalState.appState.delayMap);
+      if (next != null) {
+        globalState.appState = globalState.appState.copyWith(delayMap: next);
+      }
+    });
     return globalState.appState.delayMap;
   }
 
@@ -427,14 +477,59 @@ class DelayDataSource extends _$DelayDataSource with AutoDisposeNotifierMixin {
   }
 
   void setDelay(Delay delay) {
-    if (state[delay.url]?[delay.name] != delay.value) {
-      final DelayMap newDelayMap = Map.from(state);
-      if (newDelayMap[delay.url] == null) {
-        newDelayMap[delay.url] = {};
-      }
-      newDelayMap[delay.url]![delay.name] = delay.value;
-      state = newDelayMap;
+    _pendingDelays.add(delay);
+    if (delay.value == 0) {
+      _flushTimer?.cancel();
+      _flushTimer = Timer(Duration.zero, flush);
+      return;
     }
+    _flushTimer ??= Timer(_flushDuration, flush);
+  }
+
+  void flush() {
+    _flushTimer?.cancel();
+    _flushTimer = null;
+    final next = _merge(state);
+    if (next != null) {
+      state = next;
+    }
+  }
+
+  void clear() {
+    _flushTimer?.cancel();
+    _flushTimer = null;
+    _pendingDelays.clear();
+    state = {};
+  }
+
+  void dropTesting() {
+    flush();
+    if (!state.values.any((delays) => delays.containsValue(0))) return;
+    state = {
+      for (final MapEntry(:key, :value) in state.entries)
+        if (value.values.any((delay) => delay != 0))
+          key: {
+            for (final entry in value.entries)
+              if (entry.value != 0) entry.key: entry.value,
+          },
+    };
+  }
+
+  DelayMap? _merge(DelayMap current) {
+    if (_pendingDelays.isEmpty) return null;
+    final DelayMap next = Map.of(current);
+    final copiedUrls = <String>{};
+    for (final delay in _pendingDelays) {
+      final current = next[delay.url];
+      if (current?[delay.name] == delay.value) continue;
+      final urlDelays = copiedUrls.add(delay.url) || current == null
+          ? Map.of(current ?? <String, int?>{})
+          : current;
+      urlDelays[delay.name] = delay.value;
+      next[delay.url] = urlDelays;
+    }
+    _pendingDelays.clear();
+    return copiedUrls.isEmpty ? null : next;
   }
 }
 
@@ -468,61 +563,148 @@ class IsSmartStopped extends _$IsSmartStopped {
   }
 }
 
+@Riverpod(keepAlive: true)
+class ConnectionsUdpOnly extends _$ConnectionsUdpOnly {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
 // Connections providers
 final connectionsProvider = StateProvider<List<TrackerInfo>>((ref) => []);
 final connectionsSearchProvider = StateProvider<String>((ref) => '');
 final connectionsKeywordsProvider = StateProvider<List<String>>((ref) => []);
-final connectionsSortProvider = StateProvider<ConnectionsSortType>((ref) => ConnectionsSortType.creationTime);
+final connectionsSortProvider = StateProvider<ConnectionsSortType>(
+  (ref) => ConnectionsSortType.defaultSort,
+);
+
+int _compareTrackerInfo(
+  ConnectionsSortType sortType,
+  TrackerInfo a,
+  TrackerInfo b,
+) {
+  final primary = switch (sortType) {
+    ConnectionsSortType.realTimeSpeed =>
+      ((b.uploadSpeed ?? 0) + (b.downloadSpeed ?? 0)).compareTo(
+        (a.uploadSpeed ?? 0) + (a.downloadSpeed ?? 0),
+      ),
+    ConnectionsSortType.totalTraffic => (b.upload + b.download).compareTo(
+      a.upload + a.download,
+    ),
+    ConnectionsSortType.defaultSort || ConnectionsSortType.creationTime => 0,
+  };
+  if (primary != 0) return primary;
+  final byStart = b.start.compareTo(a.start);
+  if (byStart != 0) return byStart;
+  return b.id.compareTo(a.id);
+}
 
 final filteredConnectionsProvider = Provider<List<TrackerInfo>>((ref) {
   final connections = ref.watch(connectionsProvider);
+  final closed = ref.watch(requestsProvider.select((state) => state.list));
   final query = ref.watch(connectionsSearchProvider).toLowerCase().trim();
   final keywords = ref.watch(connectionsKeywordsProvider);
-
-  final filtered = connections.where((item) {
-    if (query.isNotEmpty) {
-      final networkText = item.metadata.network.toLowerCase();
-      final hostText = item.metadata.host.toLowerCase();
-      final destinationIPText = item.metadata.destinationIP.toLowerCase();
-      final processText = item.metadata.process.toLowerCase();
-      final chainsText = item.chains.join('').toLowerCase();
-      final matchesQuery = networkText.contains(query) ||
-          hostText.contains(query) ||
-          destinationIPText.contains(query) ||
-          processText.contains(query) ||
-          chainsText.contains(query);
-      if (!matchesQuery) return false;
-    }
-    if (keywords.isNotEmpty) {
-      final chains = item.chains;
-      final process = item.metadata.process;
-      final matchesKeywords = {...chains, process}.containsAll(keywords);
-      if (!matchesKeywords) return false;
-    }
-    return true;
-  }).toList();
-
+  final udpOnly = ref.watch(connectionsUdpOnlyProvider);
   final sortType = ref.watch(connectionsSortProvider);
-  switch (sortType) {
-    case ConnectionsSortType.realTimeSpeed:
-      filtered.sort((a, b) {
-        final aSpeed = (a.uploadSpeed ?? 0) + (a.downloadSpeed ?? 0);
-        final bSpeed = (b.uploadSpeed ?? 0) + (b.downloadSpeed ?? 0);
-        return bSpeed.compareTo(aSpeed);
-      });
-      break;
-    case ConnectionsSortType.totalTraffic:
-      filtered.sort((a, b) {
-        final aTraffic = a.upload + a.download;
-        final bTraffic = b.upload + b.download;
-        return bTraffic.compareTo(aTraffic);
-      });
-      break;
-    case ConnectionsSortType.creationTime:
-      filtered.sort((a, b) => b.start.compareTo(a.start));
-      break;
-    case ConnectionsSortType.defaultSort:
-      break;
-  }
-  return filtered;
+  final closedIds = {for (final item in closed) item.id};
+
+  return connections
+      .where(
+        (item) =>
+            !closedIds.contains(item.id) &&
+            _matchTrackerInfo(item, query, keywords, udpOnly),
+      )
+      .toList()
+    ..sort((a, b) => _compareTrackerInfo(sortType, a, b));
 });
+
+final filteredAllConnectionsProvider =
+    Provider<List<({TrackerInfo info, bool closed})>>((ref) {
+      final active = ref.watch(filteredConnectionsProvider);
+      final closed = ref.watch(filteredRequestsProvider);
+      final sortType = ref.watch(connectionsSortProvider);
+      return [
+        for (final info in active) (info: info, closed: false),
+        for (final info in closed) (info: info, closed: true),
+      ]..sort((a, b) => _compareTrackerInfo(sortType, a.info, b.info));
+    });
+
+@riverpod
+Future<IconSet> builtInIconSet(Ref ref) async {
+  ref.watch(managedSettingProvider.select((state) => state.syncedVersion));
+  final index = await ManagedScript.catalog(ref.read(managedSettingProvider));
+  return routeIconSet(index.catalog);
+}
+
+@Riverpod(keepAlive: true)
+class IconSets extends _$IconSets {
+  @override
+  Future<List<IconSet>> build() => IconSetStore.instance.read();
+
+  Future<({String name, List<IconSetIcon> icons})> _parse(
+    String content,
+  ) async {
+    try {
+      return await Isolate.run(() => parseIconSet(content));
+    } on FormatException {
+      throw appLocalizations.invalidIconSet;
+    }
+  }
+
+  String _nameOf(String parsed, String fallback) {
+    final name = parsed.isNotEmpty ? parsed : iconFileStem(fallback);
+    return name.isNotEmpty ? name : appLocalizations.iconSets;
+  }
+
+  Future<void> _put(IconSet iconSet) async {
+    final current = await future;
+    final index = current.indexWhere((item) => item.id == iconSet.id);
+    final next = [...current];
+    if (index < 0) {
+      next.add(iconSet);
+    } else {
+      next[index] = iconSet;
+    }
+    state = AsyncData(next);
+    await IconSetStore.instance.write(next);
+  }
+
+  Future<IconSet> importUrl(String url) async {
+    final response = await request.getTextResponseForUrl(url);
+    final parsed = await _parse('${response.data ?? ''}');
+    final current = await future;
+    final existing = current.firstWhereOrNull((item) => item.url == url);
+    final iconSet =
+        (existing ??
+                IconSet(
+                  id: utils.id,
+                  name: _nameOf(parsed.name, Uri.parse(url).path),
+                  url: url,
+                ))
+            .copyWith(icons: parsed.icons, lastUpdateTime: DateTime.now());
+    await _put(iconSet);
+    return iconSet;
+  }
+
+  Future<IconSet> importContent(String fileName, String content) async {
+    final parsed = await _parse(content);
+    final iconSet = IconSet(
+      id: utils.id,
+      name: _nameOf(parsed.name, fileName),
+      icons: parsed.icons,
+      lastUpdateTime: DateTime.now(),
+    );
+    await _put(iconSet);
+    return iconSet;
+  }
+
+  Future<void> delete(String id) async {
+    final next = [
+      for (final item in await future)
+        if (item.id != id) item,
+    ];
+    state = AsyncData(next);
+    await IconSetStore.instance.write(next);
+  }
+}

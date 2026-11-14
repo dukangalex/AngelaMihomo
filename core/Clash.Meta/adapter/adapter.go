@@ -12,7 +12,6 @@ import (
 	"github.com/metacubex/mihomo/common/atomic"
 	"github.com/metacubex/mihomo/common/queue"
 	"github.com/metacubex/mihomo/common/utils"
-	"github.com/metacubex/mihomo/common/xsync"
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
@@ -35,7 +34,7 @@ type Proxy struct {
 	C.ProxyAdapter
 	alive   atomic.Bool
 	history *queue.Queue[C.DelayHistory]
-	extra   xsync.Map[string, *internalProxyState]
+	extra   proxyStates
 }
 
 // Adapter implements C.Proxy
@@ -271,15 +270,25 @@ func (p *Proxy) URLTest(ctx context.Context, url string, expectedStatus utils.In
 			start = second
 		} else {
 			if strings.HasPrefix(url, "http://") {
-				log.Warnln("%s failed to get the second response from %s: %v", p.Name(), url, ignoredErr)
-				log.Warnln("It is recommended to use HTTPS for provider.health-check.url and group.url to ensure better reliability. Due to some proxy providers hijacking test addresses and not being compatible with repeated HEAD requests, using HTTP may result in failed tests.")
+				log.Infoln("%s failed to get the second response from %s: %v", p.Name(), url, ignoredErr)
+				log.Infoln("It is recommended to use HTTPS for provider.health-check.url and group.url to ensure better reliability. Due to some proxy providers hijacking test addresses and not being compatible with repeated HEAD requests, using HTTP may result in failed tests.")
 			}
 		}
 	}
 
 	satisfied = resp != nil && (expectedStatus == nil || expectedStatus.Check(uint16(resp.StatusCode)))
-	t = uint16(time.Since(start) / time.Millisecond)
+	t = successfulDelay(time.Since(start))
 	return
+}
+
+// successfulDelay is used only after a response was received. Zero denotes a
+// failed test in delay history, so successful sub-millisecond tests report 1ms.
+func successfulDelay(elapsed time.Duration) uint16 {
+	delay := uint16(elapsed / time.Millisecond)
+	if delay == 0 {
+		return 1
+	}
+	return delay
 }
 
 func NewProxy(adapter C.ProxyAdapter) *Proxy {

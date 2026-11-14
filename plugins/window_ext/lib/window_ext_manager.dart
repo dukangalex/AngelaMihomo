@@ -43,6 +43,20 @@ class WindowExtManager {
   Future<void> setDockIconVisible(bool visible) {
     return _channel.invokeMethod('setDockIconVisible', visible);
   }
+
+  Future<Uint8List?> getFileIcon(String path, int size) {
+    return _channel.invokeMethod<Uint8List>('getFileIcon', {
+      'path': path,
+      'size': size,
+    });
+  }
+
+  Future<Uint8List?> getIcon(String name, int size) {
+    return _channel.invokeMethod<Uint8List>('getIcon', {
+      'name': name,
+      'size': size,
+    });
+  }
 }
 
 final windowExtManager = WindowExtManager.instance;

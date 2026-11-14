@@ -5,11 +5,13 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/activate_box.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScanPage extends StatefulWidget {
-  const ScanPage({super.key});
+  final bool Function(String value)? accept;
+
+  const ScanPage({super.key, this.accept});
 
   @override
   State<ScanPage> createState() => _ScanPageState();
@@ -25,16 +27,19 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   StreamSubscription<Object?>? _subscription;
   bool _handled = false;
   bool _permissionDenied = false;
-  bool _permissionChecking = false;
+  bool _starting = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _subscription = controller.barcodes.listen(_handleBarcode);
-    // Check permission and start camera
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkCameraPermission();
+      if (!mounted) return;
+      context.afterRouteTransition(() {
+        if (!mounted) return;
+        _ensureCameraStarted();
+      });
     });
   }
 
@@ -43,7 +48,9 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     final rawValue = barcodeCapture.barcodes.first.rawValue?.trim();
     if (rawValue == null || rawValue.isEmpty) return;
     _handled = true;
-    if (!rawValue.toLowerCase().isUrl) {
+    final accepted =
+        widget.accept?.call(rawValue) ?? rawValue.toLowerCase().isUrl;
+    if (!accepted) {
       Navigator.pop(context);
       return;
     }
@@ -60,8 +67,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
         return;
       case AppLifecycleState.resumed:
         _subscription ??= controller.barcodes.listen(_handleBarcode);
-        // Recheck permission when returning from settings
-        _checkCameraPermission();
+        _ensureCameraStarted();
         return;
       case AppLifecycleState.inactive:
         unawaited(_subscription?.cancel());
@@ -73,41 +79,36 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _checkCameraPermission() async {
-    if (_permissionChecking) return; // Prevent concurrent checks
+  Future<void> _ensureCameraStarted() async {
+    if (_starting) return;
 
-    setState(() {
-      _permissionChecking = true;
-    });
-
-    final granted = await app.hasCameraPermission();
-    if (!mounted) return;
-
-    setState(() {
-      _permissionDenied = !granted;
-      _permissionChecking = false;
-    });
-
-    if (!granted) {
-      if (controller.value.isRunning) {
-        await controller.stop();
+    _starting = true;
+    try {
+      if (_permissionDenied && !await app.hasCameraPermission()) {
+        return;
       }
-    } else {
-      // Start camera only if not already running
-      if (!controller.value.isRunning && !controller.value.isInitialized) {
-        try {
-          await controller.start();
-        } catch (e) {
-          // Handle start error silently
-          commonPrint.log('Camera start error: $e');
-        }
+      if (!controller.value.isRunning) {
+        await controller.start();
       }
+      if (!mounted) return;
+      final denied =
+          controller.value.error?.errorCode ==
+          MobileScannerErrorCode.permissionDenied;
+      if (denied != _permissionDenied) {
+        setState(() {
+          _permissionDenied = denied;
+        });
+      }
+    } catch (e) {
+      commonPrint.log('Camera start error: $e');
+    } finally {
+      _starting = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double sideLength = min(400, MediaQuery.of(context).size.width * 0.67);
+    double sideLength = min(400, MediaQuery.sizeOf(context).width * 0.67);
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.sizeOf(context).center(Offset.zero),
       width: sideLength,
@@ -117,33 +118,28 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
       body: Stack(
         children: [
           Center(
-            child: _permissionChecking
-                ? Container(color: Colors.black)
-                : (_permissionDenied
-                      ? _buildPermissionDeniedView(context)
-                      : MobileScanner(
-                          controller: controller,
-                          scanWindow: scanWindow,
-                          errorBuilder: (context, error) {
-                            if (error.errorCode ==
-                                MobileScannerErrorCode.permissionDenied) {
-                              if (!_permissionDenied && mounted) {
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) {
-                                  if (!mounted) return;
-                                  setState(() {
-                                    _permissionDenied = true;
-                                  });
-                                });
-                              }
-                              unawaited(controller.stop());
-                              return _buildPermissionDeniedView(context);
-                            }
-                            return _buildErrorView(context, error);
-                          },
-                        )),
+            child: MobileScanner(
+              controller: controller,
+              scanWindow: scanWindow,
+              errorBuilder: (context, error) {
+                if (error.errorCode ==
+                    MobileScannerErrorCode.permissionDenied) {
+                  if (!_starting && !_permissionDenied && mounted) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+                      setState(() {
+                        _permissionDenied = true;
+                      });
+                    });
+                    unawaited(controller.stop());
+                  }
+                  return _buildPermissionDeniedView(context);
+                }
+                return _buildErrorView(context, error);
+              },
+            ),
           ),
+          if (_permissionDenied) _buildPermissionDeniedView(context),
           if (!_permissionDenied)
             CustomPaint(painter: ScannerOverlay(scanWindow: scanWindow)),
           AppBar(

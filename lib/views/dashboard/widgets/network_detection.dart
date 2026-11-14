@@ -1,14 +1,19 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import 'tile.dart';
+
 class NetworkDetection extends ConsumerStatefulWidget {
-  const NetworkDetection({super.key});
+  final DashboardTileSize? size;
+
+  const NetworkDetection({super.key, this.size});
 
   @override
   ConsumerState<NetworkDetection> createState() => _NetworkDetectionState();
@@ -25,203 +30,296 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
     return String.fromCharCode(firstLetter) + String.fromCharCode(secondLetter);
   }
 
-  void _showIpClickBehaviorSettings() {
-    final isZh = Localizations.localeOf(context).languageCode == 'zh';
-    globalState.showCommonDialog<IpClickBehavior>(
-      child: CommonDialog(
-        title: appLocalizations.ipClickBehavior,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.sync),
-              title: Text(appLocalizations.manualRefreshIp),
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                detectionState.manualRefresh();
-              },
-            ),
-            if (isZh)
-              ListTile(
-                leading: Icon(Icons.public),
-                title: Text(appLocalizations.switchToDomesticIp),
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  detectionState.switchToDomesticIp();
-                },
-              ),
-            ListTile(
-              leading: Icon(Icons.security),
-              title: Text(appLocalizations.ipPrivacyProtection),
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                detectionState.toggleIpPrivacy();
-              },
-            ),
-          ],
+  Widget _buildSettingsButton(BuildContext context) {
+    final ipRiskAlert = ref.watch(
+      appSettingProvider.select((state) => state.ipRiskAlert),
+    );
+    return CommonPopupBox(
+      targetBuilder: (open) => IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => open(offset: const Offset(0, 20)),
+        icon: Icon(
+          size: 16.ap,
+          Icons.settings_outlined,
+          color: context.colorScheme.onSurfaceVariant,
         ),
       ),
+      popup: CommonPopupMenu(
+        items: [
+          PopupMenuItemData(
+            icon: Icons.sync,
+            label: appLocalizations.manualRefreshIp,
+            onPressed: detectionState.manualRefresh,
+          ),
+          PopupMenuItemData(
+            icon: detectionState.isIpMasked
+                ? Icons.check_circle_rounded
+                : Icons.security,
+            label: appLocalizations.ipPrivacyProtection,
+            onPressed: detectionState.toggleIpPrivacy,
+          ),
+          PopupMenuItemData(
+            icon: ipRiskAlert
+                ? Icons.check_circle_rounded
+                : Icons.circle_outlined,
+            label: appLocalizations.ipRiskAlert,
+            onPressed: () {
+              ref
+                  .read(appSettingProvider.notifier)
+                  .updateState(
+                    (state) => state.copyWith(ipRiskAlert: !ipRiskAlert),
+                  );
+              detectionState.refreshRiskCheck();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiskMark(BuildContext context, Widget child) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: detectionState.riskyIp,
+      builder: (_, ip, child) {
+        final ipText = child ?? const SizedBox();
+        if (ip == null || ip != detectionState.rawIpInfo?.ip) return ipText;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_rounded,
+              size: 14,
+              color: context.colorScheme.error,
+            ),
+            const SizedBox(width: 4),
+            Flexible(child: ipText),
+          ],
+        );
+      },
+      child: child,
     );
   }
 
   void _showMoreIpInfoDialog() {
     final rawIpInfo = detectionState.rawIpInfo;
     if (rawIpInfo == null) return;
+    showIpDetailDialog(
+      context,
+      rawIpInfo.ip,
+      preloaded: rawIpInfo,
+      showRisk: detectionState.riskyIp.value == rawIpInfo.ip,
+    );
+  }
 
-    final flagEmoji = rawIpInfo.countryCode.isNotEmpty
-        ? _countryCodeToEmoji(rawIpInfo.countryCode)
-        : '';
-
-    final countryName =
-        (rawIpInfo.country != null && rawIpInfo.country!.isNotEmpty)
-        ? rawIpInfo.country!
-        : (rawIpInfo.countryCode.isNotEmpty ? rawIpInfo.countryCode : '');
-
-    final countryContinent = [
-      if (countryName.isNotEmpty) countryName,
-      if (rawIpInfo.continent != null && rawIpInfo.continent!.isNotEmpty)
-        rawIpInfo.continent,
-    ].join(' · ');
-
-    final provinceCity = [
-      if (rawIpInfo.province != null && rawIpInfo.province!.isNotEmpty)
-        rawIpInfo.province,
-      if (rawIpInfo.city != null &&
-          rawIpInfo.city!.isNotEmpty &&
-          rawIpInfo.city != rawIpInfo.province)
-        rawIpInfo.city,
-    ].join(' · ');
-
-    final ispText = (rawIpInfo.isp != null && rawIpInfo.isp!.isNotEmpty)
-        ? rawIpInfo.isp!
-        : '';
-
-    final operatorText = [
-      if (rawIpInfo.asName != null &&
-          rawIpInfo.asName!.isNotEmpty &&
-          rawIpInfo.asName != rawIpInfo.isp &&
-          rawIpInfo.asName != rawIpInfo.asDomain)
-        rawIpInfo.asName,
-      if (rawIpInfo.asn != null && rawIpInfo.asn!.isNotEmpty)
-        rawIpInfo.asn,
-    ].join(' · ');
-
-    globalState.showCommonDialog(
-      child: CommonDialog(
-        title: appLocalizations.moreIpInfo,
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            child: Text(appLocalizations.confirm),
-          ),
-        ],
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. IP 地址（附带查看详细 IP 数据外链与 Tooltip 提示）
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.location_on_outlined),
-                title: Text(appLocalizations.ipAddress),
-                subtitle: SelectableText(
-                  rawIpInfo.ip,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+  Widget _buildHeader(BuildContext context, IpInfo? ipInfo) {
+    return Container(
+      height: globalState.measure.titleMediumHeight + 16,
+      padding: baseInfoEdgeInsets.copyWith(bottom: 0),
+      child: Row(
+        children: [
+          ipInfo != null
+              ? Text(
+                  _countryCodeToEmoji(ipInfo.countryCode),
+                  style: Theme.of(context).textTheme.titleMedium?.toLight
+                      .copyWith(
+                        fontFamily: FontFamily.twEmoji.value,
+                        fontFamilyFallback: [FontFamily.twEmoji.value],
+                      ),
+                )
+              : Icon(
+                  Icons.network_check,
+                  color: context.colorScheme.onSurfaceVariant,
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  tooltip: appLocalizations.viewDetailedIpData,
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).pop();
-                    globalState.openUrl('https://ipinfo.io/what-is-my-ip');
-                  },
+          const SizedBox(width: 8),
+          Flexible(
+            child: TooltipText(
+              text: Text(
+                appLocalizations.networkDetection,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleSmall?.copyWith(
+                  color: context.colorScheme.onSurfaceVariant,
                 ),
               ),
-              // 2. 国家与大洲合并（Emoji 统一使用 twEmoji，精准间距）
-              if (countryContinent.isNotEmpty || flagEmoji.isNotEmpty)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.flag_outlined),
-                  title: Text(appLocalizations.countryOrRegion),
-                  subtitle: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (flagEmoji.isNotEmpty) ...[
-                        Text(
-                          flagEmoji,
-                          style: TextStyle(
-                            fontFamily: FontFamily.twEmoji.value,
-                            fontFamilyFallback: [
-                              FontFamily.twEmoji.value,
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 6),
+            ),
+          ),
+          const SizedBox(width: 2),
+          AspectRatio(aspectRatio: 1, child: _buildSettingsButton(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetail(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.bodyMedium?.toLight,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTile(BuildContext context, DashboardTileSize size) {
+    final isTall = size == DashboardTileSize.tall;
+    return SizedBox(
+      height: getWidgetHeight(context, size.rows),
+      child: ValueListenableBuilder<NetworkDetectionState>(
+        valueListenable: detectionState.state,
+        builder: (_, state, _) {
+          final ipInfo = state.ipInfo;
+          final masked = detectionState.isIpMasked;
+          final location = ipInfo == null
+              ? ''
+              : [
+                  ipInfo.country,
+                  if (ipInfo.city != ipInfo.country) ipInfo.city,
+                ].where((item) => item?.isNotEmpty ?? false).join(' · ');
+          final operator = ipInfo == null
+              ? ''
+              : [
+                  ipInfo.asn,
+                  ipInfo.asName ?? ipInfo.isp,
+                ].where((item) => item?.isNotEmpty ?? false).join(' ');
+          final countryCode = ipInfo?.countryCode ?? '';
+          final ipText = ipInfo != null
+              ? _buildRiskMark(
+                  context,
+                  Text(
+                    ipInfo.ip,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      fontFeatures: const [
+                        FontFeature.tabularFigures(),
                       ],
-                      Flexible(
-                        child: Text(
-                          countryContinent,
-                          style: context.textTheme.bodyMedium,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              : state.isLoading == false
+              ? Text(
+                  state.errorMessage ?? 'timeout',
+                  style: context.textTheme.bodyMedium
+                      ?.copyWith(color: Colors.red)
+                      .adjustSize(1),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: 1,
+                  child: SpinKitThreeBounce(
+                    color: context.colorScheme.primary,
+                    size: 16,
+                  ),
+                );
+          return CommonCard(
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
+            child: DashboardDecor(
+              mark: countryCode.length == 2
+                  ? DashboardDecor.flag(countryCode, 80)
+                  : DashboardDecor.icon(context, Icons.public, 80),
+              angle: isTall ? 0.18 : -0.18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: isTall
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildHeader(context, ipInfo),
+                  if (isTall)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 12, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: globalState.measure.titleMediumHeight + 2,
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: ipText,
+                            ),
+                          ),
+                          if (!masked && location.isNotEmpty)
+                            _buildDetail(
+                              context,
+                              appLocalizations.countryOrRegion,
+                              location,
+                            ),
+                          if (!masked && operator.isNotEmpty)
+                            _buildDetail(
+                              context,
+                              appLocalizations.operatorOrAsn,
+                              operator,
+                            ),
+                        ],
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: baseInfoEdgeInsets.copyWith(top: 0),
+                      child: SizedBox(
+                        height: globalState.measure.titleMediumHeight + 2,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(child: ipText),
+                            if (!masked && ipInfo != null) ...[
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  [location, operator]
+                                      .where((item) => item.isNotEmpty)
+                                      .join(' · '),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.textTheme.bodySmall?.copyWith(
+                                    color: context.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              // 3. 省份 / 城市 (独立行，非空才展示)
-              if (provinceCity.isNotEmpty)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.location_city_outlined),
-                  title: Text(appLocalizations.provinceAndCity),
-                  subtitle: Text(provinceCity),
-                ),
-              // 4. 归属 / ASN (非空才展示)
-              if (operatorText.isNotEmpty)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.business_outlined),
-                  title: Text(appLocalizations.operatorOrAsn),
-                  subtitle: Text(operatorText),
-                ),
-              // 5. 运营商 (非空才展示)
-              if (ispText.isNotEmpty)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.router_outlined),
-                  title: Text(appLocalizations.isp),
-                  subtitle: Text(ispText),
-                ),
-              // 6. 组织 / 域名 (非空才展示)
-              if (rawIpInfo.asDomain != null && rawIpInfo.asDomain!.isNotEmpty)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.link_outlined),
-                  title: Text(appLocalizations.domain),
-                  subtitle: Text(rawIpInfo.asDomain!),
-                ),
-            ],
-          ),
-        ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.size case final size?) return _buildTile(context, size);
     return SizedBox(
-      height: getWidgetHeight(1),
+      height: getWidgetHeight(context, 1),
       child: ValueListenableBuilder<NetworkDetectionState>(
         valueListenable: detectionState.state,
         builder: (_, state, _) {
           final ipInfo = state.ipInfo;
           final isLoading = state.isLoading;
           return CommonCard(
-            onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -269,15 +367,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                       SizedBox(width: 2),
                       AspectRatio(
                         aspectRatio: 1,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: _showIpClickBehaviorSettings,
-                          icon: Icon(
-                            size: 16.ap,
-                            Icons.settings_outlined,
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+                        child: _buildSettingsButton(context),
                       ),
                     ],
                   ),
@@ -288,13 +378,16 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                     height: globalState.measure.bodyMediumHeight + 2,
                     child: FadeThroughBox(
                       child: ipInfo != null
-                          ? TooltipText(
-                              text: Text(
-                                ipInfo.ip,
-                                style: context.textTheme.bodyMedium?.toLight
-                                    .adjustSize(1),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                          ? _buildRiskMark(
+                              context,
+                              TooltipText(
+                                text: Text(
+                                  ipInfo.ip,
+                                  style: context.textTheme.bodyMedium?.toLight
+                                      .adjustSize(1),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             )
                           : FadeThroughBox(

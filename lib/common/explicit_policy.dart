@@ -1,27 +1,5 @@
 /// Runtime config changes. The saved subscription is not touched.
-/// Automatic groups lose DIRECT so a dead node cannot fall through.
 const explicitChainGroup = '链式落地';
-
-void dropAutomaticDirect(Map<String, dynamic> raw) {
-  final groups = raw['proxy-groups'];
-  if (groups is! List) return;
-  for (final group in groups) {
-    if (group is! Map) continue;
-    final type = group['type']?.toString();
-    if (type != 'url-test' && type != 'fallback' && type != 'load-balance') {
-      continue;
-    }
-    final proxies = group['proxies'];
-    if (proxies is! List) continue;
-    final kept = proxies.where((item) {
-      final name = item.toString();
-      return name != 'DIRECT' && name != 'REJECT' && name != 'REJECT-DROP';
-    }).toList();
-    if (kept.isNotEmpty && kept.length != proxies.length) {
-      group['proxies'] = kept;
-    }
-  }
-}
 
 /// Inline landing nodes get dialer-proxy. Provider node names, which are
 /// not in the file, become a relay group the selectors can choose.
@@ -62,12 +40,21 @@ bool applyChainPolicy(
       'proxies': [entryName, landingName],
     });
   }
+  var selectors = 0;
   for (final group in list) {
     if (group is! Map || group['type']?.toString() != 'select') continue;
     if (group['name']?.toString() == explicitChainGroup) continue;
     final members = group['proxies'];
     if (members is! List || members.contains(explicitChainGroup)) continue;
-    members.add(explicitChainGroup);
+    selectors++;
+    if (selectors == 1) {
+      // The main selector lists the chain first so it is the default
+      // choice once a chain is configured; other selectors keep the
+      // chain as an extra option at the end.
+      members.insert(0, explicitChainGroup);
+    } else {
+      members.add(explicitChainGroup);
+    }
   }
   raw['proxy-groups'] = list;
   return true;

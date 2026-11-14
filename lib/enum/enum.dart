@@ -6,7 +6,6 @@ import 'package:bett_box/common/system.dart';
 import 'package:bett_box/common/app_localizations.dart';
 import 'package:bett_box/views/dashboard/widgets/widgets.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -93,16 +92,10 @@ enum ViewMode { mobile, laptop, desktop }
 enum LogLevel { debug, info, warning, error, silent }
 
 extension LogLevelExt on LogLevel {
-  Color? get color {
-    return switch (this) {
-      LogLevel.silent => Colors.grey.shade700,
-      LogLevel.debug => Colors.grey.shade400,
-      LogLevel.info => null,
-      LogLevel.warning => const Color.fromARGB(230, 255, 166, 0),
-      LogLevel.error => Colors.redAccent,
-    };
-  }
+  String get label => '${name[0].toUpperCase()}${name.substring(1)}';
 }
+
+enum LogSource { core, app }
 
 enum TransportProtocol { udp, tcp }
 
@@ -116,15 +109,22 @@ enum ProxiesSortType { none, delay, name }
 
 enum TunStack { gvisor, system, mixed, mips }
 
-enum CongestionController { cubic, reno, bbr, bbr3 }
+enum TunDnsMode { disabled, native, hijack }
+
+enum ProfileSwitchMode { hotReload, fullRestart }
 
 enum AccessControlMode { acceptSelected, rejectSelected }
 
 enum AccessSortType { none, installTime, updateTime }
 
-enum ProfileType { file, url }
+enum ProfileType { file, url, bundle }
 
-enum ConnectionsSortType { defaultSort, realTimeSpeed, totalTraffic, creationTime }
+enum ConnectionsSortType {
+  defaultSort,
+  realTimeSpeed,
+  totalTraffic,
+  creationTime,
+}
 
 enum ResultType {
   @JsonValue(0)
@@ -133,7 +133,16 @@ enum ResultType {
   error,
 }
 
-enum AppMessageType { log, delay, request, loaded }
+enum AppMessageType {
+  log,
+  delays,
+  groupsChanged,
+  request,
+  speedTest,
+  stunTest,
+  iperf,
+  localPing,
+}
 
 enum InvokeMessageType { protect, process }
 
@@ -228,18 +237,26 @@ enum ActionMethod {
   forceGc,
   shutdown,
   validateConfig,
+  importProfile,
   updateConfig,
   getConfig,
+  getRuntimeConfig,
+  exportConfig,
+  mergeProfiles,
   getProxies,
   changeProxy,
   getTraffic,
-  getTotalTraffic,
+  getTrafficSnapshot,
   resetTraffic,
   asyncTestDelay,
+  asyncTestDelays,
+  setForeground,
   getConnections,
+  getConnectionsSummary,
   closeConnections,
   resetConnections,
   closeConnection,
+  closeGroupConnections,
   getExternalProviders,
   getExternalProvider,
   updateGeoData,
@@ -267,6 +284,34 @@ enum ActionMethod {
   getMode,
   parseExternalProviderContent,
   getCoreStatus,
+  getInterfaces,
+  startSpeedTest,
+  cancelSpeedTest,
+  probeSpeedTest,
+  getSpeedTestServers,
+  startStunTest,
+  cancelStunTest,
+  routeTrace,
+  dnsQuery,
+  mrsPrepare,
+  mrsLookup,
+  mrsDump,
+  cancelMrsLookup,
+  getTrafficStats,
+  clearTrafficStats,
+  storeGet,
+  storeSet,
+  storeList,
+  storeClear,
+  startToolProxy,
+  stopToolProxy,
+  ageCrypt,
+  startIperfServer,
+  stopIperfServer,
+  startIperfClient,
+  cancelIperfClient,
+  startLocalPing,
+  cancelLocalPing,
 
   ///Android,
   setState,
@@ -278,11 +323,58 @@ enum ActionMethod {
   getCurrentProfileName,
 }
 
+enum StunTestPhase { connecting, binding, filtering, mapping, done }
+
+enum IperfRole { client, server }
+
+enum IperfPhase { connecting, running, done }
+
+enum IperfProtocol { tcp, udp }
+
+enum IperfDirection { upload, download, bidir }
+
+enum LocalPingProtocol { icmp, tcp, udp }
+
+enum LocalPingPhase { resolving, running, done }
+
+enum LocalPingStatus { ok, closed, timeout, unreachable, error }
+
+@JsonEnum(fieldRename: FieldRename.kebab)
+enum NatType {
+  open,
+  fullCone,
+  restricted,
+  portRestricted,
+  symmetric,
+  cone,
+  blocked,
+  unknown,
+}
+
+enum SpeedTestProvider { apple, speedtest, cloudflare }
+
+enum SpeedTestPhase { connecting, latency, download, upload, done }
+
+enum SpeedTestProtocol {
+  http1('h1', 'HTTP/1.1'),
+  http2('h2', 'HTTP/2'),
+  http3('h3', 'HTTP/3');
+
+  final String value;
+  final String label;
+
+  const SpeedTestProtocol(this.value, this.label);
+
+  static SpeedTestProtocol fromValue(String value) =>
+      values.firstWhere((item) => item.value == value, orElse: () => http1);
+}
+
 enum AuthorizeCode { none, success, error }
 
 enum WindowsHelperServiceStatus { none, presence, running }
 
 enum FunctionTag {
+  homeWidget,
   updateClashConfig,
   setupClashConfig,
   updateStatus,
@@ -292,8 +384,7 @@ enum FunctionTag {
   savePreferences,
   changeProxy,
   checkIp,
-  handleWill,
-  updateDelay,
+  checkIpRisk,
   vpnTip,
   autoLaunch,
   renderPause,
@@ -303,6 +394,9 @@ enum FunctionTag {
   logs,
   requests,
   autoScrollToEnd,
+  autoBackup,
+  generateBundles,
+  delaySort,
 }
 
 enum DashboardWidget {
@@ -312,6 +406,7 @@ enum DashboardWidget {
   ),
   outboundModeV2(GridItem(crossAxisCellCount: 8, child: OutboundModeV2())),
   outboundMode(GridItem(crossAxisCellCount: 4, child: OutboundMode())),
+  profileInfo(GridItem(crossAxisCellCount: 8, child: ProfileInfo())),
   trafficUsage(GridItem(crossAxisCellCount: 4, child: TrafficUsage())),
   networkDetection(GridItem(crossAxisCellCount: 4, child: NetworkDetection())),
   tunButton(
@@ -334,7 +429,6 @@ enum DashboardWidget {
     GridItem(crossAxisCellCount: 4, child: WakelockSwitch()),
     platforms: desktopPlatforms,
   ),
-  dnsOverride(GridItem(crossAxisCellCount: 4, child: DnsOverride())),
   snifferOverride(GridItem(crossAxisCellCount: 4, child: SnifferOverride())),
   ntpOverride(GridItem(crossAxisCellCount: 4, child: NtpOverride())),
   providersInfo(GridItem(crossAxisCellCount: 4, child: ProvidersInfo())),
@@ -342,6 +436,10 @@ enum DashboardWidget {
   onlinePanel(GridItem(crossAxisCellCount: 4, child: OnlinePanel())),
   mediaUnlock(GridItem(crossAxisCellCount: 8, child: MediaUnlock())),
   mediaUnlockSmall(GridItem(crossAxisCellCount: 4, child: MediaUnlockSmall())),
+  toolboxShortcut(
+    GridItem(crossAxisCellCount: 4, child: ToolboxShortcut()),
+    platforms: [SupportPlatform.Android],
+  ),
   startButton(
     GridItem(crossAxisCellCount: 4, isDeletable: false, child: StartButton()),
   );
@@ -351,13 +449,71 @@ enum DashboardWidget {
 
   const DashboardWidget(this.widget, {this.platforms = SupportPlatform.values});
 
-  static DashboardWidget getDashboardWidget(GridItem gridItem) {
-    final dashboardWidgets = DashboardWidget.values;
-    final index = dashboardWidgets.indexWhere(
-      (item) => item.widget == gridItem,
-    );
-    return dashboardWidgets[index];
-  }
+  static const _variantGroups = [
+    [networkSpeedSmall, networkSpeed],
+    [outboundModeV2, outboundMode],
+    [mediaUnlockSmall, mediaUnlock],
+  ];
+
+  List<DashboardWidget> get variants => _variantGroups.firstWhere(
+    (group) => group.contains(this),
+    orElse: () => [this],
+  );
+
+  DashboardWidget get family =>
+      variants.reduce((a, b) => a.index <= b.index ? a : b);
+
+  DashboardTileSize get nativeSize => switch (this) {
+    networkSpeed || mediaUnlock => DashboardTileSize.large,
+    outboundModeV2 || profileInfo => DashboardTileSize.wide,
+    outboundMode || mediaUnlockSmall || trafficUsage => DashboardTileSize.tall,
+    _ => DashboardTileSize.small,
+  };
+
+  List<DashboardTileSize> get sizes => switch (family) {
+    networkSpeed => const [
+      DashboardTileSize.small,
+      DashboardTileSize.wide,
+      DashboardTileSize.tall,
+      DashboardTileSize.large,
+    ],
+    trafficUsage => const [DashboardTileSize.tall, DashboardTileSize.wide],
+    profileInfo => const [
+      DashboardTileSize.wide,
+      DashboardTileSize.large,
+      DashboardTileSize.tall,
+    ],
+    networkDetection ||
+    intranetIp ||
+    memoryInfo ||
+    connectionsCount ||
+    toolboxShortcut ||
+    startButton => const [
+      DashboardTileSize.small,
+      DashboardTileSize.wide,
+      DashboardTileSize.tall,
+    ],
+    _ => [for (final item in variants) item.nativeSize],
+  };
+
+  bool get resizable => sizes.length > 1;
+
+  DashboardWidget variantFor(DashboardTileSize size) => variants.firstWhere(
+    (item) => item.nativeSize == size,
+    orElse: () => family,
+  );
+}
+
+enum DashboardTileSize {
+  small(1, 1),
+  wide(2, 1),
+  tall(1, 2),
+  large(2, 2);
+
+  final int cross;
+  final int rows;
+
+  const DashboardTileSize(this.cross, this.rows);
 }
 
 enum GeodataLoader { standard, memconservative }
@@ -368,10 +524,11 @@ enum PageLabel {
   profiles,
   tools,
   logs,
-  requests,
   resources,
   script,
+  toolbox,
   connections,
+  patrol,
 }
 
 extension PageLabelExtension on PageLabel {
@@ -387,18 +544,19 @@ extension PageLabelExtension on PageLabel {
         return appLocalizations.navTools;
       case PageLabel.logs:
         return appLocalizations.logs;
-      case PageLabel.requests:
-        return appLocalizations.requests;
       case PageLabel.resources:
         return appLocalizations.resources;
       case PageLabel.script:
         return appLocalizations.script;
+      case PageLabel.toolbox:
+        return appLocalizations.toolbox;
       case PageLabel.connections:
         return appLocalizations.navConnections;
+      case PageLabel.patrol:
+        return appLocalizations.aiPatrol;
     }
   }
 }
-
 
 enum RuleAction {
   DOMAIN('DOMAIN'),
@@ -452,11 +610,62 @@ extension RuleActionExt on RuleAction {
   ].contains(this);
 }
 
-enum OverrideRuleType { override, added }
-
 enum RuleTarget { DIRECT, REJECT }
 
 enum RecoveryStrategy { compatible, override }
+
+enum StartSwitchStyle { tonal, outlined }
+
+enum ProfileUsageStyle { bar, ring, concentric }
+
+extension ProfileUsageStyleExt on ProfileUsageStyle {
+  String get localizedName => switch (this) {
+    ProfileUsageStyle.bar => appLocalizations.usageStyleBar,
+    ProfileUsageStyle.ring => appLocalizations.usageStyleRing,
+    ProfileUsageStyle.concentric => appLocalizations.usageStyleConcentric,
+  };
+}
+
+enum SidebarFlyoutEntry {
+  resources,
+  script,
+  toolbox,
+  theme,
+  backupAndRecovery,
+  hotkeyManagement,
+  loopback,
+  basicConfig,
+  otherSettings,
+  application,
+  about;
+
+  static List<SidebarFlyoutEntry> get supportedValues =>
+      values.where((entry) => entry != loopback || system.isWindows).toList();
+
+  String get localizedName => switch (this) {
+    SidebarFlyoutEntry.resources => appLocalizations.resources,
+    SidebarFlyoutEntry.script => appLocalizations.script,
+    SidebarFlyoutEntry.toolbox => appLocalizations.toolbox,
+    SidebarFlyoutEntry.theme => appLocalizations.theme,
+    SidebarFlyoutEntry.backupAndRecovery => appLocalizations.backupAndRecovery,
+    SidebarFlyoutEntry.hotkeyManagement => appLocalizations.hotkeyManagement,
+    SidebarFlyoutEntry.loopback => appLocalizations.loopback,
+    SidebarFlyoutEntry.basicConfig => appLocalizations.basicConfig,
+    SidebarFlyoutEntry.otherSettings => appLocalizations.otherSettings,
+    SidebarFlyoutEntry.application => appLocalizations.application,
+    SidebarFlyoutEntry.about => appLocalizations.about,
+  };
+}
+
+enum SidebarFlyoutDelay {
+  fast(Duration(milliseconds: 50)),
+  standard(Duration(milliseconds: 150)),
+  slow(Duration(milliseconds: 400));
+
+  final Duration duration;
+
+  const SidebarFlyoutDelay(this.duration);
+}
 
 enum CacheTag { logs, rules, requests, proxiesList }
 
@@ -498,4 +707,41 @@ enum DelayAnimationType {
   squareCircle,
   wanderingCubes,
   waveSpinner,
+}
+
+enum MrsRawSource {
+  metaRulesDat(
+    'meta-rules-dat',
+    'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/',
+  );
+
+  const MrsRawSource(this.value, this.url);
+
+  final String value;
+  final String url;
+}
+
+enum MrsTapAction { viewRules, copyUrl }
+
+enum StoreSpace { ip, speedTest, toolbox }
+
+enum IpRiskLevel { low, medium, high, veryHigh }
+
+enum IpRiskGroup { datacenter, blacklist, proxy }
+
+enum IpRiskAmount { low, medium, high }
+
+enum IpRiskShare { little, some, almostAll }
+
+enum IpRiskConnection { server, vpn, publicProxy, tor, webProxy }
+
+enum RouteCategory {
+  ai,
+  streaming,
+  social,
+  gaming,
+  developer,
+  finance,
+  tech,
+  other,
 }

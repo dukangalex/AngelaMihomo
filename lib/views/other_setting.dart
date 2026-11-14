@@ -1,14 +1,16 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/network_matcher.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/models.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/plugins/service.dart';
-import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'system_explicit.dart';
 
 class SmartAutoStopSection extends ConsumerWidget {
   const SmartAutoStopSection({super.key});
@@ -64,8 +66,7 @@ class SmartAutoStopSection extends ConsumerWidget {
                   ref
                       .read(vpnSettingProvider.notifier)
                       .updateState(
-                        (state) =>
-                            state.copyWith(smartAutoStopNetworks: value),
+                        (state) => state.copyWith(smartAutoStopNetworks: value),
                       );
                 }
               },
@@ -145,6 +146,29 @@ class StoreFixItem extends ConsumerWidget {
   }
 }
 
+class CloseConnectionsItem extends ConsumerWidget {
+  const CloseConnectionsItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final closeConnections = ref.watch(
+      appSettingProvider.select((state) => state.closeConnections),
+    );
+    return ListItem.switchItem(
+      title: Text(appLocalizations.autoCloseConnections),
+      subtitle: Text(appLocalizations.autoCloseConnectionsDesc),
+      delegate: SwitchDelegate(
+        value: closeConnections,
+        onChanged: (value) async {
+          ref
+              .read(appSettingProvider.notifier)
+              .updateState((state) => state.copyWith(closeConnections: value));
+        },
+      ),
+    );
+  }
+}
+
 class QuickResponseItem extends ConsumerWidget {
   const QuickResponseItem({super.key});
 
@@ -159,14 +183,10 @@ class QuickResponseItem extends ConsumerWidget {
       subtitle: Text(appLocalizations.quickResponseDesc),
       delegate: SwitchDelegate(
         value: quickResponse,
-        onChanged: (bool value) async {
+        onChanged: (bool value) {
           ref
               .read(vpnSettingProvider.notifier)
               .updateState((state) => state.copyWith(quickResponse: value));
-
-          if (system.isAndroid) {
-            await service?.setQuickResponse(value);
-          }
         },
       ),
     );
@@ -231,7 +251,7 @@ class NetworkFixItem extends ConsumerWidget {
         }
       }
     } catch (e) {
-      commonPrint.log('Network fix error: $e');
+      commonPrint.warn('Network fix error: $e');
       rethrow;
     }
   }
@@ -289,7 +309,7 @@ class HighPriorityItem extends ConsumerWidget {
             try {
               await globalState.appController.setProcessPriority(value);
             } catch (e) {
-              commonPrint.log('Set process priority error: $e');
+              commonPrint.warn('Set process priority error: $e');
               if (context.mounted) {
                 context.showSnackBar('Failed to set process priority: $e');
               }
@@ -301,95 +321,42 @@ class HighPriorityItem extends ConsumerWidget {
   }
 }
 
-class BatteryOptimizationItem extends ConsumerStatefulWidget {
-  const BatteryOptimizationItem({super.key});
+class BatteryOptimizationItem extends StatelessWidget {
+  final VoidCallback onRequest;
 
-  @override
-  ConsumerState<BatteryOptimizationItem> createState() =>
-      _BatteryOptimizationItemState();
-}
-
-class _BatteryOptimizationItemState extends ConsumerState<BatteryOptimizationItem>
-    with WidgetsBindingObserver {
-  bool? _isIgnoring;
-  bool _isWaitingForSettings = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _checkStatus();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkStatus(maxRetries: _isWaitingForSettings ? 3 : 1);
-    }
-  }
-
-  Future<void> _checkStatus({int maxRetries = 1}) async {
-    for (int attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        final isIgnoring = await app.isIgnoringBatteryOptimizations();
-        if (mounted) {
-          setState(() {
-            _isIgnoring = isIgnoring;
-            if (isIgnoring) {
-              _isWaitingForSettings = false;
-            }
-          });
-        }
-        if (isIgnoring || attempt >= maxRetries - 1) {
-          break;
-        }
-        await Future.delayed(const Duration(milliseconds: 666));
-      } catch (e) {
-        commonPrint.log('Battery optimization check error: $e');
-        break;
-      }
-    }
-    if (mounted && _isWaitingForSettings) {
-      setState(() => _isWaitingForSettings = false);
-    }
-  }
-
-  Future<void> _handleSwitchChanged(BuildContext context, bool value) async {
-    final isIgnoring = _isIgnoring;
-    if (isIgnoring == null) return;
-
-    if (isIgnoring) {
-      if (context.mounted) {
-        context.showSnackBar(appLocalizations.alreadyInWhitelist);
-      }
-      setState(() {});
-    } else {
-      try {
-        setState(() => _isWaitingForSettings = true);
-        await app.requestIgnoreBatteryOptimizations();
-      } catch (e) {
-        commonPrint.log('Battery optimization error: $e');
-        setState(() => _isWaitingForSettings = false);
-      }
-    }
-  }
+  const BatteryOptimizationItem({super.key, required this.onRequest});
 
   @override
   Widget build(BuildContext context) {
-    final isIgnoring = _isIgnoring;
-
     return ListItem.switchItem(
       title: Text(appLocalizations.batteryOptimization),
       subtitle: Text(appLocalizations.batteryOptimizationDesc),
+      delegate: SwitchDelegate(value: false, onChanged: (_) => onRequest()),
+    );
+  }
+}
+
+class LoopbackProtectionItem extends ConsumerWidget {
+  const LoopbackProtectionItem({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loopbackProtection = ref.watch(
+      vpnSettingProvider.select((state) => state.loopbackProtection),
+    );
+
+    return ListItem.switchItem(
+      title: Text(appLocalizations.loopbackProtection),
+      subtitle: Text(appLocalizations.loopbackProtectionDesc),
       delegate: SwitchDelegate(
-        value: isIgnoring ?? false,
-        onChanged: (value) => _handleSwitchChanged(context, value),
+        value: loopbackProtection,
+        onChanged: (bool value) {
+          ref
+              .read(vpnSettingProvider.notifier)
+              .updateState(
+                (state) => state.copyWith(loopbackProtection: value),
+              );
+        },
       ),
     );
   }
@@ -400,60 +367,43 @@ class DisableQuicSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isManaged = ref.watch(
+      currentProfileProvider.select((profile) => profile?.isManaged ?? false),
+    );
     final disableQuic = ref.watch(
       vpnSettingProvider.select((state) => state.disableQuic),
     );
-    final excludeChina = ref.watch(
-      vpnSettingProvider.select((state) => state.excludeChina),
+    final managedOptions = ref.watch(
+      managedSettingProvider.select((state) => state.options),
     );
-    final locale = ref.watch(
-      appSettingProvider.select((state) => state.locale),
-    );
-    final isRussian = locale?.toLowerCase().startsWith('ru') ?? false;
+    final managedQuic =
+        managedOptions['禁用内核QUIC流量'] ??
+        managedOptions['屏蔽内核QUIC流量'] ??
+        true;
+    final enabled = isManaged ? managedQuic : disableQuic;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListItem.switchItem(
-          title: Text(appLocalizations.disableQuic),
-          subtitle: Text(appLocalizations.disableQuicDesc),
-          delegate: SwitchDelegate(
-            value: disableQuic,
-            onChanged: (bool value) async {
-              ref
-                  .read(vpnSettingProvider.notifier)
-                  .updateState((state) => state.copyWith(disableQuic: value));
-              globalState.appController.setupClashConfigDebounce();
-            },
-          ),
-        ),
-        if (disableQuic && !isRussian) ...[
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: context.colorScheme.outlineVariant.withValues(
-              alpha: context.colorScheme.brightness == Brightness.light
-                  ? 0.6
-                  : 0.45,
-            ),
-            indent: 16,
-            endIndent: 16,
-          ),
-          ListItem.switchItem(
-            title: Text(appLocalizations.excludeChina),
-            subtitle: Text(appLocalizations.excludeChinaDesc),
-            delegate: SwitchDelegate(
-              value: excludeChina,
-              onChanged: (bool value) async {
-                ref
-                    .read(vpnSettingProvider.notifier)
-                    .updateState((state) => state.copyWith(excludeChina: value));
-                globalState.appController.setupClashConfigDebounce();
-              },
-            ),
-          ),
-        ],
-      ],
+    return ListItem.switchItem(
+      title: Text(appLocalizations.disableQuic),
+      subtitle: Text(appLocalizations.disableQuicDesc),
+      delegate: SwitchDelegate(
+        value: enabled,
+        onChanged: (bool value) async {
+          ref
+              .read(vpnSettingProvider.notifier)
+              .updateState((state) => state.copyWith(disableQuic: value));
+          if (isManaged) {
+            globalState.appController.updateManagedSetting(
+              (state) => state.copyWith(
+                options: {
+                  ...state.options,
+                  '禁用内核QUIC流量': value,
+                }..remove('屏蔽内核QUIC流量'),
+              ),
+            );
+          }
+          globalState.appController.setupClashConfigDebounce();
+        },
+      ),
     );
   }
 }
@@ -597,28 +547,13 @@ class TraySection extends ConsumerWidget {
             children: [
               Text(appLocalizations.trayEnhancement),
               if (showClickBehaviorSetting) ...[
-                Tooltip(
-                  message: appLocalizations.trayClickBehavior,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkResponse(
-                      radius: 16,
-                      highlightShape: BoxShape.circle,
-                      onTap: () => _showTrayClickBehaviorDialog(
-                        context,
-                        ref,
-                        leftBehavior: leftBehavior,
-                        rightBehavior: rightBehavior,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Icon(
-                          Icons.settings_outlined,
-                          size: 18,
-                          color: context.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
+                TitleSettingButton(
+                  tooltip: appLocalizations.trayClickBehavior,
+                  onTap: () => _showTrayClickBehaviorDialog(
+                    context,
+                    ref,
+                    leftBehavior: leftBehavior,
+                    rightBehavior: rightBehavior,
                   ),
                 ),
               ],
@@ -630,7 +565,9 @@ class TraySection extends ConsumerWidget {
             onChanged: (bool value) async {
               ref
                   .read(vpnSettingProvider.notifier)
-                  .updateState((state) => state.copyWith(trayEnhancement: value));
+                  .updateState(
+                    (state) => state.copyWith(trayEnhancement: value),
+                  );
               await globalState.appController.updateTray();
             },
           ),
@@ -655,7 +592,9 @@ class TraySection extends ConsumerWidget {
               onChanged: (bool value) async {
                 ref
                     .read(vpnSettingProvider.notifier)
-                    .updateState((state) => state.copyWith(enableTraySpeed: value));
+                    .updateState(
+                      (state) => state.copyWith(enableTraySpeed: value),
+                    );
                 await globalState.appController.updateTray();
               },
             ),
@@ -691,16 +630,16 @@ class _TrayClickBehaviorDialogState extends State<_TrayClickBehaviorDialog> {
     _rightBehavior = widget.rightBehavior;
   }
 
-  List<ButtonSegment<TrayClickBehavior>> get _segments => [
-    ButtonSegment(
+  List<SegmentOption<TrayClickBehavior>> get _options => [
+    SegmentOption(
       value: TrayClickBehavior.showPanel,
       icon: const Icon(Icons.dashboard_outlined),
-      label: Text(appLocalizations.showPanel),
+      label: appLocalizations.showPanel,
     ),
-    ButtonSegment(
+    SegmentOption(
       value: TrayClickBehavior.showMenu,
       icon: const Icon(Icons.menu),
-      label: Text(appLocalizations.showMenu),
+      label: appLocalizations.showMenu,
     ),
   ];
 
@@ -731,14 +670,10 @@ class _TrayClickBehaviorDialogState extends State<_TrayClickBehaviorDialog> {
             style: context.textTheme.titleSmall,
           ),
           const SizedBox(height: 8),
-          SegmentedButton<TrayClickBehavior>(
-            segments: _segments,
-            selected: {_leftBehavior},
-            showSelectedIcon: false,
-            expandedInsets: EdgeInsets.zero,
-            onSelectionChanged: (selection) {
-              setState(() => _leftBehavior = selection.first);
-            },
+          SegmentButtonGroup<TrayClickBehavior>(
+            options: _options,
+            selected: _leftBehavior,
+            onSelected: (behavior) => setState(() => _leftBehavior = behavior),
           ),
           const SizedBox(height: 20),
           Text(
@@ -746,14 +681,10 @@ class _TrayClickBehaviorDialogState extends State<_TrayClickBehaviorDialog> {
             style: context.textTheme.titleSmall,
           ),
           const SizedBox(height: 8),
-          SegmentedButton<TrayClickBehavior>(
-            segments: _segments,
-            selected: {_rightBehavior},
-            showSelectedIcon: false,
-            expandedInsets: EdgeInsets.zero,
-            onSelectionChanged: (selection) {
-              setState(() => _rightBehavior = selection.first);
-            },
+          SegmentButtonGroup<TrayClickBehavior>(
+            options: _options,
+            selected: _rightBehavior,
+            onSelected: (behavior) => setState(() => _rightBehavior = behavior),
           ),
         ],
       ),
@@ -761,29 +692,93 @@ class _TrayClickBehaviorDialogState extends State<_TrayClickBehaviorDialog> {
   }
 }
 
-class OtherSettingView extends ConsumerWidget {
+class OtherSettingView extends StatefulWidget {
   const OtherSettingView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<OtherSettingView> createState() => _OtherSettingViewState();
+}
+
+class _OtherSettingViewState extends State<OtherSettingView>
+    with WidgetsBindingObserver {
+  bool _showBatteryOptimization = false;
+  bool _isWaitingForSettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!system.isAndroid) return;
+    WidgetsBinding.instance.addObserver(this);
+    _checkBatteryOptimization();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final maxRetries = _isWaitingForSettings ? 3 : 1;
+    _isWaitingForSettings = false;
+    _checkBatteryOptimization(maxRetries: maxRetries);
+  }
+
+  Future<void> _checkBatteryOptimization({int maxRetries = 1}) async {
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        final isIgnoring = await app.isIgnoringBatteryOptimizations();
+        if (!mounted) return;
+        if (_showBatteryOptimization == isIgnoring) {
+          setState(() => _showBatteryOptimization = !isIgnoring);
+        }
+        if (isIgnoring || attempt >= maxRetries - 1) return;
+        await Future.delayed(const Duration(milliseconds: 666));
+      } catch (e) {
+        commonPrint.warn('Battery optimization check error: $e');
+        return;
+      }
+    }
+  }
+
+  Future<void> _requestBatteryOptimization() async {
+    _isWaitingForSettings = true;
+    try {
+      await app.requestIgnoreBatteryOptimizations();
+    } catch (e) {
+      commonPrint.warn('Battery optimization error: $e');
+      _isWaitingForSettings = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     List<Widget> items = [
       const SmartAutoStopSection(),
       if (system.isAndroid) const DozeSuspendItem(),
       if (system.isAndroid) const QuickResponseItem(),
       if (system.isAndroid) const StoreFixItem(),
+      const LoopbackProtectionItem(),
       const DisableQuicSection(),
       if (system.isAndroid) const HighPriorityNotificationItem(),
       if (system.isAndroid) const NetworkSpeedNotificationItem(),
       if (!system.isAndroid) const TraySection(),
       if (system.isWindows) const HighPriorityItem(),
       if (system.isWindows) const NetworkFixItem(),
-      if (system.isAndroid) const BatteryOptimizationItem(),
+      if (system.isDesktop) const CloseConnectionsItem(),
+      if (_showBatteryOptimization)
+        BatteryOptimizationItem(onRequest: _requestBatteryOptimization),
     ];
 
     if (items.isEmpty) {
       return const Center(child: Text('No settings available'));
     }
 
-    return generateListView(generateSection(items: items));
+    return generateListView([
+      ...generateSection(items: items),
+      const SystemExplicitSection(),
+    ]);
   }
 }

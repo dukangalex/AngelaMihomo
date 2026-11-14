@@ -1,10 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(Bettbox LANGUAGES CXX)
+project(AngelaMihomo LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "Bettbox")
+set(BINARY_NAME "AngelaMihomo")
 
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
@@ -40,7 +40,7 @@ add_definitions(-DUNICODE -D_UNICODE)
 # of modifying this function.
 function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_features(${TARGET} PUBLIC cxx_std_17)
-  target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
+  target_compile_options(${TARGET} PRIVATE /utf-8 /W4 /WX /wd"4100" /wd"4819")
   target_compile_options(${TARGET} PRIVATE /EHsc)
   target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
@@ -91,23 +91,23 @@ set(CLASH_DIR "../libclash/windows")
 #   set(CLASH_DIR "../libclash/windows/x86")
 # endif()
 
-install(PROGRAMS "${CLASH_DIR}/BettboxCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(PROGRAMS "${CLASH_DIR}/AngelaMihomoCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
 
-install(PROGRAMS "${CLASH_DIR}/BettboxDevCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(PROGRAMS "${CLASH_DIR}/AngelaMihomoDevCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   CONFIGURATIONS Debug
   COMPONENT Runtime)
 
-install(PROGRAMS "${CLASH_DIR}/BettboxDevHelperService.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(PROGRAMS "${CLASH_DIR}/AngelaMihomoDevHelperService.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   CONFIGURATIONS Debug
   COMPONENT Runtime)
 
-install(PROGRAMS "${CLASH_DIR}/BettboxCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(PROGRAMS "${CLASH_DIR}/AngelaMihomoCore.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
 
-install(PROGRAMS "${CLASH_DIR}/BettboxHelperService.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(PROGRAMS "${CLASH_DIR}/AngelaMihomoHelperService.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
 

@@ -29,13 +29,81 @@ pub mod core {
         hash: String,
     }
 
-    static PROCESS: Lazy<Arc<Mutex<Option<std::process::Child>>>> =
+    #[cfg(windows)]
+    struct CoreJob(windows::Win32::Foundation::HANDLE);
+
+    #[cfg(windows)]
+    impl CoreJob {
+        fn bind(child: &std::process::Child) -> Result<Self, std::io::Error> {
+            use std::os::windows::io::AsRawHandle;
+            use windows::Win32::Foundation::{CloseHandle, HANDLE};
+            use windows::Win32::System::JobObjects::{
+                AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation,
+                SetInformationJobObject, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
+                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+            };
+
+            unsafe {
+                let job = CreateJobObjectW(None, None)
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                let mut limits: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+                limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                if let Err(e) = SetInformationJobObject(
+                    job,
+                    JobObjectExtendedLimitInformation,
+                    &limits as *const _ as *const _,
+                    std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+                ) {
+                    let _ = CloseHandle(job);
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()));
+                }
+                if let Err(e) = AssignProcessToJobObject(job, HANDLE(child.as_raw_handle() as isize)) {
+                    let _ = CloseHandle(job);
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()));
+                }
+                Ok(Self(job))
+            }
+        }
+    }
+
+    #[cfg(windows)]
+    impl Drop for CoreJob {
+        fn drop(&mut self) {
+            unsafe {
+                let _ = windows::Win32::Foundation::CloseHandle(self.0);
+            }
+        }
+    }
+
+    struct ManagedProcess {
+        child: std::process::Child,
+        #[cfg(windows)]
+        _job: Option<CoreJob>,
+    }
+
+    static PROCESS: Lazy<Arc<Mutex<Option<ManagedProcess>>>> =
         Lazy::new(|| Arc::new(Mutex::new(None)));
     static FILE_HASH_CACHE: Lazy<Arc<Mutex<Option<CachedFileHash>>>> =
         Lazy::new(|| Arc::new(Mutex::new(None)));
 
     pub fn start_core(start_params: StartParams) -> String {
-        if let Err(e) = validate_core_path(&start_params.path) {
+        if let Err(e) = validate_absolute_path(&start_params.path) {
+            log_message(e.clone());
+            return e;
+        }
+        if start_params.arg.parse::<u16>().is_err()
+            && validate_absolute_path(&start_params.arg).is_err()
+        {
+            let msg = "core arg is invalid".to_string();
+            log_message(msg.clone());
+            return msg;
+        }
+        if let Err(e) = start_params
+            .home_dir
+            .as_deref()
+            .ok_or_else(|| "home_dir is required".to_string())
+            .and_then(validate_absolute_path)
+        {
             log_message(e.clone());
             return e;
         }
@@ -87,10 +155,16 @@ pub mod core {
 
         match command.spawn() {
             Ok(child) => {
-                *process = Some(child);
+                #[cfg(windows)]
+                let job = CoreJob::bind(&child).ok();
+                *process = Some(ManagedProcess {
+                    child,
+                    #[cfg(windows)]
+                    _job: job,
+                });
 
-                if let Some(ref mut child) = *process {
-                    if let Some(stderr) = child.stderr.take() {
+                if let Some(ref mut managed) = *process {
+                    if let Some(stderr) = managed.child.stderr.take() {
                         let reader = std::io::BufReader::new(stderr);
                         thread::spawn(move || {
                             for line in reader.lines() {
@@ -113,6 +187,7 @@ pub mod core {
     }
 
     static WATCHER_STARTED: AtomicBool = AtomicBool::new(false);
+    const DEV_EXIT_GRACE: Duration = Duration::from_secs(5);
 
     fn start_dev_core_exit_watcher() {
         if !should_exit_service_when_core_exits() {
@@ -126,16 +201,24 @@ pub mod core {
             thread::sleep(Duration::from_millis(500));
 
             let mut process = PROCESS.lock().unwrap_or_else(|e| e.into_inner());
-            let Some(child) = process.as_mut() else {
+            let Some(managed) = process.as_mut() else {
                 WATCHER_STARTED.store(false, Ordering::SeqCst);
                 break;
             };
 
-            match child.try_wait() {
+            match managed.child.try_wait() {
                 Ok(Some(status)) => {
                     log_message(format!("Core process exited: {}", status));
                     *process = None;
                     drop(process);
+                    thread::sleep(DEV_EXIT_GRACE);
+                    if PROCESS
+                        .lock()
+                        .unwrap_or_else(|e| e.into_inner())
+                        .is_some()
+                    {
+                        continue;
+                    }
                     log_message("Dev helper service exiting after core exit".to_string());
                     std::process::exit(0);
                 }
@@ -148,6 +231,10 @@ pub mod core {
                 }
             }
         });
+    }
+
+    pub fn is_dev_mode() -> bool {
+        should_exit_service_when_core_exits()
     }
 
     fn should_exit_service_when_core_exits() -> bool {
@@ -173,25 +260,25 @@ pub mod core {
             .unwrap_or(false)
     }
 
-    fn validate_core_path(path: &str) -> Result<(), String> {
+    fn validate_absolute_path(path: &str) -> Result<(), String> {
         let path = std::path::Path::new(path);
         if !path.is_absolute() {
-            return Err("core path must be absolute".to_string());
+            return Err("path must be absolute".to_string());
         }
         if path
             .components()
             .any(|c| matches!(c, std::path::Component::ParentDir))
         {
-            return Err("core path must not contain '..'".to_string());
+            return Err("path must not contain '..'".to_string());
         }
         Ok(())
     }
 
     pub fn stop_core() -> String {
         let mut process = PROCESS.lock().unwrap_or_else(|e| e.into_inner());
-        if let Some(mut child) = process.take() {
-            let _ = child.kill();
-            let _ = child.wait();
+        if let Some(mut managed) = process.take() {
+            let _ = managed.child.kill();
+            let _ = managed.child.wait();
         }
         *process = None;
         "".to_string()
@@ -283,6 +370,12 @@ pub mod process {
     }
 
     pub fn set_process_priority(process_name: &str, enable: bool) -> String {
+        if !["BettboxCore.exe", "BettboxDevCore.exe"]
+            .iter()
+            .any(|name| name.eq_ignore_ascii_case(process_name))
+        {
+            return format!("Process {} is not allowed", process_name);
+        }
         use windows::Win32::Foundation::CloseHandle;
         use windows::Win32::System::Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,

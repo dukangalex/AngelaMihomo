@@ -1,10 +1,12 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/explicit_policy.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'app.dart';
@@ -36,16 +38,16 @@ Config configState(Ref ref) {
   final appSetting = ref.watch(appSettingProvider);
   final profiles = ref.watch(profilesProvider);
   final currentProfileId = ref.watch(currentProfileIdProvider);
-  final overrideDns = ref.watch(overrideDnsProvider);
   final overrideNtp = ref.watch(overrideNtpProvider);
   final overrideSniffer = ref.watch(overrideSnifferProvider);
   final overrideTunnel = ref.watch(overrideTunnelProvider);
   final overrideExperimental = ref.watch(overrideExperimentalProvider);
-  final overrideTestUrl = ref.watch(overrideTestUrlProvider);
   final networkProps = ref.watch(networkSettingProvider);
   final vpnProps = ref.watch(vpnSettingProvider);
   final proxiesStyle = ref.watch(proxiesStyleSettingProvider);
+  final trafficStatsProps = ref.watch(trafficStatsSettingProvider);
   final scriptProps = ref.watch(scriptStateProvider);
+  final managedProps = ref.watch(managedSettingProvider);
   final hotKeyActions = ref.watch(hotKeyActionsProvider);
   final dav = ref.watch(appDAVSettingProvider);
   final windowProps = ref.watch(windowSettingProvider);
@@ -54,15 +56,15 @@ Config configState(Ref ref) {
     windowProps: windowProps,
     hotKeyActions: hotKeyActions,
     scriptProps: scriptProps,
+    managedProps: managedProps,
     proxiesStyle: proxiesStyle,
+    trafficStatsProps: trafficStatsProps,
     vpnProps: vpnProps,
     networkProps: networkProps,
-    overrideDns: overrideDns,
     overrideNtp: overrideNtp,
     overrideSniffer: overrideSniffer,
     overrideTunnel: overrideTunnel,
     overrideExperimental: overrideExperimental,
-    overrideTestUrl: overrideTestUrl,
     currentProfileId: currentProfileId,
     profiles: profiles,
     appSetting: appSetting,
@@ -133,10 +135,7 @@ NavigationItemsState currentNavigationItemsState(Ref ref) {
 @riverpod
 CoreState coreState(Ref ref) {
   final vpnProps = ref.watch(vpnSettingProvider);
-  final (
-    :bypassPrivateRoute,
-    :bypassDomain,
-  ) = ref.watch(
+  final (:bypassPrivateRoute, :bypassDomain) = ref.watch(
     networkSettingProvider.select(
       (state) => (
         bypassPrivateRoute: state.bypassPrivateRoute,
@@ -146,20 +145,19 @@ CoreState coreState(Ref ref) {
   );
   final currentProfile = ref.watch(currentProfileProvider);
   final onlyStatisticsProxy = ref.watch(appSettingProvider).onlyStatisticsProxy;
+  final trafficStatsProps = ref.watch(trafficStatsSettingProvider);
   return CoreState(
     vpnProps: vpnProps.copyWith(bypassPrivateRoute: bypassPrivateRoute),
     onlyStatisticsProxy: onlyStatisticsProxy,
     currentProfileName: currentProfile?.label ?? currentProfile?.id ?? '',
     bypassDomain: bypassDomain,
+    trafficStats: TrafficStatsOptions.fromProps(trafficStatsProps),
   );
 }
 
 @riverpod
 UpdateParams updateParams(Ref ref) {
-  final (
-    :bypassPrivateRoute,
-    :realBypassPrivateRouteAddress,
-  ) = ref.watch(
+  final (:bypassPrivateRoute, :realBypassPrivateRouteAddress) = ref.watch(
     networkSettingProvider.select(
       (state) => (
         bypassPrivateRoute: state.bypassPrivateRoute,
@@ -330,14 +328,198 @@ ProfilesSelectorState profilesSelectorState(Ref ref) {
   );
 }
 
+Group _withoutSelection(Group group) {
+  final all = group.all.any(_hasSelection)
+      ? [
+          for (final proxy in group.all)
+            _hasSelection(proxy) ? proxy.copyWith(now: null) : proxy,
+        ]
+      : group.all;
+  return group.copyWith(now: null, all: all);
+}
+
+bool _hasSelection(Proxy proxy) => proxy.now != null;
+
+const backgroundSortThreshold = 1000;
+
+List<int> _sortOrder(int length, int Function(int a, int b) compare) {
+  return List.generate(length, (index) => index)..sort((a, b) {
+    final result = compare(a, b);
+    return result != 0 ? result : a.compareTo(b);
+  });
+}
+
+List<int> sortOrderByName(List<String> keys) {
+  return _sortOrder(keys.length, (a, b) => utils.sortByChar(keys[a], keys[b]));
+}
+
+List<int> sortOrderByDelay(List<int> values) {
+  return _sortOrder(values.length, (a, b) => values[a].compareTo(values[b]));
+}
+
+List<String> _nameSortKeys(List<Proxy> proxies) {
+  return [for (final proxy in proxies) utils.getPinyin(proxy.name)];
+}
+
+List<int> _delaySortValues(
+  List<Proxy> proxies,
+  int? Function(String proxyName)? delayOf,
+) {
+  return [
+    for (final proxy in proxies) _delaySortValue(delayOf?.call(proxy.name)),
+  ];
+}
+
+/// Moves the chain landing entry ([explicitChainGroup]) to the front,
+/// keeping every other entry in its existing relative order. Returns the
+/// list unchanged when the chain landing entry is absent or already first.
+List<Proxy> pinChainLandingFirst(List<Proxy> proxies) {
+  final index = proxies.indexWhere((proxy) => proxy.name == explicitChainGroup);
+  if (index <= 0) return proxies;
+  return [
+    proxies[index],
+    ...proxies.sublist(0, index),
+    ...proxies.sublist(index + 1),
+  ];
+}
+
+List<Proxy> sortProxies(
+  List<Proxy> proxies,
+  ProxiesSortType sortType, {
+  int? Function(String proxyName)? delayOf,
+  bool pinChainLanding = false,
+}) {
+  final order = switch (sortType) {
+    ProxiesSortType.none => null,
+    ProxiesSortType.name => sortOrderByName(_nameSortKeys(proxies)),
+    ProxiesSortType.delay => sortOrderByDelay(
+      _delaySortValues(proxies, delayOf),
+    ),
+  };
+  final sorted = order == null
+      ? proxies
+      : [for (final index in order) proxies[index]];
+  return pinChainLanding ? pinChainLandingFirst(sorted) : sorted;
+}
+
+int _delaySortValue(int? delay) =>
+    (delay == null || delay == -1) ? 1 << 30 : delay;
+
+List<Proxy>? _reuseOrder(List<Proxy>? previous, List<Proxy> proxies) {
+  if (previous == null || previous.length != proxies.length) return null;
+  final byName = {for (final proxy in proxies) proxy.name: proxy};
+  if (byName.length != proxies.length) return null;
+  final result = <Proxy>[];
+  for (final proxy in previous) {
+    final current = byName[proxy.name];
+    if (current == null) return null;
+    result.add(current);
+  }
+  return result;
+}
+
+const _unprobeableProxyTypes = {
+  'Reject',
+  'RejectDrop',
+  'Pass',
+  'PassRule',
+  'Rematch',
+  'Compatible',
+  'Dns',
+};
+
+List<Group> hideTimeoutProxies({
+  required List<Group> groups,
+  required List<Group> allGroups,
+  required SelectedMap selectedMap,
+  required DelayMap delayMap,
+  required String defaultTestUrl,
+}) {
+  final proxyTypes = {
+    for (final group in allGroups)
+      for (final proxy in group.all) proxy.name: proxy.type,
+  };
+  final states = <String, ProxyCardState>{};
+  return groups.map((group) {
+    final selectedName = (allGroups.getGroup(group.name) ?? group)
+        .getCurrentSelectedName(selectedMap[group.name] ?? '');
+
+    bool isTimeout(Proxy proxy) {
+      if (allGroups.getGroup(proxy.name) != null) {
+        return false;
+      }
+      final state = states.putIfAbsent(
+        proxy.name,
+        () => resolveProxyCardState(
+          allGroups,
+          selectedMap,
+          ProxyCardState(proxyName: proxy.name),
+        ),
+      );
+      if (_unprobeableProxyTypes.contains(proxyTypes[state.proxyName])) {
+        return false;
+      }
+      final testUrl = state.testUrl.getSafeValue(group.testUrl ?? '');
+      final url = testUrl.isEmpty ? defaultTestUrl : testUrl;
+      final delay = delayMap[url]?[state.proxyName];
+      return delay != null && delay < 0;
+    }
+
+    final hasUsable = group.all.any((proxy) => !isTimeout(proxy));
+    if (!hasUsable) {
+      return group;
+    }
+
+    final visible = group.all.where((proxy) {
+      if (proxy.name == selectedName) {
+        return true;
+      }
+      return !isTimeout(proxy);
+    }).toList();
+    return group.copyWith(all: visible);
+  }).toList();
+}
+
+GroupsState _hideTimeoutGroups(Ref ref, List<Group> groups) {
+  final hideTimeout = ref.watch(
+    proxiesStyleSettingProvider.select((state) => state.hideTimeoutProxies),
+  );
+  if (!hideTimeout) {
+    return GroupsState(value: groups);
+  }
+  return GroupsState(
+    value: hideTimeoutProxies(
+      groups: groups,
+      allGroups: ref.watch(groupsProvider),
+      selectedMap: ref.watch(selectedMapProvider),
+      delayMap: ref.watch(delaySortSnapshotProvider),
+      defaultTestUrl: ref.watch(
+        appSettingProvider.select((state) => state.testUrl),
+      ),
+    ),
+  );
+}
+
+@riverpod
+GroupsState visibleGroupsState(Ref ref) {
+  final groups = ref
+      .watch(currentGroupsStateProvider)
+      .value
+      .map(_withoutSelection)
+      .toList();
+  return _hideTimeoutGroups(ref, groups);
+}
+
 @riverpod
 GroupsState filterGroupsState(Ref ref, String query) {
-  final currentGroups = ref.watch(currentGroupsStateProvider);
   if (query.isEmpty) {
-    return currentGroups;
+    return ref.watch(visibleGroupsStateProvider);
   }
   final lowQuery = query.toLowerCase();
-  final groups = currentGroups.value
+  final groups = ref
+      .watch(currentGroupsStateProvider)
+      .value
+      .map(_withoutSelection)
       .map((group) {
         final groupNameMatch = group.name.toLowerCase().contains(lowQuery);
         if (groupNameMatch) {
@@ -351,28 +533,170 @@ GroupsState filterGroupsState(Ref ref, String query) {
       })
       .where((group) => group.all.isNotEmpty)
       .toList();
-  return GroupsState(value: groups);
+  return _hideTimeoutGroups(ref, groups);
+}
+
+@riverpod
+DelayMap delaySortSnapshot(Ref ref) {
+  ref.watch(sortNumProvider);
+  ref.listen(delayDataSourceProvider.select((state) => state.isEmpty), (
+    _,
+    isEmpty,
+  ) {
+    if (isEmpty) ref.invalidateSelf();
+  });
+  return {
+    for (final entry in ref.read(delayDataSourceProvider).entries)
+      entry.key: Map.of(entry.value),
+  };
+}
+
+@riverpod
+class SortedGroupProxies extends _$SortedGroupProxies {
+  static final Map<String, List<Proxy>> _orderCache = {};
+
+  List<Proxy>? _lastSorted;
+
+  List<Proxy> _remember(List<Proxy> sorted) {
+    _lastSorted = sorted;
+    if (query.isEmpty) {
+      _orderCache.remove(groupName);
+      _orderCache[groupName] = sorted;
+      if (_orderCache.length > 16) {
+        _orderCache.remove(_orderCache.keys.first);
+      }
+    }
+    return sorted;
+  }
+
+  @override
+  List<Proxy>? build(String query, String groupName) {
+    final group = ref.watch(
+      filterGroupsStateProvider(
+        query,
+      ).select((state) => state.value.getGroup(groupName)),
+    );
+    if (group == null) return _lastSorted = const [];
+    final proxies = group.all;
+    // The chain landing entry stays pinned to the top of the first
+    // selector group under every sort order (T34); other groups sort
+    // exactly as before.
+    final pinChainLanding =
+        ref
+            .watch(currentGroupsStateProvider)
+            .value
+            .where((item) => item.type == GroupType.Selector)
+            .firstOrNull
+            ?.name ==
+        groupName;
+    final sortType = ref.watch(
+      proxiesStyleSettingProvider.select((state) => state.sortType),
+    );
+    if (sortType == ProxiesSortType.none) {
+      return _lastSorted = pinChainLanding
+          ? pinChainLandingFirst(proxies)
+          : proxies;
+    }
+
+    int? Function(String proxyName)? delayOf;
+    if (sortType == ProxiesSortType.delay) {
+      final lookup = createDelayLookup(
+        groups: ref.read(groupsProvider),
+        selectedMap: ref.read(selectedMapProvider),
+        delayMap: ref.watch(delaySortSnapshotProvider),
+        defaultTestUrl: ref.watch(
+          appSettingProvider.select((state) => state.testUrl),
+        ),
+      );
+      delayOf = (proxyName) => lookup(proxyName, group.testUrl);
+    }
+    if (proxies.length < backgroundSortThreshold) {
+      return _lastSorted = sortProxies(
+        proxies,
+        sortType,
+        delayOf: delayOf,
+        pinChainLanding: pinChainLanding,
+      );
+    }
+    final pending = _reuseOrder(
+      _lastSorted ?? (query.isEmpty ? _orderCache[groupName] : null),
+      proxies,
+    );
+    if (pending == null && query.isNotEmpty) {
+      return _lastSorted = sortProxies(
+        proxies,
+        sortType,
+        delayOf: delayOf,
+        pinChainLanding: pinChainLanding,
+      );
+    }
+
+    var active = true;
+    ref.onDispose(() => active = false);
+    final order = sortType == ProxiesSortType.name
+        ? compute(sortOrderByName, _nameSortKeys(proxies))
+        : compute(sortOrderByDelay, _delaySortValues(proxies, delayOf));
+    order.then(
+      (order) {
+        if (!active) return;
+        final sorted = [for (final index in order) proxies[index]];
+        state = _remember(
+          pinChainLanding ? pinChainLandingFirst(sorted) : sorted,
+        );
+      },
+      onError: (Object _) {
+        if (!active) return;
+        state = _remember(
+          sortProxies(
+            proxies,
+            sortType,
+            delayOf: delayOf,
+            pinChainLanding: pinChainLanding,
+          ),
+        );
+      },
+    );
+    return _lastSorted = pending;
+  }
+}
+
+@riverpod
+GroupsState sortedGroupsState(Ref ref, String query) {
+  final groupsState = ref.watch(filterGroupsStateProvider(query));
+  final sortType = ref.watch(
+    proxiesStyleSettingProvider.select((state) => state.sortType),
+  );
+  if (sortType == ProxiesSortType.none) {
+    return groupsState;
+  }
+  final unfoldSet = ref.watch(unfoldSetProvider);
+  return GroupsState(
+    value: [
+      for (final group in groupsState.value)
+        unfoldSet.contains(group.name)
+            ? group.copyWith(
+                all:
+                    ref.watch(sortedGroupProxiesProvider(query, group.name)) ??
+                    const [],
+              )
+            : group,
+    ],
+  );
 }
 
 @Riverpod(dependencies: [Query])
 ProxiesListState proxiesListState(Ref ref) {
   final query = ref.watch(queryProvider);
-  final currentGroups = ref.watch(filterGroupsStateProvider(query));
+  final currentGroups = ref.watch(sortedGroupsStateProvider(query));
   final currentUnfoldSet = ref.watch(unfoldSetProvider);
-  final vm2 = ref.watch(
-    proxiesStyleSettingProvider.select(
-      (state) => VM2(a: state.sortType, b: state.cardType),
-    ),
+  final cardType = ref.watch(
+    proxiesStyleSettingProvider.select((state) => state.cardType),
   );
-
-  final sortNum = ref.watch(sortNumProvider);
   final columns = ref.watch(getProxiesColumnsProvider);
   return ProxiesListState(
     groups: currentGroups.value,
     currentUnfoldSet: currentUnfoldSet,
-    proxiesSortType: vm2.a,
-    proxyCardType: vm2.b,
-    sortNum: sortNum,
+    proxyCardType: cardType,
     columns: columns,
   );
 }
@@ -500,15 +824,12 @@ bool isCurrentPage(
 
 @riverpod
 String getRealTestUrl(Ref ref, [String? testUrl]) {
-  final overrideTestUrl = ref.watch(overrideTestUrlProvider);
   final currentTestUrl = ref.watch(appSettingProvider).testUrl;
 
-  // If override is enabled or testUrl is null or empty, use client setting
-  if (overrideTestUrl || testUrl == null || testUrl.isEmpty) {
+  if (testUrl == null || testUrl.isEmpty) {
     return currentTestUrl;
   }
 
-  // Otherwise use the provided testUrl from config file
   return testUrl;
 }
 
@@ -570,33 +891,18 @@ int getProxiesColumns(Ref ref) {
   return utils.getProxiesColumns(viewWidth, proxiesLayout);
 }
 
-ProxyCardState _getProxyCardState(
+ProxyCardState resolveProxyCardState(
   List<Group> groups,
   SelectedMap selectedMap,
   ProxyCardState proxyDelayState,
 ) {
-  if (proxyDelayState.proxyName.isEmpty) return proxyDelayState;
-  final index = groups.indexWhere(
-    (element) => element.name == proxyDelayState.proxyName,
-  );
-  if (index == -1) {
-    Proxy? proxy;
-    for (final group in groups) {
-      for (final p in group.all) {
-        if (p.name == proxyDelayState.proxyName) {
-          proxy = p;
-          break;
-        }
-      }
-      if (proxy != null) break;
-    }
-    final now = proxy?.now;
-    if (proxy != null &&
-        proxy.type.toUpperCase() == 'REMATCH' &&
-        now != null &&
-        now.isNotEmpty &&
-        now != proxyDelayState.proxyName) {
-      return _getProxyCardState(
+  final proxyName = proxyDelayState.proxyName;
+  if (proxyName.isEmpty) return proxyDelayState;
+  final group = groups.getGroup(proxyName);
+  if (group == null) {
+    final now = groups.getRematchProxy(proxyName)?.now;
+    if (now != null && now.isNotEmpty && now != proxyName) {
+      return resolveProxyCardState(
         groups,
         selectedMap,
         proxyDelayState.copyWith(proxyName: now),
@@ -604,14 +910,13 @@ ProxyCardState _getProxyCardState(
     }
     return proxyDelayState;
   }
-  final group = groups[index];
   final currentSelectedName = group.getCurrentSelectedName(
-    selectedMap[proxyDelayState.proxyName] ?? '',
+    selectedMap[proxyName] ?? '',
   );
   if (currentSelectedName.isEmpty) {
     return proxyDelayState;
   }
-  return _getProxyCardState(
+  return resolveProxyCardState(
     groups,
     selectedMap,
     proxyDelayState.copyWith(
@@ -621,11 +926,30 @@ ProxyCardState _getProxyCardState(
   );
 }
 
+int? Function(String proxyName, String? testUrl) createDelayLookup({
+  required List<Group> groups,
+  required SelectedMap selectedMap,
+  required DelayMap delayMap,
+  required String defaultTestUrl,
+}) {
+  final cache = <(String, String?), int?>{};
+  return (proxyName, testUrl) => cache.putIfAbsent((proxyName, testUrl), () {
+    final state = resolveProxyCardState(
+      groups,
+      selectedMap,
+      ProxyCardState(proxyName: proxyName),
+    );
+    final realTestUrl = state.testUrl.getSafeValue(testUrl ?? '');
+    final url = realTestUrl.isEmpty ? defaultTestUrl : realTestUrl;
+    return delayMap[url]?[state.proxyName];
+  });
+}
+
 @riverpod
 ProxyCardState getProxyCardState(Ref ref, String proxyName) {
   final groups = ref.watch(groupsProvider);
   final selectedMap = ref.watch(selectedMapProvider);
-  return _getProxyCardState(
+  return resolveProxyCardState(
     groups,
     selectedMap,
     ProxyCardState(proxyName: proxyName),
@@ -737,38 +1061,84 @@ ColorScheme genColorScheme(
       (state) => VM2(a: state.primaryColor, b: state.schemeVariant),
     ),
   );
-  if (color == null && (ignoreConfig == true || vm2.a == null)) {
-    // if (globalState.corePalette != null) {
-    //   return globalState.corePalette!.toColorScheme(brightness: brightness);
-    // }
+  if (color != null || ignoreConfig) {
+    // Explicit-color previews keep the seed-based scheme.
     return ColorScheme.fromSeed(
-      seedColor:
-          globalState.corePalette
-              ?.toColorScheme(brightness: brightness)
-              .primary ??
-          globalState.accentColor,
+      seedColor: color ?? Color(vm2.a ?? defaultPrimaryColor),
       brightness: brightness,
       dynamicSchemeVariant: vm2.b,
-    );
+    ).toNeutralSurfaces();
   }
-  return ColorScheme.fromSeed(
-    seedColor: color ?? Color(vm2.a!),
-    brightness: brightness,
-    dynamicSchemeVariant: vm2.b,
+  // The twelve-constellation family is the only live theme source: the
+  // scheme comes straight from the selected theme's token table, and
+  // legacy upstream color/dynamic choices no longer apply.
+  final zodiacId = ref.watch(
+    themeSettingProvider.select((state) => state.zodiacTheme),
   );
+  return resolveZodiacTheme(
+    zodiacId,
+  ).variant(brightness).toColorScheme(brightness);
 }
 
 @riverpod
-VM3<String?, String?, Dns?> needSetup(Ref ref) {
-  final profileId = ref.watch(currentProfileIdProvider);
-  final content = ref.watch(
-    scriptStateProvider.select((state) => state.currentScript?.content),
+Script? currentProfileScript(Ref ref) {
+  final id = ref.watch(
+    currentProfileProvider.select(
+      (profile) =>
+          profile == null || profile.isManaged ? null : profile.scriptId,
+    ),
   );
-  final overrideDns = ref.watch(overrideDnsProvider);
-  final dns = overrideDns == true
-      ? ref.watch(patchClashConfigProvider.select((state) => state.dns))
+  if (id == null) return null;
+  return ref.watch(scriptStateProvider.select((state) => state.findScript(id)));
+}
+
+@riverpod
+bool currentProfileScriptActive(Ref ref) {
+  final managed = ref.watch(
+    currentProfileProvider.select((profile) => profile?.isManaged ?? false),
+  );
+  return managed ||
+      ref.watch(
+        currentProfileScriptProvider.select((script) => script != null),
+      );
+}
+
+@riverpod
+VM5<String?, String?, String?, bool, String> needSetup(Ref ref) {
+  final profileId = ref.watch(currentProfileIdProvider);
+  final runsManagedScript = ref.watch(
+    currentProfileProvider.select(
+      (profile) => profile?.runsManagedScript ?? false,
+    ),
+  );
+  final script = ref.watch(currentProfileScriptProvider);
+  final scriptDigest = runsManagedScript
+      ? ref.watch(
+          managedSettingProvider.select(
+            (state) =>
+                '${ManagedScript.version(state)}:${state.options}:${state.routes}:${state.order}',
+          ),
+        )
+      : script == null
+      ? null
+      : '${script.id}:${script.digest}';
+  final loopbackPorts =
+      ref.watch(vpnSettingProvider.select((state) => state.loopbackProtection))
+      ? ref.watch(patchClashConfigProvider.select((state) => state.listenPorts))
       : null;
-  return VM3(a: profileId, b: content, c: dns);
+  final ipv6 = ref.watch(
+    patchClashConfigProvider.select((state) => state.ipv6),
+  );
+  final interfaceName = ref.watch(
+    patchClashConfigProvider.select((state) => state.interfaceName),
+  );
+  return VM5(
+    a: profileId,
+    b: scriptDigest,
+    c: loopbackPorts,
+    d: ipv6,
+    e: interfaceName,
+  );
 }
 
 @riverpod
@@ -785,17 +1155,155 @@ Brightness currentBrightness(Ref ref) {
 }
 
 @riverpod
-VM2<bool, bool> autoSetSystemDnsState(Ref ref) {
+bool systemDnsTakeover(Ref ref) {
   final isStart = ref.watch(runTimeProvider.select((state) => state != null));
   final realTunEnable = ref.watch(realTunEnableProvider);
-  final autoSetSystemDns = ref.watch(
-    networkSettingProvider.select((state) => state.autoSetSystemDns),
+  final dnsHijack = ref.watch(
+    patchClashConfigProvider.select((state) => state.tun.dnsHijack.isNotEmpty),
   );
-  return VM2(a: isStart ? realTunEnable : false, b: autoSetSystemDns);
+  return isStart && realTunEnable && dnsHijack;
 }
 
 @riverpod
 class Query extends _$Query with AutoDisposeNotifierMixin {
   @override
   String build() => '';
+}
+
+@riverpod
+String? currentMainGroupName(Ref ref) => ref.watch(
+  currentGroupsStateProvider.select((state) {
+    final groups = state.value;
+    return (groups.getGroup(GroupName.GLOBAL.name) ?? groups.firstOrNull)?.name;
+  }),
+);
+
+HomeWidgetColors _homeWidgetColors(ColorScheme scheme) {
+  final isLight = scheme.brightness == Brightness.light;
+  return HomeWidgetColors(
+    surface: scheme.surfaceContainer.toARGB32(),
+    tonal: scheme.surfaceContainerHighest.toARGB32(),
+    onSurface: scheme.onSurface.toARGB32(),
+    onSurfaceVariant: scheme.onSurfaceVariant.toARGB32(),
+    primary: scheme.primary.toARGB32(),
+    onPrimary: scheme.onPrimary.toARGB32(),
+    active: (isLight ? scheme.primaryContainer : scheme.primary).toARGB32(),
+    onActive: (isLight ? scheme.onPrimaryContainer : scheme.onPrimary)
+        .toARGB32(),
+  );
+}
+
+String _homeWidgetTwo(int value) => value.toString().padLeft(2, '0');
+
+String _homeWidgetDate(DateTime time) =>
+    '${_homeWidgetTwo(time.month)}-${_homeWidgetTwo(time.day)}';
+
+String _homeWidgetTime(DateTime time) =>
+    '${_homeWidgetDate(time)} ${_homeWidgetTwo(time.hour)}:${_homeWidgetTwo(time.minute)}';
+
+@riverpod
+HomeWidgetSnapshot homeWidgetSnapshot(Ref ref) {
+  final light = _homeWidgetColors(
+    ref.watch(genColorSchemeProvider(Brightness.light)),
+  );
+  final dark = _homeWidgetColors(
+    ref.watch(genColorSchemeProvider(Brightness.dark)),
+  );
+  final (onLabel, offLabel) = ref.watch(
+    appSettingProvider.select(
+      (state) => (
+        state.startSwitchOnLabel ?? appLocalizations.enabled,
+        state.startSwitchOffLabel ?? appLocalizations.disabled,
+      ),
+    ),
+  );
+  final profile = ref.watch(currentProfileProvider);
+  if (profile == null) {
+    return HomeWidgetSnapshot(
+      emptyText: appLocalizations.nullProfileDesc,
+      onLabel: onLabel,
+      offLabel: offLabel,
+      light: light,
+      dark: dark,
+    );
+  }
+  final isDirect = ref.watch(
+    patchClashConfigProvider.select((state) => state.mode == Mode.direct),
+  );
+  final group = isDirect ? null : ref.watch(currentMainGroupNameProvider);
+  final node = isDirect
+      ? appLocalizations.direct
+      : group == null
+      ? ''
+      : ref.watch(
+          getProxyCardStateProvider(group).select((state) => state.proxyName),
+        );
+  final delay = group == null
+      ? null
+      : ref.watch(getDelayProvider(proxyName: group));
+  final providerUpdating = ref.watch(
+    providersProvider.select(
+      (items) => items.any((item) => item.type == 'Proxy' && item.isUpdating),
+    ),
+  );
+  final usage = ProfileUsage.of(profile);
+  final ratio = usage?.ratio;
+  final remaining = usage?.remaining;
+  final usedText = usage == null
+      ? appLocalizations.noUsageData
+      : TrafficValue(value: usage.used).shortShow;
+  final totalText = usage == null
+      ? ''
+      : usage.unlimited
+      ? '∞'
+      : TrafficValue(value: usage.total).shortShow;
+  final expireText = profile.usageExpireText(usage);
+  final daysLeft = usage?.daysLeft;
+  final expireAt = usage?.expireAt;
+  final segments = usage?.segments ?? const <double>[];
+  final updated = profile.lastUpdateDate;
+  return HomeWidgetSnapshot(
+    hasProfile: true,
+    name: profile.label ?? profile.id,
+    updated: updated == null
+        ? ''
+        : '${appLocalizations.updateTime} ${_homeWidgetTime(updated)}',
+    subtitle: usage != null && usage.isMulti
+        ? appLocalizations.providersCount(usage.items.length)
+        : expireText ?? '',
+    expired: usage?.isExpired ?? false,
+    used: usedText,
+    total: usage == null ? '' : '/ $totalText',
+    usage: usage == null ? usedText : '$usedText / $totalText',
+    percent: ratio == null ? '' : '${(ratio * 100).round()}%',
+    segments: segments.isEmpty ? const [0] : segments,
+    firstLabel: remaining != null
+        ? appLocalizations.remainingTraffic
+        : appLocalizations.speedTestDataUsed,
+    firstValue: remaining != null
+        ? TrafficValue(value: remaining).shortShow
+        : usage == null
+        ? '—'
+        : usedText,
+    secondLabel: appLocalizations.expirationTime,
+    secondValue: daysLeft != null && usage?.isExpired != true
+        ? '${expireText ?? ''} · $daysLeft ${appLocalizations.days(daysLeft)}'
+        : expireText ?? '—',
+    expireShort:
+        expireAt != null && daysLeft != null && usage?.isExpired != true
+        ? '${_homeWidgetDate(expireAt)} · $daysLeft ${appLocalizations.days(daysLeft)}'
+        : expireText ?? '',
+    nodeLabel: appLocalizations.currentSelection,
+    node: node,
+    delay: delay == null ? '' : (delay > 0 ? '$delay ms' : 'Timeout'),
+    delayColor: utils.getDelayColor(delay)?.toARGB32() ?? 0,
+    canRefresh:
+        profile.type != ProfileType.file ||
+        profile.providerSubscriptions.isNotEmpty,
+    refreshing: profile.isUpdating || providerUpdating,
+    onLabel: onLabel,
+    offLabel: offLabel,
+    light: light,
+    dark: dark,
+  );
 }

@@ -2,148 +2,34 @@
   <a href="../README.md">简体中文</a> | <a href="README_en.md">English</a> | <a href="README_ru.md">Русский</a> | <strong>فارسی</strong> | <a href="README_ja.md">日本語</a> | <a href="README_ko.md">한국어</a>
 </h4>
 
-<h1 align="center">⚡ Bettbox</h1>
+<h1 align="center">⚡ Angela Mihomo</h1>
 <p align="center">
-  <strong>Another Better Mihomo Client, Forked from FlClash</strong>
+  <strong>کلاینت Mihomo با پشتیبانی پیشرفته از پراکسی زنجیره‌ای</strong>
 </p>
 
-**برنامه Bettbox یک ابزار چندسکویی برای مسیریابی ترافیک و دیباگ DNS است که بر پایه هسته قدرتمند Mihomo به صورت عمیق توسعه یافته است. ما بر حریم خصوصی، امنیت و جزئیات بیشتر قابلیت‌ها تمرکز داریم و متعهد به ارائه تجربه کلاینت بهتری هستیم (این پروژه پیشگام در گذراندن بازبینی دستی و منبع امنیتی بنیاد متن‌باز Signpath است و نسخه ویندوز دارای گواهی امضای دیجیتال رسمی OV می‌باشد).**
+## دربارهٔ این پروژه
 
-با پایبندی به اصل "Better Experience"، برنامه Bettbox ضمن حفظ رابط کاربری UI جذاب نسخه اصلی، جزئیات متعدد و قابلیت‌ها و منطق‌های کاربردی را در پلتفرم‌های مختلف عمیقاً بهینه‌سازی کرده است. ویژگی‌های کلیدی و اهداف: روانی در پیش‌زمینه، مصرف بهینه باتری در پس‌زمینه — کلاینتی با تجربه کاربری بهتر که با مصرف منابع اندک، عملکرد پایدار و طولانی‌مدتی را برای Mihomo ارائه می‌دهد.
+**Angela Mihomo** یک کلاینت پراکسی چندسکویی بر پایهٔ هستهٔ [Mihomo](https://github.com/MetaCubeX/mihomo) است که بر پراکسی زنجیره‌ای، محافظت سیستمی در برابر نشت و تجربهٔ آماده‌به‌کار تمرکز دارد. این پروژه به‌صورت مستقل و تحت مجوز GPL-3.0 توسعه و منتشر می‌شود.
 
-Bettbox یعنی: Better Experience, Out of the box - تجربه برتر، آماده استفاده.
+اطلاعیه‌های انتشار: https://t.me/AngelaNexus
 
+* **پراکسی زنجیره‌ای پیشرفته: گرهٔ ورودی و خروجی هر دو می‌توانند گروه پراکسی باشند؛ خروجی را می‌توان از پروفایل دیگری برگزید؛ گروه ورودی خالی به‌صورت خودکار دورزدن مستقیم را رد می‌کند.**
+* **محافظت صریح سیستمی در برابر نشت: مسدودسازی WebRTC، اتصال مستقیم به DNSهای عمومی چین، مسدودسازی تبلیغات و قواعد صریح دیگر، یکپارچه با سیاست زنجیره و فعال از ابتدا.**
+* **شناسهٔ بستهٔ مستقل: شناسهٔ اندروید `app.angelabettbox` است و در کنار سایر کلاینت‌ها نصب می‌شود؛ شناسه پایدار است و به‌روزرسانی درجا انجام می‌شود.**
+* **هم‌ترازی هسته و داده: هستهٔ همراه، انتشارهای رسمی Mihomo را دنبال می‌کند (اکنون v1.19.33) و داده‌های قواعد داخلی از منبع رسمی MetaCubeX/meta-rules-dat گرفته می‌شود.**
 
-[![Latest Release](https://img.shields.io/github/v/release/appshubcc/Bettbox?style=for-the-badge&logo=github&color=238636&label=Release)](https://github.com/appshubcc/Bettbox/releases/latest) [![Core](https://img.shields.io/github/v/release/MetaCubeX/mihomo?style=for-the-badge&logo=go&logoColor=white&color=8A2BE2&label=Mihomo)](https://github.com/MetaCubeX/mihomo/releases/latest)
+## دریافت
 
-<p align="center">
-  <img src="../snapshots/home.png" alt="Bettbox" />
-</p>
+بسته‌های هر سکو در صفحهٔ **[Releases](https://github.com/dukangalex/AngelaMihomo/releases)** همین مخزن در دسترس است (Windows، Linux، macOS، Android، Android TV).
 
----
-### ✈️ جامعه تلگرام
+**مهاجرت از نسخه‌ای دیگر (Android)**: از نسخهٔ v1.19.7-chain.1 این برنامه نام بستهٔ مستقل دارد و در کنار نسخه‌های دیگر نصب می‌شود؛ ابتدا در برنامهٔ قبلی پشتیبان بگیرید و سپس در این برنامه بازیابی کنید.
 
-</div>
+## سپاسگزاری
 
-<div align="left">
+* **[Bettbox](https://github.com/appshubcc/Bettbox)** — پروژه‌ای که این کدبیس از آن سرچشمه گرفته است؛ سپاس از appshubcc و همهٔ مشارکت‌کنندگان.
+* **[FlClash](https://github.com/chen08209/FlClash)** — سرچشمهٔ تبار.
+* **[Mihomo](https://github.com/MetaCubeX/mihomo)** — موتور هسته.
 
-[![Telegram Group](https://img.shields.io/badge/Bettbox-Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/appshub_chat) [![Telegram Channel](https://img.shields.io/badge/Bettbox-Channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/appshub_channel)
+## مجوز
 
----
-## 🚀 ویژگی‌های اصلی
-
-* **آماده استفاده**: مدیریت پایدار دسترسی‌ها و تجربه روان TUN/VPN همراه با بهینه‌سازی‌های پیش‌فرض برای استفاده فوری.
-* **رابط کاربری ظریف**: بهینه‌سازی دقیق UI و تعاملات. انیمیشن‌های نرخ‌فریم بالا، مصرف انرژی بسیار پایین در موبایل و حداقل بار روی دسکتاپ.
-* **امنیت بالا**: هسته همگام با شاخه اصلی Mihomo است، از اصل حداقل دسترسی در تمام پلتفرم‌ها پیروی می‌کند و دارای امضای دیجیتال رسمی OV از SignPath است.
-* **پایداری فوق‌العاده**: مدیریت سناریوهای پیچیده همراه با اعتبارسنجی دوگانه فایل پیکربندی برای پایداری در حد سازمانی.
-* **اولویت با عملکرد**: پشتیبانی نیتیو از ARM64 در دسکتاپ، سطح‌بندی سخت‌افزاری و بهینه‌سازی عمیق فلاتر برای بهره‌گیری حداکثری از توان سخت‌افزار.
-* **ابزارهای هوشمند**: شروع/توقف هوشمند چندسکویی، پشتیبانی از حالت خواب اندروید، غیرفعال‌سازی QUIC با یک کلیک و منوی پیشرفته تسک‌بار.
-* **تنظیمات بصری**: تنظیم بصری پارامترهای بسیار غنی‌تر با اعمال آنی تغییرات — بدون نیاز به ویرایش دستی و خسته‌کننده تنظیمات.
-* **ویجت‌های صفحه اصلی**: ویجت‌های خوش‌ساخت و متعددی به صورت پیش‌فرض برای نظارت آسان بر سرعت لحظه‌ای شبکه و وضعیت کلی سیستم در صفحه اصلی.
-* **شخصی‌سازی**: تم‌های رنگی غنی، آیکون‌ها و عنوان‌های سفارشی و حتی شامل ۳۰ انیمیشن زیبا برای تست سرعت.
-* **انعطاف‌پذیری بالا**: اولین کلاینت با قابلیت تطبیق UI برای اسکریپت‌های بازنویسی JS به همراه کلیدهای بصری کاربردی و سفارشی.
-* **ویرایشگر حرفه‌ای**: ویرایشگر داخلی code-forge بازنویسی شده با عملکرد بالا در تمامی پلتفرم‌ها هم‌سطح IDE‌های حرفه‌ای.
-* **پشتیبانی از دستگاه‌های قدیمی**: نگهداری مستمر نسخه‌های Compatible برای سیستم‌عامل‌ها و سخت‌افزارهای قدیمی جهت افزایش طول عمر دستگاه.
-* **حریم خصوصی کامل**: متن‌باز، بدون تبلیغات، فرآیند کاملاً شفاف CI/CD همراه با ممیزی کامل برای جلوگیری از هرگونه جمع‌آوری داده در پس‌زمینه.
-* **جامعه‌محور**: ارزیابی دقیق بازخوردها و اولویت‌دهی به گزارش‌های باکیفیت. صدای شما شنیده می‌شود.
-
----
-</div>
-
-## 🛠️ نصب و دانلود
-
-لطفاً برای دانلود آخرین فایل نصب مناسب سیستم خود به صفحه **[[انتشارها (Releases)]](https://github.com/appshubcc/Bettbox/releases)** مراجعه کنید.
-
-
-* **پلتفرم‌های دسکتاپ**: 
-**Windows 8.1+:** (x64/arm64)
-**Linux Kernel 5.4+:** (x64/arm64)
-**macOS 10.15+:** (Intel/Apple Silicon)
-* **اندروید 8.0+**: Android (ARMv8 / ARMv7 / x86_64 / Universal)
-* **تلویزیون اندروید (Android TV)**: پشتیبانی کامل، نسخه اختیاری ARMv7 32-bit برای دستگاه‌های با حافظه کم
-* **سیستم‌عامل HarmonyOS NEXT**: قابل استفاده پایدار همراه با برنامه [[ZhuoYiTong]](https://harmonyos.cool/android-app)
-
-**سایر روش‌های نصب:**<br>
-**آرچ لینوکس (ArchLinux):** <code>yay -S bettbox-bin</code> یا <code>paru -S bettbox-bin</code> (نگهداری توسط [ lyj404 ](https://github.com/lyj404/bettbox-aur))<br>
-**AMD64=v1:** <code>yay -S bettbox-compatible-bin</code> یا <code>paru -S bettbox-compatible-bin</code> (نگهداری توسط [ VillagerTom ](https://github.com/VillagerTom))
-
----
-## ❓ سوالات متداول
-
-1. **مشکلات نصب، راه‌اندازی و امنیت**:
-   - دستگاه‌های اندرویدی: **از اعطای دسترسی‌های پس‌زمینه و حداقل سیستم‌عامل (Android 8.0+) مطمئن شوید**.
-   - سیستم‌های قدیمی: بررسی کنید آیا سیستم شما **نیازمند دانلود نسخه Compatible است**.
-   - **امنیت: پروژه Bettbox کاملاً متن‌باز است و ممیزی امنیتی Signpath را با موفقیت گذرانده است.**
-
-2. **مشکلات رایج دسکتاپ**:
-   - دسترسی مدیریت در ویندوز: نسخه نصبی Bettbox از قبل آن را مدیریت کرده است — **نیازی به تایید دستی نیست**.
-   - عدم امکان فعال‌سازی کارت شبکه مجازی TUN: در macOS/Linux **از ورود رمز عبور صحیح اطمینان حاصل کنید**.
-   - سایر خطاها: لطفاً اطلاعات دیباگ را ارسال کرده و **از عدم اجرای پروکسی‌های همزمان مطمئن شوید**.
-   - در صورت تداوم مشکل، یک ISSUE ثبت کنید.
-
-3. **نکات مهم نصب در macOS**:
-   - فایل متناسب با پلتفرم خود (Intel / Apple Silicon) را دانلود کرده و `Bettbox-macos-xx.dmg` را باز کنید.
-   - آیکون Bettbox را به پوشه `Applications` منتقل کنید.
-   - **میانبر زدن بلاک امنیتی Gatekeeper در هنگام نصب یا بروزرسانی** ([به دلیل عدم خرید گواهی رسمی توسعه‌دهنده اپل](https://support.apple.com/en-us/102445)):
-     - **روش پیشنهادی**: در پوشه Applications، **روی آیکون Bettbox راست‌کلیک کنید**، گزینه **"Open"** را انتخاب کرده و مجدداً روی **"Open"** کلیک کنید.
-     - **روش جایگزین**: در صورت مسدود بودن، به System Settings -> Privacy & Security رفته و روی **"Open Anyway"** کلیک کنید.
-   - در اولین فعال‌سازی حالت TUN، پنجره تایید رمز عبور نمایش داده می‌شود؛ **لطفاً رمز عبور کاربر فعال سیستم مک را وارد کنید تا به Bettbox اجازه پیکربندی شبکه داده شود**.
-
-4. **عدم امکان وارد کردن اشتراک**:
-   - **لطفاً ابتدا لینک را ریست کنید** تا از فعال بودن آن مطمئن شوید.
-   - در صورت تداوم مشکل، ابتدا با ارائه‌دهنده سرویس خود تماس بگیرید؛ در صورتی که از طریق DEBUG مشخص شد مشکل از برنامه است، یک ISSUE ثبت کنید.
-
----
-
-## 💻 توسعه و ساخت
-
-نمونه در ویندوز:
-
-* نیاز به سیستم ویندوز (OS ≥ Windows 10)
-* ابزارها: Git, Visual Studio, Flutter 3.44.x, Golang, Inno Setup, Rust
-```bash
-* flutter pub get
-* dart .\setup.dart windows --arch amd64 --out core (فقط هسته اصلی)
-* dart .\setup.dart windows --arch amd64 --out app --compatible (نسخه Compatible اختیاری)
-* خروجی در پوشه `dist/` قرار می‌گیرد
-```
-
-سفارشی‌سازی UI اسکریپت:
-
-* از نسخه v1.18.8، برنامه Bettbox از اسکریپت‌های سفارشی پشتیبانی می‌کند. برای نمونه **[مخزن اسکریپت AIsouler](https://github.com/AIsouler/MyClash)** کافیست کد زیر را در سطر اول اسکریپت قرار دهید:
-* <code>const Compatible_With_Bettbox = { ruleOptionsEnable: true };</code>
-
----
-
-### ☕ حمایت مالی
-
-**در صورت تمایل می‌توانید از توسعه پروژه حمایت کنید:**
-
-* TRON (TRC-20):   <code>TCkTtZfF2WrciZLaJj3e1aqrh3zdTnCkDa</code>
-* Bitcoin: <code>bc1qu950cl6035qvllmzk6cfw3l30j2lg3cq9n6g6h</code>
----
-
-## 🙏 قدردانی
-
-<table>
-  <tr>
-    <td>
-      <img alt="SignPath" src="https://signpath.org/assets/favicon-50x50.png" />
-    </td>
-    <td>
-    Free code signing on Windows provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org/">SignPath Foundation</a>
-    </td>
-  </tr>
-</table>
-
-**[FlClash GUI](https://github.com/chen08209/FlClash)** 〢 **[Mihomo Core](https://github.com/MetaCubeX/mihomo)**
-
-تشکر ویژه از تمامی [مشارکت‌کنندگان](https://github.com/appshubcc/Bettbox/graphs/contributors) و پروژه‌های متن‌باز استفاده‌شده یا ارجاع‌داده‌شده:
-
-[Zashboard](https://github.com/Zephyruso/zashboard), [CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid), [Sparkle](https://github.com/xishang0128/sparkle), [SFA](https://github.com/SagerNet/sing-box-for-android), [HUSI](https://github.com/xchacha20-poly1305/husi), [V2rayN](https://github.com/2dust/v2rayN), [Bett-rules](https://github.com/appshubcc/bett-rules)
-
----
-
-## 📄 مجوز
-
-مجوز GPL-3.0
+GPL-3.0 — [LICENSE](../LICENSE) را ببینید. کد منبع کامل در همین مخزن است.

@@ -6,7 +6,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class TvQrImportDialog extends StatefulWidget {
   const TvQrImportDialog({super.key});
@@ -228,7 +228,7 @@ class _TvQrImportDialogState extends State<TvQrImportDialog> {
     final hasNetwork = _ip != null && _ip!.isNotEmpty;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedSuperellipseBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: context.colorScheme.surfaceContainerHigh,
       insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: ConstrainedBox(
@@ -238,7 +238,12 @@ class _TvQrImportDialogState extends State<TvQrImportDialog> {
           child: _isLoading
               ? const SizedBox(
                   height: 280,
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(
+                    child: SyncedLoading(
+                      size: 40,
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
                 )
               : !hasNetwork
               ? _buildNoNetworkView()
@@ -353,9 +358,12 @@ class _TvQrImportDialogState extends State<TvQrImportDialog> {
                 SizedBox(
                   width: 14,
                   height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: context.colorScheme.primary,
+                  child: SyncedLoading(
+                    size: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: context.colorScheme.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -484,7 +492,7 @@ class _TvQrImportDialogState extends State<TvQrImportDialog> {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bettbox</title>
+<title>Angela Mihomo</title>
 <style>
 :root {
   --bg-gradient: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
@@ -837,7 +845,7 @@ textarea {
     <button type="button" class="lang-btn" id="lang-btn" onclick="toggleLang()">English</button>
   </div>
   <div class="header">
-    <h1>📺 Bettbox</h1>
+    <h1>📺 Angela Mihomo</h1>
     <p id="t-subtitle">推送配置至 Android TV 电视端</p>
   </div>
   <div class="tabs">
@@ -871,7 +879,7 @@ textarea {
 <script>
 const I18N = {
   zh: {
-    title: 'Bettbox 配置推送',
+    title: 'Angela Mihomo 配置推送',
     subtitle: '推送配置至 Android TV 电视端',
     tabUrl: '订阅链接',
     tabFile: '本地配置文件',
@@ -893,7 +901,7 @@ const I18N = {
     langToggle: 'English'
   },
   en: {
-    title: 'Bettbox Profile Push',
+    title: 'Angela Mihomo Profile Push',
     subtitle: 'Push profile to Android TV',
     tabUrl: 'Subscription URL',
     tabFile: 'Local File',

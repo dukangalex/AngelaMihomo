@@ -1,6 +1,6 @@
 import 'package:emoji_regex/emoji_regex.dart';
 import 'package:bett_box/enum/enum.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../state.dart';
 
@@ -30,7 +30,7 @@ class TooltipText extends StatelessWidget {
           message = emojiText.text;
         }
         if (textWidget != null) {
-          final size = globalState.measure.computeTextSize(textWidget);
+          final size = globalState.measure.cachedTextSize(textWidget);
           if (maxWidth < size.width) {
             return Tooltip(
               triggerMode: TooltipTriggerMode.longPress,
@@ -53,6 +53,14 @@ class EmojiText extends StatelessWidget {
   final TextOverflow? overflow;
   final TextAlign? textAlign;
 
+  static final _emojiRegex = emojiRegex();
+  static final _emojiFontStyle = TextStyle(
+    fontFamily: FontFamily.twEmoji.value,
+    fontFamilyFallback: [FontFamily.twEmoji.value],
+  );
+  static const _maxCachedSegments = 1024;
+  static final _segmentCache = <String, List<({int end, bool emoji})>>{};
+
   const EmojiText(
     this.text, {
     super.key,
@@ -62,43 +70,67 @@ class EmojiText extends StatelessWidget {
     this.textAlign,
   });
 
-  List<TextSpan> _buildTextSpans(
-    String text,
-    TextStyle defaultStyle,
-  ) {
-    final List<TextSpan> spans = [];
-    final matches = emojiRegex().allMatches(text);
-    final effectiveStyle = defaultStyle.merge(style);
+  static List<({int end, bool emoji})> _segmentsOf(String text) {
+    final cached = _segmentCache.remove(text);
+    if (cached != null) {
+      _segmentCache[text] = cached;
+      return cached;
+    }
+    final segments = _emojiRegex.hasMatch(text)
+        ? _splitSegments(text)
+        : const <({int end, bool emoji})>[];
+    if (_segmentCache.length >= _maxCachedSegments) {
+      _segmentCache.remove(_segmentCache.keys.first);
+    }
+    _segmentCache[text] = segments;
+    return segments;
+  }
 
-    int lastMatchEnd = 0;
-    for (final match in matches) {
-      if (match.start > lastMatchEnd) {
-        spans.add(
-          TextSpan(
-            text: text.substring(lastMatchEnd, match.start),
-            style: effectiveStyle,
-          ),
-        );
+  static List<({int end, bool emoji})> _splitSegments(String text) {
+    final segments = <({int end, bool emoji})>[];
+    var index = 0;
+    bool? current;
+    for (final char in text.characters) {
+      final isEmoji = _emojiRegex.hasMatch(char);
+      if (current != null && current != isEmoji) {
+        segments.add((end: index, emoji: current));
       }
+      current = isEmoji;
+      index += char.length;
+    }
+    if (current != null) {
+      segments.add((end: text.length, emoji: current));
+    }
+    return segments;
+  }
+
+  static bool hasEmoji(String text) {
+    if (text.isEmpty) return false;
+    return _segmentsOf(text).isNotEmpty;
+  }
+
+  static List<TextSpan> buildSpans(String text, TextStyle style) {
+    if (text.isEmpty) {
+      return const [];
+    }
+
+    final segments = _segmentsOf(text);
+    if (segments.isEmpty) {
+      return [TextSpan(text: text, style: style)];
+    }
+
+    final emojiStyle = style.merge(_emojiFontStyle);
+    final spans = <TextSpan>[];
+    var start = 0;
+    for (final (:end, :emoji) in segments) {
       spans.add(
         TextSpan(
-          text: match.group(0),
-          style: effectiveStyle.merge(
-            TextStyle(
-              fontFamily: FontFamily.twEmoji.value,
-              fontFamilyFallback: [FontFamily.twEmoji.value],
-            ),
-          ),
+          text: text.substring(start, end),
+          style: emoji ? emojiStyle : style,
         ),
       );
-      lastMatchEnd = match.end;
+      start = end;
     }
-    if (lastMatchEnd < text.length) {
-      spans.add(
-        TextSpan(text: text.substring(lastMatchEnd), style: effectiveStyle),
-      );
-    }
-
     return spans;
   }
 
@@ -107,9 +139,7 @@ class EmojiText extends StatelessWidget {
     final defaultStyle = DefaultTextStyle.of(context).style;
 
     return Text.rich(
-      TextSpan(
-        children: _buildTextSpans(text, defaultStyle),
-      ),
+      TextSpan(children: buildSpans(text, defaultStyle.merge(style))),
       textAlign: textAlign ?? TextAlign.start,
       maxLines: maxLines,
       overflow: overflow ?? TextOverflow.clip,

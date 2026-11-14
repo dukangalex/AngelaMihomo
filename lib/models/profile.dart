@@ -7,6 +7,8 @@ import 'package:bett_box/clash/core.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/import_normalize.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/core.dart';
+import 'package:bett_box/state.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'clash_config.dart';
@@ -52,12 +54,14 @@ abstract class SubscriptionInfo with _$SubscriptionInfo {
 }
 
 extension SubscriptionInfoExtension on SubscriptionInfo {
+  bool get hasUsage => upload + download + total > 0;
+
   String? get expireDesc {
     if (expire > 0) {
-      final expireDate =
-          DateTime.fromMillisecondsSinceEpoch(expire * 1000).show;
-      final isExpired =
-          expire * 1000 < DateTime.now().millisecondsSinceEpoch;
+      final expireDate = DateTime.fromMillisecondsSinceEpoch(
+        expire * 1000,
+      ).show;
+      final isExpired = expire * 1000 < DateTime.now().millisecondsSinceEpoch;
       return isExpired
           ? '${appLocalizations.expired} · $expireDate'
           : expireDate;
@@ -76,6 +80,7 @@ abstract class Profile with _$Profile {
     DateTime? lastUpdateDate,
     required Duration autoUpdateDuration,
     SubscriptionInfo? subscriptionInfo,
+    @Default({}) Map<String, SubscriptionInfo> providerSubscriptions,
     @Default(true) bool autoUpdate,
     @Default({}) SelectedMap selectedMap,
     @Default({}) Set<String> unfoldSet,
@@ -83,15 +88,26 @@ abstract class Profile with _$Profile {
     @JsonKey(includeToJson: false, includeFromJson: false)
     @Default(false)
     bool isUpdating,
-    @Default(true) bool useScriptOverride,
+    @Default(false) bool useScriptOverride,
+    String? scriptId,
+    @Default(false) bool managed,
+    @Default(false) bool managedStyleApplied,
     String? ageSecretKey,
-    @JsonKey(name: 'group-switches') @Default({}) Map<String, bool> groupSwitches,
+    @JsonKey(name: 'group-switches')
+    @Default({})
+    Map<String, bool> groupSwitches,
+    @Default(ProfileUsageStyle.bar) ProfileUsageStyle usageStyle,
+    ProfileBundle? bundle,
   }) = _Profile;
 
   factory Profile.fromJson(Map<String, Object?> json) =>
       _$ProfileFromJson(json);
 
-  factory Profile.normal({String? label, String url = '', String? ageSecretKey}) {
+  factory Profile.normal({
+    String? label,
+    String url = '',
+    String? ageSecretKey,
+  }) {
     return Profile(
       label: label,
       url: url,
@@ -100,6 +116,40 @@ abstract class Profile with _$Profile {
       ageSecretKey: ageSecretKey,
     );
   }
+}
+
+@freezed
+abstract class BundleMember with _$BundleMember {
+  const factory BundleMember({required String id, String? prefix}) =
+      _BundleMember;
+
+  factory BundleMember.fromJson(Map<String, Object?> json) =>
+      _$BundleMemberFromJson(json);
+}
+
+@freezed
+abstract class BundleReport with _$BundleReport {
+  const factory BundleReport({
+    @Default(0) int proxies,
+    @Default(0) int duplicates,
+    @Default(0) int groups,
+  }) = _BundleReport;
+
+  factory BundleReport.fromJson(Map<String, Object?> json) =>
+      _$BundleReportFromJson(json);
+}
+
+@freezed
+abstract class ProfileBundle with _$ProfileBundle {
+  const factory ProfileBundle({
+    @Default([]) List<BundleMember> members,
+    @Default(BundleReport()) BundleReport report,
+    @Default({}) Map<String, String> failures,
+    @Default(false) bool collapsed,
+  }) = _ProfileBundle;
+
+  factory ProfileBundle.fromJson(Map<String, Object?> json) =>
+      _$ProfileBundleFromJson(json);
 }
 
 @freezed
@@ -124,27 +174,18 @@ extension OverrideDataExt on OverrideData {
 
 @freezed
 abstract class OverrideRule with _$OverrideRule {
-  const factory OverrideRule({
-    @Default(OverrideRuleType.override) OverrideRuleType type,
-    @Default([]) List<Rule> overrideRules,
-    @Default([]) List<Rule> addedRules,
-  }) = _OverrideRule;
+  const factory OverrideRule({@Default([]) List<Rule> addedRules}) =
+      _OverrideRule;
 
   factory OverrideRule.fromJson(Map<String, Object?> json) =>
       _$OverrideRuleFromJson(json);
 }
 
 extension OverrideRuleExt on OverrideRule {
-  List<Rule> get rules => switch (type == OverrideRuleType.override) {
-    true => overrideRules,
-    false => addedRules,
-  };
+  List<Rule> get rules => addedRules;
 
   OverrideRule updateRules(List<Rule> Function(List<Rule> rules) builder) {
-    if (type == OverrideRuleType.added) {
-      return copyWith(addedRules: builder(addedRules));
-    }
-    return copyWith(overrideRules: builder(overrideRules));
+    return copyWith(addedRules: builder(addedRules));
   }
 }
 
@@ -153,13 +194,73 @@ extension ProfilesExt on List<Profile> {
     final index = indexWhere((profile) => profile.id == profileId);
     return index == -1 ? null : this[index];
   }
+
+  Set<String> get collapsedMemberIds => {
+    for (final profile in this)
+      if (profile.bundle case final bundle? when bundle.collapsed)
+        for (final member in bundle.members) member.id,
+  };
+
+  List<Profile> bundlesOf(String memberId) => [
+    for (final profile in this)
+      if (profile.bundle?.members.any((member) => member.id == memberId) ??
+          false)
+        profile,
+  ];
+
+  bool hasAddedOrChanged(List<Profile> previous) {
+    return any((profile) {
+      final old = previous.getProfile(profile.id);
+      return old == null || old.backupView != profile.backupView;
+    });
+  }
+}
+
+extension SubscriptionUsagesExtension
+    on List<MapEntry<String, SubscriptionInfo>> {
+  List<MapEntry<String, SubscriptionInfo>> topByUsage(int count) {
+    int used(SubscriptionInfo info) => info.upload + info.download;
+    final sorted = [...this]
+      ..sort((a, b) {
+        final compare = used(b.value).compareTo(used(a.value));
+        return compare != 0 ? compare : a.key.compareTo(b.key);
+      });
+    return sorted.take(count).toList()..sort((a, b) => a.key.compareTo(b.key));
+  }
 }
 
 extension ProfileExtension on Profile {
-  ProfileType get type =>
-      url.isEmpty == true ? ProfileType.file : ProfileType.url;
+  ProfileType get type => bundle != null
+      ? ProfileType.bundle
+      : url.isEmpty
+      ? ProfileType.file
+      : ProfileType.url;
 
   bool get realAutoUpdate => url.isEmpty == true ? false : autoUpdate;
+
+  bool get isManaged => bundle != null || managed;
+
+  bool get runsManagedScript => bundle == null && managed;
+
+  List<MapEntry<String, SubscriptionInfo>> get subscriptionUsages {
+    final info = subscriptionInfo;
+    if (info != null && info.hasUsage) return [MapEntry(label ?? id, info)];
+    final seen = <SubscriptionInfo>{};
+    return [
+      for (final entry in providerSubscriptions.entries)
+        if (entry.value.hasUsage && seen.add(entry.value)) entry,
+    ];
+  }
+
+  Profile get backupView => copyWith(
+    currentGroupName: null,
+    subscriptionInfo: null,
+    providerSubscriptions: const {},
+    selectedMap: const {},
+    unfoldSet: const {},
+    isUpdating: false,
+    usageStyle: ProfileUsageStyle.bar,
+  );
 
   Future<void> checkAndUpdate() async {
     final isExists = await check();
@@ -185,23 +286,74 @@ extension ProfileExtension on Profile {
     return file;
   }
 
-  Future<int> get profileLastModified async {
-    final file = await getFile();
-    return (await file.lastModified()).microsecondsSinceEpoch;
+  Future<void> _writeFile(String content, {SetupParams? setup}) async {
+    final path = await appPath.getProfilePath(id);
+    if (setup == null && await _hasContent(path, content)) return;
+    final tempFile = File('$path.${DateTime.now().microsecondsSinceEpoch}.tmp');
+    await tempFile.parent.create(recursive: true);
+    try {
+      await tempFile.writeAsString(content, flush: true);
+      if (setup != null) {
+        final message = await clashCore.validateConfig(
+          '',
+          setup: setup.copyWith(profilePath: tempFile.path),
+        );
+        if (message.isNotEmpty) {
+          throw message;
+        }
+      }
+      try {
+        await tempFile.rename(path);
+      } catch (_) {
+        await tempFile.copy(path);
+      }
+    } finally {
+      if (await tempFile.exists()) {
+        try {
+          await tempFile.delete();
+        } catch (_) {}
+      }
+    }
   }
 
-  Future<Profile> update({bool validate = true}) async {
-    final response = await request.getFileResponseForUrl(url);
-    final disposition = response.headers['content-disposition']?.firstOrNull;
-    final userinfo = response.headers['subscription-userinfo']?.firstOrNull;
-    return await copyWith(
-      label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
-      subscriptionInfo: SubscriptionInfo.formHString(userinfo),
-    ).saveFile(response.data, validate: validate);
+  void _requireProfileContent(String content) {
+    if (content.replaceFirst('\uFEFF', '').trim().isEmpty) {
+      throw const FormatException(
+        'Configuration is empty. The existing profile was kept.',
+      );
+    }
+  }
+
+  Future<bool> _hasContent(String path, String content) async {
+    final file = File(path);
+    if (!await file.exists()) return false;
+    try {
+      return await file.readAsString() == content;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<int> get profileLastModified async {
+    final file = await getFile();
+    return (await file.stat()).modified.microsecondsSinceEpoch;
+  }
+
+  String _stagingPath(String profilePath, String suffix) =>
+      '$profilePath.${DateTime.now().microsecondsSinceEpoch}.$suffix';
+
+  Future<void> _deleteStaging(String path) async {
+    try {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {}
   }
 
   Future<Profile> saveFile(Uint8List bytes, {bool validate = true}) async {
     String content = utf8.decode(bytes);
+    _requireProfileContent(content);
     final key = ageSecretKey;
     if (key != null && key.isNotEmpty) {
       try {
@@ -213,14 +365,24 @@ extension ProfileExtension on Profile {
     }
     content = ImportNormalize.toMihomo(content);
     content = utils.patchYamlConfig(content);
+    _requireProfileContent(content);
+    final setup = validate ? await globalState.buildValidateParams(this) : null;
+    if (setup != null) {
+      await _writeFile(content, setup: setup);
+      return copyWith(lastUpdateDate: DateTime.now());
+    }
     if (validate) {
-      final message =
-          await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
+      final message = await clashCore.validateConfig(
+        content,
+        ageSecretKey: ageSecretKey,
+      );
       if (message.isNotEmpty) {
         final patched = utils.patchValidateConfig(content);
         if (patched != content) {
-          final patchedMessage =
-              await clashCore.validateConfig(patched, ageSecretKey: ageSecretKey);
+          final patchedMessage = await clashCore.validateConfig(
+            patched,
+            ageSecretKey: ageSecretKey,
+          );
           if (patchedMessage.isEmpty) {
             content = patched;
           } else {
@@ -231,13 +393,13 @@ extension ProfileExtension on Profile {
         }
       }
     }
-    final file = await getFile();
-    await file.writeAsString(content);
+    await _writeFile(content);
     return copyWith(lastUpdateDate: DateTime.now());
   }
 
   Future<Profile> saveFileWithString(String value) async {
     String content = value;
+    _requireProfileContent(content);
     final key = ageSecretKey;
     if (key != null && key.isNotEmpty) {
       try {
@@ -249,13 +411,23 @@ extension ProfileExtension on Profile {
     }
     content = ImportNormalize.toMihomo(content);
     content = utils.patchYamlConfig(content);
-    final message =
-        await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
+    _requireProfileContent(content);
+    final setup = await globalState.buildValidateParams(this);
+    if (setup != null) {
+      await _writeFile(content, setup: setup);
+      return copyWith(lastUpdateDate: DateTime.now());
+    }
+    final message = await clashCore.validateConfig(
+      content,
+      ageSecretKey: ageSecretKey,
+    );
     if (message.isNotEmpty) {
       final patched = utils.patchValidateConfig(content);
       if (patched != content) {
-        final patchedMessage =
-            await clashCore.validateConfig(patched, ageSecretKey: ageSecretKey);
+        final patchedMessage = await clashCore.validateConfig(
+          patched,
+          ageSecretKey: ageSecretKey,
+        );
         if (patchedMessage.isEmpty) {
           content = patched;
         } else {
@@ -265,8 +437,53 @@ extension ProfileExtension on Profile {
         throw message;
       }
     }
-    final file = await getFile();
-    await file.writeAsString(content);
+    await _writeFile(content);
     return copyWith(lastUpdateDate: DateTime.now());
+  }
+
+  Future<void> _import(
+    String source, {
+    required bool validate,
+    List<String>? encodings,
+  }) async {
+    final setup = validate ? await globalState.buildValidateParams(this) : null;
+    final message = await clashCore.importProfile(
+      source: source,
+      output: await appPath.getProfilePath(id),
+      encodings: encodings,
+      ageSecretKey: ageSecretKey ?? '',
+      validate: validate,
+      setup: setup,
+    );
+    if (message.isNotEmpty) {
+      throw message;
+    }
+  }
+
+  Future<Profile> update({bool validate = true}) async {
+    final downloadPath = _stagingPath(
+      await appPath.getProfilePath(id),
+      'download',
+    );
+    try {
+      await File(downloadPath).parent.create(recursive: true);
+      final source = await request.fetchProfileSource(url, downloadPath);
+      final headers = source.headers;
+      final disposition = headers?['content-disposition']?.firstOrNull;
+      final userinfo = headers?['subscription-userinfo']?.firstOrNull;
+      final profile = copyWith(
+        label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
+        subscriptionInfo: SubscriptionInfo.formHString(userinfo),
+      );
+      final encodings = headers?['content-encoding'] ?? const <String>[];
+      await profile._import(
+        source.path,
+        validate: validate,
+        encodings: source.remote ? encodings : null,
+      );
+      return profile.copyWith(lastUpdateDate: DateTime.now());
+    } finally {
+      await _deleteStaging(downloadPath);
+    }
   }
 }

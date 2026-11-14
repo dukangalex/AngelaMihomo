@@ -1,13 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/state.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('MediaPlatform & Region Tests', () {
     test('MediaPlatform enum count and extensions', () {
-      expect(MediaPlatform.values.length, 56);
+      expect(MediaPlatform.values.length, 55);
       expect(MediaCategory.values.length, 7);
 
       for (final p in MediaPlatform.values) {
@@ -33,18 +35,16 @@ void main() {
       expect(MediaPlatform.perplexity.defaultName, 'Perplexity');
       expect(MediaPlatform.perplexity.category, MediaCategory.ai);
 
-      expect(MediaPlatform.tencent.defaultName, 'Tencent(CN)');
+      expect(MediaPlatform.tencent.defaultName, 'Tencent');
       expect(MediaPlatform.tencent.category, MediaCategory.china);
-      expect(MediaPlatform.alibaba.defaultName, 'Alibaba(CN)');
+      expect(MediaPlatform.alibaba.defaultName, 'Alibaba');
       expect(MediaPlatform.alibaba.category, MediaCategory.china);
-      expect(MediaPlatform.netease.defaultName, 'Netease(CN)');
+      expect(MediaPlatform.netease.defaultName, 'Netease');
       expect(MediaPlatform.netease.category, MediaCategory.china);
-      expect(MediaPlatform.douyin.defaultName, 'Douyin(CN)');
+      expect(MediaPlatform.douyin.defaultName, 'Douyin');
       expect(MediaPlatform.douyin.category, MediaCategory.china);
-      expect(MediaPlatform.bilibili.defaultName, 'Bilibili(CN)');
+      expect(MediaPlatform.bilibili.defaultName, 'Bilibili');
       expect(MediaPlatform.bilibili.category, MediaCategory.china);
-      expect(MediaPlatform.cloudflarecn.defaultName, 'Cloudflare(CN)');
-      expect(MediaPlatform.cloudflarecn.category, MediaCategory.china);
 
       expect(MediaPlatform.netflix.category, MediaCategory.streaming);
       expect(MediaPlatform.disney.category, MediaCategory.streaming);
@@ -156,5 +156,39 @@ void main() {
       expect(utils.normalizeRegion('USD'), 'US');
       expect(utils.normalizeRegion('HKD'), 'HK');
     });
+  });
+
+  test('退出页面时停止无人查看的解锁检测', () {
+    final results = {
+      MediaPlatform.claude: MediaUnlockResult(
+        platform: MediaPlatform.claude,
+        status: MediaUnlockStatus.unlocked,
+      ),
+    };
+    mediaUnlockState.state.value = MediaUnlockState(
+      isLoading: true,
+      results: results,
+      testingPlatforms: const {MediaPlatform.openai},
+    );
+    final original = globalState.config;
+    globalState.config = original.copyWith(
+      appSetting: original.appSetting.copyWith(
+        desktopDashboardWidgets: const [DashboardWidget.mediaUnlock],
+        mobileDashboardWidgets: const [DashboardWidget.mediaUnlock],
+      ),
+    );
+    mediaUnlockState.cancelUnattended();
+    expect(mediaUnlockState.state.value.isLoading, isTrue);
+    globalState.config = original.copyWith(
+      appSetting: original.appSetting.copyWith(
+        desktopDashboardWidgets: const [],
+        mobileDashboardWidgets: const [],
+      ),
+    );
+    mediaUnlockState.cancelUnattended();
+    expect(mediaUnlockState.state.value.isLoading, isFalse);
+    expect(mediaUnlockState.state.value.results, results);
+    globalState.config = original;
+    mediaUnlockState.state.value = const MediaUnlockState();
   });
 }

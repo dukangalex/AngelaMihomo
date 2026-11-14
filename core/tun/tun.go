@@ -10,6 +10,7 @@ import (
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
+	"golang.org/x/sys/unix"
 	"net"
 	"net/netip"
 )
@@ -24,11 +25,20 @@ type Props struct {
 	Dns6     string `json:"dns6"`
 }
 
-func Start(fd int, device string, stack constant.TUNStack, disableIcmpForwarding bool, mtu uint32, ipv6Enabled bool) (*sing_tun.Listener, error) {
+func Start(fd int, device string, stack constant.TUNStack, dnsMode string, disableIcmpForwarding bool, mtu uint32, ipv6Enabled bool, congestionController string) (*sing_tun.Listener, error) {
+	fdUnclaimed := fd > 0
+	defer func() {
+		if fdUnclaimed {
+			if closeErr := unix.Close(fd); closeErr != nil {
+				log.Warnln("startTUN close unclaimed descriptor %d failed: %v", fd, closeErr)
+			}
+		}
+	}()
+
 	var prefix4 []netip.Prefix
 	tempPrefix4, err := netip.ParsePrefix(state.DefaultIpv4Address)
 	if err != nil {
-		log.Errorln("startTUN error:", err)
+		log.Errorln("startTUN error: %v", err)
 		return nil, err
 	}
 	prefix4 = append(prefix4, tempPrefix4)
@@ -36,7 +46,7 @@ func Start(fd int, device string, stack constant.TUNStack, disableIcmpForwarding
 	if ipv6Enabled {
 		tempPrefix6, err := netip.ParsePrefix(state.DefaultIpv6Address)
 		if err != nil {
-			log.Errorln("startTUN error:", err)
+			log.Errorln("startTUN error: %v", err)
 			return nil, err
 		}
 		prefix6 = append(prefix6, tempPrefix6)
@@ -54,6 +64,7 @@ func Start(fd int, device string, stack constant.TUNStack, disableIcmpForwarding
 		Enable:                true,
 		Device:                device,
 		Stack:                 stack,
+		DNSMode:               dnsMode,
 		DNSHijack:             dnsHijack,
 		AutoRoute:             false,
 		AutoDetectInterface:   false,
@@ -62,12 +73,19 @@ func Start(fd int, device string, stack constant.TUNStack, disableIcmpForwarding
 		MTU:                   validMtu,
 		FileDescriptor:        fd,
 		DisableICMPForwarding: disableIcmpForwarding,
+		CongestionController:  congestionController,
 	}
 
+	// Ownership moves to sing_tun.New, which closes the descriptor until a
+	// Listener has adopted it, then delegates closure to Listener.Close.
+	fdUnclaimed = false
 	listener, err := sing_tun.New(options, tunnel.Tunnel)
 
 	if err != nil {
-		log.Errorln("startTUN error:", err)
+		log.Errorln("startTUN error: %v", err)
+		if listener != nil {
+			_ = listener.Close()
+		}
 		return nil, err
 	}
 

@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/open_container.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 
 import 'card.dart';
 import 'input.dart';
@@ -89,12 +92,14 @@ class OptionsDelegate<T> extends Delegate {
   final String title;
   final T value;
   final String Function(T value) textBuilder;
+  final String Function(T value)? subtitleBuilder;
   final Function(T? value) onChanged;
 
   const OptionsDelegate({
     required this.title,
     required this.options,
     required this.textBuilder,
+    this.subtitleBuilder,
     required this.value,
     required this.onChanged,
   });
@@ -121,7 +126,11 @@ class InputDelegate extends Delegate {
   });
 }
 
-class ListItem<T> extends StatelessWidget {
+abstract interface class HasLeadingWidget {
+  bool get hasLeading;
+}
+
+class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
   final Widget? leading;
   final Widget title;
   final Widget? subtitle;
@@ -133,7 +142,11 @@ class ListItem<T> extends StatelessWidget {
   final double? horizontalTitleGap;
   final TextStyle? titleTextStyle;
   final TextStyle? subtitleTextStyle;
+  final ShapeBorder? shape;
   final void Function()? onTap;
+
+  @override
+  bool get hasLeading => leading != null;
 
   const ListItem({
     super.key,
@@ -147,6 +160,7 @@ class ListItem<T> extends StatelessWidget {
     this.onTap,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : delegate = const Delegate();
 
@@ -162,6 +176,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : onTap = null;
 
@@ -177,6 +192,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : onTap = null;
 
@@ -192,6 +208,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : onTap = null;
 
@@ -207,6 +224,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : onTap = null;
 
@@ -221,6 +239,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : trailing = null,
        onTap = null;
@@ -237,6 +256,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : onTap = null;
 
@@ -251,6 +271,7 @@ class ListItem<T> extends StatelessWidget {
     this.dense,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.shape,
     this.tileTitleAlignment = ListTileTitleAlignment.center,
   }) : leading = null,
        onTap = null;
@@ -262,18 +283,39 @@ class ListItem<T> extends StatelessWidget {
     Widget? leading,
     bool enabled = true,
   }) {
+    final effectiveLeading = leading ?? this.leading;
     return ListTile(
       key: key,
       dense: dense,
       enabled: enabled,
       focusColor: context.colorScheme.primary.withValues(alpha: 0.18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      titleTextStyle: titleTextStyle,
-      subtitleTextStyle: subtitleTextStyle,
-      leading: leading ?? this.leading,
-      horizontalTitleGap: horizontalTitleGap,
+      shape: shape,
+      titleTextStyle:
+          titleTextStyle ??
+          context.textTheme.bodyLarge?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+      subtitleTextStyle:
+          subtitleTextStyle ??
+          context.textTheme.bodyMedium?.copyWith(
+            fontSize: 12.5,
+            color: context.colorScheme.onSurfaceVariant.opacity80,
+            height: 1.35,
+          ),
+      leading: effectiveLeading != null
+          ? IconTheme(
+              data: IconThemeData(
+                size: 22,
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+              child: effectiveLeading,
+            )
+          : null,
+      horizontalTitleGap: horizontalTitleGap ?? 14,
       title: title,
-      minVerticalPadding: 12,
+      minVerticalPadding: 10,
+      minTileHeight: 52,
       subtitle: subtitle,
       titleAlignment: tileTitleAlignment,
       onTap: onTap,
@@ -319,7 +361,16 @@ class ListItem<T> extends StatelessWidget {
             action();
           }
 
-          return _buildListTile(context, onTap: openAction);
+          return _buildListTile(
+            context,
+            trailing: trailing ??
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: context.colorScheme.onSurfaceVariant.opacity60,
+                ),
+            onTap: openAction,
+          );
         },
         openBuilder: (context, action) {
           final child = buildChild(context);
@@ -342,6 +393,12 @@ class ListItem<T> extends StatelessWidget {
 
       return _buildListTile(
         context,
+        trailing: trailing ??
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: context.colorScheme.onSurfaceVariant.opacity60,
+            ),
         onTap: () {
           showExtend(
             context,
@@ -370,11 +427,13 @@ class ListItem<T> extends StatelessWidget {
       return _buildListTile(
         context,
         onTap: () async {
-          final value = await globalState.showCommonDialog<T>(
+          final value = await globalState.showAdaptiveSheet<T>(
+            nested: isInBottomSheet(context),
             child: OptionsDialog<T>(
               title: optionsDelegate.title,
               options: optionsDelegate.options,
               textBuilder: optionsDelegate.textBuilder,
+              subtitleBuilder: optionsDelegate.subtitleBuilder,
               value: optionsDelegate.value,
             ),
           );
@@ -443,9 +502,13 @@ class ListItem<T> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ?trailing,
-            Switch(
-              value: switchDelegate.value,
-              onChanged: switchDelegate.onChanged,
+            Transform.scale(
+              scale: 0.86,
+              alignment: Alignment.centerRight,
+              child: Switch(
+                value: switchDelegate.value,
+                onChanged: switchDelegate.onChanged,
+              ),
             ),
           ],
         ),
@@ -476,6 +539,16 @@ class ListItem<T> extends StatelessWidget {
   }
 }
 
+bool _itemHasLeading(Widget widget) {
+  if (widget is HasLeadingWidget) {
+    return (widget as HasLeadingWidget).hasLeading;
+  }
+  if (widget is ListItem) {
+    return widget.leading != null;
+  }
+  return false;
+}
+
 class ListHeader extends StatelessWidget {
   final String title;
   final String? subTitle;
@@ -498,7 +571,7 @@ class ListHeader extends StatelessWidget {
       alignment: Alignment.centerLeft,
       padding:
           padding ??
-          const EdgeInsets.only(left: 16, right: 8, top: 24, bottom: 8),
+          const EdgeInsets.only(left: 24, right: 8, top: 20, bottom: 8),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -558,7 +631,7 @@ class SectionContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerPadding = isFirst
-        ? const EdgeInsets.only(left: 16, right: 8, top: 4, bottom: 8)
+        ? const EdgeInsets.only(left: 24, right: 8, top: 4, bottom: 8)
         : null;
 
     if (plain) {
@@ -579,6 +652,27 @@ class SectionContainer extends StatelessWidget {
     final cleanItems = items.where((widget) => widget is! Divider).toList();
     if (cleanItems.isEmpty) return const SizedBox.shrink();
 
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < cleanItems.length; i++) ...[
+          cleanItems[i],
+          if (i != cleanItems.length - 1)
+            Divider(
+              height: 1,
+              thickness: 0.6,
+              color: context.colorScheme.outlineVariant.withValues(
+                alpha: context.colorScheme.brightness == Brightness.light
+                    ? 0.4
+                    : 0.2,
+              ),
+              indent: _itemHasLeading(cleanItems[i]) ? 56 : 16,
+              endIndent: 16,
+            ),
+        ],
+      ],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -587,30 +681,7 @@ class SectionContainer extends StatelessWidget {
           ListHeader(title: title!, actions: actions, padding: headerPadding),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-          child: CommonCard(
-            type: CommonCardType.filled,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var i = 0; i < cleanItems.length; i++) ...[
-                  cleanItems[i],
-                  if (i != cleanItems.length - 1)
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: context.colorScheme.outlineVariant.withValues(
-                        alpha:
-                            context.colorScheme.brightness == Brightness.light
-                            ? 0.6
-                            : 0.45,
-                      ),
-                      indent: 16,
-                      endIndent: 16,
-                    ),
-                ],
-              ],
-            ),
-          ),
+          child: CommonCard(type: CommonCardType.filled, child: content),
         ),
       ],
     );
@@ -635,47 +706,199 @@ class ContinuousListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isFirst = reversed ? index == count - 1 : index == 0;
     final isLast = reversed ? index == 0 : index == count - 1;
+    final isLight = context.colorScheme.brightness == Brightness.light;
     final dividerColor = context.colorScheme.outlineVariant.withValues(
-      alpha: context.colorScheme.brightness == Brightness.light ? 0.6 : 0.45,
+      alpha: isLight ? 0.45 : 0.25,
     );
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.vertical(
-          top: isFirst ? const Radius.circular(20) : Radius.zero,
-          bottom: isLast ? const Radius.circular(20) : Radius.zero,
-        ),
+    return _ContinuousItemFrame(
+      color: isLight
+          ? Color.lerp(
+              context.colorScheme.surface,
+              context.colorScheme.surfaceContainerLowest,
+              0.5,
+            )!
+          : context.colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? const Radius.circular(20) : Radius.zero,
+        bottom: isLast ? const Radius.circular(20) : Radius.zero,
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        type: MaterialType.transparency,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final hasTightHeight = constraints.hasTightHeight;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (hasTightHeight)
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: child,
-                    ),
+      dividerColor: isLast ? null : dividerColor,
+      child: Material(type: MaterialType.transparency, child: child),
+    );
+  }
+}
+
+class _ContinuousItemFrame extends SingleChildRenderObjectWidget {
+  final Color color;
+  final BorderRadius borderRadius;
+  final Color? dividerColor;
+
+  const _ContinuousItemFrame({
+    required this.color,
+    required this.borderRadius,
+    required this.dividerColor,
+    super.child,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderContinuousItemFrame(color, borderRadius, dividerColor);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderContinuousItemFrame renderObject,
+  ) {
+    renderObject
+      ..color = color
+      ..borderRadius = borderRadius
+      ..dividerColor = dividerColor;
+  }
+}
+
+class _RenderContinuousItemFrame extends RenderShiftedBox {
+  static const _inset = 16.0;
+  static const _dividerHeight = 1.0;
+
+  Color _color;
+  BorderRadius _borderRadius;
+  Color? _dividerColor;
+
+  _RenderContinuousItemFrame(
+    this._color,
+    this._borderRadius,
+    this._dividerColor,
+  ) : super(null);
+
+  set color(Color value) {
+    if (value == _color) return;
+    _color = value;
+    markNeedsPaint();
+  }
+
+  set borderRadius(BorderRadius value) {
+    if (value == _borderRadius) return;
+    _borderRadius = value;
+    markNeedsPaint();
+  }
+
+  set dividerColor(Color? value) {
+    if (value == _dividerColor) return;
+    _dividerColor = value;
+    markNeedsPaint();
+  }
+
+  ({Size size, Size child, Offset offset}) _computeLayout(
+    BoxConstraints constraints,
+    ChildLayouter layoutChild,
+  ) {
+    final inner = constraints.deflate(
+      const EdgeInsets.symmetric(horizontal: _inset),
+    );
+    final tight = inner.hasTightHeight;
+    final child = this.child;
+    final childSize = child == null
+        ? Size.zero
+        : layoutChild(
+            child,
+            tight
+                ? BoxConstraints(
+                    maxWidth: inner.maxWidth,
+                    maxHeight: math.max(0, inner.maxHeight - _dividerHeight),
                   )
-                else
-                  child,
-                Container(
-                  height: 1,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: isLast ? Colors.transparent : dividerColor,
-                ),
-              ],
-            );
-          },
-        ),
+                : BoxConstraints(maxWidth: inner.maxWidth),
+          );
+    final width = inner.constrainWidth(
+      inner.hasBoundedWidth ? inner.maxWidth : childSize.width,
+    );
+    final height = tight
+        ? inner.maxHeight
+        : inner.constrainHeight(childSize.height + _dividerHeight);
+    return (
+      size: constraints.constrain(Size(width + _inset * 2, height)),
+      child: childSize,
+      offset: Offset(
+        _inset + (width - childSize.width) / 2,
+        tight ? (height - _dividerHeight - childSize.height) / 2 : 0,
       ),
+    );
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    return super.computeMinIntrinsicWidth(height) + _inset * 2;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    return super.computeMaxIntrinsicWidth(height) + _inset * 2;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return super.computeMinIntrinsicHeight(math.max(0, width - _inset * 2)) +
+        _dividerHeight;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return super.computeMaxIntrinsicHeight(math.max(0, width - _inset * 2)) +
+        _dividerHeight;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return _computeLayout(constraints, ChildLayoutHelper.dryLayoutChild).size;
+  }
+
+  @override
+  void performLayout() {
+    final layout = _computeLayout(constraints, ChildLayoutHelper.layoutChild);
+    size = layout.size;
+    final child = this.child;
+    if (child == null) return;
+    (child.parentData! as BoxParentData).offset = layout.offset;
+  }
+
+  Rect get _frame => Rect.fromLTRB(_inset, 0, size.width - _inset, size.height);
+
+  void _paintContent(PaintingContext context, Offset offset) {
+    super.paint(context, offset);
+    final dividerColor = _dividerColor;
+    if (dividerColor == null) return;
+    final frame = _frame;
+    context.canvas.drawRect(
+      Rect.fromLTRB(
+        frame.left + _inset,
+        frame.bottom - _dividerHeight,
+        frame.right - _inset,
+        frame.bottom,
+      ).shift(offset),
+      Paint()..color = dividerColor,
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final frame = _frame;
+    final paint = Paint()..color = _color;
+    if (_borderRadius == BorderRadius.zero) {
+      context.canvas.drawRect(frame.shift(offset), paint);
+      layer = null;
+      _paintContent(context, offset);
+      return;
+    }
+    final rrect = _borderRadius.toRRect(frame);
+    context.canvas.drawRRect(rrect.shift(offset), paint);
+    layer = context.pushClipRRect(
+      needsCompositing,
+      offset,
+      frame,
+      rrect,
+      _paintContent,
+      oldLayer: layer as ClipRRectLayer?,
     );
   }
 }
@@ -686,6 +909,7 @@ List<Widget> generateSection({
   List<Widget>? actions,
   bool separated = true,
   bool plain = false,
+  bool isFirst = false,
 }) {
   return [
     SectionContainer(
@@ -694,6 +918,7 @@ List<Widget> generateSection({
       actions: actions,
       separated: separated,
       plain: plain,
+      isFirst: isFirst,
     ),
   ];
 }
@@ -732,16 +957,17 @@ List<Widget> generateInfoSection({
   ];
 }
 
-Widget generateListView(List<Widget> items) {
-  return Builder(
-    builder: (context) {
-      final bottomPadding = MediaQuery.of(context).padding.bottom;
+Widget generateListView(List<Widget> items, {bool shrinkWrap = false}) {
+  return ScrollEdgeRise(
+    builder: (context, rise) {
+      final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
       final cleanItems = items.where((widget) => widget is! Divider).toList();
       if (cleanItems.isEmpty) return const SizedBox.shrink();
 
       return ListView.builder(
-        padding: EdgeInsets.only(bottom: 24 + bottomPadding, top: 12),
+        shrinkWrap: shrinkWrap,
+        padding: EdgeInsets.only(bottom: 24 + bottomPadding, top: 8 + rise),
         itemCount: cleanItems.length,
         itemBuilder: (context, index) {
           final item = cleanItems[index];
@@ -766,7 +992,7 @@ Widget generateListView(List<Widget> items) {
                 title: item.title,
                 subTitle: item.subTitle,
                 padding: const EdgeInsets.only(
-                  left: 16,
+                  left: 24,
                   right: 8,
                   top: 4,
                   bottom: 8,

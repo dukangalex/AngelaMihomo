@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
@@ -181,32 +183,6 @@ class AppDAVSetting extends _$AppDAVSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideDns;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideDns: value);
-  }
-}
-
-@riverpod
-class OverrideTestUrl extends _$OverrideTestUrl with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideTestUrl;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideTestUrl: value);
-  }
-}
-
-@riverpod
 class OverrideNtp extends _$OverrideNtp with AutoDisposeNotifierMixin {
   @override
   bool build() {
@@ -293,6 +269,26 @@ class ProxiesStyleSetting extends _$ProxiesStyleSetting
 }
 
 @riverpod
+class TrafficStatsSetting extends _$TrafficStatsSetting
+    with AutoDisposeNotifierMixin {
+  @override
+  TrafficStatsProps build() {
+    return globalState.config.trafficStatsProps;
+  }
+
+  @override
+  onUpdate(value) {
+    globalState.config = globalState.config.copyWith(trafficStatsProps: value);
+  }
+
+  void updateState(
+    TrafficStatsProps Function(TrafficStatsProps state) builder,
+  ) {
+    state = builder(state);
+  }
+}
+
+@riverpod
 class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
   @override
   ScriptProps build() {
@@ -315,18 +311,13 @@ class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
     state = state.copyWith(scripts: list);
   }
 
-  void setId(String id) {
-    state = state.copyWith(currentId: state.currentId != id ? id : null);
-  }
-
   void del(String id) {
     final list = List<Script>.from(state.scripts);
     final index = list.indexWhere((item) => item.label == id);
     if (index != -1) {
-      list.removeAt(index);
+      unawaited(list.removeAt(index).deleteContent());
     }
-    final nextId = id == state.currentId ? null : state.currentId;
-    state = state.copyWith(scripts: list, currentId: nextId);
+    state = state.copyWith(scripts: list);
   }
 
   bool isExits(String label) {
@@ -349,11 +340,24 @@ class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
     final url = script.url;
     if (url == null || url.isEmpty) return;
     final res = await request.getTextResponseForUrl(url);
-    if (script.content != res.data) {
-      JavaScriptRuntimeManager.invalidateCachedOptions(script.content);
-    }
-    final updated = script.copyWith(content: res.data);
-    setScript(updated);
+    setScript(await script.writeContent(res.data));
+  }
+}
+
+@riverpod
+class ManagedSetting extends _$ManagedSetting with AutoDisposeNotifierMixin {
+  @override
+  ManagedProps build() {
+    return globalState.config.managedProps;
+  }
+
+  @override
+  onUpdate(value) {
+    globalState.config = globalState.config.copyWith(managedProps: value);
+  }
+
+  void updateState(ManagedProps Function(ManagedProps state) builder) {
+    state = builder(state);
   }
 }
 
@@ -414,4 +418,3 @@ class HealthCheckTimeout extends _$HealthCheckTimeout
     state = builder(state);
   }
 }
-

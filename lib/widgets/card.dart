@@ -1,7 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
 
@@ -77,43 +77,34 @@ class InfoHeader extends StatelessWidget {
   }
 }
 
-class SmoothRoundedRectangleBorder extends RoundedRectangleBorder {
-  const SmoothRoundedRectangleBorder({
-    super.side,
-    super.borderRadius = BorderRadius.zero,
-  });
+const _lightShadows = [
+  BoxShadow(color: Color(0x0D000000), offset: Offset(0, 0.5)),
+  BoxShadow(color: Color(0x0A000000), offset: Offset(0, 2), blurRadius: 4),
+  BoxShadow(
+    color: Color(0x14000000),
+    offset: Offset(0, 10),
+    blurRadius: 26,
+    spreadRadius: -6,
+  ),
+];
 
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    switch (side.style) {
-      case BorderStyle.none:
-        break;
-      case BorderStyle.solid:
-        final borderRect = borderRadius.resolve(textDirection).toRRect(rect);
-        if (side.width <= 0.0) {
-          canvas.drawRRect(borderRect, side.toPaint());
-        } else {
-          final strokeRect = borderRect.deflate(side.width / 2.0);
-          final paint = side.toPaint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = side.width
-            ..isAntiAlias = true;
-          canvas.drawRRect(strokeRect, paint);
-        }
-    }
-  }
+const _darkShadows = [
+  BoxShadow(color: Color(0x80000000), offset: Offset(0, 1)),
+  BoxShadow(
+    color: Color(0x80000000),
+    offset: Offset(0, 8),
+    blurRadius: 22,
+    spreadRadius: -6,
+  ),
+];
 
-  @override
-  SmoothRoundedRectangleBorder copyWith({
-    BorderSide? side,
-    BorderRadiusGeometry? borderRadius,
-  }) {
-    return SmoothRoundedRectangleBorder(
-      side: side ?? this.side,
-      borderRadius: borderRadius ?? this.borderRadius,
-    );
-  }
-}
+const _lightSubtleShadows = [
+  BoxShadow(color: Color(0x0E000000), offset: Offset(0, 1.5), blurRadius: 3),
+];
+
+const _darkSubtleShadows = [
+  BoxShadow(color: Color(0x30000000), offset: Offset(0, 1.5), blurRadius: 3.5),
+];
 
 class CommonCard extends StatelessWidget {
   const CommonCard({
@@ -128,6 +119,9 @@ class CommonCard extends StatelessWidget {
     this.padding,
     this.enterAnimated = false,
     this.info,
+    this.clipBehavior = Clip.antiAlias,
+    this.elevated = true,
+    this.subtle = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -140,50 +134,85 @@ class CommonCard extends StatelessWidget {
   final Info? info;
   final CommonCardType type;
   final double? radius;
+  final Clip clipBehavior;
+  final bool elevated;
+  final bool subtle;
 
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
 
   BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
-    if (type == CommonCardType.filled) {
-      return BorderSide.none;
-    }
+    final zodiac = context.zodiac;
+    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
     final hoverColor = isSelected
         ? colorScheme.primary.opacity80
         : colorScheme.primary.opacity60;
     if (states.contains(WidgetState.hovered) ||
         states.contains(WidgetState.focused) ||
         states.contains(WidgetState.pressed)) {
-      return BorderSide(color: hoverColor);
+      return BorderSide(
+        color: hoverColor,
+        strokeAlign: BorderSide.strokeAlignInside,
+      );
     }
+    // Immersive panels are translucent layers over the light field: the
+    // 1px token outline is what defines them (design doc 3.4.2), so they
+    // never render borderless.
+    if (immersive && !isSelected) {
+      return BorderSide(
+        color: zodiac!.variant.outline,
+        strokeAlign: BorderSide.strokeAlignInside,
+      );
+    }
+    if (elevated && !isSelected && !subtle) return BorderSide.none;
     final isLight = colorScheme.brightness == Brightness.light;
+    final alpha = isSelected
+        ? 1.0
+        : (subtle
+              ? (isLight ? 0.35 : 0.15)
+              : (elevated ? (isLight ? 0.65 : 0.35) : (isLight ? 0.8 : 0.4)));
     return BorderSide(
       color: isSelected
           ? colorScheme.primary
-          : colorScheme.outlineVariant.withValues(
-              alpha: isLight ? 0.45 : 0.25,
-            ),
+          : colorScheme.outlineVariant.withValues(alpha: alpha),
+      strokeAlign: BorderSide.strokeAlignInside,
     );
   }
 
   Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
-    if (type == CommonCardType.filled) {
-      if (isSelected) {
-        return colorScheme.secondaryContainer.opacity80;
-      }
-      return colorScheme.surfaceContainer;
-    }
-    if (isSelected) {
-      return colorScheme.secondaryContainer;
-    }
-    return colorScheme.surfaceContainerLow;
+    final zodiac = context.zodiac;
+    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
+    final isLight = colorScheme.brightness == Brightness.light;
+    // Immersive variants paint the raw translucent surface tokens so the
+    // light field shows through the card (design doc 3.4.2); the opaque
+    // composited container tones would flatten the atmosphere to a slab.
+    final base = immersive
+        ? (isSelected
+              ? zodiac!.variant.surfaceVariant
+              : zodiac!.variant.surface)
+        : isSelected
+        ? (type == CommonCardType.filled
+              ? colorScheme.secondaryContainer.opacity80
+              : colorScheme.secondaryContainer)
+        : (isLight
+              ? Color.lerp(
+                  colorScheme.surface,
+                  colorScheme.surfaceContainerLowest,
+                  0.5,
+                )
+              : colorScheme.surfaceContainerHigh);
+    final tint = states.contains(WidgetState.pressed)
+        ? 0.07
+        : (states.contains(WidgetState.hovered) ? 0.03 : 0.0);
+    if (base == null || tint == 0) return base;
+    return Color.alphaBlend(colorScheme.primary.withValues(alpha: tint), base);
   }
 
   @override
   Widget build(BuildContext context) {
-    final actualRadius = radius ?? 20.0;
+    final actualRadius = radius ?? 24.0;
     var childWidget = child;
 
     if (info != null) {
@@ -207,35 +236,103 @@ class CommonCard extends StatelessWidget {
     }
 
     final isInteractive = onPressed != null || onLongPress != null;
-    final card = OutlinedButton(
-      onLongPress: onLongPress,
-      clipBehavior: Clip.antiAlias,
-      style: ButtonStyle(
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        shape: WidgetStatePropertyAll(
-          SmoothRoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(actualRadius),
-          ),
-        ),
-        iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
-        iconSize: WidgetStateProperty.all(20),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states),
-        ),
-        side: WidgetStateProperty.resolveWith(
-          (states) => getBorderSide(context, states),
-        ),
-        minimumSize: WidgetStatePropertyAll(isInteractive ? null : Size.zero),
-        tapTargetSize: isInteractive ? null : MaterialTapTargetSize.shrinkWrap,
-      ),
-      onPressed: onPressed,
-      child: childWidget,
+    final isLight = context.colorScheme.brightness == Brightness.light;
+    final shape = RoundedSuperellipseBorder(
+      borderRadius: BorderRadius.circular(actualRadius),
     );
+    Widget buildCard(WidgetStatesController? controller) {
+      Widget card = OutlinedButton(
+        statesController: controller,
+        onLongPress: onLongPress,
+        clipBehavior: clipBehavior,
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+          shape: WidgetStatePropertyAll(shape),
+          iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
+          iconSize: WidgetStateProperty.all(20),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => getBackgroundColor(context, states),
+          ),
+          side: WidgetStateProperty.resolveWith(
+            (states) => getBorderSide(context, states),
+          ),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          splashFactory: NoSplash.splashFactory,
+          minimumSize: WidgetStatePropertyAll(isInteractive ? null : Size.zero),
+          tapTargetSize: isInteractive
+              ? null
+              : MaterialTapTargetSize.shrinkWrap,
+        ),
+        onPressed: onPressed,
+        child: childWidget,
+      );
+
+      final hasShadows = elevated || subtle;
+      if (hasShadows) {
+        final shadows = subtle
+            ? (isLight ? _lightSubtleShadows : _darkSubtleShadows)
+            : (isLight ? _lightShadows : _darkShadows);
+        card = DecoratedBox(
+          decoration: ShapeDecoration(shape: shape, shadows: shadows),
+          child: card,
+        );
+      }
+      return card;
+    }
+
+    final card = isInteractive
+        ? _CardPressScale(builder: buildCard)
+        : buildCard(null);
 
     return switch (enterAnimated) {
       true => FadeScaleEnterBox(child: card),
       false => card,
     };
+  }
+}
+
+class _CardPressScale extends StatefulWidget {
+  const _CardPressScale({required this.builder});
+
+  final Widget Function(WidgetStatesController controller) builder;
+
+  @override
+  State<_CardPressScale> createState() => _CardPressScaleState();
+}
+
+class _CardPressScaleState extends State<_CardPressScale> {
+  final _controller = WidgetStatesController();
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleStates);
+  }
+
+  void _handleStates() {
+    final pressed = _controller.value.contains(WidgetState.pressed);
+    if (pressed == _pressed) return;
+    setState(() => _pressed = pressed);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleStates);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: _pressed ? 0.98 : 1.0,
+      duration: _pressed
+          ? const Duration(milliseconds: 100)
+          : const Duration(milliseconds: 260),
+      curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
+      child: widget.builder(_controller),
+    );
   }
 }
 

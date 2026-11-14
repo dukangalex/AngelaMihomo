@@ -1,6 +1,9 @@
 package state
 
-import "net/netip"
+import (
+	"net/netip"
+	"time"
+)
 
 var DefaultIpv4Address = "198.51.100.1/30"
 var DefaultDnsAddress = "198.51.100.2"
@@ -15,6 +18,8 @@ type AndroidVpnOptions struct {
 	BypassDomain          []string       `json:"bypassDomain"`
 	RouteAddress          []netip.Prefix `json:"routeAddress"`
 	RouteMode             string         `json:"routeMode"`
+	IncludePackage        []string       `json:"includePackage"`
+	ExcludePackage        []string       `json:"excludePackage"`
 	Ipv4Address           string         `json:"ipv4Address"`
 	Ipv6Address           string         `json:"ipv6Address"`
 	DnsServerAddress      string         `json:"dnsServerAddress"`
@@ -24,10 +29,10 @@ type AndroidVpnOptions struct {
 }
 
 type AccessControl struct {
-	Enable            bool     `json:"enable"`
-	Mode              string   `json:"mode"`
-	AcceptList        []string `json:"acceptList"`
-	RejectList        []string `json:"rejectList"`
+	Enable     bool     `json:"enable"`
+	Mode       string   `json:"mode"`
+	AcceptList []string `json:"acceptList"`
+	RejectList []string `json:"rejectList"`
 }
 
 type AndroidVpnRawOptions struct {
@@ -37,6 +42,24 @@ type AndroidVpnRawOptions struct {
 	SystemProxy   bool           `json:"systemProxy"`
 	RouteMode     string         `json:"routeMode"`
 	DozeSuspend   bool           `json:"dozeSuspend"`
+	QuickResponse bool           `json:"quickResponse"`
+}
+
+type TrafficStatsOptions struct {
+	Enable        bool `json:"enable"`
+	Detail        bool `json:"detail"`
+	RetentionDays int  `json:"retention-days"`
+	TzOffset      int  `json:"tz-offset"`
+}
+
+func DefaultTrafficStatsOptions() TrafficStatsOptions {
+	_, offset := time.Now().Zone()
+	return TrafficStatsOptions{
+		Enable:        false,
+		Detail:        true,
+		RetentionDays: 7,
+		TzOffset:      offset / 60,
+	}
 }
 
 type State struct {
@@ -44,14 +67,14 @@ type State struct {
 	CurrentProfileName  string               `json:"current-profile-name"`
 	OnlyStatisticsProxy bool                 `json:"only-statistics-proxy"`
 	BypassDomain        []string             `json:"bypass-domain"`
+	TrafficStats        TrafficStatsOptions  `json:"traffic-stats"`
 }
 
 var CurrentState = &State{
 	OnlyStatisticsProxy: false,
 	CurrentProfileName:  "",
+	TrafficStats:        DefaultTrafficStatsOptions(),
 }
-
-
 
 func GetDnsServerAddress() string {
 	return DefaultDnsAddress

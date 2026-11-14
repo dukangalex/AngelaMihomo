@@ -4,7 +4,8 @@ import 'package:bett_box/pages/pages.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,6 +18,44 @@ class MediaUnlockSmall extends ConsumerStatefulWidget {
 }
 
 class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
+  MediaUnlockState? _lastState;
+  List<MediaPlatform>? _lastDisplayedPlatforms;
+  bool? _lastColorfulIcons;
+  ThemeData? _lastTheme;
+  Widget? _cachedCard;
+
+  bool _shouldRebuildCard({
+    required MediaUnlockState newState,
+    required List<MediaPlatform> displayedPlatforms,
+    required bool colorfulIcons,
+  }) {
+    if (_lastState == null ||
+        _cachedCard == null ||
+        _lastDisplayedPlatforms == null ||
+        _lastColorfulIcons == null) {
+      return true;
+    }
+    if (!listEquals(_lastDisplayedPlatforms, displayedPlatforms)) {
+      return true;
+    }
+    if (_lastColorfulIcons != colorfulIcons) {
+      return true;
+    }
+    if (_lastState!.isLoading != newState.isLoading) {
+      return true;
+    }
+    for (final p in displayedPlatforms) {
+      if (_lastState!.testingPlatforms.contains(p) !=
+          newState.testingPlatforms.contains(p)) {
+        return true;
+      }
+      if (_lastState!.results[p] != newState.results[p]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Widget _buildPlatformRow(
     MediaPlatform platform,
     MediaUnlockResult? result,
@@ -25,19 +64,37 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
     bool isItemTesting = false,
     required bool colorfulIcons,
   }) {
-    final isTesting = isItemTesting ||
+    final isTesting =
+        isItemTesting ||
         (isLoading &&
             (result == null || result.status == MediaUnlockStatus.testing));
     final status = isTesting
         ? MediaUnlockStatus.testing
-        : (result?.status ?? (isLoading ? MediaUnlockStatus.testing : MediaUnlockStatus.unknown));
+        : (result?.status ??
+              (isLoading
+                  ? MediaUnlockStatus.testing
+                  : MediaUnlockStatus.unknown));
     final color = status.statusColor(context.colorScheme);
+    final isError =
+        status == MediaUnlockStatus.blocked ||
+        status == MediaUnlockStatus.failed;
+    final latency = result?.latency;
+    final String statusDisplay;
+    if (status == MediaUnlockStatus.unknown) {
+      statusDisplay = '-';
+    } else if (isError) {
+      statusDisplay = appLocalizations.checkFailed;
+    } else if (latency != null) {
+      statusDisplay = '${latency}ms';
+    } else {
+      statusDisplay = '-';
+    }
 
     final iconSize = platform.iconSize;
     final Widget icon;
     if (platform.isMonochrome) {
       icon = SvgPicture.asset(
-        'assets/images/platforms/${platform.name}.svg',
+        'assets/svg/${platform.icon}',
         width: iconSize.width.ap,
         height: iconSize.height.ap,
         fit: BoxFit.contain,
@@ -48,7 +105,7 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
       );
     } else if (colorfulIcons) {
       icon = SvgPicture.asset(
-        'assets/images/platforms/${platform.name}.svg',
+        'assets/svg/${platform.icon}',
         width: iconSize.width.ap,
         height: iconSize.height.ap,
         fit: BoxFit.contain,
@@ -57,7 +114,7 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
       icon = ColorFiltered(
         colorFilter: monochromeColorFilter,
         child: SvgPicture.asset(
-          'assets/images/platforms/${platform.name}.svg',
+          'assets/svg/${platform.icon}',
           width: iconSize.width.ap,
           height: iconSize.height.ap,
           fit: BoxFit.contain,
@@ -90,30 +147,33 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
             ),
           ),
           SizedBox(width: 8.ap),
-          SizedBox(
-            width: 12.ap,
-            height: 12.ap,
-            child: Center(
-              child: status == MediaUnlockStatus.testing
-                  ? SizedBox(
-                      width: 10.ap,
-                      height: 10.ap,
-                      child: SpinKitRing(
-                        color: context.colorScheme.primary,
-                        lineWidth: 1.5,
-                        size: 10.ap,
-                      ),
-                    )
-                  : Container(
-                      width: 7.ap,
-                      height: 7.ap,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+          if (status == MediaUnlockStatus.testing)
+            RepaintBoundary(
+              child: SizedBox(
+                width: 12.ap,
+                height: 12.ap,
+                child: SyncedLoading(
+                  size: 12.ap,
+                  child: SpinKitRing(
+                    color: context.colorScheme.primary,
+                    lineWidth: 1.5,
+                    size: 12.ap,
+                  ),
+                ),
+              ),
+            )
+          else
+            Text(
+              statusDisplay,
+              textAlign: TextAlign.right,
+              style: context.textTheme.labelSmall?.copyWith(
+                fontSize: 10.5.ap,
+                fontWeight: FontWeight.w400,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                color: color,
+              ),
+              maxLines: 1,
             ),
-          ),
         ],
       ),
     );
@@ -129,17 +189,34 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
     );
     final displayedPlatforms =
         (pinned.isNotEmpty ? pinned : defaultPinnedMediaPlatforms)
-            .take(4)
+            .take(3)
             .toList();
 
     return SizedBox(
-      height: getWidgetHeight(2),
+      height: getWidgetHeight(context, 2),
       child: ValueListenableBuilder<MediaUnlockState>(
         valueListenable: mediaUnlockState.state,
         builder: (context, state, _) {
-          final isWidgetLoading =
-              displayedPlatforms.any(state.testingPlatforms.contains);
-          return CommonCard(
+          final theme = Theme.of(context);
+          final shouldRebuild =
+              !identical(_lastTheme, theme) ||
+              _shouldRebuildCard(
+                newState: state,
+                displayedPlatforms: displayedPlatforms,
+                colorfulIcons: colorfulIcons,
+              );
+          if (!shouldRebuild) {
+            return _cachedCard!;
+          }
+          _lastTheme = theme;
+          _lastState = state;
+          _lastDisplayedPlatforms = displayedPlatforms;
+          _lastColorfulIcons = colorfulIcons;
+
+          final isWidgetLoading = displayedPlatforms.any(
+            state.testingPlatforms.contains,
+          );
+          final card = CommonCard(
             onPressed: () {
               showExtend(
                 context,
@@ -176,17 +253,19 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
                           onPressed: isWidgetLoading
                               ? null
                               : () => mediaUnlockState.checkPlatforms(
-                                    displayedPlatforms,
-                                    force: true,
-                                  ),
+                                  displayedPlatforms,
+                                  force: true,
+                                ),
                           icon: isWidgetLoading
-                              ? SizedBox(
-                                  width: 13.ap,
-                                  height: 13.ap,
-                                  child: SpinKitRing(
-                                    color: context.colorScheme.primary,
-                                    lineWidth: 1.5,
-                                    size: 13.ap,
+                              ? RepaintBoundary(
+                                  child: SizedBox(
+                                    width: 13.ap,
+                                    height: 13.ap,
+                                    child: SpinKitRing(
+                                      color: context.colorScheme.primary,
+                                      lineWidth: 1.5,
+                                      size: 13.ap,
+                                    ),
                                   ),
                                 )
                               : Icon(
@@ -221,8 +300,7 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
                             state.results[p],
                             state.isLoading,
                             context,
-                            isItemTesting:
-                                state.testingPlatforms.contains(p),
+                            isItemTesting: state.testingPlatforms.contains(p),
                             colorfulIcons: colorfulIcons,
                           ),
                       ],
@@ -232,6 +310,8 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
               ],
             ),
           );
+          _cachedCard = card;
+          return card;
         },
       ),
     );

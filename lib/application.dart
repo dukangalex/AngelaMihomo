@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/external_control.dart';
@@ -11,9 +11,8 @@ import 'package:bett_box/manager/manager.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'controller.dart';
@@ -40,17 +39,195 @@ class ApplicationState extends ConsumerState<Application>
     },
   );
 
-  ColorScheme _getAppColorScheme({
-    required Brightness brightness,
-    int? primaryColor,
-  }) {
-    return ref.read(genColorSchemeProvider(brightness));
+  static const _lightAppBarTheme = AppBarTheme(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemStatusBarContrastEnforced: false,
+    ),
+  );
+
+  static const _darkAppBarTheme = AppBarTheme(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemStatusBarContrastEnforced: false,
+    ),
+  );
+
+  final Map<Brightness, ((ColorScheme, String?, String), ThemeData)>
+  _themeCache = {};
+
+  ThemeData _themeOf(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeExtension zodiac,
+  ) {
+    final key = (colorScheme, fontFamily, zodiac.themeId);
+    final cached = _themeCache[colorScheme.brightness];
+    if (cached != null && cached.$1 == key) {
+      return cached.$2;
+    }
+    final theme = _buildTheme(colorScheme, fontFamily, zodiac);
+    _themeCache[colorScheme.brightness] = (key, theme);
+    return theme;
+  }
+
+  ThemeData _buildTheme(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeExtension zodiac,
+  ) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    return ThemeData(
+      useMaterial3: true,
+      extensions: [zodiac],
+      pageTransitionsTheme: _pageTransitionsTheme,
+      scaffoldBackgroundColor: zodiac.variant.backgroundBase,
+      appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
+      colorScheme: colorScheme,
+      fontFamily: fontFamily,
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        elevation: 3,
+        hoverElevation: 5,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: isLight
+            ? colorScheme.surfaceContainerLowest
+            : colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        elevation: 10,
+        shadowColor: Colors.black.withValues(alpha: isLight ? 0.3 : 0.6),
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(
+              alpha: isLight ? 0.6 : 0.5,
+            ),
+          ),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        clipBehavior: Clip.antiAlias,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant.withValues(
+          alpha: isLight ? 0.45 : 0.25,
+        ),
+        thickness: 1,
+        space: 1,
+      ),
+      inputDecorationTheme: _inputDecorationTheme(colorScheme),
+      switchTheme: _switchTheme(colorScheme),
+      chipTheme: ChipThemeData(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.6 : 0.5,
+          ),
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colorScheme.inverseSurface,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        textStyle: TextStyle(color: colorScheme.onInverseSurface, fontSize: 13),
+      ),
+    );
+  }
+
+  SwitchThemeData _switchTheme(ColorScheme colorScheme) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    return SwitchThemeData(
+      thumbIcon: const WidgetStatePropertyAll(Icon(null)),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return null;
+        if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
+        return isLight ? Colors.white : colorScheme.onSurfaceVariant;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return null;
+        if (states.contains(WidgetState.selected)) return colorScheme.primary;
+        return isLight
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.surfaceContainerHighest.lighten(6);
+      }),
+    );
+  }
+
+  InputDecorationTheme _inputDecorationTheme(ColorScheme colorScheme) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    final border = _FieldInputBorder(
+      borderSide: BorderSide(
+        color: isLight
+            ? colorScheme.outlineVariant
+            : colorScheme.outline.withValues(alpha: 0.45),
+      ),
+    );
+    final focusedBorder = _FieldInputBorder(
+      borderSide: BorderSide(color: colorScheme.primary, width: 1.6),
+    );
+    final errorBorder = _FieldInputBorder(
+      borderSide: BorderSide(color: colorScheme.error),
+    );
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: colorScheme.brightness == Brightness.light
+          ? Color.lerp(
+              colorScheme.surface,
+              colorScheme.surfaceContainerLowest,
+              0.5,
+            )
+          : colorScheme.surfaceContainerHighest,
+      border: border,
+      enabledBorder: border,
+      focusedBorder: focusedBorder,
+      disabledBorder: _FieldInputBorder(
+        borderSide: BorderSide(
+          color: colorScheme.onSurface.withValues(alpha: 0.12),
+        ),
+      ),
+      errorBorder: errorBorder,
+      focusedErrorBorder: errorBorder.copyWith(
+        borderSide: BorderSide(color: colorScheme.error, width: 1.6),
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+    );
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (system.isAndroid) {
+      unawaited(SystemNavigator.setFrameworkHandlesBack(true));
+    }
     globalState.backgroundMode.addListener(_syncAutoUpdateTasks);
     _syncAutoUpdateTasks();
     globalState.appController = AppController(context, ref);
@@ -75,7 +252,7 @@ class ApplicationState extends ConsumerState<Application>
       try {
         await ExternalControl.start();
       } catch (e) {
-        commonPrint.log('ExternalControl start failed: $e');
+        commonPrint.warn('ExternalControl start failed: $e');
       }
     }
     globalState.appController.initLink();
@@ -88,14 +265,23 @@ class ApplicationState extends ConsumerState<Application>
   }
 
   @override
+  Future<bool> didPopRoute() async {
+    if (!system.isAndroid) return false;
+    final navigator = globalState.navigatorKey.currentState;
+    if (navigator == null) return false;
+    try {
+      if (!await navigator.maybePop()) {
+        await globalState.appController.handleBackOrExit();
+      }
+    } catch (e) {
+      commonPrint.warn('Back dispatch failed: $e');
+    }
+    return true;
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _syncAutoUpdateTasks();
-    if (state == AppLifecycleState.resumed) {
-      if (system.isAndroid &&
-          globalState.config.appSetting.enableHighRefreshRate) {
-        _restoreHighRefreshRate();
-      }
-    }
   }
 
   void _syncAutoUpdateTasks() {
@@ -114,14 +300,6 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (_autoUpdateProfilesTaskTimer == null) {
       _autoUpdateProfilesTask();
-    }
-  }
-
-  Future<void> _restoreHighRefreshRate() async {
-    try {
-      await FlutterDisplayMode.setHighRefreshRate();
-    } catch (e) {
-      commonPrint.log('Failed to restore high refresh rate: $e');
     }
   }
 
@@ -160,17 +338,22 @@ class ApplicationState extends ConsumerState<Application>
         child: ConnectivityManager(
           onConnectivityChanged: (results) async {
             if (!results.contains(ConnectivityResult.vpn)) {
-              clashCore.closeConnections();
+              unawaited(
+                clashCore.closeConnections().then<void>(
+                  (_) {},
+                  onError: (Object e) =>
+                      commonPrint.debug('closeConnections ignored: $e'),
+                ),
+              );
             }
-            if (system.isMacOS) {
+            if (system.isLinux) {
               // Wait for DHCP and the default route to settle before moving the
               // managed DNS from the previous network to the new one.
               await Future.delayed(const Duration(seconds: 1));
               if (!mounted) return;
-              final dnsState = ref.read(autoSetSystemDnsStateProvider);
-              await macOS?.updateDns(!(dnsState.a && dnsState.b));
+              await system.updateDns(!ref.read(systemDnsTakeoverProvider));
             }
-            globalState.appController.updateLocalIp();
+            globalState.appController.updateLocalNetwork();
             globalState.appController.addCheckIpNumDebounce();
           },
           child: child,
@@ -203,15 +386,21 @@ class ApplicationState extends ConsumerState<Application>
             final fontFamily = themeProps.useHarmonyFont
                 ? 'HarmonyOS_Sans'
                 : null;
+            final zodiac = resolveZodiacTheme(themeProps.zodiacTheme);
+            final lightColorScheme = ref.read(
+              genColorSchemeProvider(Brightness.light),
+            );
+            final darkColorScheme = ref.read(
+              genColorSchemeProvider(Brightness.dark),
+            );
 
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               navigatorKey: globalState.navigatorKey,
+              navigatorObservers: [routeIdleObserver],
               localizationsDelegates: const [
                 AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
+                ...GlobalMaterialLocalizations.delegates,
               ],
               builder: (_, child) {
                 return Directionality(
@@ -221,12 +410,8 @@ class ApplicationState extends ConsumerState<Application>
                     builder: (_, enabled, _) {
                       return TickerMode(
                         enabled: enabled,
-                        child: AppEnvManager(
-                          child: _buildApp(
-                            AppSidebarContainer(
-                              child: _buildPlatformApp(child!),
-                            ),
-                          ),
+                        child: _buildApp(
+                          AppSidebarContainer(child: _buildPlatformApp(child!)),
                         ),
                       );
                     },
@@ -238,192 +423,18 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              themeMode: themeProps.themeMode,
-              theme: ThemeData(
-                useMaterial3: true,
-                pageTransitionsTheme: _pageTransitionsTheme,
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
-                ),
-                fontFamily: fontFamily,
-                floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  elevation: 3,
-                  hoverElevation: 5,
-                ),
-                dialogTheme: DialogThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                bottomSheetTheme: const BottomSheetThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(28),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                ),
-                popupMenuTheme: const PopupMenuThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                ),
-                dividerTheme: DividerThemeData(
-                  color: _getAppColorScheme(
-                    brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
-                  ).outlineVariant.withValues(alpha: 0.6),
-                  thickness: 1,
-                  space: 1,
-                ),
-                inputDecorationTheme: InputDecorationTheme(
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
-                      ).outlineVariant.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
-                      ).primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                chipTheme: ChipThemeData(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                  side: BorderSide(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
-                    ).outlineVariant.withValues(alpha: 0.6),
-                  ),
-                ),
-                tooltipTheme: const TooltipThemeData(
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  textStyle: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
+              // Brightness follows the system only; the zodiac family has
+              // no in-app light/dark switch (DESIGN doc section 5.3).
+              themeMode: ThemeMode.system,
+              theme: _themeOf(
+                lightColorScheme,
+                fontFamily,
+                ZodiacThemeExtension.of(zodiac, Brightness.light),
               ),
-              darkTheme: ThemeData(
-                useMaterial3: true,
-                pageTransitionsTheme: _pageTransitionsTheme,
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
-                ).toPureBlack(themeProps.pureBlack),
-                fontFamily: fontFamily,
-                floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  elevation: 3,
-                  hoverElevation: 5,
-                ),
-                dialogTheme: DialogThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                bottomSheetTheme: const BottomSheetThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(28),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                ),
-                popupMenuTheme: const PopupMenuThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                ),
-                dividerTheme: DividerThemeData(
-                  color:
-                      _getAppColorScheme(
-                            brightness: Brightness.dark,
-                            primaryColor: themeProps.primaryColor,
-                          )
-                          .toPureBlack(themeProps.pureBlack)
-                          .outlineVariant
-                          .withValues(alpha: 0.45),
-                  thickness: 1,
-                  space: 1,
-                ),
-                inputDecorationTheme: InputDecorationTheme(
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color:
-                          _getAppColorScheme(
-                                brightness: Brightness.dark,
-                                primaryColor: themeProps.primaryColor,
-                              )
-                              .toPureBlack(themeProps.pureBlack)
-                              .outlineVariant
-                              .withValues(alpha: 0.45),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.dark,
-                        primaryColor: themeProps.primaryColor,
-                      ).toPureBlack(themeProps.pureBlack).primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                chipTheme: ChipThemeData(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                  side: BorderSide(
-                    color:
-                        _getAppColorScheme(
-                              brightness: Brightness.dark,
-                              primaryColor: themeProps.primaryColor,
-                            )
-                            .toPureBlack(themeProps.pureBlack)
-                            .outlineVariant
-                            .withValues(alpha: 0.45),
-                  ),
-                ),
-                tooltipTheme: const TooltipThemeData(
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  textStyle: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
+              darkTheme: _themeOf(
+                darkColorScheme,
+                fontFamily,
+                ZodiacThemeExtension.of(zodiac, Brightness.dark),
               ),
               home: child!,
             );
@@ -432,6 +443,12 @@ class ApplicationState extends ConsumerState<Application>
         ),
       ),
     );
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    _themeCache.clear();
   }
 
   @override
@@ -447,4 +464,83 @@ class ApplicationState extends ConsumerState<Application>
     }
     super.dispose();
   }
+}
+
+class _FieldInputBorder extends InputBorder {
+  const _FieldInputBorder({super.borderSide = BorderSide.none});
+
+  static const _borderRadius = BorderRadius.all(Radius.circular(16));
+
+  @override
+  bool get isOutline => false;
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
+
+  @override
+  _FieldInputBorder copyWith({BorderSide? borderSide}) {
+    return _FieldInputBorder(borderSide: borderSide ?? this.borderSide);
+  }
+
+  @override
+  ShapeBorder scale(double t) {
+    return _FieldInputBorder(borderSide: borderSide.scale(t));
+  }
+
+  @override
+  ShapeBorder? lerpFrom(ShapeBorder? a, double t) {
+    if (a is _FieldInputBorder) {
+      return _FieldInputBorder(
+        borderSide: BorderSide.lerp(a.borderSide, borderSide, t),
+      );
+    }
+    return super.lerpFrom(a, t);
+  }
+
+  @override
+  ShapeBorder? lerpTo(ShapeBorder? b, double t) {
+    if (b is _FieldInputBorder) {
+      return _FieldInputBorder(
+        borderSide: BorderSide.lerp(borderSide, b.borderSide, t),
+      );
+    }
+    return super.lerpTo(b, t);
+  }
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return Path()
+      ..addRRect(_borderRadius.toRRect(rect).deflate(borderSide.width));
+  }
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    return Path()..addRRect(_borderRadius.toRRect(rect));
+  }
+
+  @override
+  void paint(
+    Canvas canvas,
+    Rect rect, {
+    double? gapStart,
+    double gapExtent = 0.0,
+    double gapPercentage = 0.0,
+    TextDirection? textDirection,
+  }) {
+    if (borderSide.style == BorderStyle.none || borderSide.width == 0) {
+      return;
+    }
+    canvas.drawRRect(
+      _borderRadius.toRRect(rect).deflate(borderSide.width / 2),
+      borderSide.toPaint(),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is _FieldInputBorder && other.borderSide == borderSide;
+  }
+
+  @override
+  int get hashCode => borderSide.hashCode;
 }

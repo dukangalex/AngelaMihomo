@@ -1,13 +1,50 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import 'dart:math' as math;
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:intl/intl.dart';
+import 'package:bett_box/providers/providers.dart';
+import 'package:flutter/gestures.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GoogleBottomNavBar extends ConsumerWidget {
+Color navBarBodyColor(ColorScheme colorScheme) {
+  if (colorScheme.brightness == Brightness.light) {
+    return Color.lerp(
+      colorScheme.surface,
+      colorScheme.surfaceContainerLowest,
+      0.5,
+    )!;
+  }
+  return colorScheme.surfaceContainerHigh;
+}
+
+double navBarSlotResistance(double slot, int count) {
+  const maxOvershoot = 0.22;
+  final maxIndex = math.max(0, count - 1).toDouble();
+  if (slot < 0.0) {
+    return -maxOvershoot * (1.0 - math.exp(slot / maxOvershoot));
+  }
+  if (slot > maxIndex) {
+    return maxIndex +
+        maxOvershoot * (1.0 - math.exp((maxIndex - slot) / maxOvershoot));
+  }
+  return slot;
+}
+
+class SelectionHaptic {
+  int _lastTime = 0;
+
+  void call(bool enable) {
+    if (!system.isAndroid || !enable) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastTime <= 35) return;
+    _lastTime = now;
+    HapticFeedback.selectionClick();
+  }
+}
+
+class GoogleBottomNavBar extends ConsumerStatefulWidget {
   final List<NavigationItem> navigationItems;
   final int selectedIndex;
   final ValueChanged<int> onTabChange;
@@ -19,101 +56,444 @@ class GoogleBottomNavBar extends ConsumerWidget {
     required this.onTabChange,
   });
 
-  IconData _extractIconData(Widget iconWidget) {
-    if (iconWidget is Icon) {
-      return iconWidget.icon ?? Icons.home;
+  @override
+  ConsumerState<GoogleBottomNavBar> createState() => _GoogleBottomNavBarState();
+}
+
+class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
+    with TickerProviderStateMixin {
+  late final AnimationController _posController = AnimationController.unbounded(
+    vsync: this,
+    value: widget.selectedIndex.toDouble(),
+  );
+
+  late final AnimationController _liftController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 140),
+  );
+
+  int? _activePointerId;
+  bool _isDragging = false;
+  bool _dragCancel = false;
+  Offset? _downPosition;
+  VelocityTracker? _velocityTracker;
+  double _anchorSlot = 0.0;
+  double _barWidth = 0;
+  int _lastSnappedIndex = 0;
+  final _haptic = SelectionHaptic();
+  late final ValueNotifier<int> _highlightedIndex = ValueNotifier(
+    widget.selectedIndex,
+  );
+  late final ValueNotifier<int?> _pressedIndex = ValueNotifier(null);
+  final ValueNotifier<double> _dragOffset = ValueNotifier(0.0);
+
+  static const double _horizontalInset = 0.0;
+
+  double? _posTarget;
+  int? _jumpFromIndex;
+  int? _jumpToIndex;
+
+  void _glideTo(int index, int milliseconds) {
+    _posTarget = index.toDouble();
+    final fromIndex = _posController.value.round().clamp(
+      0,
+      widget.navigationItems.length - 1,
+    );
+    if ((fromIndex - index).abs() > 1 && !_isDragging) {
+      _jumpFromIndex = fromIndex;
+      _jumpToIndex = index;
+    } else {
+      _jumpFromIndex = null;
+      _jumpToIndex = null;
     }
-    return Icons.home;
+    if (milliseconds <= 0) {
+      _posController.value = index.toDouble();
+      _jumpFromIndex = null;
+      _jumpToIndex = null;
+      return;
+    }
+    _posController
+        .animateTo(
+          index.toDouble(),
+          duration: Duration(milliseconds: milliseconds),
+          curve: Curves.easeOutCubic,
+        )
+        .whenComplete(() {
+          if (mounted && _posTarget == index.toDouble()) {
+            _jumpFromIndex = null;
+            _jumpToIndex = null;
+          }
+        });
+  }
+
+  void _liftTo(double value, int milliseconds) {
+    _liftController.animateTo(
+      value,
+      duration: Duration(milliseconds: milliseconds),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final enableHapticFeedback = ref.watch(
+  void initState() {
+    super.initState();
+    _lastSnappedIndex = widget.selectedIndex;
+  }
+
+  @override
+  void didUpdateWidget(covariant GoogleBottomNavBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex &&
+        _activePointerId == null) {
+      _highlightedIndex.value = widget.selectedIndex;
+      _lastSnappedIndex = widget.selectedIndex;
+      if (!_posController.isAnimating) {
+        _posController.value = widget.selectedIndex.toDouble();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _highlightedIndex.dispose();
+    _pressedIndex.dispose();
+    _dragOffset.dispose();
+    _posController.dispose();
+    _liftController.dispose();
+    super.dispose();
+  }
+
+  double get _slotWidth {
+    final count = widget.navigationItems.length;
+    if (count == 0) return 0.0;
+    return math.max(0.0, _barWidth) / count;
+  }
+
+  void _commitDragOffset() {
+    if (_dragOffset.value == 0.0) return;
+    _posController.value = navBarSlotResistance(
+      _posController.value + _dragOffset.value,
+      widget.navigationItems.length,
+    );
+    _dragOffset.value = 0.0;
+  }
+
+  int _indexFromLocalDx(double dx) {
+    const borderWidth = 0.0;
+    final innerWidth = math.max(0.0, _barWidth - (2 * borderWidth));
+    final count = widget.navigationItems.length;
+    if (innerWidth <= 0 || count == 0) return widget.selectedIndex;
+    final slotWidth = innerWidth / count;
+    final localDx = (dx - borderWidth).clamp(0.0, innerWidth - 0.001);
+    return (localDx / slotWidth).floor().clamp(0, count - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enableFeedback = ref.watch(
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
-    final tabsList = navigationItems
-        .map(
-          (e) => GButton(
-            icon: _extractIconData(e.icon),
-            text: Intl.message(e.label.name),
-          ),
-        )
-        .toList();
+    final colorScheme = context.colorScheme;
+    // Zodiac tokens drive the bar: its body takes the navBar token and the
+    // selected item takes the family's selection color (the immersive
+    // family's arrow-teal secondary, other families' primary).
+    final primaryColor = context.zodiac?.navSelected ?? colorScheme.primary;
+    final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
 
-    void handleTabChange(int index) {
-      // Trigger vibration only if haptic feedback enabled
-      if (system.isAndroid && enableHapticFeedback) {
-        HapticFeedback.selectionClick(); // Lighter haptic feedback
-      }
-      onTabChange(index);
-    }
+    // The bar is a full-width strip in the navBar token at its own alpha
+    // (design doc 3.5.6): no floating capsule, no shadow, and no backing
+    // block behind the current tab — selection reads from the accent
+    // colored icon and label alone.
+    final navColor =
+        context.zodiac?.variant.navBar ?? navBarBodyColor(colorScheme);
 
-    return RepaintBoundary(
+    const itemTextStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
+
+    final count = widget.navigationItems.length;
+    final localizedLabels = [
+      for (final item in widget.navigationItems) item.label.localizedName,
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: navColor,
+        border: Border(top: BorderSide(color: colorScheme.outline, width: 1)),
+      ),
       child: SafeArea(
         top: false,
         left: false,
         right: false,
-        minimum: const EdgeInsets.only(bottom: 12),
-        child: Container(
-          color: Colors.transparent,
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
-            decoration: BoxDecoration(
-              color: context.colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(36),
-              border: Border.all(
-                color: context.colorScheme.outlineVariant.withValues(
-                  alpha: context.colorScheme.brightness == Brightness.light
-                      ? 0.5
-                      : 0.4,
-                ),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                  color: Colors.black.withValues(
-                    alpha: context.colorScheme.brightness == Brightness.light
-                        ? 0.08
-                        : 0.18,
+        child: Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (event) {
+            if (_activePointerId != null) return;
+            _activePointerId = event.pointer;
+            _downPosition = event.localPosition;
+            _velocityTracker = VelocityTracker.withKind(event.kind)
+              ..addPosition(event.timeStamp, event.localPosition);
+            _dragCancel = false;
+            _isDragging = false;
+            _dragOffset.value = 0.0;
+
+            final touchedIndex = _indexFromLocalDx(
+              event.localPosition.dx - _horizontalInset,
+            );
+            _anchorSlot = touchedIndex.toDouble();
+            _lastSnappedIndex = touchedIndex;
+            _highlightedIndex.value = touchedIndex;
+            _pressedIndex.value = touchedIndex;
+            if (touchedIndex != widget.selectedIndex) {
+              _haptic(enableFeedback);
+            }
+
+            _posController.stop();
+            _posController.value = touchedIndex.toDouble();
+            _jumpFromIndex = null;
+            _jumpToIndex = null;
+
+            _liftTo(1.0, 140);
+          },
+          onPointerMove: (event) {
+            if (_activePointerId != event.pointer || _dragCancel) return;
+            final downPos = _downPosition;
+            if (downPos == null) return;
+            _velocityTracker?.addPosition(event.timeStamp, event.localPosition);
+            final delta = event.localPosition - downPos;
+            if (delta.dy < -50 || delta.dy > 80) {
+              _dragCancel = true;
+              _isDragging = false;
+              _velocityTracker = null;
+              _pressedIndex.value = null;
+              _highlightedIndex.value = widget.selectedIndex;
+              _commitDragOffset();
+              _glideTo(widget.selectedIndex, 180);
+              _liftTo(0.0, 180);
+              return;
+            }
+
+            final slotWidth = _slotWidth;
+            if (!_isDragging && delta.dx.abs() > 4) {
+              _isDragging = true;
+              _jumpFromIndex = null;
+              _jumpToIndex = null;
+            }
+            if (!_isDragging || slotWidth <= 0) return;
+
+            _dragOffset.value = delta.dx / slotWidth;
+            final index = (_anchorSlot + _dragOffset.value).round().clamp(
+              0,
+              count - 1,
+            );
+            _highlightedIndex.value = index;
+            _pressedIndex.value = index;
+            if (index != _lastSnappedIndex) {
+              _lastSnappedIndex = index;
+              _haptic(enableFeedback);
+            }
+          },
+          onPointerUp: (event) {
+            if (_activePointerId != event.pointer) return;
+            _activePointerId = null;
+            _pressedIndex.value = null;
+            _liftTo(0.0, 180);
+            if (_dragCancel) {
+              _dragCancel = false;
+              _isDragging = false;
+              _velocityTracker = null;
+              return;
+            }
+
+            final slotWidth = _slotWidth;
+            final int targetIndex;
+            if (_isDragging && slotWidth > 0) {
+              final velocityPx =
+                  _velocityTracker?.getVelocity().pixelsPerSecond.dx ?? 0.0;
+              final slotVelocity = velocityPx / slotWidth;
+              final currentSlot = _anchorSlot + _dragOffset.value;
+              final fling = (slotVelocity * 0.16).clamp(-1.2, 1.2);
+              var projected = (currentSlot + fling).round();
+              if (velocityPx.abs() > 240.0) {
+                final baseIndex = currentSlot.round();
+                if (projected == baseIndex) {
+                  projected += velocityPx.sign.toInt();
+                }
+              }
+              targetIndex = projected.clamp(0, count - 1);
+
+              _commitDragOffset();
+              _highlightedIndex.value = targetIndex;
+              final distance = (_posController.value - targetIndex.toDouble())
+                  .abs();
+              final snapMs = (130 + (distance * 80) - (velocityPx.abs() * 0.03))
+                  .clamp(120, 220)
+                  .toInt();
+              _glideTo(targetIndex, snapMs);
+            } else {
+              targetIndex = _indexFromLocalDx(
+                event.localPosition.dx - _horizontalInset,
+              );
+              _highlightedIndex.value = targetIndex;
+              _posController.stop();
+              _posController.value = targetIndex.toDouble();
+            }
+
+            _velocityTracker = null;
+            _isDragging = false;
+            if (targetIndex != widget.selectedIndex) {
+              widget.onTabChange(targetIndex);
+            }
+          },
+          onPointerCancel: (event) {
+            if (_activePointerId != event.pointer) return;
+            _activePointerId = null;
+            _isDragging = false;
+            _dragCancel = false;
+            _velocityTracker = null;
+            _pressedIndex.value = null;
+            _highlightedIndex.value = widget.selectedIndex;
+            _commitDragOffset();
+            _posController.stop();
+            _posController.value = widget.selectedIndex.toDouble();
+            _liftTo(0.0, 180);
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              _barWidth = constraints.maxWidth;
+              const barHeight = 60.0;
+
+              return RepaintBoundary(
+                child: SizedBox(
+                  height: barHeight,
+                  child: RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _posController,
+                        _dragOffset,
+                        _pressedIndex,
+                        _liftController,
+                      ]),
+                      builder: (context, _) {
+                        final currentPos = navBarSlotResistance(
+                          _posController.value + _dragOffset.value,
+                          count,
+                        );
+                        final pressedIdx = _pressedIndex.value;
+                        final liftValue = _liftController.value;
+
+                        final jumpFrom = _jumpFromIndex;
+                        final jumpTo = _jumpToIndex;
+                        final isNonAdjacentJump =
+                            jumpFrom != null &&
+                            jumpTo != null &&
+                            (jumpFrom - jumpTo).abs() > 1;
+                        final minJump = isNonAdjacentJump
+                            ? math.min(jumpFrom, jumpTo)
+                            : -1;
+                        final maxJump = isNonAdjacentJump
+                            ? math.max(jumpFrom, jumpTo)
+                            : -1;
+
+                        return Row(
+                          children: List.generate(count, (index) {
+                            final item = widget.navigationItems[index];
+                            final isPressed = index == pressedIdx;
+                            final double itemScale;
+                            final Color itemColor;
+                            final FontWeight itemWeight;
+                            if (isNonAdjacentJump &&
+                                index > minJump &&
+                                index < maxJump) {
+                              itemScale = 1.0;
+                              itemColor = onSurfaceVariantColor;
+                              itemWeight = FontWeight.w500;
+                            } else {
+                              final double selectFactor;
+                              if (isNonAdjacentJump) {
+                                if (index == jumpFrom) {
+                                  final distFromOrigin = (currentPos - jumpFrom)
+                                      .abs()
+                                      .clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 -
+                                      Curves.easeOut.transform(distFromOrigin);
+                                } else if (index == jumpTo) {
+                                  final distToTarget = (currentPos - jumpTo)
+                                      .abs()
+                                      .clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 -
+                                      Curves.easeOut.transform(distToTarget);
+                                } else {
+                                  selectFactor = 0.0;
+                                }
+                              } else {
+                                final rawDist = (currentPos - index).abs();
+                                if (rawDist >= 1.0) {
+                                  selectFactor = 0.0;
+                                } else {
+                                  final dist = rawDist.clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 - Curves.easeOut.transform(dist);
+                                }
+                              }
+
+                              if (selectFactor <= 0.0 && !isPressed) {
+                                itemScale = 1.0;
+                                itemColor = onSurfaceVariantColor;
+                                itemWeight = FontWeight.w500;
+                              } else {
+                                itemScale = isPressed
+                                    ? (1.0 - 0.05 * liftValue)
+                                    : (1.0 + 0.04 * selectFactor);
+                                itemColor = Color.lerp(
+                                  onSurfaceVariantColor,
+                                  primaryColor,
+                                  selectFactor,
+                                )!;
+                                itemWeight = (selectFactor >= 0.5 || isPressed)
+                                    ? FontWeight.w600
+                                    : FontWeight.w500;
+                              }
+                            }
+
+                            return Expanded(
+                              child: Center(
+                                child: Transform.scale(
+                                  scale: itemScale,
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconTheme(
+                                        data: IconThemeData(
+                                          color: itemColor,
+                                          size: 22,
+                                        ),
+                                        child: item.icon,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        localizedLabels[index],
+                                        style: itemTextStyle.copyWith(
+                                          color: itemColor,
+                                          fontWeight: itemWeight,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        );
+                      },
+                    ),
                   ),
                 ),
-                BoxShadow(
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                  color: Colors.black.withValues(
-                    alpha: context.colorScheme.brightness == Brightness.light
-                        ? 0.04
-                        : 0.1,
-                  ),
-                ),
-              ],
-            ),
-            child: GNav(
-              rippleColor: enableHapticFeedback
-                  ? context.colorScheme.onSurface.withValues(alpha: 0.15)
-                  : Colors
-                        .transparent, // Disabling ripple may disable haptic feedback
-              hoverColor: context.colorScheme.onSurface.withValues(alpha: 0.1),
-              haptic: enableHapticFeedback, // Control GNav haptic feedback
-              gap: 8,
-              activeColor: context.colorScheme.primary,
-              iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              duration: const Duration(milliseconds: 250),
-              tabBackgroundColor: context.colorScheme.primary.withValues(
-                alpha:
-                    context.colorScheme.brightness == Brightness.light
-                        ? 0.20
-                        : 0.26,
-              ),
-              color: context.colorScheme.onSurfaceVariant,
-              tabs: tabsList,
-              selectedIndex: selectedIndex,
-              onTabChange: handleTabChange,
-            ),
+              );
+            },
           ),
         ),
       ),

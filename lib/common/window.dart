@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_ext/window_ext.dart';
@@ -11,23 +12,25 @@ import 'package:window_manager/window_manager.dart';
 class Window {
   Future<void> init() async {
     final props = globalState.config.windowProps;
-    if (system.isWindows) {
+    if (system.isWindows && !appPath.isPortable) {
       protocol.register('clash');
       protocol.register('clashmeta');
       protocol.register('flclash');
       protocol.register('bettbox');
+      protocol.register('angelamihomo');
     }
     await windowManager.ensureInitialized();
     if (system.isMacOS && !globalState.config.appSetting.keepDockIcon) {
       try {
         await windowExtManager.setDockIconVisible(false);
       } catch (e) {
-        commonPrint.log('Apply dock icon visibility failed: $e');
+        commonPrint.warn('Apply dock icon visibility failed: $e');
       }
     }
+    const minimumSize = Size(372, 492);
     WindowOptions windowOptions = WindowOptions(
-      size: Size(props.width, props.height),
-      minimumSize: const Size(380, 400),
+      size: Size(props.width, math.max(props.height, minimumSize.height)),
+      minimumSize: minimumSize,
     );
     await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     await windowManager.setAlwaysOnTop(props.isPinned);
@@ -63,10 +66,9 @@ class Window {
           });
         } catch (_) {}
         if (isPositionValid) {
-          await windowManager.setPosition(Offset(
-            physLeft / currentDpr,
-            physTop / currentDpr,
-          ));
+          await windowManager.setPosition(
+            Offset(physLeft / currentDpr, physTop / currentDpr),
+          );
         } else {
           await windowManager.setAlignment(Alignment.center);
         }
@@ -77,19 +79,31 @@ class Window {
     });
   }
 
-  void updateMacOSBrightness(Brightness brightness) {
-  }
+  void updateMacOSBrightness(Brightness brightness) {}
 
   Future<void> show() async {
     globalState.handleForeground();
     render?.resume();
+    if (await isMinimized) {
+      await windowManager.restore();
+    }
     await windowManager.show();
     await windowManager.focus();
     if (!system.isMacOS) {
       await windowManager.setSkipTaskbar(false);
     }
+    await _syncDockIcon(true);
     await globalState.resumeForegroundUpdates();
     await globalState.appController.syncWakelockIfNeeded();
+  }
+
+  Future<void> _syncDockIcon(bool visible) async {
+    if (!system.isMacOS || globalState.config.appSetting.keepDockIcon) return;
+    try {
+      await windowExtManager.setDockIconVisible(visible);
+    } catch (e) {
+      commonPrint.warn('Sync dock icon visibility failed: $e');
+    }
   }
 
   Future<bool> get isVisible async {
@@ -105,7 +119,7 @@ class Window {
       await trayManager.destroy();
       commonPrint.log('The tray icon has been destroyed.');
     } catch (e) {
-      commonPrint.log('Failed to destroy the tray icon: $e');
+      commonPrint.warn('Failed to destroy the tray icon: $e');
     }
 
     exit(0);
@@ -116,6 +130,7 @@ class Window {
     if (!system.isMacOS) {
       await windowManager.setSkipTaskbar(true);
     }
+    await _syncDockIcon(false);
     await globalState.handleBackground();
   }
 }

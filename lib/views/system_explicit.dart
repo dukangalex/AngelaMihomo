@@ -1,56 +1,151 @@
-import 'package:bett_box/common/path_guard.dart';
-import 'package:bett_box/common/system_explicit.dart';
+import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SystemExplicitView extends ConsumerStatefulWidget {
-  const SystemExplicitView({super.key});
+/// The system-explicit options as a section of the tools page
+/// (OtherSettingView), where they live alongside the app's other
+/// network-protection switches.
+class SystemExplicitSection extends ConsumerStatefulWidget {
+  const SystemExplicitSection({super.key});
 
   @override
-  ConsumerState<SystemExplicitView> createState() => _SystemExplicitViewState();
+  ConsumerState<SystemExplicitSection> createState() =>
+      _SystemExplicitSectionState();
 }
 
-class _SystemExplicitViewState extends ConsumerState<SystemExplicitView> {
+class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
   var _ready = false;
-  var _note = '';
+  var _applyError = '';
 
   @override
   void initState() {
     super.initState();
-    _note = PathGuard.instance.note.value;
-    PathGuard.instance.note.addListener(_onNote);
     SystemExplicitStore.instance.ensureLoaded().then((_) {
       if (!mounted) return;
       setState(() => _ready = true);
     });
   }
 
-  @override
-  void dispose() {
-    PathGuard.instance.note.removeListener(_onNote);
-    super.dispose();
-  }
-
-  void _onNote() {
+  Future<void> _setRuleOption(bool on, void Function(bool) update) async {
+    final mode = ref.read(patchClashConfigProvider).mode;
+    if (on && mode != Mode.rule) {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(appLocalizations.systemExplicitRuleModeTitle),
+          content: Text(appLocalizations.systemExplicitRuleModeDesc),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(appLocalizations.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(appLocalizations.systemExplicitSwitch),
+            ),
+          ],
+        ),
+      );
+      if (accepted != true || !mounted) return;
+      await globalState.appController.changeMode(Mode.rule);
+      if (!mounted) return;
+      if (ref.read(patchClashConfigProvider).mode != Mode.rule) {
+        setState(
+          () => _applyError = appLocalizations.systemExplicitRuleModeNotApplied,
+        );
+        return;
+      }
+    }
     if (!mounted) return;
-    setState(() => _note = PathGuard.instance.note.value);
+    setState(() => update(on));
+    await _commit();
   }
-
-  bool get _zh => Localizations.localeOf(context).languageCode == 'zh';
-
-  String _t(String zh, String en) => _zh ? zh : en;
 
   Future<void> _commit() async {
-    await SystemExplicitStore.instance.save();
-    if (mounted) setState(() {});
-    globalState.appController.updateClashConfigDebounce();
-    await PathGuard.instance.sync(
-      running: globalState.isStart,
-      change: (group, proxy) => globalState.appController.changeProxy(
-        groupName: group,
-        proxyName: proxy,
+    try {
+      await saveAndReloadSystemExplicit(
+        save: SystemExplicitStore.instance.save,
+        // Rule changes need a full profile setup, not updateConfig, which only
+        // updates general settings and leaves the existing rules untouched.
+        reload: () => globalState.appController.applyProfileChecked(),
+      );
+    } on Object catch (error) {
+      // Saved choices can differ from the running configuration after failure.
+      if (mounted) {
+        setState(
+          () => _applyError = appLocalizations.systemExplicitApplyUnconfirmed(
+            '$error',
+          ),
+        );
+      }
+      return;
+    }
+    if (mounted) setState(() => _applyError = '');
+  }
+
+  /// Descriptions stay collapsed until the row is tapped, so the page reads
+  /// as a compact list of switches; the explanation is one tap away.
+  final _expanded = <String>{};
+
+  void _toggleExpanded(String id) {
+    setState(() {
+      if (!_expanded.remove(id)) _expanded.add(id);
+    });
+  }
+
+  Widget _optionItem({
+    required String id,
+    required String title,
+    required String desc,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final expanded = _expanded.contains(id);
+    // Built with ListItem.switchItem like every other settings page, so the
+    // switch is the component library's own and follows the app theme.
+    // The chevron stays separately tappable: tapping the row toggles the
+    // switch (the switchItem convention), tapping the chevron expands the
+    // description. A plain GestureDetector is used on purpose: stock
+    // Material buttons need a Material ancestor this tree does not have.
+    return ListItem.switchItem(
+      padding: const EdgeInsets.only(left: 16, right: 8),
+      title: Text(title),
+      subtitle: expanded ? Text(desc) : null,
+      trailing: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _toggleExpanded(id),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            expanded ? Icons.expand_less : Icons.expand_more,
+            size: 20,
+            color: context.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      delegate: SwitchDelegate(value: value, onChanged: onChanged),
+    );
+  }
+
+  Widget _infoItem({
+    required String id,
+    required String title,
+    required String desc,
+  }) {
+    final expanded = _expanded.contains(id);
+    return ListItem(
+      padding: const EdgeInsets.only(left: 16, right: 8),
+      title: Text(title),
+      subtitle: expanded ? Text(desc) : null,
+      onTap: () => _toggleExpanded(id),
+      trailing: Icon(
+        expanded ? Icons.expand_less : Icons.expand_more,
+        size: 20,
+        color: context.colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -58,72 +153,84 @@ class _SystemExplicitViewState extends ConsumerState<SystemExplicitView> {
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox.shrink();
     }
     final value = SystemExplicitStore.instance.value;
-    return generateListView(
-      generateSection(
-        title: _t(
-          '写在脚本和配置之后，只在开启时生效，不改订阅原文。',
-          'Applied after scripts and the profile. Off leaves the profile unchanged.',
-        ),
-        items: [
-          ListItem.switchItem(
-            title: Text(_t('自适应通路', 'Adaptive path')),
-            subtitle: Text(
-              _t(
-                '发出数据却收不到回包时会立刻复查。只切换正在走流量的手动组。连续两次、并且换过探测地址仍测不通，才换节点，并放开旧节点上卡住的连接。自动测速组不再把直连当作失败后的退路。不改订阅。',
-                'If traffic stalls, check immediately and only switch the manual group carrying it. Two failures on different check addresses are required, then stuck connections are released. Automatic groups can no longer fall back to direct. The subscription is not edited.',
-              ),
-            ),
-            delegate: SwitchDelegate(
-              value: value.adapt,
-              onChanged: (on) {
-                value.adapt = on;
-                _commit();
-              },
-            ),
-          ),
-          ListItem(
-            title: Text(_t('最近一次切换', 'Last switch')),
-            subtitle: Text(
-              _note.isEmpty ? _t('还没有切换', 'None yet') : _note,
-            ),
-          ),
-          ListItem.switchItem(
-            title: Text(_t('防隐私', 'Privacy')),
-            subtitle: Text(
-              _t(
-                '通知不显示配置名，并阻断局域网发现。',
-                'Hides the profile name in notifications and blocks local discovery.',
-              ),
-            ),
-            delegate: SwitchDelegate(
-              value: value.privacy,
-              onChanged: (on) {
-                value.privacy = on;
-                _commit();
-              },
-            ),
-          ),
-          ListItem.switchItem(
-            title: Text(_t('中国直连', 'China direct')),
-            subtitle: Text(
-              _t(
-                '中国域名和地址走直连。这不是 QUIC 的「排除国内」。',
-                'Chinese domains and addresses go direct. This is not the QUIC domestic exception.',
-              ),
-            ),
-            delegate: SwitchDelegate(
-              value: value.chinaDirect,
-              onChanged: (on) {
-                value.chinaDirect = on;
-                _commit();
-              },
-            ),
-          ),
-        ],
-      ),
+    final mode = ref.watch(
+      patchClashConfigProvider.select((state) => state.mode),
     );
+    final incompatible = !systemExplicitModeCompatible(value, mode);
+    return generateSection(
+      title: appLocalizations.systemExplicitTitle,
+      items: [
+          if (incompatible)
+            ListItem(
+              title: Text(appLocalizations.systemExplicitInactive),
+              subtitle: Text(appLocalizations.systemExplicitInactiveDesc),
+            ),
+          if (_applyError.isNotEmpty)
+            ListItem(
+              title: Text(appLocalizations.systemExplicitApplyState),
+              subtitle: Text(_applyError),
+            ),
+          _optionItem(
+            id: 'privacy',
+            title: appLocalizations.systemExplicitPrivacy,
+            desc: appLocalizations.systemExplicitPrivacyDesc,
+            value: value.privacy,
+            onChanged: (on) =>
+                _setRuleOption(on, (valueOn) => value.privacy = valueOn),
+          ),
+          _optionItem(
+            id: 'chinaDirect',
+            title: appLocalizations.systemExplicitChinaDirect,
+            desc: appLocalizations.systemExplicitChinaDirectDesc,
+            value: value.chinaDirect,
+            onChanged: (on) =>
+                _setRuleOption(on, (valueOn) => value.chinaDirect = valueOn),
+          ),
+          _optionItem(
+            id: 'chinaDnsDirect',
+            title: appLocalizations.systemExplicitChinaDnsDirect,
+            desc: appLocalizations.systemExplicitChinaDnsDirectDesc,
+            value: value.chinaPublicDnsDirect,
+            onChanged: (on) => _setRuleOption(
+              on,
+              (valueOn) => value.chinaPublicDnsDirect = valueOn,
+            ),
+          ),
+          _optionItem(
+            id: 'lanDirect',
+            title: appLocalizations.systemExplicitLanDirect,
+            desc: appLocalizations.systemExplicitLanDirectDesc,
+            value: value.lanDirect,
+            onChanged: (on) =>
+                _setRuleOption(on, (valueOn) => value.lanDirect = valueOn),
+          ),
+          _optionItem(
+            id: 'blockWebRtc',
+            title: appLocalizations.systemExplicitBlockWebRtc,
+            desc: appLocalizations.systemExplicitBlockWebRtcDesc,
+            value: value.blockCommonWebRtc,
+            onChanged: (on) => _setRuleOption(
+              on,
+              (valueOn) => value.blockCommonWebRtc = valueOn,
+            ),
+          ),
+          _optionItem(
+            id: 'blockAds',
+            title: appLocalizations.systemExplicitBlockAds,
+            desc: appLocalizations.systemExplicitBlockAdsDesc,
+            value: value.blockAds,
+            onChanged: (on) =>
+                _setRuleOption(on, (valueOn) => value.blockAds = valueOn),
+          ),
+          _infoItem(
+            id: 'limits',
+            title: appLocalizations.systemExplicitLimits,
+            desc: appLocalizations.systemExplicitLimitsDesc,
+          ),
+      ],
+    ).first;
   }
 }

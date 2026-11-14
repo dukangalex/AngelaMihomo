@@ -3,9 +3,10 @@ import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/config/network.dart';
 import 'package:bett_box/views/config/user_auth.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,7 +22,7 @@ class LogLevelItem extends ConsumerWidget {
     return ListItem<LogLevel>.options(
       leading: const Icon(Icons.info_outline),
       title: Text(appLocalizations.logLevel),
-      subtitle: Text(logLevel.name),
+      subtitle: Text(logLevel.label),
       delegate: OptionsDelegate<LogLevel>(
         title: appLocalizations.logLevel,
         options: LogLevel.values,
@@ -33,7 +34,7 @@ class LogLevelItem extends ConsumerWidget {
               .read(patchClashConfigProvider.notifier)
               .updateState((state) => state.copyWith(logLevel: value));
         },
-        textBuilder: (logLevel) => logLevel.name,
+        textBuilder: (logLevel) => logLevel.label,
         value: logLevel,
       ),
     );
@@ -64,10 +65,12 @@ class _UaItemState extends ConsumerState<UaItem> {
     return ListItem(
       leading: const Icon(Icons.computer_outlined),
       title: const Text('UA'),
-      subtitle: Text(isCustom ? appLocalizations.custom : appLocalizations.defaultText),
+      subtitle: Text(
+        isCustom ? appLocalizations.custom : appLocalizations.defaultText,
+      ),
       onTap: () async {
         final notifier = ref.read(patchClashConfigProvider.notifier);
-        final result = await globalState.showCommonDialog<_UaOption>(
+        final result = await globalState.showAdaptiveSheet<_UaOption>(
           child: _UaDialog(isCustom: isCustom),
         );
 
@@ -91,7 +94,9 @@ class _UaItemState extends ConsumerState<UaItem> {
               ),
             );
             if (customUa != null && customUa.trim().isNotEmpty) {
-              notifier.updateState((state) => state.copyWith(globalUa: customUa.trim()));
+              notifier.updateState(
+                (state) => state.copyWith(globalUa: customUa.trim()),
+              );
             }
         }
       },
@@ -116,65 +121,29 @@ class _UaDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return CommonDialog(
       title: 'UA',
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.fromLTRB(10, 12, 10, 14),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Default option
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop(const _UaOption(_UaOptionType.default_));
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(
-                      !isCustom ? Icons.check_circle_rounded : Icons.circle_outlined,
-                      size: 21,
-                      color: !isCustom
-                          ? context.colorScheme.primary
-                          : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      appLocalizations.defaultText,
-                      style: context.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          OptionItem(
+            text: appLocalizations.defaultText,
+            selected: !isCustom,
+            onTap: () {
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pop(const _UaOption(_UaOptionType.default_));
+            },
           ),
-          // Custom option
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop(const _UaOption(_UaOptionType.custom));
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(
-                      isCustom ? Icons.check_circle_rounded : Icons.circle_outlined,
-                      size: 21,
-                      color: isCustom
-                          ? context.colorScheme.primary
-                          : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      appLocalizations.custom,
-                      style: context.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          OptionItem(
+            text: appLocalizations.custom,
+            selected: isCustom,
+            onTap: () {
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pop(const _UaOption(_UaOptionType.custom));
+            },
           ),
         ],
       ),
@@ -242,7 +211,7 @@ class TestUrlItem extends ConsumerWidget {
         child: Text(testUrl),
       ),
       onTap: () async {
-        await globalState.showCommonDialog(
+        await globalState.showAdaptiveSheet(
           child: _TestUrlDialog(currentUrl: testUrl),
         );
       },
@@ -257,155 +226,58 @@ class _TestUrlDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final overrideTestUrl = ref.watch(overrideTestUrlProvider);
     final isPresetUrl = presetTestUrls.contains(currentUrl);
 
     return CommonDialog(
       title: appLocalizations.testUrl,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(10, 12, 10, 14),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Override switch
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  appLocalizations.overrideTestUrl,
-                  style: context.textTheme.bodyMedium,
-                ),
-                Switch(
-                  value: overrideTestUrl,
-                  onChanged: (bool value) async {
-                    ref.read(overrideTestUrlProvider.notifier).value = value;
-                    globalState.appController.applyProfileDebounce(silence: true);
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          // URL list
-          ...presetTestUrls.map((url) {
-            final isSelected = currentUrl == url;
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () async {
-                  ref
-                      .read(appSettingProvider.notifier)
-                      .updateState((state) => state.copyWith(testUrl: url));
-                  if (ref.read(overrideTestUrlProvider)) {
-                    globalState.appController.applyProfileDebounce(silence: true);
-                  }
-                  if (context.mounted) {
-                    Navigator.of(context, rootNavigator: true).pop();
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isSelected
-                            ? Icons.check_circle_rounded
-                            : Icons.circle_outlined,
-                        size: 21,
-                        color: isSelected
-                            ? context.colorScheme.primary
-                            : context.colorScheme.onSurfaceVariant.withValues(
-                                alpha: 0.6,
-                              ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: isSelected
-                            ? SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Text(
-                                  url,
-                                  style: context.textTheme.bodyMedium,
-                                ),
-                              )
-                            : Text(
-                                url,
-                                style: context.textTheme.bodyMedium,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-          // Custom URL option
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
+          for (final url in presetTestUrls)
+            OptionItem(
+              text: url,
+              selected: currentUrl == url,
               onTap: () async {
-                final notifier = ref.read(appSettingProvider.notifier);
-                final overrideTestUrl = ref.read(overrideTestUrlProvider);
-                Navigator.of(context, rootNavigator: true).pop();
-                final customUrl = await globalState.showCommonDialog<String>(
-                  child: InputDialog(
-                    title: appLocalizations.customUrl,
-                    value: isPresetUrl ? '' : currentUrl,
-                    resetValue: defaultTestUrl,
-                    validator: (String? inputValue) {
-                      if (inputValue == null || inputValue.isEmpty) {
-                        return appLocalizations.emptyTip(appLocalizations.testUrl);
-                      }
-                      if (!inputValue.isHttpUrl) {
-                        return appLocalizations.urlTip(appLocalizations.testUrl);
-                      }
-                      return null;
-                    },
-                  ),
-                );
-
-                if (customUrl != null) {
-                  notifier.updateState((state) => state.copyWith(testUrl: customUrl));
-                  if (overrideTestUrl) {
-                    globalState.appController.applyProfileDebounce(silence: true);
-                  }
+                ref
+                    .read(appSettingProvider.notifier)
+                    .updateState((state) => state.copyWith(testUrl: url));
+                if (context.mounted) {
+                  Navigator.of(context, rootNavigator: true).pop();
                 }
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      !isPresetUrl
-                          ? Icons.check_circle_rounded
-                          : Icons.circle_outlined,
-                      size: 21,
-                      color: !isPresetUrl
-                          ? context.colorScheme.primary
-                          : context.colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.6,
-                            ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        appLocalizations.customUrl,
-                        style: context.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
+          OptionItem(
+            text: appLocalizations.customUrl,
+            selected: !isPresetUrl,
+            onTap: () async {
+              final notifier = ref.read(appSettingProvider.notifier);
+              Navigator.of(context, rootNavigator: true).pop();
+              final customUrl = await globalState.showCommonDialog<String>(
+                child: InputDialog(
+                  title: appLocalizations.customUrl,
+                  value: isPresetUrl ? '' : currentUrl,
+                  resetValue: defaultTestUrl,
+                  validator: (String? inputValue) {
+                    if (inputValue == null || inputValue.isEmpty) {
+                      return appLocalizations.emptyTip(
+                        appLocalizations.testUrl,
+                      );
+                    }
+                    if (!inputValue.isHttpUrl) {
+                      return appLocalizations.urlTip(appLocalizations.testUrl);
+                    }
+                    return null;
+                  },
+                ),
+              );
+
+              if (customUrl != null) {
+                notifier.updateState(
+                  (state) => state.copyWith(testUrl: customUrl),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -455,6 +327,7 @@ class Ipv6Item extends ConsumerWidget {
           ref
               .read(patchClashConfigProvider.notifier)
               .updateState((state) => state.copyWith(ipv6: value));
+          showVpnRestartTip(ref);
         },
       ),
     );
@@ -512,7 +385,6 @@ class AllowLanItem extends ConsumerWidget {
     );
   }
 }
-
 
 class UnifiedDelayItem extends ConsumerWidget {
   const UnifiedDelayItem({super.key});
@@ -608,7 +480,7 @@ class ExternalControllerItem extends ConsumerWidget {
     );
     final secret = hasExternalController
         ? ref.watch(patchClashConfigProvider.select((state) => state.secret)) ??
-            ''
+              ''
         : '';
 
     return Column(
@@ -830,11 +702,21 @@ class _PortDialogState extends ConsumerState<_PortDialog> {
     _tProxyPortController = TextEditingController(text: vm5.e.toString());
   }
 
+  @override
+  void dispose() {
+    _mixedPortController.dispose();
+    _portController.dispose();
+    _socksPortController.dispose();
+    _redirPortController.dispose();
+    _tProxyPortController.dispose();
+    super.dispose();
+  }
+
   Future<void> _handleReset() async {
     final res = await globalState.showMessage(
       message: TextSpan(text: appLocalizations.resetTip),
     );
-    if (res != true) {
+    if (res != true || !mounted) {
       return;
     }
     ref

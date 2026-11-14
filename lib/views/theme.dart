@@ -1,31 +1,11 @@
-// ignore_for_file: deprecated_member_use
-
-import 'dart:math';
-import 'dart:ui' as ui;
-
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/selector.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/providers/state.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-
-class ThemeModeItem {
-  final ThemeMode themeMode;
-  final IconData iconData;
-  final String label;
-
-  const ThemeModeItem({
-    required this.themeMode,
-    required this.iconData,
-    required this.label,
-  });
-}
+import 'package:material_ui/material_ui.dart';
 
 class FontFamilyItem {
   final FontFamily fontFamily;
@@ -39,24 +19,24 @@ class ThemeView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final brightness = ref.watch(currentBrightnessProvider);
-    final locale = ref.watch(
-      appSettingProvider.select((state) => state.locale),
+    final shouldShowHarmonyFont = ref.watch(
+      appSettingProvider.select(
+        (state) => switch (state.locale) {
+          final locale? => locale.startsWith('zh') || locale.startsWith('en'),
+          null => false,
+        },
+      ),
     );
-    final shouldShowHarmonyFont =
-        locale?.startsWith('zh') == true || locale?.startsWith('en') == true;
 
-    final toggleItems = [
-      if (shouldShowHarmonyFont) _HarmonyFontItem(),
+    final toggleItems = <Widget>[
+      if (shouldShowHarmonyFont) const _HarmonyFontItem(),
       if (system.isAndroid) const _DarkIconItem(),
-      if (system.isWindows) _TrayIconInvertItem(),
-      _TextScaleFactorItem(),
+      if (system.isWindows) const _TrayIconInvertItem(),
+      const _TextScaleFactorItem(),
     ];
 
-    final items = [
-      _ThemeModeItem(),
-      _PrimaryColorItem(),
-      if (brightness == Brightness.dark) _PrueBlackItem(),
+    final items = <Widget>[
+      const _ZodiacThemeItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
     return generateListView(items);
@@ -92,292 +72,194 @@ class ItemCard extends StatelessWidget {
   }
 }
 
-class _ThemeModeItem extends ConsumerWidget {
-  const _ThemeModeItem();
+class _ZodiacThemeItem extends ConsumerWidget {
+  const _ZodiacThemeItem();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(
-      themeSettingProvider.select((state) => state.themeMode),
+    final selectedId = ref.watch(
+      themeSettingProvider.select((state) => state.zodiacTheme),
     );
-    List<ThemeModeItem> themeModeItems = [
-      ThemeModeItem(
-        iconData: Icons.auto_mode,
-        label: appLocalizations.auto,
-        themeMode: ThemeMode.system,
-      ),
-      ThemeModeItem(
-        iconData: Icons.light_mode,
-        label: appLocalizations.light,
-        themeMode: ThemeMode.light,
-      ),
-      ThemeModeItem(
-        iconData: Icons.dark_mode,
-        label: appLocalizations.dark,
-        themeMode: ThemeMode.dark,
-      ),
-    ];
+    final selected = resolveZodiacTheme(selectedId);
     return ItemCard(
-      info: Info(
-        label: appLocalizations.themeMode,
-        iconData: Icons.brightness_high,
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        height: 56,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: themeModeItems.length,
-          itemBuilder: (_, index) {
-            final themeModeItem = themeModeItems[index];
-            return CommonCard(
-              isSelected: themeModeItem.themeMode == themeMode,
-              onPressed: () {
+      info: Info(label: appLocalizations.theme, iconData: Icons.auto_awesome),
+      child: Column(
+        children: [
+          for (final theme in zodiacThemes)
+            _ZodiacThemeRow(
+              theme: theme,
+              isSelected: theme.id == selected.id,
+              onTap: () {
                 ref
                     .read(themeSettingProvider.notifier)
                     .updateState(
-                      (state) =>
-                          state.copyWith(themeMode: themeModeItem.themeMode),
+                      (state) => state.copyWith(zodiacTheme: theme.id),
                     );
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Flexible(child: Icon(themeModeItem.iconData)),
-                    const SizedBox(width: 8),
-                    Flexible(child: Text(themeModeItem.label)),
-                  ],
-                ),
-              ),
-            );
-          },
-          separatorBuilder: (_, _) {
-            return const SizedBox(width: 16);
-          },
-        ),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _PrimaryColorItem extends ConsumerStatefulWidget {
-  const _PrimaryColorItem();
+class _ZodiacThemeRow extends StatelessWidget {
+  final ZodiacThemeDef theme;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  @override
-  ConsumerState<_PrimaryColorItem> createState() => _PrimaryColorItemState();
-}
+  const _ZodiacThemeRow({
+    required this.theme,
+    required this.isSelected,
+    required this.onTap,
+  });
 
-class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
-  int _calcColumns(double maxWidth) {
-    return max((maxWidth / 96).ceil(), 3);
-  }
-
-  Future<void> _handleReset() async {
-    final res = await globalState.showMessage(
-      message: TextSpan(text: appLocalizations.resetTip),
-    );
-    if (res != true) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(
-        primaryColors: defaultPrimaryColors,
-        primaryColor: defaultPrimaryColor,
-        schemeVariant: DynamicSchemeVariant.content,
-      );
-    });
-  }
-
-  Future<void> _handleDel(int color) async {
-    final res = await globalState.showMessage(
-      message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.colorSchemes),
+  Widget _dot(Color color) {
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
       ),
     );
-    if (res != true) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      final newPrimaryColors = List<int>.from(state.primaryColors)
-        ..remove(color);
-      int? newPrimaryColor = state.primaryColor;
-      if (state.primaryColor == color) {
-        if (newPrimaryColors.contains(defaultPrimaryColor)) {
-          newPrimaryColor = defaultPrimaryColor;
-        } else {
-          newPrimaryColor = null;
-        }
-      }
-      return state.copyWith(
-        primaryColors: newPrimaryColors,
-        primaryColor: newPrimaryColor,
-      );
-    });
-  }
-
-  Future<void> _handleAdd() async {
-    final res = await globalState.showCommonDialog<int>(
-      child: _PaletteDialog(),
-    );
-    if (res == null) {
-      return;
-    }
-    final isExists = ref.read(
-      themeSettingProvider.select((state) => state.primaryColors.contains(res)),
-    );
-    if (isExists && mounted) {
-      context.showNotifier(
-        appLocalizations.existsTip(appLocalizations.colorSchemes),
-      );
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(
-        primaryColors: List.from(state.primaryColors)..add(res),
-      );
-    });
-  }
-
-  Future<void> _handleChangeSchemeVariant() async {
-    final schemeVariant = ref.read(
-      themeSettingProvider.select((state) => state.schemeVariant),
-    );
-    final value = await globalState.showCommonDialog<DynamicSchemeVariant>(
-      child: OptionsDialog<DynamicSchemeVariant>(
-        title: appLocalizations.colorSchemes,
-        options: DynamicSchemeVariant.values,
-        textBuilder: (item) => Intl.message('${item.name}Scheme'),
-        value: schemeVariant,
-      ),
-    );
-    if (value == null) {
-      return;
-    }
-    ref.read(themeSettingProvider.notifier).updateState((state) {
-      return state.copyWith(schemeVariant: value);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm4 = ref.watch(
-      themeSettingProvider.select(
-        (state) => VM4(
-          a: state.primaryColor,
-          b: state.primaryColors,
-          c: state.schemeVariant,
-          d:
-              state.primaryColor == defaultPrimaryColor &&
-              intListEquality.equals(state.primaryColors, defaultPrimaryColors),
-        ),
-      ),
-    );
-    final primaryColor = vm4.a;
-    final primaryColors = [null, ...vm4.b];
-    final schemeVariant = vm4.c;
-    final isEquals = vm4.d;
-
-    return ItemCard(
-      info: Info(label: appLocalizations.themeColor, iconData: Icons.palette),
-      actions: genActions([
-        FilledButton(
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-          onPressed: _handleChangeSchemeVariant,
-          child: Text(Intl.message('${schemeVariant.name}Scheme')),
-        ),
-        if (!isEquals)
-          IconButton.filledTonal(
-            iconSize: 20,
-            padding: const EdgeInsets.all(4),
-            visualDensity: VisualDensity.compact,
-            onPressed: _handleReset,
-            icon: const Icon(Icons.replay),
-          ),
-      ], space: 8),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: LayoutBuilder(
-          builder: (_, constraints) {
-            final columns = _calcColumns(constraints.maxWidth);
-            final itemWidth =
-                (constraints.maxWidth - (columns - 1) * 16) / columns;
-            return Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                for (final color in primaryColors)
-                  SizedBox(
-                    width: itemWidth,
-                    height: itemWidth,
-                    child: EffectGestureDetector(
-                      onLongPress: color != null
-                          ? () {
-                              _handleDel(color);
-                            }
-                          : null,
-                      child: ColorSchemeBox(
-                        isSelected: color == primaryColor,
-                        primaryColor: color != null ? Color(color) : null,
-                        onPressed: () {
-                          ref
-                              .read(themeSettingProvider.notifier)
-                              .updateState(
-                                (state) =>
-                                    state.copyWith(primaryColor: color),
-                              );
-                        },
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final variant = context.zodiac?.variant;
+    final selectedPaint = variant?.selected;
+    // Selected row form (design doc 5.1 + the finalized mockups): a
+    // translucent surfaceVariant wash, a gradient marker bar and the
+    // check — never a solid light block, which made the row unreadable
+    // in the rejected theme-dark mockup.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    color:
+                        variant?.surfaceVariant ??
+                        colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(16),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  if (isSelected &&
+                      selectedPaint != null &&
+                      !selectedPaint.isNone) ...[
+                    Container(
+                      width: 4,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: selectedPaint.isGradient
+                            ? LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: selectedPaint.stops!,
+                              )
+                            : null,
+                        color: selectedPaint.isGradient
+                            ? null
+                            : selectedPaint.solidColor,
                       ),
                     ),
-                  ),
-                Container(
-                  width: itemWidth,
-                  height: itemWidth,
-                  padding: const EdgeInsets.all(4),
-                  child: IconButton.filledTonal(
-                    onPressed: _handleAdd,
-                    iconSize: 32,
-                    icon: Icon(
-                      color: context.colorScheme.primary,
-                      Icons.add,
+                    const SizedBox(width: 10),
+                  ],
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      theme.sign,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                theme.nameZh,
+                                style: textTheme.titleSmall?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurface,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (theme.id == zodiacDefaultThemeId) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      variant?.surfaceVariant ??
+                                      colorScheme.secondaryContainer,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  appLocalizations.defaultText,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          theme.nameEn,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _dot(theme.light.primary),
+                  const SizedBox(width: 4),
+                  _dot(theme.light.secondary),
+                  const SizedBox(width: 4),
+                  _dot(theme.dark.primary),
+                  const SizedBox(width: 4),
+                  _dot(theme.dark.secondary),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _PrueBlackItem extends ConsumerWidget {
-  const _PrueBlackItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final prueBlack = ref.watch(
-      themeSettingProvider.select((state) => state.pureBlack),
-    );
-    return ListItem.switchItem(
-      leading: Icon(Icons.contrast),
-      horizontalTitleGap: 12,
-      title: Text(
-        appLocalizations.pureBlackMode,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
-      ),
-      delegate: SwitchDelegate(
-        value: prueBlack,
-        onChanged: (value) {
-          ref
-              .read(themeSettingProvider.notifier)
-              .updateState((state) => state.copyWith(pureBlack: value));
-        },
       ),
     );
   }
@@ -391,19 +273,19 @@ class _HarmonyFontItem extends ConsumerWidget {
     final useHarmonyFont = ref.watch(
       themeSettingProvider.select((state) => state.useHarmonyFont),
     );
+    final textTheme = Theme.of(context).textTheme;
+    final onSurfaceVariant = context.colorScheme.onSurfaceVariant;
     return ListItem.switchItem(
-      leading: Icon(Icons.font_download_outlined),
+      leading: const Icon(Icons.font_download_outlined),
       horizontalTitleGap: 12,
       title: Text(
         appLocalizations.harmonyFont,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
+        style: textTheme.titleSmall?.copyWith(color: onSurfaceVariant),
       ),
       subtitle: Text(
         appLocalizations.harmonyFontDesc,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant.withOpacity(0.7),
+        style: textTheme.bodySmall?.copyWith(
+          color: onSurfaceVariant.withValues(alpha: 0.7),
         ),
       ),
       delegate: SwitchDelegate(
@@ -418,7 +300,6 @@ class _HarmonyFontItem extends ConsumerWidget {
   }
 }
 
-
 class _DarkIconItem extends ConsumerWidget {
   const _DarkIconItem();
 
@@ -427,19 +308,19 @@ class _DarkIconItem extends ConsumerWidget {
     final useDarkIcon = ref.watch(
       themeSettingProvider.select((state) => state.useDarkIcon),
     );
+    final textTheme = Theme.of(context).textTheme;
+    final onSurfaceVariant = context.colorScheme.onSurfaceVariant;
     return ListItem.switchItem(
       leading: const Icon(Icons.dark_mode_outlined),
       horizontalTitleGap: 12,
       title: Text(
         appLocalizations.darkIcon,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
+        style: textTheme.titleSmall?.copyWith(color: onSurfaceVariant),
       ),
       subtitle: Text(
         appLocalizations.darkIconDesc,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant.withOpacity(0.7),
+        style: textTheme.bodySmall?.copyWith(
+          color: onSurfaceVariant.withValues(alpha: 0.7),
         ),
       ),
       delegate: SwitchDelegate(
@@ -463,19 +344,19 @@ class _TrayIconInvertItem extends ConsumerWidget {
     final invertTrayIcon = ref.watch(
       themeSettingProvider.select((state) => state.invertTrayIcon),
     );
+    final textTheme = Theme.of(context).textTheme;
+    final onSurfaceVariant = context.colorScheme.onSurfaceVariant;
     return ListItem.switchItem(
-      leading: Icon(Icons.invert_colors),
+      leading: const Icon(Icons.invert_colors),
       horizontalTitleGap: 12,
       title: Text(
         appLocalizations.trayIconInvert,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
+        style: textTheme.titleSmall?.copyWith(color: onSurfaceVariant),
       ),
       subtitle: Text(
         appLocalizations.trayIconInvertDesc,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant.withOpacity(0.7),
+        style: textTheme.bodySmall?.copyWith(
+          color: onSurfaceVariant.withValues(alpha: 0.7),
         ),
       ),
       delegate: SwitchDelegate(
@@ -496,17 +377,19 @@ class _TextScaleFactorItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textScale = ref.watch(
-      themeSettingProvider.select((state) => state.textScale),
+    final (enable, scale) = ref.watch(
+      themeSettingProvider.select(
+        (state) => (state.textScale.enable, state.textScale.scale),
+      ),
     );
-    final String process = '${(textScale.scale * 100).round()}%';
+    final String process = '${(scale * 100).round()}%';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 8),
           child: ListItem.switchItem(
-            leading: Icon(Icons.text_fields),
+            leading: const Icon(Icons.text_fields),
             horizontalTitleGap: 12,
             title: Text(
               appLocalizations.textScale,
@@ -515,7 +398,7 @@ class _TextScaleFactorItem extends ConsumerWidget {
               ),
             ),
             delegate: SwitchDelegate(
-              value: textScale.enable,
+              value: enable,
               onChanged: (value) {
                 ref
                     .read(themeSettingProvider.notifier)
@@ -527,7 +410,7 @@ class _TextScaleFactorItem extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,
@@ -535,16 +418,16 @@ class _TextScaleFactorItem extends ConsumerWidget {
             children: [
               Expanded(
                 child: DisabledMask(
-                  status: !textScale.enable,
+                  status: !enable,
                   child: ActivateBox(
-                    active: textScale.enable,
+                    active: enable,
                     child: SliderTheme(
                       data: _SliderDefaultsM3(context),
                       child: Slider(
                         padding: EdgeInsets.zero,
                         min: minTextScale,
                         max: maxTextScale,
-                        value: textScale.scale,
+                        value: scale,
                         onChanged: (value) {
                           ref
                               .read(themeSettingProvider.notifier)
@@ -559,7 +442,7 @@ class _TextScaleFactorItem extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 4),
+                padding: const EdgeInsets.only(right: 4),
                 child: Text(process, style: context.textTheme.titleMedium),
               ),
             ],
@@ -570,135 +453,43 @@ class _TextScaleFactorItem extends ConsumerWidget {
   }
 }
 
-class _PaletteDialog extends StatefulWidget {
-  const _PaletteDialog();
-
-  @override
-  State<_PaletteDialog> createState() => _PaletteDialogState();
-}
-
-class _PaletteDialogState extends State<_PaletteDialog> {
-  final _controller = ValueNotifier<ui.Color>(const Color(defaultPrimaryColor));
-
-  ui.Color? _parseColor(String input) {
-    final cleanInput = input.trim().replaceAll(' ', '').toLowerCase();
-
-    // Hex: #RRGGBB or RRGGBB
-    if (RegExp(r'^#?[0-9a-f]{6}$').hasMatch(cleanInput)) {
-      final hexString = cleanInput.startsWith('#')
-          ? cleanInput.substring(1)
-          : cleanInput;
-      return ui.Color(int.parse('FF$hexString', radix: 16));
-    }
-
-    // Hex with alpha: #AARRGGBB or AARRGGBB
-    if (RegExp(r'^#?[0-9a-f]{8}$').hasMatch(cleanInput)) {
-      final hexString = cleanInput.startsWith('#')
-          ? cleanInput.substring(1)
-          : cleanInput;
-      return ui.Color(int.parse(hexString, radix: 16));
-    }
-
-    // RGB/RGBA: rgb(255,255,255) or rgba(255,255,255,1.0)
-    final rgbMatch = RegExp(
-      r'^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$',
-    ).firstMatch(cleanInput);
-    if (rgbMatch != null) {
-      final r = int.parse(rgbMatch.group(1)!);
-      final g = int.parse(rgbMatch.group(2)!);
-      final b = int.parse(rgbMatch.group(3)!);
-      final aStr = rgbMatch.group(4);
-      final a = aStr != null ? double.parse(aStr) : 1.0;
-
-      final alphaVal = (a * 255).round().clamp(0, 255);
-      final rVal = r.clamp(0, 255);
-      final gVal = g.clamp(0, 255);
-      final bVal = b.clamp(0, 255);
-      return ui.Color.fromARGB(alphaVal, rVal, gVal, bVal);
-    }
-
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonDialog(
-      title: appLocalizations.palette,
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(appLocalizations.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(_controller.value.toARGB32());
-          },
-          child: Text(appLocalizations.confirm),
-        ),
-      ],
-      child: Column(
-        children: [
-          SizedBox(height: 8),
-          SizedBox(
-            width: 250,
-            height: 250,
-            child: Palette(controller: _controller),
-          ),
-          SizedBox(height: 24),
-          ValueListenableBuilder(
-            valueListenable: _controller,
-            builder: (_, color, _) {
-              return FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: color,
-                  foregroundColor: color.computeLuminance() > 0.5
-                      ? Colors.black
-                      : Colors.white,
-                ),
-                onPressed: () async {
-                  final customColorStr = await globalState
-                      .showCommonDialog<String>(
-                        child: InputDialog(
-                          title: appLocalizations.color,
-                          value: _controller.value.hex,
-                          hintText: '#000000 / rgb(0,0,0)',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return appLocalizations.emptyTip(
-                                appLocalizations.color,
-                              );
-                            }
-                            if (_parseColor(value) == null) {
-                              return appLocalizations.formatError;
-                            }
-                            return null;
-                          },
-                        ),
-                      );
-                  if (customColorStr != null) {
-                    final newColor = _parseColor(customColorStr);
-                    if (newColor != null) {
-                      _controller.value = newColor;
-                    }
-                  }
-                },
-                child: Text(color.hex),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _SliderDefaultsM3 extends SliderThemeData {
   _SliderDefaultsM3(this.context) : super(trackHeight: 16.0);
 
   final BuildContext context;
   late final ColorScheme _colors = Theme.of(context).colorScheme;
+
+  late final Color _overlayColor = WidgetStateColor.resolveWith((
+    Set<WidgetState> states,
+  ) {
+    if (states.contains(WidgetState.dragged)) {
+      return _colors.primary.withValues(alpha: 0.1);
+    }
+    if (states.contains(WidgetState.hovered)) {
+      return _colors.primary.withValues(alpha: 0.08);
+    }
+    if (states.contains(WidgetState.focused)) {
+      return _colors.primary.withValues(alpha: 0.1);
+    }
+    return Colors.transparent;
+  });
+
+  static final WidgetStateProperty<Size?> _thumbSize =
+      WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return const Size(4.0, 44.0);
+        }
+        if (states.contains(WidgetState.hovered)) {
+          return const Size(4.0, 44.0);
+        }
+        if (states.contains(WidgetState.focused)) {
+          return const Size(2.0, 44.0);
+        }
+        if (states.contains(WidgetState.pressed)) {
+          return const Size(2.0, 44.0);
+        }
+        return const Size(4.0, 44.0);
+      });
 
   @override
   Color? get activeTrackColor => _colors.primary;
@@ -707,24 +498,27 @@ class _SliderDefaultsM3 extends SliderThemeData {
   Color? get inactiveTrackColor => _colors.secondaryContainer;
 
   @override
-  Color? get secondaryActiveTrackColor => _colors.primary.withOpacity(0.54);
+  Color? get secondaryActiveTrackColor =>
+      _colors.primary.withValues(alpha: 0.54);
 
   @override
-  Color? get disabledActiveTrackColor => _colors.onSurface.withOpacity(0.38);
+  Color? get disabledActiveTrackColor =>
+      _colors.onSurface.withValues(alpha: 0.38);
 
   @override
-  Color? get disabledInactiveTrackColor => _colors.onSurface.withOpacity(0.12);
+  Color? get disabledInactiveTrackColor =>
+      _colors.onSurface.withValues(alpha: 0.12);
 
   @override
   Color? get disabledSecondaryActiveTrackColor =>
-      _colors.onSurface.withOpacity(0.38);
+      _colors.onSurface.withValues(alpha: 0.38);
 
   @override
-  Color? get activeTickMarkColor => _colors.onPrimary.withOpacity(1.0);
+  Color? get activeTickMarkColor => _colors.onPrimary.withValues(alpha: 1.0);
 
   @override
   Color? get inactiveTickMarkColor =>
-      _colors.onSecondaryContainer.withOpacity(1.0);
+      _colors.onSecondaryContainer.withValues(alpha: 1.0);
 
   @override
   Color? get disabledActiveTickMarkColor => _colors.onInverseSurface;
@@ -736,28 +530,15 @@ class _SliderDefaultsM3 extends SliderThemeData {
   Color? get thumbColor => _colors.primary;
 
   @override
-  Color? get disabledThumbColor => _colors.onSurface.withOpacity(0.38);
+  Color? get disabledThumbColor => _colors.onSurface.withValues(alpha: 0.38);
 
   @override
-  Color? get overlayColor =>
-      WidgetStateColor.resolveWith((Set<WidgetState> states) {
-        if (states.contains(WidgetState.dragged)) {
-          return _colors.primary.withOpacity(0.1);
-        }
-        if (states.contains(WidgetState.hovered)) {
-          return _colors.primary.withOpacity(0.08);
-        }
-        if (states.contains(WidgetState.focused)) {
-          return _colors.primary.withOpacity(0.1);
-        }
-
-        return Colors.transparent;
-      });
+  Color? get overlayColor => _overlayColor;
 
   @override
   TextStyle? get valueIndicatorTextStyle => Theme.of(
     context,
-  ).textTheme.labelLarge!.copyWith(color: _colors.onInverseSurface);
+  ).textTheme.labelLarge?.copyWith(color: _colors.onInverseSurface);
 
   @override
   Color? get valueIndicatorColor => _colors.inverseSurface;
@@ -780,23 +561,7 @@ class _SliderDefaultsM3 extends SliderThemeData {
       const RoundSliderTickMarkShape(tickMarkRadius: 4.0 / 2);
 
   @override
-  WidgetStateProperty<Size?>? get thumbSize {
-    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-      if (states.contains(WidgetState.disabled)) {
-        return const Size(4.0, 44.0);
-      }
-      if (states.contains(WidgetState.hovered)) {
-        return const Size(4.0, 44.0);
-      }
-      if (states.contains(WidgetState.focused)) {
-        return const Size(2.0, 44.0);
-      }
-      if (states.contains(WidgetState.pressed)) {
-        return const Size(2.0, 44.0);
-      }
-      return const Size(4.0, 44.0);
-    });
-  }
+  WidgetStateProperty<Size?>? get thumbSize => _thumbSize;
 
   @override
   double? get trackGap => 6.0;
