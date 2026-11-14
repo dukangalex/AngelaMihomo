@@ -11,7 +11,32 @@ import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
 import app.angelabettbox.services.AngelaMihomoTileService
 import app.angelabettbox.widget.HomeWidgets
-pe(SupervisorJob() + Dispatchers.Main.immediate)
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.plugins.GeneratedPluginRegistrant
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
+
+enum class RunState {
+    START,
+    PENDING,
+    STOP
+}
+
+object GlobalState {
+    val runLock = ReentrantLock()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     const val NOTIFICATION_CHANNEL = "AngelaMihomo"
@@ -78,7 +103,7 @@ pe(SupervisorJob() + Dispatchers.Main.immediate)
         currentRunState = newState
         _runState.value = newState
         requestTileUpdate()
-        mainHandler.post { HomeWidgets.refreshAll(BettboxApplication.getAppContext()) }
+        mainHandler.post { HomeWidgets.refreshAll(AngelaMihomoApplication.getAppContext()) }
     }
 
     private val tileRetryRunnable = Runnable {

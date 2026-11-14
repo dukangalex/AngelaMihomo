@@ -24,13 +24,14 @@ import app.angelabettbox.core.Core
 import app.angelabettbox.extensions.awaitResult
 import app.angelabettbox.extensions.asSocketAddressText
 import app.angelabettbox.extensions.resolveDns
+import app.angelabettbox.extensions.trafficSpeedInfo
 import app.angelabettbox.models.StartForegroundParams
 import app.angelabettbox.models.VpnOptions
 import app.angelabettbox.modules.SuspendModule
 import app.angelabettbox.services.BaseServiceInterface
 import app.angelabettbox.services.AngelaMihomoService
 import app.angelabettbox.services.AngelaMihomoVpnService
-import app.angelabettbox.extensions.trafficSpeedInfoimport com.google.gson.Gson
+import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -704,7 +705,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun isInteractive(): Boolean =
-        BettboxApplication.getAppContext().getSystemService<PowerManager>()?.isInteractive != false
+        AngelaMihomoApplication.getAppContext().getSystemService<PowerManager>()?.isInteractive != false
 
     private fun ensureSpeedTicker() {
         synchronized(speedTickerLock) {
@@ -741,7 +742,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     is AngelaMihomoVpnService -> service.updateNotificationSpeed(profileName, speedInfo)
                     is AngelaMihomoService -> service.updateNotificationSpeed(profileName, speedInfo)
                     else -> Unit
-                }            }.onFailure {
+                }
+            }.onFailure {
                 android.util.Log.e("VpnPlugin", "updateNotificationSpeed error: ${it.message}")
             }
         }
@@ -755,7 +757,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     is AngelaMihomoVpnService -> service.restoreNotification()
                     is AngelaMihomoService -> service.restoreNotification()
                     else -> Unit
-                }            }.onFailure {
+                }
+            }.onFailure {
                 android.util.Log.e("VpnPlugin", "restoreNotification error: ${it.message}")
             }
         }
@@ -814,10 +817,12 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                                     if (granted) handleStartService() else completeStart(startRequest, false)
                                 }
                             }
-                        }                        return@launch
+                        }
+                        return@launch
                     }
                 }
 
+                var wasSmartStopped = false
                 lifecycleMutex.withSuspendLock {
                     if (startRequest != requestSerial.get() || GlobalState.isCurrentlyStopping()) return@withSuspendLock
                     val currentOptions = options ?: return@withSuspendLock
@@ -827,16 +832,22 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                             completeStart(startRequest, false) // not this request's confirmed start
                             false
                         } else {
+                            wasSmartStopped = GlobalState.isSmartStopped
+                            GlobalState.isSmartStopped = false
+                            GlobalState.smartStopOverride = wasSmartStopped
                             GlobalState.updateRunState(RunState.PENDING)
                             lastStartForegroundParams = null
                             true
-                        }                    }
+                        }
+                    }
                     if (startAllowed && startRequest == requestSerial.get()) {
                         val epoch = retireLifecycle()
                         val started = performStartCore(currentOptions, retry = true, notifyOnFailure = true, epoch = epoch)
+                        if (started && wasSmartStopped) ServicePlugin.notifyNetworkChanged()
                         completeStart(startRequest, started)
                     }
-                }            } catch (e: Exception) {
+                }
+            } catch (e: Exception) {
                 android.util.Log.e("VpnPlugin", "Fatal error in start flow: ${e.message}")
                 if (startRequest == requestSerial.get()) {
                     completeStart(startRequest, false)
@@ -925,7 +936,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         // called onDestroy; a timeout/failure deliberately stays fail-closed.
         if (!currentOptions.enable && !vpnTeardownComplete) return false
         val service = bettBoxService ?: return false
-        if (currentOptions.enable) vpnTeardownComplete = false        var fd: Int? = 0
+        if (currentOptions.enable) vpnTeardownComplete = false
+        resumeCore()
+        var fd: Int? = 0
         try {
             fd = service.start(currentOptions)
         } catch (e: Exception) {
@@ -965,7 +978,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             return false
         }
 
-        val coreStarted = app.angelabettbox.core.Core.startTun(            fd = fd ?: 0,
+        tunStartedAt = SystemClock.elapsedRealtime()
+        val coreStarted = app.angelabettbox.core.Core.startTun(
+            fd = fd ?: 0,
             epoch = epoch,
             protect = { socket -> (service as? AngelaMihomoVpnService)?.protect(socket) == true },
             resolverProcess = this@VpnPlugin::resolverProcess,
@@ -982,7 +997,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             if (!current(epoch) || GlobalState.isCurrentlyStopping()) false
             else {
                 GlobalState.runLock.withLock { GlobalState.updateRunState(RunState.START) }
-                true            }
+                true
+            }
         }
         if (!published) return false
         startForeground()
@@ -1068,7 +1084,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             val pendingBind = hadBinding && serviceRef == null
             if (pendingBind) {
                 vpnTeardownComplete = false
-                retiredBinding = RetiredBinding(connectionTicket, epoch, resumeAfterStop)            }
+                retiredBinding = RetiredBinding(connectionTicket, epoch, resumeAfterStop)
+            }
             GlobalState.runLock.withLock {
                 GlobalState.updateIsStopping(true)
                 GlobalState.updateRunState(RunState.STOP)
@@ -1110,12 +1127,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         stopConfirmed { success -> if (success) GlobalState.isSmartStopped = true }
     }
 
-    fun resumeCore() {
-        Core.suspended(false)
-    }
-
     fun handleSmartResume(next: VpnOptions): Boolean {
-        startConfirmed(next) {}        return true
+        startConfirmed(next) {}
+        return true
     }
 
     fun resumeCore() {

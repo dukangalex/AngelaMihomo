@@ -16,11 +16,12 @@ import android.text.style.RelativeSizeSpan
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
 import app.angelabettbox.R
-import app.angelabettbox.models.VpnOptions
 import app.angelabettbox.core.Core
+import app.angelabettbox.models.VpnOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 class AngelaMihomoService : Service(), BaseServiceInterface {
     override val destructionComplete = kotlinx.coroutines.CompletableDeferred<Unit>()
 
@@ -41,6 +42,7 @@ class AngelaMihomoService : Service(), BaseServiceInterface {
 
     @Volatile
     private var pendingSpeedInfo: String? = null
+
     override fun onCreate() {
         super.onCreate()
         screenReceiver = object : BroadcastReceiver() {
@@ -134,7 +136,8 @@ class AngelaMihomoService : Service(), BaseServiceInterface {
             return
         }
 
-        val builder = createNotificationBuilder(isSuspended, isHighPriority)        val notification = builder
+        val builder = createNotificationBuilder(isSuspended, isHighPriority)
+        val notification = builder
             .setContentTitle(title)
             .setContentText(content)
             .setStyle(null)
@@ -186,12 +189,12 @@ class AngelaMihomoService : Service(), BaseServiceInterface {
             hasStartedForeground = true
             runCatching {
                 this.startForeground(notification, useSpecialType = !GlobalState.isSmartStopped)
-            }.onFailure { android.util.Log.e("BettboxService", "updateNotificationSpeed startForeground error: ${it.message}") }
+            }.onFailure { android.util.Log.e("AngelaMihomoService", "updateNotificationSpeed startForeground error: ${it.message}") }
         } else {
             runCatching {
                 getSystemService(android.app.NotificationManager::class.java)
                     ?.notify(GlobalState.NOTIFICATION_ID, notification)
-            }.onFailure { android.util.Log.e("BettboxService", "updateNotificationSpeed notify error: ${it.message}") }
+            }.onFailure { android.util.Log.e("AngelaMihomoService", "updateNotificationSpeed notify error: ${it.message}") }
         }
     }
 

@@ -15,6 +15,7 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.core.Core
 import app.angelabettbox.extensions.getIpv4RouteAddress
 import app.angelabettbox.extensions.getIpv6RouteAddress
 import app.angelabettbox.extensions.toCIDR
@@ -23,7 +24,7 @@ import app.angelabettbox.models.VpnOptions
 import app.angelabettbox.plugins.VpnPlugin
 import app.angelabettbox.R
 import kotlinx.coroutines.CompletableDeferred
-import app.angelabettbox.core.Coreimport kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,7 +32,8 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     companion object {
         private const val TAG = "AngelaMihomoVpnService"
         private val proxyExclusionPattern =
-            Regex("[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*(\\.[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*)*")    }
+            Regex("[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*(\\.[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*)*")
+    }
 
     override val destructionComplete = CompletableDeferred<Unit>()
 

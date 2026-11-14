@@ -6,7 +6,7 @@
  * 谱系来源：HiClash 衍生自 @AIsouler 的 MyClash（https://github.com/AIsouler/MyClash），特此致谢。
  */
 
-// @version 2026111401
+// @version 2026111402
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---

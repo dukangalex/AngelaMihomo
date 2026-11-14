@@ -22,7 +22,8 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         private val gson = Gson()
         private const val TAG = "ServicePlugin"
 
-        private fun notify(method: String, arguments: Any? = null, stillCurrent: () -> Boolean = { true }) {            mainHandler.post {
+        private fun notify(method: String, arguments: Any? = null, stillCurrent: () -> Boolean = { true }) {
+            mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
                     runCatching { ch.invokeMethod(method, arguments) }
@@ -33,9 +34,10 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         fun notifyNetworkChanged() = notify("networkChanged")
         fun notifyQuickResponse() = notify("quickResponse")
-        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", stillCurrent = stillCurrent)
+        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", null, stillCurrent)
         fun notifyScreenStateChanged(isOn: Boolean) = notify("screenStateChanged", isOn)
-        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {            mainHandler.post {
+        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {
+            mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
                     runCatching { ch.invokeMethod("runStateChanged", state.name) }
@@ -74,14 +76,13 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val options = gson.fromJson(data, VpnOptions::class.java)
                 VpnPlugin.startConfirmed(options) { ok -> android.os.Handler(android.os.Looper.getMainLooper()).post { result.success(ok) } }
             }
-            "setSmartStopped" -> {
-                GlobalState.isSmartStopped = call.argument<Boolean>("value") ?: false
-                result.success(true)
             "resumeCore" -> {
                 Thread {
                     VpnPlugin.resumeCore()
                     mainHandler.post { result.success(true) }
-                }.start()            }
+                }.start()
+
+            }
             "isSmartStopped" -> result.success(GlobalState.isSmartStopped)
             "requestSmartAutoStopCheck" -> {
                 VpnPlugin.requestSmartAutoStopCheck()
