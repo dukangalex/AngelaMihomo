@@ -471,6 +471,15 @@ fn merges_policy_group_options_from_both_markers() {
 }
 
 #[test]
+fn extracts_policy_group_options_from_the_angela_mihomo_marker() {
+    let script = "const Compatible_With_AngelaMihomo = { policyGroupOptions: ['AI', 42, 'Streaming'] };\nfunction main(config) { return config }";
+
+    let options: Json = serde_json::from_str(&extract_options(script).unwrap()).unwrap();
+
+    assert_eq!(options["policyGroupOptions"], json!(["AI", "Streaming"]));
+}
+
+#[test]
 fn extracts_empty_options_from_a_plain_script() {
     let options: Json =
         serde_json::from_str(&extract_options("function main(config) { return config }").unwrap())

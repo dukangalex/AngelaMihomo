@@ -307,6 +307,14 @@ if (typeof Compatible_With_Mihomo !== 'undefined' && Compatible_With_Mihomo && A
     }
   }
 }
+if (typeof Compatible_With_AngelaMihomo !== 'undefined' && Compatible_With_AngelaMihomo && Array.isArray(Compatible_With_AngelaMihomo.policyGroupOptions)) {
+  var __declaredAngela = Compatible_With_AngelaMihomo.policyGroupOptions;
+  for (var __a = 0; __a < __declaredAngela.length; __a++) {
+    if (typeof __declaredAngela[__a] === 'string') {
+      __groups.push(__declaredAngela[__a]);
+    }
+  }
+}
 return JSON.stringify({ options: __options, icons: __icons, policyGroupOptions: __groups });
 "#;
 

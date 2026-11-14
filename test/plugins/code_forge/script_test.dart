@@ -124,4 +124,21 @@ void main() {
 
     expect(options['policyGroupOptions'], ['AI', 'Streaming']);
   });
+
+  test('extracts policy group options from the AngelaMihomo marker', () async {
+    final options = json.decode(
+      await extractScriptOptions(
+        script:
+            'const ruleOptionsEnable = { ai: true };\n'
+            "const Compatible_With_AngelaMihomo = { policyGroupOptions: ['AI'] };\n"
+            'function main(config) { return config }',
+      ),
+    );
+
+    expect(options, {
+      'options': {'ai': true},
+      'icons': <String, String>{},
+      'policyGroupOptions': ['AI'],
+    });
+  });
 }

@@ -1335,6 +1335,7 @@ extension ScriptExt on Script {
       content: '',
       digest: value.toMd5(),
       compatible:
+          head.contains('Compatible_With_AngelaMihomo') ||
           head.contains('Compatible_With_Bettbox') ||
           head.contains('Compatible_With_Mihomo'),
       volatile: volatileScriptPattern.hasMatch(value),
