@@ -244,11 +244,31 @@ class GlobalState {
       config = config.copyWith(scriptProps: scriptProps);
       await preferences.saveConfig(config);
     }
+    final purgedConfig = purgeLegacyBuiltinScript(config);
+    if (purgedConfig != null) {
+      config = purgedConfig;
+      await preferences.saveConfig(config);
+      await _removeLegacyBuiltinScriptFiles();
+    }
     await globalState.migrateOldData(config);
     final locale =
         utils.getLocaleForString(config.appSetting.locale) ??
         utils.getSystemLocale();
     await AppLocalizations.load(locale);
+  }
+
+  /// Best-effort removal of the files the scrapped seeding line left
+  /// behind (T121): the duplicate script's content file and its two
+  /// SharedPreferences bookkeeping keys. Failures are ignored — the
+  /// config-level purge in [init] is the part that must land.
+  Future<void> _removeLegacyBuiltinScriptFiles() async {
+    try {
+      final file = File(await appPath.getScriptPath(legacyBuiltinScriptId));
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
+    final prefs = await preferences.sharedPreferencesCompleter.future;
+    await prefs?.remove('builtin_hiclash_factory_digest_v1');
+    await prefs?.remove('builtin_hiclash_binding_migrated_v1');
   }
 
   bool get isAndroidTV => _isAndroidTV ?? false;
@@ -1225,6 +1245,7 @@ class GlobalState {
             'value': ['131.107.255.255', 'fd3e:4f5a:5b81::1'],
           },
       ],
+      'override-dns': config.overrideDns,
       'dns': {
         ...dns.toJson(),
         'nameserver-policy': {

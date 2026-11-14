@@ -368,6 +368,7 @@ abstract class FallbackFilter with _$FallbackFilter {
     @Default(false) bool geoip,
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
     @Default([]) List<String> ipcidr,
+    @Default([]) List<String> domain,
   }) = _FallbackFilter;
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
       _$FallbackFilterFromJson(json);

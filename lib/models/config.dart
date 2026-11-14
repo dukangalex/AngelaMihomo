@@ -548,6 +548,7 @@ abstract class Config with _$Config {
     @Default([]) List<Profile> profiles,
     @Default([]) List<HotKeyAction> hotKeyActions,
     String? currentProfileId,
+    @Default(false) bool overrideDns,
     @Default(false) bool overrideNtp,
     @Default(false) bool overrideSniffer,
     @Default(false) bool overrideTunnel,

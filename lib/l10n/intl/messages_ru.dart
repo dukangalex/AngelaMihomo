@@ -717,8 +717,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Удалить перенаправление",
     ),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo глубоко проработан на базе мощного и гибкого ядра Mihomo и ориентирован на лучший клиентский опыт. Наше видение: Connecting Open Source and AI, Accelerating Innovation",
+      "Angela Mihomo — кроссплатформенный прокси-клиент на базе ядра Mihomo. Специализируется на цепочечном проксировании, системной защите от утечек и работе «из коробки». Распространяется по лицензии GPL-3.0, разрабатывается и публикуется независимо.",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("Ссылки проекта"),
     "destination": MessageLookupByLibrary.simpleMessage("Адрес назначения"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
       "Геолокация назначения",
@@ -1818,9 +1819,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Организация / Домен",
     ),
     "other": MessageLookupByLibrary.simpleMessage("Другое"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage(
-      "Другие участники (в случайном порядке)",
-    ),
     "otherSettings": MessageLookupByLibrary.simpleMessage(
       "Расширенные инструменты",
     ),

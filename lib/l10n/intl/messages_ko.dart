@@ -594,8 +594,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("포워딩 삭제"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo는 강력하고 유연한 Mihomo 코어를 기반으로 깊이 있게 제작되어, 더 나은 클라이언트 경험을 제공하는 데 전념합니다. 우리의 비전: Connecting Open Source and AI, Accelerating Innovation",
+      "Angela Mihomo는 Mihomo 코어를 기반으로 하는 크로스 플랫폼 프록시 클라이언트로, 체인 프록시, 시스템 수준의 유출 방지, 즉시 사용 가능한 경험에 중점을 두며 GPL-3.0 라이선스 하에 독립적으로 개발 및 배포됩니다。",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("프로젝트 링크"),
     "destination": MessageLookupByLibrary.simpleMessage("목적지 주소"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("목적지 GeoIP"),
     "destinationIPASN": MessageLookupByLibrary.simpleMessage("목적지 IP ASN"),
@@ -1467,9 +1468,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "options": MessageLookupByLibrary.simpleMessage("옵션"),
     "organizationDomain": MessageLookupByLibrary.simpleMessage("조직 / 도메인"),
     "other": MessageLookupByLibrary.simpleMessage("기타"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage(
-      "기타 기여자 (무작위 정렬)",
-    ),
     "otherSettings": MessageLookupByLibrary.simpleMessage("향상된 도구"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage("향상된 도구 설정 수정"),
     "outboundMode": MessageLookupByLibrary.simpleMessage("아웃바운드 모드"),

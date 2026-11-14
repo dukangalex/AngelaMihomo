@@ -693,8 +693,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("حذف هدایت"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo به‌صورت عمیق بر پایه هسته قدرتمند و انعطاف‌پذیر Mihomo ساخته شده و بر ارائه تجربه کلاینت بهتر متمرکز است. چشم‌انداز ما: Connecting Open Source and AI, Accelerating Innovation",
+      "Angela Mihomo یک کلاینت پروکسی چندسکویی بر پایهٔ هستهٔ Mihomo است که بر پروکسی زنجیره‌ای، جلوگیری از نشت در سطح سیستم و تجربهٔ آماده‌به‌کار تمرکز دارد و تحت مجوز GPL-3.0 به‌صورت مستقل توسعه و منتشر می‌شود.",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("پیوندهای پروژه"),
     "destination": MessageLookupByLibrary.simpleMessage("آدرس مقصد"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
       "موقعیت جغرافیایی مقصد",
@@ -1756,9 +1757,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "سازمان / دامنه",
     ),
     "other": MessageLookupByLibrary.simpleMessage("سایر"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage(
-      "مشارکت‌کنندگان دیگر (ترتیب تصادفی)",
-    ),
     "otherSettings": MessageLookupByLibrary.simpleMessage("ابزارهای پیشرفته"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "تغییر تنظیمات ابزارهای پیشرفته",

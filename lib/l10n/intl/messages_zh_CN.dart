@@ -140,8 +140,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m56(label) => "只看 ${label}";
 
-  static String m57(count) => "${count} 处需要留意";
-
   static String m58(label) => "${label} 必须在 1024 到 49151 之间，0 为关闭";
 
   static String m59(statusCode) =>
@@ -265,7 +263,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageUseProfileKey": MessageLookupByLibrary.simpleMessage("使用当前配置的私钥"),
     "ago": MessageLookupByLibrary.simpleMessage("前"),
     "agree": MessageLookupByLibrary.simpleMessage("同意"),
-    "aiPatrol": MessageLookupByLibrary.simpleMessage("AI 巡检"),
     "allApps": MessageLookupByLibrary.simpleMessage("所有应用"),
     "allocatedMemory": MessageLookupByLibrary.simpleMessage("已分配"),
     "allowBypass": MessageLookupByLibrary.simpleMessage("允许绕过VPN"),
@@ -529,8 +526,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("删除转发"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo 基于强大灵活的 Mihomo 内核深度打造，致力于更好的客户端体验，我们的愿景: Connecting Open Source and AI，Accelerating Innovation",
+      "Angela Mihomo 是基于 Mihomo 内核的跨平台代理客户端，专注链式代理、系统级防泄漏与开箱即用体验，遵循 GPL-3.0 开源协议，独立开发与发布。",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("项目入口"),
     "destination": MessageLookupByLibrary.simpleMessage("目标地址"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("目标地理定位"),
     "destinationIPASN": MessageLookupByLibrary.simpleMessage("目标 IP ASN"),
@@ -1311,7 +1309,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "options": MessageLookupByLibrary.simpleMessage("选项"),
     "organizationDomain": MessageLookupByLibrary.simpleMessage("组织 / 域名"),
     "other": MessageLookupByLibrary.simpleMessage("其他"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage("其他贡献者(随机排序)"),
     "otherSettings": MessageLookupByLibrary.simpleMessage("增强工具"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage("修改增强工具设置"),
     "outboundMode": MessageLookupByLibrary.simpleMessage("出站模式"),
@@ -1356,44 +1353,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "parsePureIpDesc": MessageLookupByLibrary.simpleMessage("解析纯 IP 连接"),
     "password": MessageLookupByLibrary.simpleMessage("密码"),
     "paste": MessageLookupByLibrary.simpleMessage("粘贴"),
-    "patrolAllGood": MessageLookupByLibrary.simpleMessage("一切正常"),
-    "patrolAttentionNeeded": m57,
-    "patrolChainHopDown": MessageLookupByLibrary.simpleMessage("链式有一跳可能已经失效"),
-    "patrolChainIncomplete": MessageLookupByLibrary.simpleMessage("入口或出口还没有选齐"),
-    "patrolChainOff": MessageLookupByLibrary.simpleMessage("链式代理未开启"),
-    "patrolChainOn": MessageLookupByLibrary.simpleMessage("链式代理已开启"),
-    "patrolConfigChecking": MessageLookupByLibrary.simpleMessage("正在校验配置…"),
-    "patrolConfigInvalid": MessageLookupByLibrary.simpleMessage("配置校验未通过"),
-    "patrolConfigUnavailable": MessageLookupByLibrary.simpleMessage(
-      "启动服务后才能做完整配置校验",
-    ),
-    "patrolConfigValid": MessageLookupByLibrary.simpleMessage("配置校验通过"),
-    "patrolLogConnection": MessageLookupByLibrary.simpleMessage("连接失败"),
-    "patrolLogDns": MessageLookupByLibrary.simpleMessage("DNS 失败"),
-    "patrolLogRule": MessageLookupByLibrary.simpleMessage("规则异常"),
-    "patrolLogTimeouts": MessageLookupByLibrary.simpleMessage("超时"),
-    "patrolNoProblems": MessageLookupByLibrary.simpleMessage("没有发现问题"),
-    "patrolNodesNoData": MessageLookupByLibrary.simpleMessage("暂无测速数据"),
-    "patrolNodesSomeDown": MessageLookupByLibrary.simpleMessage("有些节点不可用"),
-    "patrolNodesUnavailable": MessageLookupByLibrary.simpleMessage("不可用"),
-    "patrolNodesUntested": MessageLookupByLibrary.simpleMessage("未测速"),
-    "patrolNodesWidespread": MessageLookupByLibrary.simpleMessage(
-      "大多数节点都连不上，更像是网络或订阅问题，而不是单个节点故障",
-    ),
-    "patrolNodesWorking": MessageLookupByLibrary.simpleMessage("可用"),
-    "patrolRecheck": MessageLookupByLibrary.simpleMessage("重新巡检"),
-    "patrolSectionCore": MessageLookupByLibrary.simpleMessage("核心与配置"),
-    "patrolSectionLink": MessageLookupByLibrary.simpleMessage("模式与链路"),
-    "patrolSectionLogs": MessageLookupByLibrary.simpleMessage("日志问题"),
-    "patrolSectionNodes": MessageLookupByLibrary.simpleMessage("节点健康"),
-    "patrolSectionSubscription": MessageLookupByLibrary.simpleMessage("订阅状态"),
-    "patrolSubExpired": MessageLookupByLibrary.simpleMessage("订阅已到期"),
-    "patrolSubLastUpdated": MessageLookupByLibrary.simpleMessage("上次更新"),
-    "patrolSubNeverUpdated": MessageLookupByLibrary.simpleMessage("从未更新"),
-    "patrolSubNoProfile": MessageLookupByLibrary.simpleMessage("尚未选择配置"),
-    "patrolSubStale": MessageLookupByLibrary.simpleMessage("更新已逾期，建议手动更新一次"),
-    "patrolSubUpdateFailed": MessageLookupByLibrary.simpleMessage("最近一次更新失败"),
-    "patrolVersion": MessageLookupByLibrary.simpleMessage("版本"),
     "pianoWave": MessageLookupByLibrary.simpleMessage("琴键律动"),
     "pin": MessageLookupByLibrary.simpleMessage("置顶"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage("请绑定 WebDAV"),

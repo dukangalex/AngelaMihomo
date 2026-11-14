@@ -919,6 +919,7 @@ func handleGetCoreStatus(fn func(value string)) {
 			"rule-providers":  ruleProvidersCount,
 			"proxy-providers": proxyProvidersCount,
 			"geodata-use":     geodataUse,
+			"version":         constant.Version,
 		}
 		bytes, _ := json.Marshal(status)
 		fn(string(bytes))

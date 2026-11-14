@@ -121,6 +121,8 @@ const Compatible_With_Mihomo = {
 * **[Bettbox](https://github.com/appshubcc/Bettbox)**（原项目，本分支基于它二次开发，感谢 appshubcc 与所有上游贡献者）
 * **[FlClash GUI](https://github.com/chen08209/FlClash)**（谱系起源，向原作者的开创性探索与贡献致敬）
 * **[Mihomo Core](https://github.com/MetaCubeX/mihomo)**（强大灵活的核心驱动）
+* **[HiClash](https://github.com/dukangalex/HiClash)**（本项目内置托管脚本的来源；脚本正本现随本仓库 `assets/scripts/managed.js` 维护，更新随 App 版本走）
+* **[MyClash](https://github.com/AIsouler/MyClash)**（AIsouler 的脚本/配置分享，HiClash 的上游谱系来源）
 
 以及以下开源项目的启发与使用参考：
 

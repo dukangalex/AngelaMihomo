@@ -587,8 +587,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("転送削除"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomoは強力で柔軟なMihomoカーネルをベースに深く作り込まれ、より優れたクライアント体験を追求しています。私たちのビジョン：Connecting Open Source and AI, Accelerating Innovation",
+      "Angela MihomoはMihomoコアを基盤とするクロスプラットフォームなプロキシクライアントです。チェーンプロキシ、システムレベルの漏洩防止、すぐに使える体験に注力し、GPL-3.0ライセンスのもとで独自に開発・公開されています。",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("プロジェクトリンク"),
     "destination": MessageLookupByLibrary.simpleMessage("宛先アドレス"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("宛先GeoIP"),
     "destinationIPASN": MessageLookupByLibrary.simpleMessage("宛先IP ASN"),
@@ -1460,7 +1461,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "options": MessageLookupByLibrary.simpleMessage("オプション"),
     "organizationDomain": MessageLookupByLibrary.simpleMessage("組織 / ドメイン"),
     "other": MessageLookupByLibrary.simpleMessage("その他"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage("その他の貢献者（ランダム順）"),
     "otherSettings": MessageLookupByLibrary.simpleMessage("拡張ツール"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage("拡張ツールの設定を変更"),
     "outboundMode": MessageLookupByLibrary.simpleMessage("アウトバウンドモード"),

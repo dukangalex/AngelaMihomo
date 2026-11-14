@@ -1,12 +1,4 @@
-/**
- * AngelaMihomo 内置托管脚本（全量版 · 多地区自动识别 + 安全基线）
- * 源自 HiClash 项目，正本随 AngelaMihomo 仓库维护，更新随 App 版本走。
- * 项目仓库：https://github.com/dukangalex/AngelaMihomo
- * 脚本链接：https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/assets/scripts/managed.js
- * 谱系来源：HiClash 衍生自 @AIsouler 的 MyClash（https://github.com/AIsouler/MyClash），特此致谢。
- */
-
-// @version 2026111402
+// @version 2026111403
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---

@@ -528,8 +528,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("刪除轉發"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo 基於強大靈活的 Mihomo 核心深度打造，致力於更好的客戶端體驗，我們的願景: Connecting Open Source and AI，Accelerating Innovation",
+      "Angela Mihomo 是基於 Mihomo 內核的跨平台代理客戶端，專注鏈式代理、系統級防洩漏與開箱即用體驗，遵循 GPL-3.0 開源協議，獨立開發與發布。",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("項目入口"),
     "destination": MessageLookupByLibrary.simpleMessage("目標地址"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("目標地理定位"),
     "destinationIPASN": MessageLookupByLibrary.simpleMessage("目標 IP ASN"),
@@ -1318,7 +1319,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "options": MessageLookupByLibrary.simpleMessage("選項"),
     "organizationDomain": MessageLookupByLibrary.simpleMessage("組織 / 域名"),
     "other": MessageLookupByLibrary.simpleMessage("其他"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage("其他貢獻者(隨機排序)"),
     "otherSettings": MessageLookupByLibrary.simpleMessage("增強工具"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage("修改增強工具設定"),
     "outboundMode": MessageLookupByLibrary.simpleMessage("出站模式"),

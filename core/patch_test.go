@@ -187,6 +187,43 @@ func TestApplyPatchAndroidDns(t *testing.T) {
 	}
 }
 
+// T129: the override-dns gate decides whose DNS wins — the profile's own
+// DNS (when it is enabled and the user did not enable the override) or
+// the app-side patch DNS (override on, or profile DNS disabled).
+func TestApplyPatchDnsOverrideGate(t *testing.T) {
+	profile := "dns:\n  enable: true\n  nameserver: ['9.9.9.9']\n"
+
+	rawCfg := parsePatchProfile(t, profile)
+	if _, err := applyPatch(rawCfg, patchParams(t, `{}`)); err != nil {
+		t.Fatal(err)
+	}
+	if len(rawCfg.DNS.NameServer) != 1 || rawCfg.DNS.NameServer[0] != "9.9.9.9" {
+		t.Errorf("without override, profile nameserver should stay, got %v", rawCfg.DNS.NameServer)
+	}
+
+	rawCfg = parsePatchProfile(t, profile)
+	params := patchParams(t, `{"override-dns":true,"dns":{"enable":true,"nameserver":["1.1.1.1"],"fallback-filter":{"domain":["+.google.com"]}}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	if len(rawCfg.DNS.NameServer) != 1 || rawCfg.DNS.NameServer[0] != "1.1.1.1" {
+		t.Errorf("with override, patch nameserver should win, got %v", rawCfg.DNS.NameServer)
+	}
+	if len(rawCfg.DNS.FallbackFilter.Domain) != 1 || rawCfg.DNS.FallbackFilter.Domain[0] != "+.google.com" {
+		t.Errorf("fallback-filter domain should be applied, got %v", rawCfg.DNS.FallbackFilter.Domain)
+	}
+
+	rawCfg = parsePatchProfile(t, "dns:\n  enable: false\n")
+	params = patchParams(t, `{"dns":{"enable":true,"nameserver":["1.1.1.1"]}}`)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	// patchDns appends system:// when the profile DNS was disabled.
+	if len(rawCfg.DNS.NameServer) != 2 || rawCfg.DNS.NameServer[0] != "1.1.1.1" || rawCfg.DNS.NameServer[1] != "system://" {
+		t.Errorf("disabled profile dns should fall back to patch dns, got %v", rawCfg.DNS.NameServer)
+	}
+}
+
 func TestApplyPatchLinuxRouteExclude(t *testing.T) {
 	previous := patchForLinux
 	defer func() { patchForLinux = previous }()

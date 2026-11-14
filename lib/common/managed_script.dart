@@ -14,6 +14,58 @@ import 'string.dart';
 
 const managedScriptId = 'managed';
 const managedAnchorGroup = 'AdBlock';
+
+/// Display name of the bundled script wherever the scripts page presents
+/// the managed entry itself (card, editor, export, per-profile picker).
+/// The mechanism keeps its own name (managed mode); this is the script's.
+const bundledScriptLabel = 'HiClash 内置脚本';
+
+/// Id of the script-library record seeded by the scrapped chain.22 line
+/// (its `BuiltinScript.id`). That line is frozen and never ships; the
+/// record only survives in on-device data of builds that trialed it.
+const legacyBuiltinScriptId = 'builtin-hiclash';
+
+/// One-time stock cleanup for the scrapped line's seeded duplicate.
+///
+/// The chain.22 line seeded a plain library record (id
+/// [legacyBuiltinScriptId], same HiClash content as the managed script)
+/// and its early builds bound stock profiles to it before the
+/// default-off ruling removed the migration — without ever reclaiming
+/// the bindings already written. Left alone, upgraded devices show two
+/// identical built-in entries and profiles silently run the duplicate.
+///
+/// Removes the record and every binding pointing at it (profiles fall
+/// back to no script, the default-off state). Bindings the app created
+/// and bindings a user made by hand during that line's trial cannot be
+/// told apart; per the default-off ruling both are cleared — the same
+/// content stays available, unbound, through the managed mechanism.
+/// Scripts and bindings with any other id are untouched.
+///
+/// Returns the updated config, or null when there is nothing to purge.
+Config? purgeLegacyBuiltinScript(Config config) {
+  final hasRecord = config.scriptProps.scripts.any(
+    (script) => script.id == legacyBuiltinScriptId,
+  );
+  final hasBinding = config.profiles.any(
+    (profile) => profile.scriptId == legacyBuiltinScriptId,
+  );
+  if (!hasRecord && !hasBinding) return null;
+  return config.copyWith(
+    scriptProps: config.scriptProps.copyWith(
+      scripts: [
+        for (final script in config.scriptProps.scripts)
+          if (script.id != legacyBuiltinScriptId) script,
+      ],
+    ),
+    profiles: [
+      for (final profile in config.profiles)
+        if (profile.scriptId == legacyBuiltinScriptId)
+          profile.copyWith(scriptId: null)
+        else
+          profile,
+    ],
+  );
+}
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
 const _managedScriptUrl =

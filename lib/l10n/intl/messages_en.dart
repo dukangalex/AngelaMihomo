@@ -150,9 +150,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m56(label) => "Only ${label}";
 
-  static String m57(count) =>
-      "${Intl.plural(count, one: '1 area needs attention', other: '${count} areas need attention')}";
-
   static String m58(label) =>
       "${label} must be between 1024 and 49151, 0 to disable";
 
@@ -320,7 +317,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ago": MessageLookupByLibrary.simpleMessage(" ago"),
     "agree": MessageLookupByLibrary.simpleMessage("Agree"),
-    "aiPatrol": MessageLookupByLibrary.simpleMessage("AI Patrol"),
     "allApps": MessageLookupByLibrary.simpleMessage("All Apps"),
     "allocatedMemory": MessageLookupByLibrary.simpleMessage("Allocated"),
     "allowBypass": MessageLookupByLibrary.simpleMessage("Allow Bypassing VPN"),
@@ -696,8 +692,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m12,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("Delete Forwarding"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Angela Mihomo is deeply crafted on the powerful and flexible Mihomo kernel, dedicated to a superior client experience. Our vision: Connecting Open Source and AI, Accelerating Innovation",
+      "Angela Mihomo is a cross-platform proxy client built on the Mihomo core, focused on chain proxying, system-level leak prevention, and an out-of-the-box experience. Open-sourced under GPL-3.0 and independently developed and released.",
     ),
+    "projectLinks": MessageLookupByLibrary.simpleMessage("Project Links"),
     "destination": MessageLookupByLibrary.simpleMessage("Destination"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
       "Destination GeoIP",
@@ -1748,9 +1745,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Organization / Domain",
     ),
     "other": MessageLookupByLibrary.simpleMessage("Other"),
-    "otherContributors": MessageLookupByLibrary.simpleMessage(
-      "Other Contributors (Random Order)",
-    ),
     "otherSettings": MessageLookupByLibrary.simpleMessage("Enhanced Tools"),
     "otherSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "Modify enhanced tool settings",
@@ -1805,82 +1799,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
-    "patrolAllGood": MessageLookupByLibrary.simpleMessage(
-      "Everything looks good",
-    ),
-    "patrolAttentionNeeded": m57,
-    "patrolChainHopDown": MessageLookupByLibrary.simpleMessage(
-      "One chain hop looks down",
-    ),
-    "patrolChainIncomplete": MessageLookupByLibrary.simpleMessage(
-      "Entry or exit is not selected yet",
-    ),
-    "patrolChainOff": MessageLookupByLibrary.simpleMessage(
-      "Chain proxy is off",
-    ),
-    "patrolChainOn": MessageLookupByLibrary.simpleMessage("Chain proxy is on"),
-    "patrolConfigChecking": MessageLookupByLibrary.simpleMessage(
-      "Checking config…",
-    ),
-    "patrolConfigInvalid": MessageLookupByLibrary.simpleMessage(
-      "Config check failed",
-    ),
-    "patrolConfigUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Start the service to run the full config check",
-    ),
-    "patrolConfigValid": MessageLookupByLibrary.simpleMessage(
-      "Config check passed",
-    ),
-    "patrolLogConnection": MessageLookupByLibrary.simpleMessage(
-      "Connection failures",
-    ),
-    "patrolLogDns": MessageLookupByLibrary.simpleMessage("DNS failures"),
-    "patrolLogRule": MessageLookupByLibrary.simpleMessage("Rule problems"),
-    "patrolLogTimeouts": MessageLookupByLibrary.simpleMessage("Timeouts"),
-    "patrolNoProblems": MessageLookupByLibrary.simpleMessage(
-      "No problems found",
-    ),
-    "patrolNodesNoData": MessageLookupByLibrary.simpleMessage(
-      "No speed-test data yet",
-    ),
-    "patrolNodesSomeDown": MessageLookupByLibrary.simpleMessage(
-      "Some nodes are unavailable",
-    ),
-    "patrolNodesUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Unavailable",
-    ),
-    "patrolNodesUntested": MessageLookupByLibrary.simpleMessage("Untested"),
-    "patrolNodesWidespread": MessageLookupByLibrary.simpleMessage(
-      "Most nodes are unreachable — likely a network or subscription problem, not a single bad node",
-    ),
-    "patrolNodesWorking": MessageLookupByLibrary.simpleMessage("Working"),
-    "patrolRecheck": MessageLookupByLibrary.simpleMessage("Recheck"),
-    "patrolSectionCore": MessageLookupByLibrary.simpleMessage("Core & config"),
-    "patrolSectionLink": MessageLookupByLibrary.simpleMessage("Mode & chain"),
-    "patrolSectionLogs": MessageLookupByLibrary.simpleMessage("Log problems"),
-    "patrolSectionNodes": MessageLookupByLibrary.simpleMessage("Node health"),
-    "patrolSectionSubscription": MessageLookupByLibrary.simpleMessage(
-      "Subscription",
-    ),
-    "patrolSubExpired": MessageLookupByLibrary.simpleMessage(
-      "Subscription expired",
-    ),
-    "patrolSubLastUpdated": MessageLookupByLibrary.simpleMessage(
-      "Last updated",
-    ),
-    "patrolSubNeverUpdated": MessageLookupByLibrary.simpleMessage(
-      "Never updated",
-    ),
-    "patrolSubNoProfile": MessageLookupByLibrary.simpleMessage(
-      "No profile selected",
-    ),
-    "patrolSubStale": MessageLookupByLibrary.simpleMessage(
-      "Update overdue — refresh it manually once",
-    ),
-    "patrolSubUpdateFailed": MessageLookupByLibrary.simpleMessage(
-      "The last update failed",
-    ),
-    "patrolVersion": MessageLookupByLibrary.simpleMessage("Version"),
     "pianoWave": MessageLookupByLibrary.simpleMessage("Piano Wave"),
     "pin": MessageLookupByLibrary.simpleMessage("Pin"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage(

@@ -73,6 +73,24 @@ void main() {
     expect(dns.nameserverPolicy, {'rule-set:cn_bettbox': '223.5.5.5'});
   });
 
+  test('fallback-filter 的 domain 字段可往返序列化（T129 恢复）', () {
+    final dns = Dns.fromJson({
+      'fallback-filter': {
+        'geoip': true,
+        'geoip-code': 'CN',
+        'ipcidr': ['240.0.0.0/4'],
+        'domain': ['+.google.com', '+.facebook.com'],
+      },
+    });
+
+    expect(dns.fallbackFilter.domain, ['+.google.com', '+.facebook.com']);
+    final json = jsonDecode(jsonEncode(dns.toJson())) as Map<String, dynamic>;
+    expect(
+      (json['fallback-filter'] as Map<String, dynamic>)['domain'],
+      ['+.google.com', '+.facebook.com'],
+    );
+  });
+
   test('没有旧默认条目时原样解析', () {
     final dns = Dns.safeDnsFromJson({
       'fake-ip-filter': ['+.lan'],

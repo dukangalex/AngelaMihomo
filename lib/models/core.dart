@@ -313,6 +313,7 @@ abstract class CoreStatus with _$CoreStatus {
     @JsonKey(name: 'rule-providers') @Default(0) int ruleProviders,
     @JsonKey(name: 'proxy-providers') @Default(0) int proxyProviders,
     @JsonKey(name: 'geodata-use') @Default('None') String geodataUse,
+    @Default('') String version,
   }) = _CoreStatus;
 
   factory CoreStatus.fromJson(Map<String, Object?> json) =>

@@ -222,22 +222,25 @@ const _$TunDnsModeEnumMap = {
   TunDnsMode.hijack: 'hijack',
 };
 
-_FallbackFilter _$FallbackFilterFromJson(Map<String, dynamic> json) =>
-    _FallbackFilter(
-      geoip: json['geoip'] as bool? ?? false,
-      geoipCode: json['geoip-code'] as String? ?? 'CN',
-      ipcidr:
-          (json['ipcidr'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-    );
+_FallbackFilter _$FallbackFilterFromJson(
+  Map<String, dynamic> json,
+) => _FallbackFilter(
+  geoip: json['geoip'] as bool? ?? false,
+  geoipCode: json['geoip-code'] as String? ?? 'CN',
+  ipcidr:
+      (json['ipcidr'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  domain:
+      (json['domain'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+);
 
 Map<String, dynamic> _$FallbackFilterToJson(_FallbackFilter instance) =>
     <String, dynamic>{
       'geoip': instance.geoip,
       'geoip-code': instance.geoipCode,
       'ipcidr': instance.ipcidr,
+      'domain': instance.domain,
     };
 
 _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(

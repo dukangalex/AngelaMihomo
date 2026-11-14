@@ -462,6 +462,7 @@ _CoreStatus _$CoreStatusFromJson(Map<String, dynamic> json) => _CoreStatus(
   ruleProviders: (json['rule-providers'] as num?)?.toInt() ?? 0,
   proxyProviders: (json['proxy-providers'] as num?)?.toInt() ?? 0,
   geodataUse: json['geodata-use'] as String? ?? 'None',
+  version: json['version'] as String? ?? '',
 );
 
 Map<String, dynamic> _$CoreStatusToJson(_CoreStatus instance) =>
@@ -478,4 +479,5 @@ Map<String, dynamic> _$CoreStatusToJson(_CoreStatus instance) =>
       'rule-providers': instance.ruleProviders,
       'proxy-providers': instance.proxyProviders,
       'geodata-use': instance.geodataUse,
+      'version': instance.version,
     };

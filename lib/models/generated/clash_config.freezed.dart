@@ -1852,7 +1852,7 @@ as bool,
 /// @nodoc
 mixin _$FallbackFilter {
 
- bool get geoip;@JsonKey(name: 'geoip-code') String get geoipCode; List<String> get ipcidr;
+ bool get geoip;@JsonKey(name: 'geoip-code') String get geoipCode; List<String> get ipcidr; List<String> get domain;
 /// Create a copy of FallbackFilter
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1866,20 +1866,20 @@ $FallbackFilterCopyWith<FallbackFilter> get copyWith => _$FallbackFilterCopyWith
 @override
 bool operator ==(Object other) {
   final _this = this as FallbackFilter;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FallbackFilter&&(identical(other.geoip, _this.geoip) || other.geoip == _this.geoip)&&(identical(other.geoipCode, _this.geoipCode) || other.geoipCode == _this.geoipCode)&&const DeepCollectionEquality().equals(other.ipcidr, _this.ipcidr));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FallbackFilter&&(identical(other.geoip, _this.geoip) || other.geoip == _this.geoip)&&(identical(other.geoipCode, _this.geoipCode) || other.geoipCode == _this.geoipCode)&&const DeepCollectionEquality().equals(other.ipcidr, _this.ipcidr)&&const DeepCollectionEquality().equals(other.domain, _this.domain));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as FallbackFilter;
-  return Object.hash(runtimeType,_this.geoip,_this.geoipCode,const DeepCollectionEquality().hash(_this.ipcidr));
+  return Object.hash(runtimeType,_this.geoip,_this.geoipCode,const DeepCollectionEquality().hash(_this.ipcidr),const DeepCollectionEquality().hash(_this.domain));
 }
 
 @override
 String toString() {
   final _this = this as FallbackFilter;
-  return 'FallbackFilter(geoip: ${_this.geoip}, geoipCode: ${_this.geoipCode}, ipcidr: ${_this.ipcidr})';
+  return 'FallbackFilter(geoip: ${_this.geoip}, geoipCode: ${_this.geoipCode}, ipcidr: ${_this.ipcidr}, domain: ${_this.domain})';
 }
 
 
@@ -1890,7 +1890,7 @@ abstract mixin class $FallbackFilterCopyWith<$Res>  {
   factory $FallbackFilterCopyWith(FallbackFilter value, $Res Function(FallbackFilter) _then) = _$FallbackFilterCopyWithImpl;
 @useResult
 $Res call({
- bool geoip,@JsonKey(name: 'geoip-code') String geoipCode, List<String> ipcidr
+ bool geoip,@JsonKey(name: 'geoip-code') String geoipCode, List<String> ipcidr, List<String> domain
 });
 
 
@@ -1907,11 +1907,12 @@ class _$FallbackFilterCopyWithImpl<$Res>
 
 /// Create a copy of FallbackFilter
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? geoip = null,Object? geoipCode = null,Object? ipcidr = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? geoip = null,Object? geoipCode = null,Object? ipcidr = null,Object? domain = null,}) {
   return _then(FallbackFilter(
 geoip: null == geoip ? _self.geoip : geoip // ignore: cast_nullable_to_non_nullable
 as bool,geoipCode: null == geoipCode ? _self.geoipCode : geoipCode // ignore: cast_nullable_to_non_nullable
 as String,ipcidr: null == ipcidr ? _self.ipcidr : ipcidr // ignore: cast_nullable_to_non_nullable
+as List<String>,domain: null == domain ? _self.domain : domain // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }
@@ -1997,10 +1998,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr,  List<String> domain)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FallbackFilter() when $default != null:
-return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
+return $default(_that.geoip,_that.geoipCode,_that.ipcidr,_that.domain);case _:
   return orElse();
 
 }
@@ -2018,10 +2019,10 @@ return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr,  List<String> domain)  $default,) {final _that = this;
 switch (_that) {
 case _FallbackFilter():
-return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
+return $default(_that.geoip,_that.geoipCode,_that.ipcidr,_that.domain);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2038,10 +2039,10 @@ return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool geoip, @JsonKey(name: 'geoip-code')  String geoipCode,  List<String> ipcidr,  List<String> domain)?  $default,) {final _that = this;
 switch (_that) {
 case _FallbackFilter() when $default != null:
-return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
+return $default(_that.geoip,_that.geoipCode,_that.ipcidr,_that.domain);case _:
   return null;
 
 }
@@ -2053,7 +2054,7 @@ return $default(_that.geoip,_that.geoipCode,_that.ipcidr);case _:
 @JsonSerializable()
 
 class _FallbackFilter implements FallbackFilter {
-  const _FallbackFilter({this.geoip = false, @JsonKey(name: 'geoip-code') this.geoipCode = 'CN',  List<String> ipcidr = const []}): _ipcidr = ipcidr;
+  const _FallbackFilter({this.geoip = false, @JsonKey(name: 'geoip-code') this.geoipCode = 'CN',  List<String> ipcidr = const [],  List<String> domain = const []}): _ipcidr = ipcidr,_domain = domain;
   factory _FallbackFilter.fromJson(Map<String, dynamic> json) => _$FallbackFilterFromJson(json);
 
 @override@JsonKey() final  bool geoip;
@@ -2063,6 +2064,13 @@ class _FallbackFilter implements FallbackFilter {
   if (_ipcidr is EqualUnmodifiableListView) return _ipcidr;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_ipcidr);
+}
+
+ final  List<String> _domain;
+@override@JsonKey() List<String> get domain {
+  if (_domain is EqualUnmodifiableListView) return _domain;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_domain);
 }
 
 
@@ -2079,18 +2087,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FallbackFilter&&(identical(other.geoip, geoip) || other.geoip == geoip)&&(identical(other.geoipCode, geoipCode) || other.geoipCode == geoipCode)&&const DeepCollectionEquality().equals(other.ipcidr, _ipcidr));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FallbackFilter&&(identical(other.geoip, geoip) || other.geoip == geoip)&&(identical(other.geoipCode, geoipCode) || other.geoipCode == geoipCode)&&const DeepCollectionEquality().equals(other.ipcidr, _ipcidr)&&const DeepCollectionEquality().equals(other.domain, _domain));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,geoip,geoipCode,const DeepCollectionEquality().hash(_ipcidr));
+    return Object.hash(runtimeType,geoip,geoipCode,const DeepCollectionEquality().hash(_ipcidr),const DeepCollectionEquality().hash(_domain));
 }
 
 @override
 String toString() {
-    return 'FallbackFilter(geoip: $geoip, geoipCode: $geoipCode, ipcidr: $ipcidr)';
+    return 'FallbackFilter(geoip: $geoip, geoipCode: $geoipCode, ipcidr: $ipcidr, domain: $domain)';
 }
 
 
@@ -2101,7 +2109,7 @@ abstract mixin class _$FallbackFilterCopyWith<$Res> implements $FallbackFilterCo
   factory _$FallbackFilterCopyWith(_FallbackFilter value, $Res Function(_FallbackFilter) _then) = __$FallbackFilterCopyWithImpl;
 @override @useResult
 $Res call({
- bool geoip,@JsonKey(name: 'geoip-code') String geoipCode, List<String> ipcidr
+ bool geoip,@JsonKey(name: 'geoip-code') String geoipCode, List<String> ipcidr, List<String> domain
 });
 
 
@@ -2118,11 +2126,12 @@ class __$FallbackFilterCopyWithImpl<$Res>
 
 /// Create a copy of FallbackFilter
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? geoip = null,Object? geoipCode = null,Object? ipcidr = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? geoip = null,Object? geoipCode = null,Object? ipcidr = null,Object? domain = null,}) {
   return _then(_FallbackFilter(
 geoip: null == geoip ? _self.geoip : geoip // ignore: cast_nullable_to_non_nullable
 as bool,geoipCode: null == geoipCode ? _self.geoipCode : geoipCode // ignore: cast_nullable_to_non_nullable
 as String,ipcidr: null == ipcidr ? _self._ipcidr : ipcidr // ignore: cast_nullable_to_non_nullable
+as List<String>,domain: null == domain ? _self._domain : domain // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }

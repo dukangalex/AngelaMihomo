@@ -254,9 +254,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
   Future<void> _handleExportManaged() async {
     final script = await _loadManaged();
     if (script == null || !mounted) return;
-    await _handleExportFile(
-      script.copyWith(label: appLocalizations.managedMode),
-    );
+    await _handleExportFile(script.copyWith(label: bundledScriptLabel));
   }
 
   Future<void> _handleViewManaged() async {
@@ -265,7 +263,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     BaseNavigator.push(
       context,
       EditorPage(
-        title: appLocalizations.managedMode,
+        title: bundledScriptLabel,
         content: script.content,
         languages: const [Language.javaScript],
         readOnly: true,
@@ -321,7 +319,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     BaseNavigator.push(
       context,
       EditorPage(
-        title: appLocalizations.managedMode,
+        title: bundledScriptLabel,
         content: savedContent,
         defaultContent: bundledContent,
         languages: const [Language.javaScript],
@@ -399,7 +397,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    appLocalizations.managedMode,
+                    bundledScriptLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.textTheme.titleMedium,
@@ -858,7 +856,7 @@ class _ScriptSettingsSheet extends ConsumerWidget {
 
   String _labelOf(String value, ScriptProps props) => switch (value) {
     _noScript => appLocalizations.none,
-    managedScriptId => appLocalizations.managedMode,
+    managedScriptId => bundledScriptLabel,
     _ => props.findScript(value)?.label ?? value,
   };
 

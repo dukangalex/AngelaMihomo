@@ -8,7 +8,6 @@ export 'profile_usage.dart';
 export 'selector.dart';
 export 'widget.dart';
 export 'media_unlock.dart';
-export 'patrol.dart';
 export 'speed_test.dart';
 export 'stun_test.dart';
 export 'iperf.dart';
