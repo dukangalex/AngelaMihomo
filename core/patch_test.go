@@ -166,10 +166,10 @@ func TestApplyPatchAndroidDns(t *testing.T) {
 		dns    string
 		listen string
 	}{
-		{"dns: {enable: true, listen: '0.0.0.0:53'}", "0.0.0.0:10053"},
-		{"dns: {enable: true, listen: '0.0.0.0:1053'}", "0.0.0.0:1053"},
+		{"dns: {enable: true, listen: '0.0.0.0:53'}", "127.0.0.1:10053"},
+		{"dns: {enable: true, listen: '0.0.0.0:1053'}", "127.0.0.1:1053"},
 		{"dns: {enable: true, listen: '0.0.0.0:53', proxy-server-nameserver: ['127.0.0.1:5353']}", "127.0.0.1:53"},
-		{"dns: {enable: true, listen: '0.0.0.0:1053', proxy-server-nameserver: ['127.0.0.1:5353']}\nrule-providers: {}", "0.0.0.0:1053"},
+		{"dns: {enable: true, listen: '0.0.0.0:1053', proxy-server-nameserver: ['127.0.0.1:5353']}\nrule-providers: {}", "127.0.0.1:1053"},
 	}
 	for _, item := range cases {
 		rawCfg := parsePatchProfile(t, item.dns+"\nntp: {enable: true, write-to-system: true}\n")
@@ -329,9 +329,14 @@ func TestMarshalProxies(t *testing.T) {
 proxies:
   - {name: A, type: ss, server: a.example.com, port: 1, cipher: aes-128-gcm, password: p}
   - {name: B, type: ss, server: b.example.com, port: 1, cipher: aes-128-gcm, password: p}
+proxy-providers:
+  inline:
+    type: inline
+    payload:
+      - {name: C, type: trojan, server: c.example.com, port: 443, password: p}
 proxy-groups:
   - {name: Main, type: select, proxies: [Auto, Balance, A, DIRECT], icon: main.png}
-  - {name: Auto, type: url-test, proxies: [A, B], url: "https://example.com/204", interval: 300, lazy: true, hidden: true}
+  - {name: Auto, type: url-test, proxies: [A, B], use: [inline], url: "https://example.com/204", interval: 300, lazy: true, hidden: true}
   - {name: Balance, type: load-balance, proxies: [A, B], url: "https://example.com/204", interval: 300, lazy: true}
 rules:
   - MATCH,Main
@@ -340,42 +345,44 @@ rules:
 	if err != nil {
 		t.Fatal(err)
 	}
+	for _, pd := range cfg.Providers {
+		if err := pd.Initial(); err != nil {
+			t.Fatal(err)
+		}
+	}
 	compact, err := marshalProxies(cfg.Proxies)
 	if err != nil {
 		t.Fatal(err)
 	}
 	payload := struct {
-		Names  []string                  `json:"names"`
-		Types  []string                  `json:"types"`
-		Groups map[string]map[string]any `json:"groups"`
+		Names  []string         `json:"names"`
+		Types  []string         `json:"types"`
+		Groups []map[string]any `json:"groups"`
 	}{}
 	if err := json.Unmarshal(compact, &payload); err != nil {
 		t.Fatal(err)
 	}
+	if len(payload.Names) != len(payload.Types) {
+		t.Fatalf("names %d, types %d", len(payload.Names), len(payload.Types))
+	}
 	full, _ := json.Marshal(cfg.Proxies)
 	expected := map[string]map[string]any{}
 	_ = json.Unmarshal(full, &expected)
-	if len(payload.Names) != len(expected) || len(payload.Names) != len(payload.Types) {
-		t.Fatalf("names %d, types %d, expected %d", len(payload.Names), len(payload.Types), len(expected))
-	}
-	for i, name := range payload.Names {
-		if expected[name]["type"] != payload.Types[i] {
-			t.Errorf("%s type = %s, want %v", name, payload.Types[i], expected[name]["type"])
-		}
-	}
-	groups := 0
-	for name, item := range expected {
-		if _, isGroup := item["all"]; !isGroup {
-			continue
-		}
-		groups++
-		group := payload.Groups[name]
-		if group == nil {
-			t.Fatalf("group %s is missing", name)
+	order := make([]string, 0, len(payload.Groups))
+	for _, group := range payload.Groups {
+		name := group["name"].(string)
+		order = append(order, name)
+		item := expected[name]
+		if item == nil {
+			t.Fatalf("unexpected group %s", name)
 		}
 		var members []any
 		for _, member := range group["all"].([]any) {
-			members = append(members, payload.Names[int(member.(float64))])
+			index := int(member.(float64))
+			members = append(members, payload.Names[index])
+			if top := expected[payload.Names[index]]; top != nil && top["type"] != payload.Types[index] {
+				t.Errorf("%s type = %s, want %v", payload.Names[index], payload.Types[index], top["type"])
+			}
 		}
 		if !reflect.DeepEqual(members, item["all"]) {
 			t.Errorf("%s members = %v, want %v", name, members, item["all"])
@@ -386,8 +393,25 @@ rules:
 			}
 		}
 	}
-	if groups != len(payload.Groups) || groups < 4 {
-		t.Errorf("groups = %d, payload groups = %d", groups, len(payload.Groups))
+	if !reflect.DeepEqual(order, []string{"GLOBAL", "Main", "Auto", "Balance"}) {
+		t.Errorf("group order = %v", order)
+	}
+	for i, name := range payload.Names {
+		if name == "C" && payload.Types[i] != "Trojan" {
+			t.Errorf("provider proxy type = %s", payload.Types[i])
+		}
+	}
+	nows := map[string]string{}
+	for _, group := range payload.Groups {
+		if now, ok := group["now"].(string); ok {
+			nows[group["name"].(string)] = now
+		}
+	}
+	groupNowsLock.Lock()
+	remembered := lastGroupNows
+	groupNowsLock.Unlock()
+	if !reflect.DeepEqual(remembered, nows) {
+		t.Errorf("remembered nows = %v, want %v", remembered, nows)
 	}
 }
 
