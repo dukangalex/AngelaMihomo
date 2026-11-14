@@ -2007,17 +2007,16 @@ class AppController {
     _ref.read(initProvider.notifier).value = true;
   }
 
-  /// T95: seed/refresh the bundled HiClash script and run the one-time
-  /// stock binding migration. Best-effort: a failure here must never
-  /// block startup.
+  /// T95: seed/refresh the bundled HiClash script in the script
+  /// library. Best-effort: a failure here must never block startup.
+  /// Seeding never binds the script to a profile (revised default:
+  /// the bundled script stays off until the user picks it).
   Future<void> _seedBuiltinScript() async {
     try {
       await seedBuiltinScript(
         scripts: _ref.read(scriptStateProvider).scripts,
         saveScript: (script) =>
             _ref.read(scriptStateProvider.notifier).setScript(script),
-        profiles: _ref.read(profilesProvider),
-        saveProfiles: setProfiles,
       );
     } catch (e) {
       commonPrint.warn('Builtin script seeding failed: $e');

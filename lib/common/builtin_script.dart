@@ -3,9 +3,10 @@ import 'package:bett_box/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The bundled HiClash script (T95): seeded from the app asset on first
-/// launch, bound to new profiles by default, and refreshed across app
-/// updates only while the user has not edited it.
+/// The bundled HiClash script (T95): seeded from the app asset into the
+/// script library on first launch and refreshed across app updates only
+/// while the user has not edited it. It is never bound to a profile on
+/// its own — it takes effect only where the user picks it per profile.
 abstract final class BuiltinScript {
   static const id = 'builtin-hiclash';
   static const label = 'HiClash 内置脚本';
@@ -16,9 +17,6 @@ abstract final class BuiltinScript {
   /// factory-fresh and may be auto-refreshed; any other digest means the
   /// user edited it and their copy wins.
   static const factoryDigestPrefKey = 'builtin_hiclash_factory_digest_v1';
-
-  /// Set once the one-time stock binding migration has run.
-  static const bindingMigratedPrefKey = 'builtin_hiclash_binding_migrated_v1';
 }
 
 enum BuiltinSeedAction {
@@ -46,16 +44,6 @@ BuiltinSeedAction resolveBuiltinSeedAction({
   return BuiltinSeedAction.keep;
 }
 
-/// Whether a stock profile should receive the one-time default binding:
-/// only profiles that never made a script choice of their own. Bundle
-/// containers are skipped — their members keep their own choices and the
-/// container can be bound manually.
-bool profileNeedsBuiltinBinding(Profile profile) {
-  return profile.scriptId == null &&
-      !profile.useScriptOverride &&
-      profile.bundle == null;
-}
-
 bool builtinUpdateAvailable({
   required String? existingDigest,
   required String? factoryDigest,
@@ -67,14 +55,14 @@ bool builtinUpdateAvailable({
       existingDigest != factoryDigest;
 }
 
-/// Seeds (or refreshes) the bundled script and runs the one-time stock
-/// binding migration. Best-effort glue around [resolveBuiltinSeedAction]
-/// and [profileNeedsBuiltinBinding]; failures are the caller's to log.
+/// Seeds (or refreshes) the bundled script in the script library.
+/// Best-effort glue around [resolveBuiltinSeedAction]; failures are the
+/// caller's to log. This only maintains the library copy — it never
+/// binds the script to any profile and never touches a binding the
+/// user already made.
 Future<void> seedBuiltinScript({
   required List<Script> scripts,
   required void Function(Script script) saveScript,
-  required List<Profile> profiles,
-  required void Function(List<Profile> profiles) saveProfiles,
 }) async {
   final prefs = await SharedPreferences.getInstance();
   final content = await rootBundle.loadString(BuiltinScript.assetPath);
@@ -106,22 +94,6 @@ Future<void> seedBuiltinScript({
           bundledDigest,
         );
       }
-  }
-
-  if (prefs.getBool(BuiltinScript.bindingMigratedPrefKey) != true) {
-    if (profiles.any(profileNeedsBuiltinBinding)) {
-      saveProfiles([
-        for (final profile in profiles)
-          if (profileNeedsBuiltinBinding(profile))
-            profile.copyWith(
-              useScriptOverride: true,
-              scriptId: BuiltinScript.id,
-            )
-          else
-            profile,
-      ]);
-    }
-    await prefs.setBool(BuiltinScript.bindingMigratedPrefKey, true);
   }
 }
 

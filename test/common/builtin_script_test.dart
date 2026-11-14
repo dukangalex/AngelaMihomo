@@ -57,37 +57,27 @@ void main() {
     });
   });
 
-  group('profileNeedsBuiltinBinding', () {
-    Profile profile({
-      String? scriptId,
-      bool useScriptOverride = false,
-      ProfileBundle? bundle,
-    }) => Profile(
-      id: 'p1',
-      label: 'p',
-      url: '',
-      autoUpdateDuration: const Duration(hours: 6),
-      scriptId: scriptId,
-      useScriptOverride: useScriptOverride,
-      bundle: bundle,
-    );
+  group('no default binding (T95 revised default)', () {
+    test('a fresh profile starts with the bundled script unbound', () {
+      final profile = Profile.normal(label: 'fresh');
+      expect(profile.useScriptOverride, isFalse);
+      expect(profile.scriptId, isNull);
+    });
 
-    test('binds untouched stock profiles only', () {
-      expect(profileNeedsBuiltinBinding(profile()), isTrue);
-      expect(
-        profileNeedsBuiltinBinding(profile(scriptId: 'other')),
-        isFalse,
+    test('a stock profile is never auto-bound, whatever its shape', () {
+      // Seeding maintains only the library copy; profiles keep whatever
+      // script choice they already have (including none).
+      final untouched = Profile.normal(label: 'stock');
+      expect(untouched.scriptId, isNull);
+      final chosen = untouched.copyWith(
+        useScriptOverride: true,
+        scriptId: 'other',
       );
-      expect(
-        profileNeedsBuiltinBinding(profile(useScriptOverride: true)),
-        isFalse,
+      expect(chosen.scriptId, 'other');
+      final bundle = untouched.copyWith(
+        bundle: const ProfileBundle(members: []),
       );
-      expect(
-        profileNeedsBuiltinBinding(
-          profile(bundle: const ProfileBundle(members: [])),
-        ),
-        isFalse,
-      );
+      expect(bundle.scriptId, isNull);
     });
   });
 
