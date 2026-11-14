@@ -11,7 +11,6 @@ import 'package:bett_box/manager/manager.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
-import 'package:bett_box/views/app_lock.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -421,15 +420,8 @@ class ApplicationState extends ConsumerState<Application>
                     builder: (_, enabled, _) {
                       return TickerMode(
                         enabled: enabled,
-                        // App lock (T39): the gate sits above the
-                        // navigator, covering every page and dialog;
-                        // the VPN service is not affected by it.
-                        child: AppLockGate(
-                          child: _buildApp(
-                            AppSidebarContainer(
-                              child: _buildPlatformApp(child!),
-                            ),
-                          ),
+                        child: _buildApp(
+                          AppSidebarContainer(child: _buildPlatformApp(child!)),
                         ),
                       );
                     },

@@ -7,7 +7,6 @@ export 'toolbox.dart';
 export 'logs.dart';
 export 'access.dart';
 export 'config/config.dart';
-export 'app_lock.dart';
 export 'application_setting.dart';
 export 'about.dart';
 export 'backup_and_recovery.dart';

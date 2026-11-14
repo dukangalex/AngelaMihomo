@@ -353,66 +353,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Маршрутизация приложений",
     ),
     "appDesc": MessageLookupByLibrary.simpleMessage("Настройки приложения"),
-    "appLock": MessageLookupByLibrary.simpleMessage("App lock"),
-    "appLockBiometric": MessageLookupByLibrary.simpleMessage("Use biometrics"),
-    "appLockBiometricUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Biometrics are not available on this device",
-    ),
-    "appLockConfirmPin": MessageLookupByLibrary.simpleMessage(
-      "Enter the PIN again",
-    ),
-    "appLockDesc": MessageLookupByLibrary.simpleMessage(
-      "Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.",
-    ),
-    "appLockEnterPin": MessageLookupByLibrary.simpleMessage("Enter PIN"),
-    "appLockNoRecovery": MessageLookupByLibrary.simpleMessage(
-      "There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.",
-    ),
-    "appLockPasskey": MessageLookupByLibrary.simpleMessage("Passkey"),
-    "appLockPasskeyAdd": MessageLookupByLibrary.simpleMessage("Add"),
-    "appLockPasskeyAdded": MessageLookupByLibrary.simpleMessage("Added"),
-    "appLockPasskeyFailed": MessageLookupByLibrary.simpleMessage(
-      "Passkey operation failed. Try again.",
-    ),
-    "appLockPasskeyInvalid": MessageLookupByLibrary.simpleMessage(
-      "Passkey verification failed",
-    ),
-    "appLockPasskeyNotAdded": MessageLookupByLibrary.simpleMessage("Not added"),
-    "appLockPasskeyRemove": MessageLookupByLibrary.simpleMessage("Remove"),
-    "appLockPasskeyRemoveConfirm": MessageLookupByLibrary.simpleMessage(
-      "After removal you can no longer unlock with a passkey. Your PIN still works.",
-    ),
-    "appLockPasskeyUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Passkey unavailable. Use your PIN.",
-    ),
-    "appLockPasskeyUnsupported": MessageLookupByLibrary.simpleMessage(
-      "Passkeys are not supported on this device",
-    ),
-    "appLockPinMismatch": MessageLookupByLibrary.simpleMessage(
-      "The two PINs do not match",
-    ),
-    "appLockRelock": MessageLookupByLibrary.simpleMessage(
-      "Re-lock after leaving",
-    ),
-    "appLockRelock1m": MessageLookupByLibrary.simpleMessage("1 minute"),
-    "appLockRelock30s": MessageLookupByLibrary.simpleMessage("30 seconds"),
-    "appLockRelock5m": MessageLookupByLibrary.simpleMessage("5 minutes"),
-    "appLockRelockImmediate": MessageLookupByLibrary.simpleMessage(
-      "Immediately",
-    ),
-    "appLockSetPin": MessageLookupByLibrary.simpleMessage(
-      "Set a PIN (4-6 digits)",
-    ),
-    "appLockUnlockBiometric": MessageLookupByLibrary.simpleMessage(
-      "Unlock with biometrics",
-    ),
-    "appLockUnlockPasskey": MessageLookupByLibrary.simpleMessage(
-      "Unlock with passkey",
-    ),
-    "appLockWait": MessageLookupByLibrary.simpleMessage(
-      "Too many attempts. Wait a while and try again.",
-    ),
-    "appLockWrongPin": MessageLookupByLibrary.simpleMessage("Wrong PIN"),
     "application": MessageLookupByLibrary.simpleMessage("Приложение"),
     "applicationDesc": MessageLookupByLibrary.simpleMessage(
       "Настройки приложения",

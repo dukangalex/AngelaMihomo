@@ -280,62 +280,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "app": MessageLookupByLibrary.simpleMessage("應用"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage("分應用代理"),
     "appDesc": MessageLookupByLibrary.simpleMessage("處理應用相關設定"),
-    "appLock": MessageLookupByLibrary.simpleMessage("App lock"),
-    "appLockBiometric": MessageLookupByLibrary.simpleMessage("Use biometrics"),
-    "appLockBiometricUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Biometrics are not available on this device",
-    ),
-    "appLockConfirmPin": MessageLookupByLibrary.simpleMessage(
-      "Enter the PIN again",
-    ),
-    "appLockDesc": MessageLookupByLibrary.simpleMessage(
-      "Require a PIN when opening the app. Only the interface locks — the VPN service keeps running.",
-    ),
-    "appLockEnterPin": MessageLookupByLibrary.simpleMessage("Enter PIN"),
-    "appLockNoRecovery": MessageLookupByLibrary.simpleMessage(
-      "There is no PIN recovery. If you forget the PIN, the only way back is clearing the app data.",
-    ),
-    "appLockPasskey": MessageLookupByLibrary.simpleMessage("通行金鑰"),
-    "appLockPasskeyAdd": MessageLookupByLibrary.simpleMessage("新增"),
-    "appLockPasskeyAdded": MessageLookupByLibrary.simpleMessage("已新增"),
-    "appLockPasskeyFailed": MessageLookupByLibrary.simpleMessage(
-      "通行金鑰操作失敗，請重試",
-    ),
-    "appLockPasskeyInvalid": MessageLookupByLibrary.simpleMessage("通行金鑰驗證未通過"),
-    "appLockPasskeyNotAdded": MessageLookupByLibrary.simpleMessage("未新增"),
-    "appLockPasskeyRemove": MessageLookupByLibrary.simpleMessage("刪除"),
-    "appLockPasskeyRemoveConfirm": MessageLookupByLibrary.simpleMessage(
-      "刪除後將無法再用通行金鑰解鎖，PIN 仍可使用。",
-    ),
-    "appLockPasskeyUnavailable": MessageLookupByLibrary.simpleMessage(
-      "通行金鑰不可用，請使用 PIN",
-    ),
-    "appLockPasskeyUnsupported": MessageLookupByLibrary.simpleMessage(
-      "這台裝置不支援通行金鑰",
-    ),
-    "appLockPinMismatch": MessageLookupByLibrary.simpleMessage(
-      "The two PINs do not match",
-    ),
-    "appLockRelock": MessageLookupByLibrary.simpleMessage(
-      "Re-lock after leaving",
-    ),
-    "appLockRelock1m": MessageLookupByLibrary.simpleMessage("1 minute"),
-    "appLockRelock30s": MessageLookupByLibrary.simpleMessage("30 seconds"),
-    "appLockRelock5m": MessageLookupByLibrary.simpleMessage("5 minutes"),
-    "appLockRelockImmediate": MessageLookupByLibrary.simpleMessage(
-      "Immediately",
-    ),
-    "appLockSetPin": MessageLookupByLibrary.simpleMessage(
-      "Set a PIN (4-6 digits)",
-    ),
-    "appLockUnlockBiometric": MessageLookupByLibrary.simpleMessage(
-      "Unlock with biometrics",
-    ),
-    "appLockUnlockPasskey": MessageLookupByLibrary.simpleMessage("使用通行金鑰解鎖"),
-    "appLockWait": MessageLookupByLibrary.simpleMessage(
-      "Too many attempts. Wait a while and try again.",
-    ),
-    "appLockWrongPin": MessageLookupByLibrary.simpleMessage("Wrong PIN"),
     "application": MessageLookupByLibrary.simpleMessage("應用程式"),
     "applicationDesc": MessageLookupByLibrary.simpleMessage("修改應用程式設定"),
     "authorized": MessageLookupByLibrary.simpleMessage("已授權"),
