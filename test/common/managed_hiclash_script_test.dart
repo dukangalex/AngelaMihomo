@@ -20,7 +20,7 @@ void main() {
     expect(content, contains('const Compatible_With_AngelaMihomo'));
     expect(content, contains('function main(config, context)'));
     expect(content, contains('const ruleOptionsEnable'));
-    expect(ManagedScript.parseVersion(content), '2026111401');
+    expect(ManagedScript.parseVersion(content), matches(RegExp(r'^\d{10}$')));
     // Rule providers come from the official MetaCubeX source, not a mirror.
     expect(
       content,
@@ -74,11 +74,13 @@ void main() {
     'bundled version is the floor and nothing is synced by default',
     () async {
       await ManagedScript.loadBundledVersion();
-      expect(ManagedScript.bundledVersion, '2026111401');
+      // setup.dart re-stamps the version on every build; assert the stamp
+      // format and that the floor logic uses it, not one frozen value.
+      expect(ManagedScript.bundledVersion, matches(RegExp(r'^\d{10}$')));
       const props = ManagedProps();
       expect(props.syncedVersion, isNull);
       expect(ManagedScript.syncedVersion(props), isNull);
-      expect(ManagedScript.version(props), '2026111401');
+      expect(ManagedScript.version(props), ManagedScript.bundledVersion);
       expect(ManagedScript.isCustom(props), isFalse);
     },
   );
