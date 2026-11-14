@@ -1254,32 +1254,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("検査範囲を選択"),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("ノード一括検査"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("接続性テスト"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "既定でカラーアイコンを表示",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("接続性テスト詳細"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("表示設定"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "IP の詳細情報を表示",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("その他の設定"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "その他のストリーミング解除項目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "ウィジェットに最大3項目を固定",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "現在のカテゴリに基づいて部分更新",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "ノード変更時に自動更新",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最大3項目まで選択できます",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("ロック解除済み"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("メモリは最適な状態です"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("メモリとランタイム"),
     "memoryFreed": m46,

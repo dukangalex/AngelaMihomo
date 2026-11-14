@@ -1097,16 +1097,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Show colored icons by default`
-  String get mediaUnlockColorfulIcons {
-    return Intl.message(
-      'Show colored icons by default',
-      name: 'mediaUnlockColorfulIcons',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Respect Rules`
   String get respectRules {
     return Intl.message(
@@ -2097,11 +2087,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Unlocked`
-  String get mediaUnlocked {
-    return Intl.message('Unlocked', name: 'mediaUnlocked', desc: '', args: []);
-  }
-
   /// `Concurrency Limit`
   String get concurrencyLimit {
     return Intl.message(
@@ -2994,16 +2979,6 @@ class AppLocalizations {
     return Intl.message('Source', name: 'source', desc: '', args: []);
   }
 
-  /// `Connectivity Test Details`
-  String get mediaUnlockDetails {
-    return Intl.message(
-      'Connectivity Test Details',
-      name: 'mediaUnlockDetails',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Encrypt`
   String get ageTabEncrypt {
     return Intl.message('Encrypt', name: 'ageTabEncrypt', desc: '', args: []);
@@ -3082,16 +3057,6 @@ class AppLocalizations {
   /// `Generate`
   String get generate {
     return Intl.message('Generate', name: 'generate', desc: '', args: []);
-  }
-
-  /// `You can select up to 3 items`
-  String get mediaUnlockSelectLimit {
-    return Intl.message(
-      'You can select up to 3 items',
-      name: 'mediaUnlockSelectLimit',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Global mode: all traffic uses GLOBAL`
@@ -3966,16 +3931,6 @@ class AppLocalizations {
     return Intl.message(
       'Final outbound DIRECT, connects to the Hosts address',
       name: 'dnsQueryViaDirectHosts',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Auto refresh on node change`
-  String get mediaUnlockRefreshOnNodeChange {
-    return Intl.message(
-      'Auto refresh on node change',
-      name: 'mediaUnlockRefreshOnNodeChange',
       desc: '',
       args: [],
     );
@@ -6170,16 +6125,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Connectivity Test`
-  String get mediaUnlock {
-    return Intl.message(
-      'Connectivity Test',
-      name: 'mediaUnlock',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Private / LAN IP Address`
   String get privateIp {
     return Intl.message(
@@ -7201,16 +7146,6 @@ class AppLocalizations {
       name: 'hitCount',
       desc: '',
       args: [count],
-    );
-  }
-
-  /// `Display Settings`
-  String get mediaUnlockDisplaySettings {
-    return Intl.message(
-      'Display Settings',
-      name: 'mediaUnlockDisplaySettings',
-      desc: '',
-      args: [],
     );
   }
 
@@ -9044,16 +8979,6 @@ class AppLocalizations {
     return Intl.message('Create', name: 'create', desc: '', args: []);
   }
 
-  /// `Show more IP details`
-  String get mediaUnlockExtraDetails {
-    return Intl.message(
-      'Show more IP details',
-      name: 'mediaUnlockExtraDetails',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Spinning Circle`
   String get spinningCircle {
     return Intl.message(
@@ -9244,16 +9169,6 @@ class AppLocalizations {
     return Intl.message(
       'Please enter a profile name',
       name: 'profileNameNullValidationDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Partially refresh based on current category`
-  String get mediaUnlockRefreshByCategory {
-    return Intl.message(
-      'Partially refresh based on current category',
-      name: 'mediaUnlockRefreshByCategory',
       desc: '',
       args: [],
     );
@@ -9568,16 +9483,6 @@ class AppLocalizations {
     return Intl.message(
       'NAT Enhancement',
       name: 'endpointIndependentNat',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `More Streaming Unlock Items`
-  String get mediaUnlockMoreStreamingPlatforms {
-    return Intl.message(
-      'More Streaming Unlock Items',
-      name: 'mediaUnlockMoreStreamingPlatforms',
       desc: '',
       args: [],
     );
@@ -10383,16 +10288,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Pin up to 3 items on widget`
-  String get mediaUnlockPinnedSettingsDesc {
-    return Intl.message(
-      'Pin up to 3 items on widget',
-      name: 'mediaUnlockPinnedSettingsDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Start server`
   String get iperfServerStart {
     return Intl.message(
@@ -10778,16 +10673,6 @@ class AppLocalizations {
     return Intl.message(
       'Proxy Chains',
       name: 'proxyChains',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Misc Settings`
-  String get mediaUnlockMiscSettings {
-    return Intl.message(
-      'Misc Settings',
-      name: 'mediaUnlockMiscSettings',
       desc: '',
       args: [],
     );

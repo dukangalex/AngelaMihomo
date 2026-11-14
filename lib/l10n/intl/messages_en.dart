@@ -1552,38 +1552,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("Batch Node Test"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Connectivity Test"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "Show colored icons by default",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "Connectivity Test Details",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "Display Settings",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "Show more IP details",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "Misc Settings",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "More Streaming Unlock Items",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "Pin up to 3 items on widget",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "Partially refresh based on current category",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "Auto refresh on node change",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "You can select up to 3 items",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Unlocked"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "Memory already optimal",
     ),

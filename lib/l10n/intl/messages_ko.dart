@@ -1261,32 +1261,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("검사 범위 선택"),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("노드 일괄 검사"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("연결성 테스트"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "기본적으로 컬러 아이콘 표시",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("연결성 테스트 상세"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("표시 설정"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "IP 상세 정보 더 보기",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("기타 설정"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "더 많은 스트리밍 잠금 해제 항목",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "위젯에 최대 3개 항목 고정",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "현재 카테고리를 기반으로 부분 새로고침",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "노드 변경 시 자동 새로고침",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "최대 3개 항목까지 선택할 수 있습니다",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("잠금 해제됨"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "메모리가 이미 최적 상태입니다",
     ),

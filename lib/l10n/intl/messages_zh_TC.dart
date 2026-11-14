@@ -1132,32 +1132,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("選擇檢測範圍"),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("節點批次檢測"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("連通性測試"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "預設顯示彩色 ICON 圖示",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("連通性測試詳情"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("顯示設定"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "返回更多 IP 詳細資訊",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("雜項設定"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "更多串流媒體解鎖項目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "可選 3 個在小組件常駐展示的項目",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "根據當前分組狀態局部重新整理",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "節點變化時自動重新整理檢測",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最多只能選擇 3 個項目",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("已解鎖"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("記憶體已處於最佳狀態"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("記憶體與執行時"),
     "memoryFreed": m46,

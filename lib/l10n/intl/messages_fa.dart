@@ -1494,38 +1494,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("آزمون گروهی نودها"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("تست اتصال"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "جزئیات تست اتصال",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات نمایش",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "نمایش جزئیات بیشتر IP",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات متفرقه",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "موارد بیشتر آنلاک استریم",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "پین کردن حداکثر ۳ مورد در ویجت",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "تازه‌سازی جزئی بر اساس دسته‌بندی فعلی",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "به‌روزرسانی خودکار هنگام تغییر گره",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "حداکثر می‌توانید ۳ مورد را انتخاب کنید",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("قفل‌گشایی شده"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "حافظه از قبل بهینه است",
     ),

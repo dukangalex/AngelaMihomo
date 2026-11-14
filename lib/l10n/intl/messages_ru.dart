@@ -1548,38 +1548,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage(
       "Пакетная проверка узлов",
     ),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Проверка доступности"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "Показывать цветные значки по умолчанию",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "Детали проверки доступности",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "Настройки отображения",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "Показывать больше сведений об IP",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "Прочие настройки",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "Больше платформ стриминга",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "Закрепить до 3 элементов в виджете",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "Частичное обновление по текущей категории",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "Автообновление при смене узла",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "Можно выбрать максимум 3 элемента",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Разблокировано"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "Память уже оптимальна",
     ),

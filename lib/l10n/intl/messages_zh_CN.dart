@@ -1162,32 +1162,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("选择检测范围"),
     "mediaBatchSummary": m45,
     "mediaBatchTest": MessageLookupByLibrary.simpleMessage("节点批量检测"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("连通性测试"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "默认显示彩色 ICON 图标",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("连通性测试详情"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("显示设置"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "返回更多 IP 详细信息",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("杂项设置"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "更多流媒体解锁项目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "可选 3 个在小部件常驻展示的项目",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "根据当前分组状态局部刷新",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "节点变化时自动刷新检测",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最多只能选择 3 个项目",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("已解锁"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("内存已处于最佳状态"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("内存与运行时"),
     "memoryFreed": m46,
