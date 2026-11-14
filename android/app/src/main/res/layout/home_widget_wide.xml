@@ -59,7 +59,7 @@
                         android:ellipsize="end"
                         android:maxWidth="160dp"
                         android:singleLine="true"
-                        android:text="@string/bett_box"
+                        android:text="@string/angela_mihomo"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
