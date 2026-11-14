@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.HapticFeedbackConstants
@@ -14,27 +15,8 @@ import app.angelabettbox.plugins.AppPlugin
 import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.FlutterEngineGroup
-import io.flutter.embedding.engine.FlutterEngineCache
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugins.GeneratedPluginRegistrant
-
-class MainActivity : FlutterActivity() {
-    companion object {
-        private const val MAIN_ENGINE_ID = "bettbox_main_engine"
-    }
-
-    private fun isTvDevice(context: Context): Boolean {
-        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
-        if (uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
-            return true
-        }
-        val packageManager = context.packageManager
-        return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-                || packageManager.hasSystemFeature(PackageManager.FEATURE_TELEVISION)
+import app.angelabettbox.widget.HomeWidgets
+| packageManager.hasSystemFeature(PackageManager.FEATURE_TELEVISION)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +27,13 @@ class MainActivity : FlutterActivity() {
             installSplashScreen()
         }
         super.onCreate(savedInstanceState)
+        HomeWidgets.handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        HomeWidgets.handleIntent(intent)
     }
 
     override fun onResume() {

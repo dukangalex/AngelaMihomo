@@ -74,7 +74,15 @@ void main() {
         final loaded = await preferences.getConfig();
         expect(loaded!.profiles.single.id, 'old');
         expect(await oldProfile.readAsString(), 'old');
-        expect(store.getString(configKey), oldJson);
+        // Upstream v1.19.8 persistence model: the config file is the
+        // authoritative copy and the shared-preferences mirror is a
+        // legacy fallback that getConfig removes after a successful
+        // file load, so recovery is asserted on the file instead.
+        final fileContent = await File(
+          await appPath.appConfigPath,
+        ).readAsString();
+        final fileConfig = Config.compatibleFromJson(json.decode(fileContent));
+        expect(fileConfig.profiles.single.id, 'old');
       },
     );
   }

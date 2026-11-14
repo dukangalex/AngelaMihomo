@@ -9,7 +9,7 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/pages/editor.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
-import 'package:bett_box/views/profiles/scripts.dart';
+import 'package:bett_box/views/profiles/managed_options.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -35,8 +35,7 @@ class EditProfileViewState extends State<EditProfileView> {
   late TextEditingController urlController;
   late TextEditingController autoUpdateDurationController;
   late bool autoUpdate;
-  late bool useScriptOverride;
-  late String? scriptId;
+  late bool managed = widget.profile.managed;
   late TextEditingController ageSecretKeyController;
   FocusNode? urlFocusNode;
   bool _obscureAgeSecretKey = true;
@@ -53,8 +52,6 @@ class EditProfileViewState extends State<EditProfileView> {
     labelController = TextEditingController(text: widget.profile.label);
     urlController = TextEditingController(text: widget.profile.url);
     autoUpdate = widget.isNew ? false : widget.profile.autoUpdate;
-    useScriptOverride = widget.profile.useScriptOverride;
-    scriptId = widget.profile.scriptId;
     autoUpdateDurationController = TextEditingController(
       text: widget.profile.autoUpdateDuration.inMinutes.toString(),
     );
@@ -66,7 +63,9 @@ class EditProfileViewState extends State<EditProfileView> {
       unawaited(focusNode.requestFocusWhenIdle());
     }
     appPath.getProfilePath(widget.profile.id).then((path) async {
-      fileInfoNotifier.value = await _getFileInfo(path);
+      final fileInfo = await _getFileInfo(path);
+      if (!mounted) return;
+      fileInfoNotifier.value = fileInfo;
     });
   }
 
@@ -77,38 +76,8 @@ class EditProfileViewState extends State<EditProfileView> {
     autoUpdateDurationController.dispose();
     ageSecretKeyController.dispose();
     urlFocusNode?.dispose();
+    fileInfoNotifier.dispose();
     super.dispose();
-  }
-
-  String _scriptSelectionLabel() {
-    final scriptProps = globalState.config.scriptProps;
-    if (!useScriptOverride) return appLocalizations.scriptNotUsed;
-    final chosen = scriptId == null
-        ? null
-        : scriptProps.scriptById(scriptId!);
-    if (chosen != null) return chosen.label;
-    // Legacy follow-global state: show the script it resolves to.
-    final current = scriptProps.currentScript;
-    return current?.label ?? appLocalizations.scriptNotUsed;
-  }
-
-  Future<void> _handlePickScript() async {
-    await BaseNavigator.push(
-      context,
-      ScriptsView(
-        profileSelection: (
-          useScriptOverride: useScriptOverride,
-          scriptId: scriptId,
-        ),
-        onProfileSelectionChanged: (selection) {
-          if (!mounted) return;
-          setState(() {
-            useScriptOverride = selection.useScriptOverride;
-            scriptId = selection.scriptId;
-          });
-        },
-      ),
-    );
   }
 
   Future<void> _handleConfirm() async {
@@ -123,11 +92,10 @@ class EditProfileViewState extends State<EditProfileView> {
           ? null
           : ageSecretKeyController.text.trim(),
       autoUpdate: autoUpdate,
+      managed: managed,
       autoUpdateDuration: Duration(
         minutes: int.parse(autoUpdateDurationController.text),
       ),
-      useScriptOverride: useScriptOverride,
-      scriptId: scriptId,
     );
     if (widget.isNew) {
       final ref = appController.ref;
@@ -280,6 +248,7 @@ class EditProfileViewState extends State<EditProfileView> {
     }
     rawText = data;
     fileData = Uint8List.fromList(utf8.encode(data));
+    if (!mounted) return;
     fileInfoNotifier.value = fileInfoNotifier.value?.copyWith(
       size: fileData?.length ?? 0,
       lastModified: DateTime.now(),
@@ -294,10 +263,33 @@ class EditProfileViewState extends State<EditProfileView> {
     final bytes = await platformFile.readAsBytes();
     if (bytes.isEmpty) return;
     fileData = bytes;
+    if (!mounted) return;
     fileInfoNotifier.value = fileInfoNotifier.value?.copyWith(
       size: fileData?.length ?? 0,
       lastModified: DateTime.now(),
     );
+  }
+
+  Future<void> _exportProfileFile() async {
+    final res = await globalState.appController.safeRun<bool>(
+      () async {
+        final bytes = fileData ?? await (await profile.getFile()).readAsBytes();
+        final rawName = (profile.label ?? profile.id).trim();
+        final fileName = (rawName.endsWith('.yaml') || rawName.endsWith('.yml'))
+            ? rawName
+            : '$rawName.yaml';
+        final value = await picker.saveFile(
+          fileName,
+          bytes,
+          allowedExtensions: ['yaml', 'yml'],
+        );
+        return value != null;
+      },
+      needLoading: true,
+      title: appLocalizations.tip,
+    );
+    if (res != true || !mounted) return;
+    context.showNotifier(appLocalizations.exportSuccess);
   }
 
   Future<void> _handleBack() async {
@@ -432,20 +424,42 @@ class EditProfileViewState extends State<EditProfileView> {
               },
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: CommonCard(
-            type: CommonCardType.filled,
-            radius: 16,
-            child: ListItem(
-              title: Text(appLocalizations.script),
-              subtitle: Text(_scriptSelectionLabel()),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _handlePickScript,
+      ],
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: CommonCard(
+          type: CommonCardType.filled,
+          radius: 16,
+          child: ListItem.switchItem(
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(child: Text(appLocalizations.managedMode)),
+                const SizedBox(width: 2),
+                IconButton(
+                  onPressed: () => showManagedOptions(context),
+                  tooltip: appLocalizations.managedOptions,
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 30,
+                    height: 30,
+                  ),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: const Icon(Icons.settings_outlined),
+                ),
+              ],
+            ),
+            subtitle: Text(appLocalizations.managedModeDesc),
+            delegate: SwitchDelegate<bool>(
+              value: managed,
+              onChanged: (value) => setState(() => managed = value),
             ),
           ),
         ),
-      ],
+      ),
       if (!widget.isNew)
         ValueListenableBuilder<FileInfo?>(
           valueListenable: fileInfoNotifier,
@@ -479,6 +493,11 @@ class EditProfileViewState extends State<EditProfileView> {
                                     avatar: const Icon(Icons.upload),
                                     label: appLocalizations.upload,
                                     onPressed: _uploadProfileFile,
+                                  ),
+                                  CommonChip(
+                                    avatar: const Icon(Icons.download),
+                                    label: appLocalizations.exportFile,
+                                    onPressed: _exportProfileFile,
                                   ),
                                 ],
                               ),
@@ -585,6 +604,7 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
         final result = await clashCore.convertAgeSecretKeyToPublicKey(
           privateKey,
         );
+        if (!mounted) return;
         if (result.isSuccess &&
             result.data != null &&
             result.data!.isNotEmpty) {
@@ -598,13 +618,16 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
           });
         }
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           _helperText = appLocalizations.agePrivateKeyRequired;
         });
       } finally {
-        setState(() {
-          _isGenerating = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+        }
       }
     } else {
       setState(() {
@@ -613,6 +636,7 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
 
       try {
         final keyPair = await clashCore.generateAgeKeyPair();
+        if (!mounted) return;
         final secKey = keyPair['secret-key'] ?? '';
         final pubKey = keyPair['public-key'] ?? '';
 
@@ -624,13 +648,16 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
           });
         }
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           _helperText = e.toString();
         });
       } finally {
-        setState(() {
-          _isGenerating = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+        }
       }
     }
   }

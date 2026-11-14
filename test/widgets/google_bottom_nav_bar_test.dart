@@ -179,33 +179,20 @@ void main() {
     expect(changes, [0, 3]);
   });
 
-  testWidgets('跨多格点击时抬手不重启滑行，并立即切换页面', (tester) async {
+  // Upstream v1.19.8 nav-bar model: a plain tap snaps the pill to the
+  // target instantly (no glide) and switches the page immediately;
+  // only drags glide. This replaces the fork-era tap-glide spec.
+  testWidgets('跨多格点击立即切换页面且指示块吸附到位', (tester) async {
     final changes = <int>[];
     await _pumpBar(tester, selectedIndex: 0, onTabChange: changes.add);
 
     final gesture = await tester.startGesture(Offset(_slotCenterX(3), _barY));
     await tester.pump();
-    final steps = <double>[];
-    var previous = _pillCenterX(tester);
-    for (var i = 0; i < 4; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      final current = _pillCenterX(tester);
-      steps.add(current - previous);
-      previous = current;
-    }
     await gesture.up();
-    for (var i = 0; i < 3; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      final current = _pillCenterX(tester);
-      steps.add(current - previous);
-      previous = current;
-    }
+    await tester.pump();
 
     expect(changes, [3]);
-    for (var i = 1; i < steps.length; i++) {
-      expect(steps[i], greaterThan(0), reason: 'step $i');
-      expect(steps[i], lessThan(steps[i - 1]), reason: 'step $i');
-    }
+    expect(_pillCenterX(tester), closeTo(_slotCenterX(3), 0.5));
 
     await tester.pumpAndSettle();
     expect(changes, [3]);
@@ -235,7 +222,9 @@ void main() {
 
     for (var i = 0; i < 15; i++) {
       await tester.pump(const Duration(milliseconds: 16));
-      final transforms = tester.widgetList<Transform>(find.byType(Transform)).toList();
+      final transforms = tester
+          .widgetList<Transform>(find.byType(Transform))
+          .toList();
       if (transforms.length >= 4) {
         final scale1 = transforms[1].transform.storage[0];
         final scale2 = transforms[2].transform.storage[0];
@@ -254,7 +243,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    final transforms = tester.widgetList<Transform>(find.byType(Transform)).toList();
+    final transforms = tester
+        .widgetList<Transform>(find.byType(Transform))
+        .toList();
     if (transforms.length >= 2) {
       final scale1 = transforms[1].transform.storage[0];
       expect(scale1, greaterThan(1.0));

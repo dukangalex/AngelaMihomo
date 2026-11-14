@@ -29,7 +29,6 @@ func Handle(conn net.Conn, tunnel C.Tunnel, request *mierumodel.Request, additio
 		conn.Close()
 		return
 	}
-
 	user := conn.(mierucommon.UserContext).UserName()
 	// Handle the connection with tunnel.
 	switch request.Command {

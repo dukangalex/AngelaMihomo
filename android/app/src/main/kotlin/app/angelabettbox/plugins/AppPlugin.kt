@@ -26,7 +26,7 @@ import app.angelabettbox.R
 import app.angelabettbox.extensions.awaitResult
 import app.angelabettbox.extensions.getActionIntent
 import app.angelabettbox.models.Package
-import io.flutter.embedding.android.FlutterActivity
+import app.angelabettbox.widget.HomeWidgetsimport io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -201,10 +201,36 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         }
     }
 
+    fun invokeHomeWidget(method: String, argument: Any): Boolean {
+        if (!::channel.isInitialized) return false
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            runCatching { channel.invokeMethod(method, argument) }
+        }
+        return true
+    }
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
+            "updateHomeWidget" -> {
+                val data = call.arguments as? String
+                if (data != null) HomeWidgets.save(BettboxApplication.getAppContext(), data)
+                result.success(null)
+            }
+
+            "hasHomeWidgets" -> {
+                result.success(HomeWidgets.hasWidgets(BettboxApplication.getAppContext()))
+            }
+
+            "consumeHomeWidgetAction" -> {
+                result.success(HomeWidgets.consumePendingAction())
+            }
+
             "moveTaskToBack" -> {
                 activityRef?.get()?.moveTaskToBack(true)
+                result.success(true)
+            }
+            "notifyLowMemory" -> {
+                GlobalState.notifyLowMemory()
                 result.success(true)
             }
             "updateExcludeFromRecents" -> {
@@ -536,8 +562,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         val granted = resultCode == FlutterActivity.RESULT_OK &&
             runCatching { VpnService.prepare(AngelaMihomoApplication.getAppContext()) == null }.getOrDefault(false)
         if (granted) GlobalState.initServiceEngine()
-        completeVpnPermission(granted)
-        return true
+        completeVpnPermission(granted)        return true
     }
 
     private fun onRequestPermissionsResultListener(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {

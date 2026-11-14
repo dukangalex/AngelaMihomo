@@ -8,16 +8,19 @@ import (
 	bridge "core/dart-bridge"
 	"core/platform"
 	"core/state"
+	"core/toolbox"
 	t "core/tun"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
+	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
+	"github.com/metacubex/mihomo/tunnel"
 	"golang.org/x/sync/semaphore"
 	"net"
 	"strconv"
@@ -397,4 +400,29 @@ func setState(s *C.char) {
 func updateDns(s *C.char) {
 	dnsList := C.GoString(s)
 	handleUpdateDns(dnsList)
+}
+
+// --- Upstream v1.19.8 additions (screen state / network change hooks) ---
+
+//export setScreenState
+func setScreenState(on C.int) {
+	toolbox.SetTrafficScreenOn(on != 0)
+}
+
+//export networkChanged
+func networkChanged() {
+	defer func() {
+		_ = recover()
+	}()
+	handleNetworkChanged()
+}
+
+func handleNetworkChanged() {
+	if !isInit || !state.CurrentState.VpnProps.QuickResponse {
+		return
+	}
+	log.Infoln("[APP] Network changed, resetting connections")
+	closeConnections()
+	closeIdleOutbounds(tunnel.Proxies(), tunnel.Providers())
+	resolver.ResetConnection()
 }

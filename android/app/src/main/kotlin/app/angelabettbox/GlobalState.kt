@@ -10,32 +10,8 @@ import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
 import app.angelabettbox.services.AngelaMihomoTileService
-import io.flutter.FlutterInjector
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.plugins.GeneratedPluginRegistrant
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-
-enum class RunState {
-    START,
-    PENDING,
-    STOP
-}
-
-object GlobalState {
-    val runLock = ReentrantLock()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+import app.angelabettbox.widget.HomeWidgets
+pe(SupervisorJob() + Dispatchers.Main.immediate)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     const val NOTIFICATION_CHANNEL = "AngelaMihomo"
@@ -64,6 +40,9 @@ object GlobalState {
 
     @Volatile
     var isSmartStopped = false
+
+    @Volatile
+    var smartStopOverride = false
 
     @Volatile
     var isStopping = false
@@ -99,6 +78,7 @@ object GlobalState {
         currentRunState = newState
         _runState.value = newState
         requestTileUpdate()
+        mainHandler.post { HomeWidgets.refreshAll(BettboxApplication.getAppContext()) }
     }
 
     private val tileRetryRunnable = Runnable {
@@ -276,6 +256,12 @@ object GlobalState {
     }
 
     fun isServiceEngineRunning(): Boolean = serviceEngine != null
+
+    fun notifyLowMemory() {
+        runCatching {
+            (flutterEngine ?: serviceEngine)?.dartExecutor?.notifyLowMemoryWarning()
+        }
+    }
 
     fun reconnectIpc() {
         (serviceEngine?.plugins?.get(TilePlugin::class.java) as? TilePlugin)?.handleReconnectIpc()

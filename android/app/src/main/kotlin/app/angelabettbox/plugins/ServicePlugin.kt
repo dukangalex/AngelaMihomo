@@ -22,11 +22,10 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         private val gson = Gson()
         private const val TAG = "ServicePlugin"
 
-        private fun notify(method: String, stillCurrent: () -> Boolean = { true }) {
-            mainHandler.post {
+        private fun notify(method: String, arguments: Any? = null, stillCurrent: () -> Boolean = { true }) {            mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
-                    runCatching { ch.invokeMethod(method, null) }
+                    runCatching { ch.invokeMethod(method, arguments) }
                         .onFailure { Log.e(TAG, "$method notify error: ${it.message}") }
                 }
             }
@@ -34,9 +33,9 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         fun notifyNetworkChanged() = notify("networkChanged")
         fun notifyQuickResponse() = notify("quickResponse")
-        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", stillCurrent)
-        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {
-            mainHandler.post {
+        fun notifyVpnStartFailed(stillCurrent: () -> Boolean = { true }) = notify("vpnStartFailed", stillCurrent = stillCurrent)
+        fun notifyScreenStateChanged(isOn: Boolean) = notify("screenStateChanged", isOn)
+        fun notifyRunStateChanged(state: RunState, stillCurrent: () -> Boolean = { true }) {            mainHandler.post {
                 if (!stillCurrent()) return@post
                 activeChannels.forEach { ch ->
                     runCatching { ch.invokeMethod("runStateChanged", state.name) }
@@ -78,16 +77,20 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "setSmartStopped" -> {
                 GlobalState.isSmartStopped = call.argument<Boolean>("value") ?: false
                 result.success(true)
-            }
+            "resumeCore" -> {
+                Thread {
+                    VpnPlugin.resumeCore()
+                    mainHandler.post { result.success(true) }
+                }.start()            }
             "isSmartStopped" -> result.success(GlobalState.isSmartStopped)
+            "requestSmartAutoStopCheck" -> {
+                VpnPlugin.requestSmartAutoStopCheck()
+                result.success(true)
+            }
             "getLocalIpAddresses" -> result.success(VpnPlugin.getLocalIpAddresses())
             "getLocalGateways" -> result.success(VpnPlugin.getLocalGateways())
             "getNetworkInfo" -> result.success(VpnPlugin.getNetworkInfo())
             "getCurrentDns" -> result.success(VpnPlugin.getCurrentDns())
-            "setQuickResponse" -> {
-                VpnPlugin.setQuickResponse(call.argument<Boolean>("enabled") ?: false)
-                result.success(true)
-            }
             "init" -> {
                 GlobalState.getCurrentAppPlugin()?.requestNotificationsPermission()
                 GlobalState.initServiceEngine()

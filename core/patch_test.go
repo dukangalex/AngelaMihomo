@@ -1779,3 +1779,57 @@ func TestApplyPatchTunDNSMode(t *testing.T) {
 		t.Errorf("patched dns-mode should override, got %q", rawCfg.Tun.DNSMode)
 	}
 }
+func TestApplyPatchProfileServices(t *testing.T) {
+	previous := patchForAndroid
+	patchForAndroid = false
+	defer func() { patchForAndroid = previous }()
+
+	profile := `
+external-controller-tls: 0.0.0.0:19443
+external-controller-unix: x.sock
+external-controller-pipe: \\.\pipe\x
+external-doh-server: /dns-query
+ss-config: ss://aes-128-gcm:pass@:17891
+tuic-server: {enable: true, listen: 0.0.0.0:17892}
+listeners:
+  - {name: socks, type: socks, port: 17890}
+  - {name: tun, type: tun, stack: system}
+tunnels:
+  - tcp,0.0.0.0:16553,1.1.1.1:53,DIRECT
+dns: {enable: true, listen: 0.0.0.0:1053, nameserver: [223.5.5.5]}
+`
+	cases := []struct {
+		allowLan bool
+		address  string
+	}{
+		{false, "127.0.0.1"},
+		{true, "0.0.0.0"},
+	}
+	for _, item := range cases {
+		rawCfg := parsePatchProfile(t, profile)
+		params := patchParams(t, `{"general":{"allow-lan":`+strconv.FormatBool(item.allowLan)+`},"tunnels":["tcp,0.0.0.0:17000,1.1.1.1:53,DIRECT"]}`)
+		if _, err := applyPatch(rawCfg, params); err != nil {
+			t.Fatal(err)
+		}
+		if rawCfg.ExternalControllerTLS != "" || rawCfg.ExternalControllerUnix != "" || rawCfg.ExternalControllerPipe != "" || rawCfg.ExternalDohServer != "" {
+			t.Errorf("allow-lan=%t: profile controllers should be removed", item.allowLan)
+		}
+		if rawCfg.ShadowSocksConfig != "" || rawCfg.VmessConfig != "" || rawCfg.TuicServer.Enable {
+			t.Errorf("allow-lan=%t: profile inbound servers should be removed", item.allowLan)
+		}
+		if len(rawCfg.Listeners) != 1 || rawCfg.Listeners[0]["name"] != "socks" {
+			t.Fatalf("allow-lan=%t: tun listener should be removed: %v", item.allowLan, rawCfg.Listeners)
+		}
+		listen, _ := rawCfg.Listeners[0]["listen"].(string)
+		if item.allowLan && listen != "" || !item.allowLan && listen != item.address {
+			t.Errorf("allow-lan=%t: listener listen = %q", item.allowLan, listen)
+		}
+		if len(rawCfg.Tunnels) != 2 || rawCfg.Tunnels[0].Address != item.address+":16553" || rawCfg.Tunnels[1].Address != "0.0.0.0:17000" {
+			t.Errorf("allow-lan=%t: tunnels = %+v", item.allowLan, rawCfg.Tunnels)
+		}
+		if rawCfg.DNS.Listen != item.address+":1053" {
+			t.Errorf("allow-lan=%t: dns listen = %q", item.allowLan, rawCfg.DNS.Listen)
+		}
+	}
+}
+
