@@ -242,30 +242,7 @@ Future<void> delayTest(
   await delayTestCoordinator.run(groupName, runTest);
 }
 
-/// T113: picks the fastest available proxy out of measured delays.
-///
-/// Only strictly positive delays count as available: a null value
-/// means the proxy was never measured, 0 marks a test still in
-/// flight, and negative values are the failure/timeout markers the
-/// core writes (including the A-12 data-plane-not-ready window), so
-/// none of them may ever win an optimization pick. Returns null when
-/// no candidate is available, in which case the caller must keep the
-/// group's current selection.
-String? pickFastestAvailableProxy(Map<String, int?> delayByName) {
-  String? bestName;
-  var bestValue = 0;
-  for (final entry in delayByName.entries) {
-    final value = entry.value;
-    if (value == null || value <= 0) continue;
-    if (bestName == null || value < bestValue) {
-      bestName = entry.key;
-      bestValue = value;
-    }
-  }
-  return bestName;
-}
-
-/// Outcome of one global delay test + auto-optimization pass (T113).
+/// Outcome of one global delay test pass (T113).
 class GlobalDelayTestResult {
   /// Unique (proxy, test-url) targets measured across all groups.
   final int totalNodes;
@@ -273,19 +250,9 @@ class GlobalDelayTestResult {
   /// Measured targets whose latest delay is a valid positive value.
   final int availableNodes;
 
-  /// Selector groups whose selection was changed: group name ->
-  /// newly selected proxy name.
-  final Map<String, String> optimizedSelections;
-
-  /// Selector groups that had testable members but not a single
-  /// available one; their previous selection was kept.
-  final List<String> noAvailableGroups;
-
   const GlobalDelayTestResult({
     required this.totalNodes,
     required this.availableNodes,
-    required this.optimizedSelections,
-    required this.noAvailableGroups,
   });
 }
 
@@ -294,16 +261,14 @@ class GlobalDelayTestResult {
 /// Measures every member of every group through the exact same path
 /// a per-group delay test takes (same target resolution via
 /// [_collectDelayTestTargets], each group's own test-url, the same
-/// concurrency pool inside [delayTest]), then picks the fastest
-/// available member for every Selector group. Picks are written
-/// through the App's single selection authority — the profile
-/// selectedMap plus the core changeProxy call, i.e. the same pair a
-/// manual tap performs (the debounced variant cannot be used here:
-/// its per-tag debounce would drop all but the last group).
-/// URLTest / Fallback / LoadBalance groups are kernel-managed and
-/// never get a manual selection. DIRECT is measured like any other
-/// member but is never an optimization candidate — auto-switching a
-/// group to direct would silently change the user's routing intent.
+/// concurrency pool inside [delayTest]) and reports how many of the
+/// measured targets came back with a valid delay.
+///
+/// Test-only by product decision (2026-11-14): a finished run must
+/// never change any group's current selection — picking a node is
+/// the user's manual action alone. This function therefore performs
+/// no selection writes of any kind; the results feed only the
+/// on-card progress, the summary line and the result dialog.
 Future<GlobalDelayTestResult> runGlobalDelayTest({
   void Function(int done, int total)? onProgress,
 }) async {
@@ -344,47 +309,9 @@ Future<GlobalDelayTestResult> runGlobalDelayTest({
     }
   }
 
-  // Snapshot every Selector group's pick before applying any of
-  // them, so one group's change cannot skew another group's read.
-  final picks = <String, String>{};
-  final noAvailableGroups = <String>[];
-  for (final group in groups) {
-    if (group.type != GroupType.Selector) continue;
-    final delayByName = <String, int?>{};
-    for (final member in group.all) {
-      if (_isNonTestableProxy(member)) continue;
-      if (member.name.toUpperCase() == 'DIRECT') continue;
-      delayByName[member.name] = appController.getTrayProxyDelay(
-        proxyName: member.name,
-        testUrl: group.testUrl,
-      );
-    }
-    if (delayByName.isEmpty) continue;
-    final pick = pickFastestAvailableProxy(delayByName);
-    if (pick == null) {
-      noAvailableGroups.add(group.name);
-      continue;
-    }
-    if (pick != appController.getSelectedProxyName(group.name)) {
-      picks[group.name] = pick;
-    }
-  }
-  for (final entry in picks.entries) {
-    appController.updateCurrentSelectedMap(entry.key, entry.value);
-    await appController.changeProxy(
-      groupName: entry.key,
-      proxyName: entry.value,
-    );
-  }
-  if (picks.isNotEmpty) {
-    await appController.updateGroups();
-    appController.addCheckIp();
-  }
   return GlobalDelayTestResult(
     totalNodes: plannedTargets.length,
     availableNodes: availableNodes,
-    optimizedSelections: picks,
-    noAvailableGroups: noAvailableGroups,
   );
 }
 

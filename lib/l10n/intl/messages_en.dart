@@ -65,8 +65,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m19(label) => "${label} already exists";
 
-  static String m20(available, total, optimized) =>
-      "${available}/${total} available · ${optimized} groups optimized";
+  static String m20(available, total) => "${available}/${total} available";
 
   static String m21(count) =>
       "${Intl.plural(count, one: '${count} hit', other: '${count} hits')}";
@@ -1024,17 +1023,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalSpeedTestFailed": MessageLookupByLibrary.simpleMessage(
       "Global speed test failed",
     ),
-    "globalSpeedTestKeptLabel": MessageLookupByLibrary.simpleMessage(
-      "No available node, current selection kept: ",
-    ),
     "globalSpeedTestNeedCore": MessageLookupByLibrary.simpleMessage(
       "Start the core before running the global speed test",
     ),
     "globalSpeedTestNoProxies": MessageLookupByLibrary.simpleMessage(
       "No proxies available to test",
-    ),
-    "globalSpeedTestOptimizedLabel": MessageLookupByLibrary.simpleMessage(
-      "Groups optimized: ",
     ),
     "globalSpeedTestSummary": m20,
     "globalSpeedTestTestedLabel": MessageLookupByLibrary.simpleMessage(

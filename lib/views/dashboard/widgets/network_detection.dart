@@ -149,7 +149,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
             : appLocalizations.globalSpeedTestSummary(
                 result.availableNodes,
                 result.totalNodes,
-                result.optimizedSelections.length,
               );
       });
       if (result.totalNodes == 0) {
@@ -188,20 +187,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
             Text(
               '${appLocalizations.globalSpeedTestAvailableLabel}${result.availableNodes}',
             ),
-            Text(
-              '${appLocalizations.globalSpeedTestOptimizedLabel}${result.optimizedSelections.length}',
-            ),
-            if (result.optimizedSelections.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              for (final entry in result.optimizedSelections.entries)
-                Text('${entry.key} → ${entry.value}'),
-            ],
-            if (result.noAvailableGroups.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                '${appLocalizations.globalSpeedTestKeptLabel}${result.noAvailableGroups.join(', ')}',
-              ),
-            ],
           ],
         ),
       ),

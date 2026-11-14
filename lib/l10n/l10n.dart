@@ -7639,16 +7639,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Groups optimized: `
-  String get globalSpeedTestOptimizedLabel {
-    return Intl.message(
-      'Groups optimized: ',
-      name: 'globalSpeedTestOptimizedLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Clear FakeIP and DNS cache?`
   String get clearCacheDesc {
     return Intl.message(
@@ -9024,17 +9014,13 @@ class AppLocalizations {
     );
   }
 
-  /// `{available}/{total} available · {optimized} groups optimized`
-  String globalSpeedTestSummary(
-    Object available,
-    Object total,
-    Object optimized,
-  ) {
+  /// `{available}/{total} available`
+  String globalSpeedTestSummary(Object available, Object total) {
     return Intl.message(
-      '$available/$total available · $optimized groups optimized',
+      '$available/$total available',
       name: 'globalSpeedTestSummary',
       desc: '',
-      args: [available, total, optimized],
+      args: [available, total],
     );
   }
 
@@ -10126,16 +10112,6 @@ class AppLocalizations {
   /// `Fading Cube`
   String get fadingCube {
     return Intl.message('Fading Cube', name: 'fadingCube', desc: '', args: []);
-  }
-
-  /// `No available node, current selection kept: `
-  String get globalSpeedTestKeptLabel {
-    return Intl.message(
-      'No available node, current selection kept: ',
-      name: 'globalSpeedTestKeptLabel',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Special Proxy`

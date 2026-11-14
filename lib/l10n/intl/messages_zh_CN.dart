@@ -61,8 +61,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m19(label) => "${label}当前已存在";
 
-  static String m20(available, total, optimized) =>
-      "可用 ${available}/${total} · 优选 ${optimized} 组";
+  static String m20(available, total) => "可用 ${available}/${total}";
 
   static String m21(count) => "${Intl.plural(count, other: '${count} 次')}";
 
@@ -770,17 +769,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "可用节点：",
     ),
     "globalSpeedTestFailed": MessageLookupByLibrary.simpleMessage("全局测速失败"),
-    "globalSpeedTestKeptLabel": MessageLookupByLibrary.simpleMessage(
-      "无可用节点，保留原选择：",
-    ),
     "globalSpeedTestNeedCore": MessageLookupByLibrary.simpleMessage(
       "请先启动核心，再进行全局测速",
     ),
     "globalSpeedTestNoProxies": MessageLookupByLibrary.simpleMessage(
       "没有可测速的节点",
-    ),
-    "globalSpeedTestOptimizedLabel": MessageLookupByLibrary.simpleMessage(
-      "优选组数：",
     ),
     "globalSpeedTestSummary": m20,
     "globalSpeedTestTestedLabel": MessageLookupByLibrary.simpleMessage("共测节点："),
