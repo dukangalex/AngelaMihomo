@@ -22,6 +22,7 @@ import (
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/dialer"
+	"github.com/metacubex/mihomo/component/mmdb"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
@@ -69,12 +70,12 @@ const (
 	speedTestErrorCancelled   = "cancelled"
 )
 
+// Exit IP discovery uses only Cloudflare's official trace endpoint: the
+// service sees nothing beyond the exit IP itself. Geo enrichment is done
+// locally against the on-device mmdb databases and never leaves the app.
 var speedTestExitIPURLs = []string{
 	"https://cloudflare.com/cdn-cgi/trace",
-	"https://api.ip.sb/cdn-cgi/trace",
 }
-
-var speedTestExitInfoURL = "http://ip-api.com/json/"
 
 var (
 	speedtestNetServersURL = "https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true"
@@ -486,24 +487,33 @@ func (t *speedTester) probeOnly(ctx context.Context) {
 }
 
 func (t *speedTester) fetchExitInfo(ctx context.Context) json.RawMessage {
-	url := speedTestExitInfoURL
-	if t.params.Lang != "" {
-		url += "?lang=" + t.params.Lang
+	ip := t.snapshot().ExitIp
+	if ip == "" {
+		ip = t.fetchExitIP(ctx, nil)
 	}
-	fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	resp, body, err := t.fetch(fetchCtx, t.probe, url, 16*1024)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if ip == "" {
 		return nil
 	}
-	var info struct {
-		Status string `json:"status"`
-		Query  string `json:"query"`
-	}
-	if json.Unmarshal(body, &info) != nil || info.Status == "fail" || info.Query == "" {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
 		return nil
 	}
-	return json.RawMessage(body)
+	geo := mmdb.LookupGeo(parsedIP)
+	payload, err := json.Marshal(map[string]any{
+		"ip":            ip,
+		"countryCode":   geo.CountryCode,
+		"country":       geo.Country,
+		"province":      geo.Province,
+		"city":          geo.City,
+		"asn":           geo.ASN,
+		"asName":        geo.ASName,
+		"continentCode": geo.ContinentCode,
+		"hasCityDb":     geo.HasCityDb,
+	})
+	if err != nil {
+		return nil
+	}
+	return json.RawMessage(payload)
 }
 
 func (t *speedTester) run(ctx context.Context, push func(SpeedTestState)) {
@@ -684,7 +694,7 @@ func (t *speedTester) resolveOutbound() *SpeedTestOutbound {
 	if metadata == nil {
 		return nil
 	}
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		var info *statistic.TrackerInfo
 		statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
 			if current := c.Info(); current.Metadata == metadata {
@@ -734,14 +744,15 @@ func prepareCloudflareSpeedTest(ctx context.Context, t *speedTester) (*speedTest
 	if resp.StatusCode != http.StatusOK || resp.Header.Get("cf-ray") == "" || trace["ip"] == "" {
 		return nil, errSpeedTestBlocked
 	}
+	colo := strings.ToUpper(trace["colo"])
 	return &speedTestTarget{
 		latencyURL:  cloudflareSpeedTestHost + "/__down?bytes=0",
 		downloadURL: cloudflareSpeedTestHost + "/__down?bytes=" + strconv.Itoa(speedTestDownloadBytes),
 		uploadURL:   cloudflareSpeedTestHost + "/__up",
 		server: &SpeedTestServer{
 			Ip:      trace["ip"],
-			Country: strings.ToUpper(trace["loc"]),
-			Colo:    strings.ToUpper(trace["colo"]),
+			Country: cloudflareColoCountry[colo],
+			Colo:    colo,
 			Host:    "speed.cloudflare.com",
 		},
 	}, nil
@@ -1054,7 +1065,7 @@ func parseServerTiming(header string) float64 {
 
 func (t *speedTester) measureLatency(ctx context.Context, target *speedTestTarget, count int, progress func(int)) []float64 {
 	samples := make([]float64, 0, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		if ctx.Err() != nil {
 			break
 		}

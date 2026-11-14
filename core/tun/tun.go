@@ -38,7 +38,7 @@ func Start(fd int, device string, stack constant.TUNStack, dnsMode string, disab
 	var prefix4 []netip.Prefix
 	tempPrefix4, err := netip.ParsePrefix(state.DefaultIpv4Address)
 	if err != nil {
-		log.Errorln("startTUN error:", err)
+		log.Errorln("startTUN error: %v", err)
 		return nil, err
 	}
 	prefix4 = append(prefix4, tempPrefix4)
@@ -46,7 +46,7 @@ func Start(fd int, device string, stack constant.TUNStack, dnsMode string, disab
 	if ipv6Enabled {
 		tempPrefix6, err := netip.ParsePrefix(state.DefaultIpv6Address)
 		if err != nil {
-			log.Errorln("startTUN error:", err)
+			log.Errorln("startTUN error: %v", err)
 			return nil, err
 		}
 		prefix6 = append(prefix6, tempPrefix6)
@@ -82,7 +82,10 @@ func Start(fd int, device string, stack constant.TUNStack, dnsMode string, disab
 	listener, err := sing_tun.New(options, tunnel.Tunnel)
 
 	if err != nil {
-		log.Errorln("startTUN error:", err)
+		log.Errorln("startTUN error: %v", err)
+		if listener != nil {
+			_ = listener.Close()
+		}
 		return nil, err
 	}
 

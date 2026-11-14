@@ -431,7 +431,7 @@ List<Widget> buildIpInfoRows(IpInfo info) {
   ];
 }
 
-class _IpCard extends StatelessWidget {
+class _IpCard extends StatefulWidget {
   final _IpEntry entry;
   final bool showLabel;
   final VoidCallback? onRetry;
@@ -439,7 +439,15 @@ class _IpCard extends StatelessWidget {
   const _IpCard({required this.entry, this.showLabel = true, this.onRetry});
 
   @override
+  State<_IpCard> createState() => _IpCardState();
+}
+
+class _IpCardState extends State<_IpCard> {
+  @override
   Widget build(BuildContext context) {
+    final entry = widget.entry;
+    final showLabel = widget.showLabel;
+    final onRetry = widget.onRetry;
     final colorScheme = context.colorScheme;
     final info = entry.info;
     final category = entry.ip.isEmpty ? null : utils.classifyIp(entry.ip);

@@ -23,14 +23,19 @@ env:
   # Temporarily disabled SignPath due to account risk control:
   # SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
   SIGNPATH_API_TOKEN: ''
-  IPINFO_TOKEN: ${{ secrets.IPINFO_TOKEN || vars.IPINFO_TOKEN }}
   
+# Default token scope for every job; jobs that need more declare it themselves.
+permissions:
+  contents: read
+
 jobs:
   version-guard:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Verify tag matches pubspec version
         run: |
           if [[ "${GITHUB_REF}" != refs/tags/v* ]]; then
@@ -77,30 +82,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           submodules: recursive
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Rust (Windows)
         if: matrix.platform == 'windows'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: ${{ matrix.arch == 'arm64' && 'aarch64-pc-windows-msvc' || 'x86_64-pc-windows-msvc' }}
 
       - name: Setup Rust (Android)
         if: matrix.platform == 'android'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
 
       - name: Setup Rust (Linux)
         if: matrix.platform == 'linux'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
 
       - name: Setup Rust (macOS)
         if: matrix.platform == 'macos'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: ${{ matrix.arch == 'amd64' && 'x86_64-apple-darwin' || 'aarch64-apple-darwin' }}
 
@@ -134,7 +140,7 @@ jobs:
           
       - name: Setup Java (Android)
         if: matrix.platform == 'android'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: '17'
@@ -167,11 +173,15 @@ jobs:
       - name: Install Dependencies (Linux)
         if: matrix.platform == 'linux'
         run: |
-          sudo apt-get update -o Acquire::Retries=3 -o Acquire::ForceIPv4=true
-          sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::ForceIPv4=true --fix-missing libcurl4-openssl-dev ninja-build libgtk-3-dev rpm
+          sudo sed -i 's/azure\.archive\.ubuntu\.com/archive.ubuntu.com/g' /etc/apt/sources.list /etc/apt/apt-mirrors.txt /etc/apt/sources.list.d/* 2>/dev/null || true
+          sudo sed -i 's/azure\.ports\.ubuntu\.com/ports.ubuntu.com/g' /etc/apt/sources.list /etc/apt/apt-mirrors.txt /etc/apt/sources.list.d/* 2>/dev/null || true
+          for i in {1..3}; do
+            sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 -o Acquire::ForceIPv4=true && break || sleep 5
+          done
+          sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 -o Acquire::ForceIPv4=true --fix-missing libcurl4-openssl-dev ninja-build libgtk-3-dev rpm
 
       - name: Setup Golang
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ matrix.compatible == true && '1.24.x' || '1.25.x' }}
           cache-dependency-path: core/go.sum
@@ -181,7 +191,7 @@ jobs:
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: ${{ contains(matrix.os, 'arm') && 'master' || 'stable' }}
           cache: true
@@ -218,12 +228,10 @@ jobs:
       - name: Build AngelaMihomo (Non-Windows)
         if: matrix.platform != 'windows'
         shell: bash
-        env:
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           flutter pub get
           dart run build_runner build
-          dart setup.dart ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }} ${{ matrix.compatible == true && '--compatible' || '' }}
+          dart setup.dart ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }} ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }}
 
       - name: Verify production APK signatures
         if: matrix.platform == 'android' && env.BETTBOX_ALLOW_DEBUG_PREVIEW != 'true'
@@ -238,7 +246,7 @@ jobs:
           python3 tools/verify-android-release.py --apksigner "$apksigner" dist/*.apk
 
       - name: Install SignPath (Windows)
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         env:
           SIGNPATH_API_TOKEN: ${{ env.SIGNPATH_API_TOKEN }}
@@ -252,7 +260,7 @@ jobs:
           Install-Module -Name SignPath -Force -Scope CurrentUser -Repository PSGallery
 
       - name: Set Signing Policy Slug (Windows)
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
           $isStable = '${{ env.IS_STABLE }}' -eq 'true'
@@ -279,12 +287,12 @@ jobs:
         run: |
           flutter pub get
           dart run build_runner build
-          dart setup.dart windows --arch ${{ matrix.arch }} --out core-only ${{ matrix.compatible == true && '--compatible' || '' }}
+          dart setup.dart windows --arch ${{ matrix.arch }} --out core-only ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }}
 
       - name: Upload Unsigned Core
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         id: upload-core
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-core-${{ matrix.arch }}-${{ matrix.compatible }}
           path: libclash/windows/AngelaMihomoCore.exe
@@ -292,7 +300,7 @@ jobs:
           retention-days: 1
 
       - name: Wait for Unsigned Core
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -300,7 +308,7 @@ jobs:
 
       - name: Sign Core (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -318,12 +326,12 @@ jobs:
         run: |
           $signedCoreHash = (Get-FileHash libclash/windows/AngelaMihomoCore.exe -Algorithm SHA256).Hash.ToLower()
           Write-Host "Signed Core SHA256 (TOKEN for Helper): $signedCoreHash"
-          dart setup.dart windows --arch ${{ matrix.arch }} --out helper --core-hash $signedCoreHash ${{ matrix.compatible == true && '--compatible' || '' }}
+          dart setup.dart windows --arch ${{ matrix.arch }} --out helper --core-hash $signedCoreHash ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }}
 
       - name: Upload Unsigned HelperService
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         id: upload-helper
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-helper-${{ matrix.arch }}-${{ matrix.compatible }}
           path: libclash/windows/AngelaMihomoHelperService.exe
@@ -331,7 +339,7 @@ jobs:
           retention-days: 1
 
       - name: Wait for Unsigned HelperService
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -339,7 +347,7 @@ jobs:
 
       - name: Sign HelperService (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -354,13 +362,14 @@ jobs:
       - name: Build AngelaMihomo (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
-        env:
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           $coreHash = (Get-FileHash libclash/windows/AngelaMihomoCore.exe -Algorithm SHA256).Hash.ToLower()
           Write-Host "Core SHA256: $coreHash"
           
-          $desc = if ('${{ matrix.compatible }}' -eq 'true') { "${{ matrix.arch }}-compatible" } else { "${{ matrix.arch }}" }
+          $descParts = @('${{ matrix.arch }}')
+          if ('${{ matrix.compatible }}' -eq 'true') { $descParts += 'compatible' }
+          if ('${{ matrix.lite }}' -eq 'true') { $descParts += 'lite' }
+          $desc = $descParts -join '-'
           $appEnv = if ('${{ env.IS_STABLE }}' -eq 'true') { "stable" } else { "pre" }
           
           $flutterArgs = @(
@@ -369,19 +378,13 @@ jobs:
             "--dart-define=APP_ENV=$appEnv",
             "--dart-define=APP_ASSET_SUFFIX=windows-$desc-setup.exe"
           )
-          if ($env:SENTRY_DSN) {
-            $flutterArgs += "--dart-define=SENTRY_DSN=$env:SENTRY_DSN"
-          }
-          if ($env:IPINFO_TOKEN) {
-            $flutterArgs += "--dart-define=IPINFO_TOKEN=$env:IPINFO_TOKEN"
-          }
           
           flutter @flutterArgs
 
       - name: Upload Unsigned AngelaMihomo
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-bettbox
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: unsigned-bettbox-${{ matrix.arch }}-${{ matrix.compatible }}
           path: build/windows/${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}/runner/Release/AngelaMihomo.exe
@@ -397,7 +400,7 @@ jobs:
 
       - name: Sign AngelaMihomo (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -413,10 +416,10 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          dart windows/packaging/exe/package_windows.dart --arch ${{ matrix.arch }} ${{ matrix.compatible == true && '--compatible' || '' }} --env ${{ env.IS_STABLE == 'true' && 'stable' || 'pre' }}
+          dart windows/packaging/exe/package_windows.dart --arch ${{ matrix.arch }} ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }} --env ${{ env.IS_STABLE == 'true' && 'stable' || 'pre' }}
 
       - name: Find Installer Path
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
           $desc = if ('${{ matrix.compatible }}' -eq 'true') { "${{ matrix.arch }}-compatible" } else { "${{ matrix.arch }}" }
@@ -425,17 +428,17 @@ jobs:
           echo "INSTALLER_FILENAME=$(Split-Path -Leaf $installer)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Upload Unsigned Installer
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         id: upload-installer
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: unsigned-installer-${{ matrix.arch }}-${{ matrix.compatible }}
+          name: unsigned-installer-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}${{ matrix.lite == true && '-lite' || '' }}
           path: ${{ env.INSTALLER_PATH }}
           if-no-files-found: error
           retention-days: 1
 
       - name: Wait for Unsigned Installer
-        if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -443,7 +446,7 @@ jobs:
 
       - name: Sign Installer (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@c92b958760219087e01f8d67a1669ed57afe2627 # v2
         timeout-minutes: 60
         with:
           api-token: '${{ env.SIGNPATH_API_TOKEN }}'
@@ -456,21 +459,21 @@ jobs:
           output-artifact-directory: 'dist'
       
       - name: Clean up intermediate unsigned artifacts
-        if: always() && matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
+        if: always() && matrix.platform == 'windows' && matrix.sign == true && env.SIGNPATH_API_TOKEN != ''
         continue-on-error: true
-        uses: geekyeggo/delete-artifact@v6
+        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6
         with:
           name: |
-            unsigned-core-${{ matrix.arch }}-${{ matrix.compatible }}
-            unsigned-helper-${{ matrix.arch }}-${{ matrix.compatible }}
-            unsigned-bettbox-${{ matrix.arch }}-${{ matrix.compatible }}
-            unsigned-installer-${{ matrix.arch }}-${{ matrix.compatible }}
+            unsigned-core-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}${{ matrix.lite == true && '-lite' || '' }}
+            unsigned-helper-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}${{ matrix.lite == true && '-lite' || '' }}
+            unsigned-bettbox-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}${{ matrix.lite == true && '-lite' || '' }}
+            unsigned-installer-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}${{ matrix.lite == true && '-lite' || '' }}
           failOnError: false
       
 
       - name: Upload Artifacts (macOS & Android)
         if: matrix.platform != 'linux' && matrix.platform != 'windows'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}
           path: ./dist/*
@@ -479,7 +482,7 @@ jobs:
 
       - name: Upload Windows Installer Artifact
         if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-installer
           path: ./dist/*.exe
@@ -488,7 +491,7 @@ jobs:
 
       - name: Upload Windows Portable Artifact
         if: matrix.platform == 'windows' && matrix.compatible == true && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-portable
           path: ./dist/*.zip
@@ -497,7 +500,7 @@ jobs:
 
       - name: Upload DEB Artifact
         if: matrix.platform == 'linux'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-deb
           path: ./dist/*.deb
@@ -506,7 +509,7 @@ jobs:
 
       - name: Upload AppImage Artifact
         if: matrix.platform == 'linux' && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-AppImage
           path: ./dist/*.AppImage
@@ -515,7 +518,7 @@ jobs:
 
       - name: Upload RPM Artifact
         if: matrix.platform == 'linux' && matrix.arch == 'amd64'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: AngelaMihomo-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.compatible == true && '-compatible' || '' }}-rpm
           path: ./dist/*.rpm
@@ -524,17 +527,22 @@ jobs:
 
   upload:
     if: startsWith(github.ref, 'refs/tags/v')
-    permissions: write-all
+    # Least privilege: create/update the GitHub Release and read this run's
+    # artifacts. Nothing else in this job needs the token.
+    permissions:
+      contents: write
+      actions: read
     needs: [ build ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Download
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           path: ./dist/
           pattern: AngelaMihomo-*
@@ -555,9 +563,18 @@ jobs:
             sed -e "s|BASE_VERSION|$base_version|g" -e "s|VERSION|$version|g" ./.github/release_template.md >> release.md
           fi
 
+      - name: Generate SHA256SUMS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          rm -f SHA256SUMS
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+
       - name: Release
         if: ${{ env.SHOULD_RELEASE == 'true' }}
-        uses: softprops/action-gh-release@v3.0.0
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           files: ./dist/*
           body_path: './release.md'

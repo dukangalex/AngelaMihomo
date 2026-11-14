@@ -33,6 +33,7 @@ class _ChainValidator extends ClashHandlerInterface {
     String path, {
     String? ageSecretKey,
     List<String> disabledGroups = const [],
+    bool snippet = false,
   }) async {
     return Result.success(<String, dynamic>{
       'proxies': [

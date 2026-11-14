@@ -183,32 +183,6 @@ class AppDAVSetting extends _$AppDAVSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideDns;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideDns: value);
-  }
-}
-
-@riverpod
-class OverrideTestUrl extends _$OverrideTestUrl with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return globalState.config.overrideTestUrl;
-  }
-
-  @override
-  onUpdate(value) {
-    globalState.config = globalState.config.copyWith(overrideTestUrl: value);
-  }
-}
-
-@riverpod
 class OverrideNtp extends _$OverrideNtp with AutoDisposeNotifierMixin {
   @override
   bool build() {
@@ -295,6 +269,26 @@ class ProxiesStyleSetting extends _$ProxiesStyleSetting
 }
 
 @riverpod
+class TrafficStatsSetting extends _$TrafficStatsSetting
+    with AutoDisposeNotifierMixin {
+  @override
+  TrafficStatsProps build() {
+    return globalState.config.trafficStatsProps;
+  }
+
+  @override
+  onUpdate(value) {
+    globalState.config = globalState.config.copyWith(trafficStatsProps: value);
+  }
+
+  void updateState(
+    TrafficStatsProps Function(TrafficStatsProps state) builder,
+  ) {
+    state = builder(state);
+  }
+}
+
+@riverpod
 class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
   @override
   ScriptProps build() {
@@ -323,8 +317,7 @@ class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
     if (index != -1) {
       unawaited(list.removeAt(index).deleteContent());
     }
-    final nextId = id == state.currentId ? null : state.currentId;
-    state = state.copyWith(scripts: list, currentId: nextId);
+    state = state.copyWith(scripts: list);
   }
 
   bool isExits(String label) {

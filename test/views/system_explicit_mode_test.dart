@@ -178,7 +178,7 @@ void main() {
   test('routing preferences pause and restore without mutation', () {
     final opts = SystemExplicitOptions(
       chinaDirect: true,
-      blockCommonWebRtc: true,
+      webRtcMode: 'on',
     );
     final rule = opts.buildRuntimeRulesForMode(Mode.rule);
     expect(rule, isNotEmpty);

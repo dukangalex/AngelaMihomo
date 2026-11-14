@@ -49,7 +49,12 @@ class SystemExplicitOptions {
   bool chinaDirect;
   bool chinaPublicDnsDirect;
   bool lanDirect;
-  bool blockCommonWebRtc;
+
+  /// WebRTC blocking is tri-state (T95 linkage matrix row 19): 'unset'
+  /// defers to the active script's own default (the built-in script
+  /// blocks), 'on' makes the App the single executor, and 'off' is an
+  /// explicit user decision that also suppresses the script's rules.
+  String webRtcMode;
   bool blockAds;
 
   SystemExplicitOptions({
@@ -57,9 +62,13 @@ class SystemExplicitOptions {
     this.chinaDirect = false,
     this.chinaPublicDnsDirect = false,
     this.lanDirect = false,
-    this.blockCommonWebRtc = false,
+    this.webRtcMode = 'unset',
     this.blockAds = false,
   });
+
+  bool get blockCommonWebRtc => webRtcMode == 'on';
+
+  set blockCommonWebRtc(bool value) => webRtcMode = value ? 'on' : 'off';
 
   bool get anyEnabled =>
       privacy ||
@@ -74,6 +83,8 @@ class SystemExplicitOptions {
     'chinaDirect': chinaDirect,
     'chinaPublicDnsDirect': chinaPublicDnsDirect,
     'lanDirect': lanDirect,
+    'webRtcMode': webRtcMode,
+    // Legacy key kept so a downgrade keeps the explicit-on state.
     'blockCommonWebRtc': blockCommonWebRtc,
     'blockAds': blockAds,
   };
@@ -84,7 +95,11 @@ class SystemExplicitOptions {
       chinaDirect: json['chinaDirect'] == true,
       chinaPublicDnsDirect: json['chinaPublicDnsDirect'] == true,
       lanDirect: json['lanDirect'] == true,
-      blockCommonWebRtc: json['blockCommonWebRtc'] == true,
+      webRtcMode: switch (json['webRtcMode']) {
+        'on' || 'off' || 'unset' => json['webRtcMode'] as String,
+        // Legacy bool storage: only an explicit true carried intent.
+        _ => json['blockCommonWebRtc'] == true ? 'on' : 'unset',
+      },
       blockAds: json['blockAds'] == true,
     );
   }

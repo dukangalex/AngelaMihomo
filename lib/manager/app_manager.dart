@@ -64,35 +64,50 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         detectionState.flushPendingCheck();
       }
     });
-    ref.listenManual(checkMediaUnlockProvider, (prev, next) {
-      if (next.b && (prev?.a != next.a)) {
-        mediaUnlockState.startCheckOnNodeChange();
-      }
-    });
     ref.listenManual(configStateProvider, (prev, next) {
       if (prev != next) {
         globalState.appController.savePreferencesDebounce();
       }
     });
     ref.listenManual(profilesProvider, (prev, next) {
-      if (prev == null || !next.hasAddedOrChanged(prev)) return;
+      if (prev == null) return;
+      globalState.appController.syncBundles(prev, next);
+      if (!next.hasAddedOrChanged(prev)) return;
       globalState.appController.autoBackupDebounce();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateDashboardRefreshState();
       detectionState.tryStartCheck();
-      mediaUnlockState.tryStartCheck();
       globalState.appController.updateGroupsDebounce();
     });
     if (window == null) {
       return;
     }
-    ref.listenManual(autoSetSystemDnsStateProvider, (prev, next) async {
+    ref.listenManual(systemDnsTakeoverProvider, (prev, next) async {
       if (prev == next) {
         return;
       }
-      final shouldSet = next.a == true && next.b == true;
-      await system.updateDns(!shouldSet);
+      final shouldSet = next == true;
+      final result = await system.updateDns(!shouldSet);
+      if (result != null && result.isFailure) {
+        // DNS failures must never pass silently: on Linux a failed
+        // set/restore can leave the machine without name resolution.
+        commonPrint.warn('System DNS update failed: $result');
+        final message = switch (result.failure) {
+          LinuxDnsFailure.setFailedRestored =>
+            appLocalizations.systemDnsSetFailedKept,
+          LinuxDnsFailure.setFailedRestoreFailed =>
+            appLocalizations.systemDnsSetFailedBroken,
+          LinuxDnsFailure.restoreFailed =>
+            appLocalizations.systemDnsRestoreFailed,
+          LinuxDnsFailure.none => appLocalizations.systemDnsSetFailedKept,
+        };
+        await globalState.showMessage(
+          title: appLocalizations.tip,
+          message: TextSpan(text: message),
+          cancelable: false,
+        );
+      }
     });
     ref.listenManual(currentBrightnessProvider, (prev, next) {
       if (prev == next) {
@@ -205,7 +220,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       }
 
       detectionState.checkOnForegroundResume();
-      mediaUnlockState.checkOnForegroundResume();
     }
     if (state == AppLifecycleState.resumed && system.isAndroid) {
       final hidden = ref.read(appSettingProvider.select((s) => s.hidden));
@@ -416,6 +430,14 @@ class _SidebarOverlayState extends State<_SidebarOverlay> {
   }
 
   @override
+  void dispose() {
+    _entry
+      ..remove()
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Overlay(initialEntries: [_entry]);
   }
@@ -523,7 +545,7 @@ class AppSidebarContainer extends ConsumerWidget {
         ? 132.0
         : requiredWidth <= 136.0
         ? 148.0
-        : 156.0;
+        : math.max(156.0, (requiredWidth + 8.0).ceilToDouble());
     if (system.isMacOS) return itemsWidth;
     final brandPainter = TextPainter(
       text: TextSpan(
@@ -733,9 +755,6 @@ class AppSidebarContainer extends ConsumerWidget {
     }
 
     final isLight = context.colorScheme.brightness == Brightness.light;
-    final pureBlack = ref.watch(
-      themeSettingProvider.select((s) => s.pureBlack),
-    );
     final washColor = context.colorScheme.surfaceContainer;
     final baseColor = isLight
         ? Color.lerp(
@@ -743,13 +762,11 @@ class AppSidebarContainer extends ConsumerWidget {
             context.colorScheme.surfaceContainerLowest,
             0.85,
           )!
-        : (pureBlack
-              ? washColor
-              : Color.lerp(
-                  washColor,
-                  context.colorScheme.surfaceContainerHigh,
-                  0.35,
-                )!);
+        : Color.lerp(
+            washColor,
+            context.colorScheme.surfaceContainerHigh,
+            0.35,
+          )!;
     return _SidebarOverlay(
       child: _WashBackground(
         baseColor: baseColor,
@@ -1155,7 +1172,6 @@ class _SidebarFlyoutState extends ConsumerState<_SidebarFlyout>
   Widget _buildPanel(
     BuildContext context,
     List<ToolsShortcut> shortcuts,
-    bool pureBlack,
   ) {
     final itemBox = this.context.findRenderObject();
     final overlayBox = Overlay.of(this.context).context.findRenderObject();
@@ -1187,7 +1203,7 @@ class _SidebarFlyoutState extends ConsumerState<_SidebarFlyout>
                 end: Offset.zero,
               ).animate(_animation),
               child: Material(
-                color: isLight || pureBlack
+                color: isLight
                     ? colorScheme.surfaceContainerLow
                     : colorScheme.surfaceContainerHighest,
                 elevation: 6,
@@ -1247,13 +1263,9 @@ class _SidebarFlyoutState extends ConsumerState<_SidebarFlyout>
       appSettingProvider.select((state) => state.sidebarFlyoutEntries),
     );
     final shortcuts = getToolsShortcuts(moreItems, entries);
-    final pureBlack = ref.watch(
-      themeSettingProvider.select((state) => state.pureBlack),
-    );
     return OverlayPortal(
       controller: _portalController,
-      overlayChildBuilder: (context) =>
-          _buildPanel(context, shortcuts, pureBlack),
+      overlayChildBuilder: (context) => _buildPanel(context, shortcuts),
       child: MouseRegion(
         onEnter: (_) => _handleEnter(),
         onExit: (_) => _handleExit(),

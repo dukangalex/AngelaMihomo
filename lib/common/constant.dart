@@ -26,6 +26,7 @@ final baseInfoEdgeInsets = EdgeInsets.symmetric(
 final defaultTextScaleFactor =
     WidgetsBinding.instance.platformDispatcher.textScaleFactor;
 const httpTimeoutDuration = Duration(milliseconds: 5000);
+const maxDelayTestConcurrency = 100;
 const moreDuration = Duration(milliseconds: 100);
 const animateDuration = Duration(milliseconds: 100);
 const midDuration = Duration(milliseconds: 200);
@@ -33,6 +34,7 @@ const commonDuration = Duration(milliseconds: 300);
 const defaultUpdateDuration = Duration(days: 1);
 const mmdbFileName = 'geoip.metadb';
 const asnFileName = 'ASN.mmdb';
+const cityFileName = 'City.mmdb';
 const geoSiteFileName = 'GeoSite.dat';
 const bundleMRSFileName = 'BundleMRS.7z';
 final double kHeaderHeight = system.isDesktop ? 40 : 0;
@@ -42,24 +44,23 @@ const clashConfigKey = 'clash_config';
 const configKey = 'config';
 const customSidebarIconKey = 'custom_sidebar_icon';
 const customDashboardTitleKey = 'custom_dashboard_title';
+const lastManagedScriptVersionKey = 'last_managed_script_version';
 const double dialogCommonWidth = 300;
 const repository = 'dukangalex/AngelaMihomo';
-const ipInfoToken = String.fromEnvironment('IPINFO_TOKEN', defaultValue: '');
 const defaultExternalController = '127.0.0.1:9090';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
 double getFloatingBottomBarReserveHeight(BuildContext context) {
+  if (globalState.isAndroidTV) return 0;
   final viewBottom = max(
     MediaQuery.viewPaddingOf(context).bottom,
     MediaQuery.paddingOf(context).bottom,
   );
-  if (globalState.isAndroidTV) {
-    return 132.0 + (viewBottom > 12 ? viewBottom - 12 : 0);
-  }
   return 84.0 + (viewBottom > 12 ? viewBottom - 12 : 0);
 }
 
 double getFloatingBottomBarFABReserveHeight(BuildContext context) {
+  if (globalState.isAndroidTV) return 0;
   final viewBottom = max(
     MediaQuery.viewPaddingOf(context).bottom,
     MediaQuery.paddingOf(context).bottom,
@@ -67,7 +68,7 @@ double getFloatingBottomBarFABReserveHeight(BuildContext context) {
   return 84.0 - min(viewBottom, 12.0);
 }
 
-const defaultTestUrl = 'https://www.apple.com/library/test/success.html';
+const defaultTestUrl = 'https://www.gstatic.com/generate_204';
 
 // Preset test URLs
 const presetTestUrls = [
@@ -79,7 +80,7 @@ const presetTestUrls = [
 ];
 
 // Preset NTP servers
-const defaultNtpServer = 'time.apple.com';
+const defaultNtpServer = 'ntp.aliyun.com';
 const presetNtpServers = [
   'ntp.aliyun.com',
   'time.apple.com',
@@ -126,26 +127,12 @@ const profilesStoreKey = PageStorageKey<String>('profiles');
 
 const defaultPrimaryColor = 0xFF00897B;
 
-const maxLength = 512;
+const maxLength = 1024;
 const maxLogLength = 512;
 
 final mainIsolate = 'AngelaMihomoMainIsolate';
 
 final serviceIsolate = 'AngelaMihomoServiceIsolate';
-
-const defaultPrimaryColors = [
-  0xFF1E293B,
-  0xFF1976D2,
-  defaultPrimaryColor,
-  0xFFE91E63,
-  0xFF7B1FA2,
-  0xFFD97706,
-  0xFF4F46E5,
-  0xFF008FB6,
-  0xFF388E3C,
-  0xFF827717,
-  0xFF795548,
-];
 
 const legacyPrimaryColors = [
   0xFF1E293B,

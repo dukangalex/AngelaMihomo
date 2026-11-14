@@ -133,7 +133,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     _saveWidgets(widgets);
   }
 
-  List<Widget> _buildActions(bool showStartSwitch, bool isDark) {
+  List<Widget> _buildActions(bool showStartSwitch, bool watermark) {
     return [
       _buildIsEdit((isEdit) {
         if (!isEdit) return const SizedBox.shrink();
@@ -192,22 +192,23 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 onPressed: _handleUpdateIsEdit,
               ),
               PopupMenuItemData(
-                icon: isDark ? Icons.light_mode : Icons.dark_mode,
-                label: isDark ? appLocalizations.light : appLocalizations.dark,
-                onPressed: () {
-                  ref
-                      .read(themeSettingProvider.notifier)
-                      .updateState(
-                        (state) => state.copyWith(
-                          themeMode: isDark ? ThemeMode.light : ThemeMode.dark,
-                        ),
-                      );
-                },
-              ),
-              PopupMenuItemData(
                 icon: Icons.title,
                 label: appLocalizations.customDashboardTitle,
                 onPressed: _showEditTitleDialog,
+              ),
+              PopupMenuItemData(
+                icon: watermark
+                    ? Icons.check_circle_rounded
+                    : Icons.circle_outlined,
+                label: appLocalizations.backgroundWatermark,
+                onPressed: () {
+                  ref
+                      .read(appSettingProvider.notifier)
+                      .updateState(
+                        (state) =>
+                            state.copyWith(dashboardWatermark: !watermark),
+                      );
+                },
               ),
               PopupMenuItemData(
                 icon: Icons.restart_alt,
@@ -254,6 +255,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 
   Future<void> _handleRestartCore() async {
+    if (system.isAndroid) {
+      await system.restartApp();
+      return;
+    }
     final result = await globalState.showMessage(
       title: appLocalizations.restartCoreTitle,
       message: TextSpan(text: appLocalizations.restartCoreDesc),
@@ -294,13 +299,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         (state) => (state.dashboardTitle, state.showStartSwitch),
       ),
     );
-    final isDark = ref.watch(
-      currentBrightnessProvider.select(
-        (brightness) => brightness == Brightness.dark,
-      ),
+    final watermark = ref.watch(
+      appSettingProvider.select((state) => state.dashboardWatermark),
     );
 
-    final spacing = 12.mAp;
+    // Home is the hierarchy ruler; its grid breathes one notch wider.
+    final spacing = 16.mAp;
     final sizes = ref.watch(
       appSettingProvider.select(
         (state) => system.isAndroid
@@ -315,117 +319,142 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     ];
 
     final title = customTitle ?? appLocalizations.dashboard;
+    return LayoutBuilder(
+      builder: (context, page) => _buildScaffold(
+        title: title,
+        inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
+        isMobileView: isMobileView,
+        showStartSwitch: showStartSwitch,
+        watermark: watermark,
+        spacing: spacing,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildScaffold({
+    required String title,
+    required double inset,
+    required bool isMobileView,
+    required bool showStartSwitch,
+    required bool watermark,
+    required double spacing,
+    required List<DashboardTile> children,
+  }) {
     return CommonScaffold(
       title: title,
-      titleWidget: globalState.isPre
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Flexible(
-                  child: EmojiText(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+      titleWidget: Padding(
+        padding: EdgeInsets.only(left: inset),
+        child: globalState.isPre
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: EmojiText(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
                 const SizedBox(width: 8),
                 const _PreviewMark(),
               ],
             )
           : null,
-      actions: _buildActions(showStartSwitch, isDark),
+      ),
+      actions: _buildActions(showStartSwitch, watermark),
       body: ScrollEdgeRise(
-        builder: (_, rise) => Align(
-          alignment: Alignment.topCenter,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final contentWidth = math.min(
-                constraints.maxWidth,
-                dashboardMaxGridWidth,
-              );
-              final int columns = isMobileView
-                  ? 8
-                  : DashboardGridBand.of(contentWidth).columns;
-              final bottomReserve = isMobileView
-                  ? getFloatingBottomBarReserveHeight(context)
-                  : 0.0;
-              final verticalPadding = 32.0 + bottomReserve;
-              final unitHeight = dashboardUnitHeight(
-                contentWidth,
-                availableHeight: constraints.hasBoundedHeight
-                    ? constraints.maxHeight - rise
-                    : null,
-                spacing: spacing,
-                verticalPadding: verticalPadding,
-              );
+          builder: (_, rise) => Align(
+            alignment: Alignment.topCenter,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentWidth = math.min(
+                  constraints.maxWidth,
+                  dashboardMaxGridWidth,
+                );
+                final int columns = isMobileView
+                    ? 8
+                    : DashboardGridBand.of(contentWidth).columns;
+                final bottomReserve = isMobileView
+                    ? getFloatingBottomBarReserveHeight(context)
+                    : 0.0;
+                final verticalPadding = 32.0 + bottomReserve;
+                final unitHeight = dashboardUnitHeight(
+                  contentWidth,
+                  availableHeight: constraints.hasBoundedHeight
+                      ? constraints.maxHeight - rise
+                      : null,
+                  spacing: spacing,
+                  verticalPadding: verticalPadding,
+                );
 
-              final dashboardContent = ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: dashboardMaxGridWidth,
-                ),
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    16 + rise,
-                    16,
-                    16 + bottomReserve,
+                final dashboardContent = ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: dashboardMaxGridWidth,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildIsEdit(
-                        (isEdit) => isEdit
-                            ? SystemBackBlock(
-                                child: CommonPopScope(
-                                  onPop: () {
-                                    _handleUpdateIsEdit();
-                                    return false;
-                                  },
-                                  child: const SizedBox.shrink(),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      _buildIsEdit(
-                        (isEdit) => EditableGrid<DashboardTile>(
-                          key: const ValueKey('dashboard-grid'),
-                          items: children,
-                          editing: isEdit,
-                          crossAxisCount: columns,
-                          crossAxisSpacing: spacing,
-                          mainAxisSpacing: spacing,
-                          keyOf: (tile) => tile.widget.family,
-                          crossAxisCellCountOf: (tile) => tile.size.cross * 4,
-                          itemBuilder: (_, tile) => buildDashboardTile(tile),
-                          canResize: (tile) => tile.widget.resizable,
-                          onResize: _resizeWidget,
-                          canDelete: (tile) => tile.widget.widget.isDeletable,
-                          onDelete: _deleteWidget,
-                          onMove: _moveWidget,
-                          overlayWrapper: (child) => DashboardWidgetMetrics(
-                            unitHeight: unitHeight,
-                            spacing: spacing,
-                            columns: columns,
-                            child: child,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      20 + rise,
+                      20,
+                      20 + bottomReserve,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildIsEdit(
+                          (isEdit) => isEdit
+                              ? SystemBackBlock(
+                                  child: CommonPopScope(
+                                    onPop: () {
+                                      _handleUpdateIsEdit();
+                                      return false;
+                                    },
+                                    child: const SizedBox.shrink(),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        _buildIsEdit(
+                          (isEdit) => EditableGrid<DashboardTile>(
+                            key: const ValueKey('dashboard-grid'),
+                            items: children,
+                            editing: isEdit,
+                            crossAxisCount: columns,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            keyOf: (tile) => tile.widget.family,
+                            crossAxisCellCountOf: (tile) => tile.size.cross * 4,
+                            itemBuilder: (_, tile) => buildDashboardTile(tile),
+                            canResize: (tile) => tile.widget.resizable,
+                            onResize: _resizeWidget,
+                            canDelete: (tile) => tile.widget.widget.isDeletable,
+                            onDelete: _deleteWidget,
+                            onMove: _moveWidget,
+                            overlayWrapper: (child) => DashboardWidgetMetrics(
+                              unitHeight: unitHeight,
+                              spacing: spacing,
+                              columns: columns,
+                              child: child,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
 
-              return DashboardWidgetMetrics(
-                unitHeight: unitHeight,
-                spacing: spacing,
-                columns: columns,
-                child: dashboardContent,
-              );
-            },
+                return DashboardWidgetMetrics(
+                  unitHeight: unitHeight,
+                  spacing: spacing,
+                  columns: columns,
+                  child: dashboardContent,
+                );
+              },
+            ),
           ),
         ),
-      ),
     );
   }
 }
@@ -646,8 +675,8 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
 
   Future<void> _handleStart() async {
     if (_isDisabled) return;
-    final isStart = ref.read(runTimeProvider) != null;
-    final newState = !isStart;
+    final newState =
+        ref.read(isSmartStoppedProvider) || ref.read(runTimeProvider) == null;
     setState(() {
       _isDisabled = true;
       _optimisticStart = newState;
@@ -679,17 +708,12 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
     final isStart = ref.watch(runTimeProvider.select((state) => state != null));
     final displayStart = isSmartStopped ? false : (_optimisticStart ?? isStart);
 
-    final canPress =
-        isInit &&
-        hasProfile &&
-        !_isDisabled &&
-        !isRestarting &&
-        !isSmartStopped;
+    final canPress = isInit && hasProfile && !_isDisabled && !isRestarting;
 
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final isBusy = _isDisabled || isRestarting;
-    final isAvailable = isInit && hasProfile && !isSmartStopped;
+    final isAvailable = isInit && hasProfile;
     final (style, onLabel, offLabel) = ref.watch(
       appSettingProvider.select(
         (state) => (
@@ -856,67 +880,9 @@ class _MenuDots extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isStart = ref.watch(runTimeProvider.select((value) => value != null));
-    final colorScheme = context.colorScheme;
-    final color = IconTheme.of(context).color ?? colorScheme.onSurfaceVariant;
-    return RepaintBoundary(
-      child: AnimatedRotation(
-        turns: isOpen ? 0.125 : 0,
-        duration: midDuration,
-        curve: Curves.easeOutBack,
-        child: TweenAnimationBuilder<Color?>(
-          tween: ColorTween(end: isStart ? colorScheme.primary : color),
-          duration: midDuration,
-          builder: (_, accent, _) => SizedBox.square(
-            dimension: 24,
-            child: CustomPaint(
-              painter: _MenuDotsPainter(color: color, accent: accent ?? color),
-            ),
-          ),
-        ),
-      ),
+    return MenuDotsIcon(
+      isOpen: isOpen,
+      accent: isStart ? context.colorScheme.primary : null,
     );
-  }
-}
-
-class _MenuDotsPainter extends CustomPainter {
-  static final Paint _paint = Paint();
-
-  final Color color;
-  final Color accent;
-
-  const _MenuDotsPainter({required this.color, required this.accent});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const radius = 2.6;
-    const distance = 5.2;
-    final center = size.center(Offset.zero);
-    _paint.color = color;
-    canvas.drawCircle(
-      center + const Offset(-distance, -distance),
-      radius,
-      _paint,
-    );
-    canvas.drawCircle(
-      center + const Offset(-distance, distance),
-      radius,
-      _paint,
-    );
-    canvas.drawCircle(
-      center + const Offset(distance, distance),
-      radius,
-      _paint,
-    );
-    _paint.color = accent;
-    canvas.drawCircle(
-      center + const Offset(distance, -distance),
-      radius,
-      _paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_MenuDotsPainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.accent != accent;
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
@@ -53,7 +54,10 @@ Future<void> main(List<String> args) async {
   PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024;
 
   final version = await system.version;
-  await Future.wait([globalState.initApp(version), clashCore.preload()]);
+  await Future.wait([
+    globalState.initApp(version),
+    clashCore.preload(),
+  ]);
 
   try {
     await uiManager.initializeUI();
@@ -107,37 +111,76 @@ Future<void> _service(List<String> flags) async {
     final bootStart = flags.contains('boot');
     final clashLibHandler = ClashLibHandler();
     final smartAutoStopLock = Lock();
+    String? overrideNetwork;
 
-    Future<void> checkSmartAutoStop() async {
+    Future<void> refreshVpnProps() async {
       try {
+        final configFile = File(await appPath.appConfigPath);
+        if (!await configFile.exists()) return;
+        final latestConfig = Config.compatibleFromJson(
+          json.decode(await configFile.readAsString()),
+        );
+        globalState.config = globalState.config.copyWith(
+          vpnProps: latestConfig.vpnProps,
+        );
+      } catch (e) {
+        commonPrint.warn('Refresh vpn props failed: $e');
+      }
+    }
+
+    Future<void> checkSmartAutoStop([bool defaultChanged = false]) async {
+      try {
+        await refreshVpnProps();
         final vpnProps = globalState.config.vpnProps;
-        if (!vpnProps.smartAutoStop) return;
-        final networks = vpnProps.smartAutoStopNetworks;
-        if (networks.isEmpty) return;
+        final networks = vpnProps.smartAutoStop
+            ? vpnProps.smartAutoStopNetworks
+            : '';
 
         await smartAutoStopLock.synchronized(() async {
           final isSmartStopped = await vpn?.isSmartStopped() ?? false;
-          final candidateIps =
-              await vpn?.getLocalIpAddresses() ?? const <String>[];
-          final candidateGateways =
-              await vpn?.getLocalGateways() ?? const <String>[];
-          if (candidateIps.isEmpty && candidateGateways.isEmpty) return;
-
-          final shouldStop =
-              candidateIps.any((ip) => NetworkMatcher.matchAny(ip, networks)) ||
-              candidateGateways.any(
-                (gw) => NetworkMatcher.matchAnyGateway(gw, networks),
-              );
+          final ips = await vpn?.getLocalIpAddresses() ?? const <String>[];
+          final gateways = await vpn?.getLocalGateways() ?? const <String>[];
+          if (await vpn?.isSmartStopOverride() ?? false) {
+            final network = NetworkMatcher.networkKey(ips);
+            overrideNetwork ??= network;
+            if (networks.isEmpty || overrideNetwork != network) {
+              overrideNetwork = null;
+              await vpn?.clearSmartStopOverride();
+            }
+          } else {
+            overrideNetwork = null;
+          }
+          var shouldStop = false;
+          if (networks.isNotEmpty) {
+            if (ips.isNotEmpty || gateways.isNotEmpty) {
+              shouldStop =
+                  overrideNetwork == null &&
+                  NetworkMatcher.shouldStop(
+                    ips: ips,
+                    gateways: gateways,
+                    rules: networks,
+                  );
+            } else if (!(await vpn?.hasPhysicalNetwork() ?? false)) {
+              shouldStop = isSmartStopped;
+            }
+          }
 
           if (shouldStop && !isSmartStopped) {
-            final isRunning = await vpn?.getStatus() ?? false;
-            if (isRunning) {
-              await vpn?.setSmartStopped(true);
+            if (await vpn?.getStatus() ?? false) {
               await vpn?.smartStop();
+              return;
             }
           } else if (!shouldStop && isSmartStopped) {
-            await vpn?.setSmartStopped(false);
             await vpn?.smartResume(clashLibHandler.getAndroidVpnOptions());
+            return;
+          }
+          // The quickResponse setting gates the trigger here: the
+          // merged upstream mechanism invokes quickResponse from Dart,
+          // and this call site is its single gate (the pre-merge
+          // native-side flag was removed upstream with its setter
+          // channel; restoring it would duplicate the mechanism).
+          if (defaultChanged && vpnProps.quickResponse) {
+            await vpn?.quickResponse();
           }
         });
       } catch (e) {
@@ -145,12 +188,58 @@ Future<void> _service(List<String> flags) async {
       }
     }
 
+    Future<void> startCore() async {
+      await ClashCore.initGeo();
+      app.tip(appLocalizations.startVpn);
+      final homeDirPath = await appPath.homeDirPath;
+      final version = await system.version;
+      final clashConfig = globalState.config.patchClashConfig.copyWith.tun(
+        enable: false,
+      );
+
+      Future(() async {
+        try {
+          final profileId = globalState.config.currentProfileId;
+          if (profileId == null) {
+            return;
+          }
+          final params = await globalState.getSetupParams(
+            pathConfig: clashConfig,
+          );
+          final res = await clashLibHandler.quickStart(
+            InitParams(homeDir: homeDirPath, version: version),
+            params,
+            globalState.getCoreState(),
+          );
+          final message = res.message;
+          debugPrint(message);
+          if (message.isNotEmpty) {
+            commonPrint.error('QuickStart failed with error: $message');
+            await vpn?.stop();
+            return;
+          }
+          await vpn?.start(clashLibHandler.getAndroidVpnOptions());
+          Future.delayed(const Duration(seconds: 2), checkSmartAutoStop);
+
+          if (globalState.config.vpnProps.networkSpeedNotification) {
+            final profile = globalState.config.profiles
+                .where((e) => e.id == profileId)
+                .firstOrNull;
+            final profileName = profile?.label ?? 'Bettbox';
+            await vpn?.updateNotificationSpeed(profileName, '↑0B/s ↓0B/s');
+          }
+
+          clashLibHandler.startListener();
+        } catch (e) {
+          commonPrint.error('Fatal error during service background start: $e');
+          await vpn?.stop();
+        }
+      });
+    }
+
     tile?.addListener(
       _TileListenerWithService(
-        onStart: () async {
-          await app.tip(appLocalizations.startVpn);
-          await globalState.handleStart();
-        },
+        onStart: startCore,
         onStop: () async {
           await app.tip(appLocalizations.stopVpn);
           clashLibHandler.stopListener();
@@ -203,44 +292,100 @@ Future<void> _service(List<String> flags) async {
     );
 
     Future(() async {
-      try {
-        final params = await globalState.getSetupParams(
-          pathConfig: clashConfig,
-        );
-        final profileId = globalState.config.currentProfileId;
-        if (profileId == null) {
-          return;
-        }
-        final res = await clashLibHandler.quickStart(
-          InitParams(homeDir: homeDirPath, version: version),
-          params,
-          globalState.getCoreState(),
-        );
-        final message = res.message;
-        debugPrint(message);
-        if (message.isNotEmpty) {
-          commonPrint.error('QuickStart failed with error: $message');
-          await vpn?.stop();
-          return;
-        }
-        await vpn?.start(clashLibHandler.getAndroidVpnOptions());
-        Future.delayed(const Duration(seconds: 2), checkSmartAutoStop);
-
-        if (globalState.config.vpnProps.networkSpeedNotification) {
-          final profile = globalState.config.profiles
-              .where((e) => e.id == profileId)
-              .firstOrNull;
-          await SystemExplicitStore.instance.ensureLoaded();
-          final profileName = SystemExplicitStore.instance.notificationLabel(
-            profile?.label ?? 'Angela Mihomo',
+      // T110: the quick/boot sequence is the only self-recovery path
+      // after the system kills the main process in the background
+      // (always-on restart). It used to run exactly once and fail
+      // silently into vpn.stop(); it now retries with growing delays
+      // and, if every attempt fails, leaves a persistent marker the
+      // UI isolate surfaces on the next launch.
+      var step = 'getSetupParams';
+      var lastError = '';
+      var attempts = 0;
+      final ok = await runQuickStartWithRetry(
+        () async {
+          attempts++;
+          step = 'getSetupParams';
+          final params = await globalState.getSetupParams(
+            pathConfig: clashConfig,
           );
-          await vpn?.updateNotificationSpeed(profileName, '↑0B/s ↓0B/s');
-        }
+          final profileId = globalState.config.currentProfileId;
+          if (profileId == null) {
+            // Nothing configured to start: a legitimate outcome,
+            // not a failure — do not retry, do not mark.
+            return true;
+          }
+          step = 'quickStart';
+          final res = await clashLibHandler.quickStart(
+            InitParams(homeDir: homeDirPath, version: version),
+            params,
+            globalState.getCoreState(),
+          );
+          final message = res.message;
+          debugPrint(message);
+          if (message.isNotEmpty) {
+            lastError = message;
+            commonPrint.error('QuickStart failed with error: $message');
+            return false;
+          }
+          step = 'vpnStart';
+          await vpn?.start(clashLibHandler.getAndroidVpnOptions());
+          Future.delayed(const Duration(seconds: 2), checkSmartAutoStop);
 
-        await clashLibHandler.startListener();
-      } catch (e) {
-        commonPrint.error('Fatal error during service background start: $e');
+          if (globalState.config.vpnProps.networkSpeedNotification) {
+            final profile = globalState.config.profiles
+                .where((e) => e.id == profileId)
+                .firstOrNull;
+            await SystemExplicitStore.instance.ensureLoaded();
+            final profileName = SystemExplicitStore.instance.notificationLabel(
+              profile?.label ?? 'Angela Mihomo',
+            );
+            await vpn?.updateNotificationSpeed(profileName, '↑0B/s ↓0B/s');
+          }
+
+          step = 'startListener';
+          await clashLibHandler.startListener();
+          return true;
+        },
+        onFailure: (error) async {
+          lastError = error.toString();
+          commonPrint.error(
+            'Quick start attempt $attempts failed at step $step: $error',
+          );
+          await vpn?.stop();
+        },
+      );
+      if (!ok) {
+        commonPrint.error(
+          'Fatal error during service background start: quick start '
+          'exhausted $attempts attempts, last step $step, error: $lastError',
+        );
+        try {
+          final marker = QuickStartFailureMarker(
+            time: DateTime.now().toUtc().toIso8601String(),
+            step: step,
+            error: lastError,
+            attempts: attempts,
+          );
+          await File(
+            await appPath.quickStartFailurePath,
+          ).writeAsString(marker.encode(), flush: true);
+        } catch (e) {
+          commonPrint.error('Failed to persist quick start marker: $e');
+        }
         await vpn?.stop();
+      } else {
+        // T110: a successful quick start is the only event that
+        // retires a failure marker left by an earlier exhausted run
+        // (the UI isolate used to delete it on read, which destroyed
+        // the evidence before the user could export it). Best-effort.
+        try {
+          final markerFile = File(await appPath.quickStartFailurePath);
+          if (await markerFile.exists()) {
+            await markerFile.delete();
+          }
+        } catch (e) {
+          commonPrint.warn('Failed to clear quick start marker: $e');
+        }
       }
     });
   }
@@ -319,11 +464,11 @@ class _TileListenerWithService with TileListener {
 @immutable
 class _VpnListenerWithService with VpnListener {
   final Function(String dns) _onDnsChanged;
-  final Function() _onNetworkChanged;
+  final Function(bool defaultChanged) _onNetworkChanged;
 
   const _VpnListenerWithService({
     required Function(String dns) onDnsChanged,
-    required Function() onNetworkChanged,
+    required Function(bool defaultChanged) onNetworkChanged,
   }) : _onDnsChanged = onDnsChanged,
        _onNetworkChanged = onNetworkChanged;
 
@@ -334,8 +479,8 @@ class _VpnListenerWithService with VpnListener {
   }
 
   @override
-  void onNetworkChanged() {
-    super.onNetworkChanged();
-    _onNetworkChanged();
+  void onNetworkChanged(bool defaultChanged) {
+    super.onNetworkChanged(defaultChanged);
+    _onNetworkChanged(defaultChanged);
   }
 }

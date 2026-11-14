@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
@@ -8,8 +10,11 @@ import 'package:flutter/foundation.dart';
 
 class DelayTestCoordinator extends ChangeNotifier {
   String? _testingGroupName;
+  int _epoch = 0;
 
   String? get testingGroupName => _testingGroupName;
+
+  int get epoch => _epoch;
 
   bool get isTesting => _testingGroupName != null;
 
@@ -20,15 +25,25 @@ class DelayTestCoordinator extends ChangeNotifier {
       return false;
     }
 
+    final epoch = _epoch;
     _testingGroupName = groupName;
     notifyListeners();
     try {
       await action();
       return true;
     } finally {
-      _testingGroupName = null;
-      notifyListeners();
+      if (epoch == _epoch) {
+        _testingGroupName = null;
+        notifyListeners();
+      }
     }
+  }
+
+  void cancel() {
+    _epoch++;
+    if (_testingGroupName == null) return;
+    _testingGroupName = null;
+    notifyListeners();
   }
 }
 
@@ -55,6 +70,9 @@ class DelayTestRequestPool {
 
   int get pendingCount => _pendingRequests.length;
 
+  Future<Delay>? pendingRequest(DelayTestTarget target) =>
+      _pendingRequests[target];
+
   Future<Delay> run(DelayTestTarget target, Future<Delay> Function() action) {
     final pendingRequest = _pendingRequests[target];
     if (pendingRequest != null) {
@@ -69,9 +87,16 @@ class DelayTestRequestPool {
       }
     });
   }
+
+  void clear() => _pendingRequests.clear();
 }
 
 final _delayTestRequestPool = DelayTestRequestPool();
+
+void cancelDelayTests() {
+  delayTestCoordinator.cancel();
+  _delayTestRequestPool.clear();
+}
 
 double get listHeaderHeight {
   final measure = globalState.measure;
@@ -105,14 +130,19 @@ Future<void> proxyDelayTest(Proxy proxy, [String? testUrl]) async {
 }
 
 Future<Delay> _testProxyDelay(DelayTestTarget target) {
+  final epoch = delayTestCoordinator.epoch;
   return _delayTestRequestPool.run(target, () async {
     final appController = globalState.appController;
     appController.setDelay(Delay(url: target.url, name: target.name, value: 0));
     final delay = await clashCore.getDelay(target.url, target.name);
-    appController.setDelay(delay);
+    if (epoch == delayTestCoordinator.epoch) {
+      appController.setDelay(delay);
+    }
     return delay;
   });
 }
+
+
 
 bool _isNonTestableProxyName(String proxyName) {
   final name = proxyName.toUpperCase();
@@ -128,6 +158,38 @@ bool _isNonTestableProxy(Proxy proxy) {
       _isNonTestableProxyType(proxy.type);
 }
 
+/// Resolves the concrete delay-test targets for a batch of proxies:
+/// each proxy is mapped to the leaf node that would actually carry
+/// its traffic (following group selections) together with the real
+/// test URL for that leaf. Shared by [delayTest] and the global
+/// delay test so both always measure exactly the same targets.
+Set<DelayTestTarget> _collectDelayTestTargets(
+  List<Proxy> proxies,
+  String? testUrl,
+  List<Group> currentGroups,
+) {
+  final appController = globalState.appController;
+  final targets = <DelayTestTarget>{};
+  for (final proxy in proxies) {
+    if (_isNonTestableProxy(proxy)) {
+      continue;
+    }
+    final state = appController.getProxyCardState(proxy.name);
+    final url = appController.getRealTestUrl(
+      state.testUrl.getSafeValue(testUrl ?? ''),
+    );
+    final name = state.proxyName;
+    if (name.isEmpty ||
+        _isNonTestableProxyName(name) ||
+        (currentGroups.getGroup(name) == null &&
+            currentGroups.getRematchProxy(name) != null)) {
+      continue;
+    }
+    targets.add(DelayTestTarget(name: name, url: url));
+  }
+  return targets;
+}
+
 Future<void> delayTest(
   List<Proxy> proxies, {
   String? testUrl,
@@ -137,24 +199,7 @@ Future<void> delayTest(
   Future<void> runTest() async {
     final appController = globalState.appController;
     final currentGroups = appController.getCurrentGroups();
-    final targets = <DelayTestTarget>{};
-    for (final proxy in proxies) {
-      if (_isNonTestableProxy(proxy)) {
-        continue;
-      }
-      final state = appController.getProxyCardState(proxy.name);
-      final url = appController.getRealTestUrl(
-        state.testUrl.getSafeValue(testUrl ?? ''),
-      );
-      final name = state.proxyName;
-      if (name.isEmpty ||
-          _isNonTestableProxyName(name) ||
-          (currentGroups.getGroup(name) == null &&
-              currentGroups.getRematchProxy(name) != null)) {
-        continue;
-      }
-      targets.add(DelayTestTarget(name: name, url: url));
-    }
+    final targets = _collectDelayTestTargets(proxies, testUrl, currentGroups);
     final concurrencyLimit = globalState.config.proxiesStyle.concurrencyLimit;
 
     // 按实际节点和实际测试地址创建任务，避免多个代理组别名重复测速。
@@ -195,6 +240,79 @@ Future<void> delayTest(
     return;
   }
   await delayTestCoordinator.run(groupName, runTest);
+}
+
+/// Outcome of one global delay test pass (T113).
+class GlobalDelayTestResult {
+  /// Unique (proxy, test-url) targets measured across all groups.
+  final int totalNodes;
+
+  /// Measured targets whose latest delay is a valid positive value.
+  final int availableNodes;
+
+  const GlobalDelayTestResult({
+    required this.totalNodes,
+    required this.availableNodes,
+  });
+}
+
+/// T113: global delay test behind the dashboard detection card.
+///
+/// Measures every member of every group through the exact same path
+/// a per-group delay test takes (same target resolution via
+/// [_collectDelayTestTargets], each group's own test-url, the same
+/// concurrency pool inside [delayTest]) and reports how many of the
+/// measured targets came back with a valid delay.
+///
+/// Test-only by product decision (2026-11-14): a finished run must
+/// never change any group's current selection — picking a node is
+/// the user's manual action alone. This function therefore performs
+/// no selection writes of any kind; the results feed only the
+/// on-card progress, the summary line and the result dialog.
+Future<GlobalDelayTestResult> runGlobalDelayTest({
+  void Function(int done, int total)? onProgress,
+}) async {
+  final appController = globalState.appController;
+  final groups = appController.getCurrentGroups();
+
+  // Pre-collect the targets of every group with the same resolution
+  // delayTest applies, so progress totals line up with the callbacks.
+  final plannedTargets = <DelayTestTarget>{};
+  var plannedCount = 0;
+  for (final group in groups) {
+    final targets = _collectDelayTestTargets(group.all, group.testUrl, groups);
+    plannedCount += targets.length;
+    plannedTargets.addAll(targets);
+  }
+  var doneCount = 0;
+  onProgress?.call(0, plannedCount);
+  for (final group in groups) {
+    await delayTest(
+      group.all,
+      testUrl: group.testUrl,
+      groupName: group.name,
+      onDelayUpdated: () async {
+        doneCount++;
+        onProgress?.call(doneCount, plannedCount);
+      },
+    );
+  }
+
+  var availableNodes = 0;
+  for (final target in plannedTargets) {
+    final delay = appController.getTrayProxyDelay(
+      proxyName: target.name,
+      testUrl: target.url,
+    );
+    if (delay != null && delay > 0) {
+      availableNodes++;
+    }
+  }
+
+  return GlobalDelayTestResult(
+    totalNodes: plannedTargets.length,
+    availableNodes: availableNodes,
+  );
 }
 
 double getScrollToSelectedOffset({

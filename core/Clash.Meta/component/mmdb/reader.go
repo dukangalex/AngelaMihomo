@@ -3,8 +3,10 @@ package mmdb
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
+	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 	"github.com/oschwald/maxminddb-golang"
 )
@@ -22,6 +24,131 @@ type IPReader struct {
 
 type ASNReader struct {
 	*maxminddb.Reader
+}
+
+// CityReader reads a city-level MMDB database (DB-IP Free City Lite in
+// production). The embedded reader memory-maps the file, so lookups only
+// touch the pages on the search path; the database is never loaded into
+// memory wholesale.
+type CityReader struct {
+	*maxminddb.Reader
+}
+
+type cityNamesHolder struct {
+	IsoCode string            `maxminddb:"iso_code"`
+	Names   map[string]string `maxminddb:"names"`
+}
+
+// cityRecord mirrors the GeoIP2-City-shaped record layout shared by
+// DBIP-City-Lite and GeoLite2-City databases.
+type cityRecord struct {
+	Continent struct {
+		Code  string            `maxminddb:"code"`
+		Names map[string]string `maxminddb:"names"`
+	} `maxminddb:"continent"`
+	Country          cityNamesHolder `maxminddb:"country"`
+	RegisteredCountry cityNamesHolder `maxminddb:"registered_country"`
+	Subdivisions     []struct {
+		IsoCode string            `maxminddb:"iso_code"`
+		Names   map[string]string `maxminddb:"names"`
+	} `maxminddb:"subdivisions"`
+	City struct {
+		Names map[string]string `maxminddb:"names"`
+	} `maxminddb:"city"`
+}
+
+// CityInfo is the result of a city database lookup. Empty fields mean
+// the database has no data for them (e.g. a country-only record).
+type CityInfo struct {
+	CountryCode   string
+	Country       string
+	Province      string
+	City          string
+	ContinentCode string
+}
+
+func pickCityName(names map[string]string) string {
+	if name := names["en"]; name != "" {
+		return name
+	}
+	for _, name := range names {
+		if name != "" {
+			return name
+		}
+	}
+	return ""
+}
+
+// GeoInfo is the combined local resolution of an IP address across the
+// city, country and ASN databases.
+type GeoInfo struct {
+	CountryCode   string
+	Country       string
+	Province      string
+	City          string
+	ASN           string
+	ASName        string
+	ContinentCode string
+	// HasCityDb reports whether the on-demand city database is present;
+	// without it the result degrades to country/ASN level.
+	HasCityDb bool
+}
+
+// LookupGeo resolves ipAddress from the local databases only: the city
+// database (country/region/city, when downloaded), the country MMDB as
+// country-code fallback, and the ASN database. Nothing is prefetched
+// or cached; the lookups run on demand against memory-mapped files.
+func LookupGeo(ipAddress net.IP) GeoInfo {
+	var info GeoInfo
+	if reader := CityInstance(); reader != nil {
+		info.HasCityDb = true
+		city := reader.LookupCity(ipAddress)
+		info.CountryCode = city.CountryCode
+		info.Country = city.Country
+		info.Province = city.Province
+		info.City = city.City
+		info.ContinentCode = city.ContinentCode
+	}
+	// The bundled country/ASN accessors abort the process when their
+	// file is missing, so only consult them when the file is actually
+	// there; a geo lookup must degrade, never take the process down.
+	if info.CountryCode == "" {
+		if _, err := os.Stat(C.Path.MMDB()); err == nil {
+			if codes := IPInstance().LookupCode(ipAddress); len(codes) > 0 {
+				info.CountryCode = strings.ToUpper(codes[0])
+			}
+		}
+	}
+	if _, err := os.Stat(C.Path.ASN()); err == nil {
+		if asn, name := ASNInstance().LookupASN(ipAddress); asn != "" && asn != "0" {
+			info.ASN = "AS" + asn
+			info.ASName = name
+		}
+	}
+	return info
+}
+
+// LookupCity resolves ip against the city database. It is safe for
+// concurrent use and only runs when the UI asks for a lookup.
+func (r CityReader) LookupCity(ipAddress net.IP) CityInfo {
+	cityMu.RLock()
+	defer cityMu.RUnlock()
+	var record cityRecord
+	_ = r.Lookup(ipAddress, &record)
+	country := record.Country
+	if country.IsoCode == "" && len(country.Names) == 0 {
+		country = record.RegisteredCountry
+	}
+	info := CityInfo{
+		CountryCode:   country.IsoCode,
+		Country:       pickCityName(country.Names),
+		ContinentCode: record.Continent.Code,
+		City:          pickCityName(record.City.Names),
+	}
+	if len(record.Subdivisions) > 0 {
+		info.Province = pickCityName(record.Subdivisions[0].Names)
+	}
+	return info
 }
 
 type GeoLite2 struct {

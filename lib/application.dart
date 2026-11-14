@@ -29,6 +29,7 @@ class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
   Timer? _autoUpdateGroupTaskTimer;
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _autoSyncGeoTaskTimer;
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
@@ -39,18 +40,142 @@ class ApplicationState extends ConsumerState<Application>
     },
   );
 
-  ColorScheme _getAppColorScheme({
-    required Brightness brightness,
-    int? primaryColor,
-  }) {
-    return ref.read(genColorSchemeProvider(brightness));
+  static const _lightAppBarTheme = AppBarTheme(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemStatusBarContrastEnforced: false,
+    ),
+  );
+
+  static const _darkAppBarTheme = AppBarTheme(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemStatusBarContrastEnforced: false,
+    ),
+  );
+
+  final Map<Brightness, ((ColorScheme, String?, String), ThemeData)>
+  _themeCache = {};
+
+  ThemeData _themeOf(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeDef zodiacDef,
+  ) {
+    final key = (colorScheme, fontFamily, zodiacDef.id);
+    final cached = _themeCache[colorScheme.brightness];
+    if (cached != null && cached.$1 == key) {
+      return cached.$2;
+    }
+    final theme = _buildTheme(colorScheme, fontFamily, zodiacDef);
+    _themeCache[colorScheme.brightness] = (key, theme);
+    return theme;
   }
 
-  SwitchThemeData _switchTheme(ColorScheme colorScheme) {
+  ThemeData _buildTheme(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeDef zodiacDef,
+  ) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    final palette = zodiacDef.paletteFor(colorScheme.brightness);
+    return ThemeData(
+      useMaterial3: true,
+      pageTransitionsTheme: _pageTransitionsTheme,
+      scaffoldBackgroundColor: palette.bgStops.first,
+      appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
+      colorScheme: colorScheme,
+      fontFamily: fontFamily,
+      extensions: [ZodiacThemeExtension.of(zodiacDef, colorScheme.brightness)],
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        elevation: 3,
+        hoverElevation: 5,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: palette.dialogSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 10,
+        shadowColor: Colors.black.withValues(alpha: isLight ? 0.3 : 0.6),
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(
+              alpha: isLight ? 0.6 : 0.5,
+            ),
+          ),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        clipBehavior: Clip.antiAlias,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant.withValues(
+          alpha: isLight ? 0.45 : 0.25,
+        ),
+        thickness: 1,
+        space: 1,
+      ),
+      inputDecorationTheme: _inputDecorationTheme(colorScheme),
+      switchTheme: _switchTheme(colorScheme, palette),
+      chipTheme: ChipThemeData(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.6 : 0.5,
+          ),
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colorScheme.inverseSurface,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        textStyle: TextStyle(color: colorScheme.onInverseSurface, fontSize: 13),
+      ),
+    );
+  }
+
+  SwitchThemeData _switchTheme(
+    ColorScheme colorScheme,
+    ZodiacPalette palette,
+  ) {
     final isLight = colorScheme.brightness == Brightness.light;
     return SwitchThemeData(
       thumbIcon: const WidgetStatePropertyAll(Icon(null)),
-      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      // T115 spec 3.5.8: on = selected color, off = surfaceVariant
+      // fill with an outline-colored track border.
+      trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.transparent;
+        }
+        return palette.outline;
+      }),
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return null;
         if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
@@ -58,10 +183,8 @@ class ApplicationState extends ConsumerState<Application>
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return null;
-        if (states.contains(WidgetState.selected)) return colorScheme.primary;
-        return isLight
-            ? colorScheme.surfaceContainerHighest
-            : colorScheme.surfaceContainerHighest.lighten(6);
+        if (states.contains(WidgetState.selected)) return palette.primary;
+        return palette.surfaceVariant;
       }),
     );
   }
@@ -177,6 +300,8 @@ class ApplicationState extends ConsumerState<Application>
       if (!system.isDesktop) {
         _autoUpdateProfilesTaskTimer?.cancel();
         _autoUpdateProfilesTaskTimer = null;
+        _autoSyncGeoTaskTimer?.cancel();
+        _autoSyncGeoTaskTimer = null;
       }
       return;
     }
@@ -185,6 +310,9 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (_autoUpdateProfilesTaskTimer == null) {
       _autoUpdateProfilesTask();
+    }
+    if (_autoSyncGeoTaskTimer == null) {
+      _autoSyncGeoTask();
     }
   }
 
@@ -199,6 +327,23 @@ class ApplicationState extends ConsumerState<Application>
     _autoUpdateProfilesTaskTimer = Timer.periodic(
       const Duration(hours: 24),
       (_) => unawaited(globalState.appController.autoUpdateProfiles()),
+    );
+  }
+
+  // T107: hourly tick for the GEO auto sync. The controller's
+  // due-check (settings + elapsed period) decides whether a run
+  // actually happens, so the tick itself is cheap; a first check
+  // on (re)start covers a period that elapsed while the app was
+  // closed. The first check is deferred to the next frame:
+  // _syncAutoUpdateTasks also runs from initState, before
+  // globalState.appController is assigned.
+  void _autoSyncGeoTask() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(globalState.appController.autoSyncGeoResources());
+    });
+    _autoSyncGeoTaskTimer = Timer.periodic(
+      const Duration(hours: 1),
+      (_) => unawaited(globalState.appController.autoSyncGeoResources()),
     );
   }
 
@@ -231,13 +376,12 @@ class ApplicationState extends ConsumerState<Application>
                 ),
               );
             }
-            if (system.isMacOS || system.isLinux) {
+            if (system.isLinux) {
               // Wait for DHCP and the default route to settle before moving the
               // managed DNS from the previous network to the new one.
               await Future.delayed(const Duration(seconds: 1));
               if (!mounted) return;
-              final dnsState = ref.read(autoSetSystemDnsStateProvider);
-              await system.updateDns(!(dnsState.a && dnsState.b));
+              await system.updateDns(!ref.read(systemDnsTakeoverProvider));
             }
             globalState.appController.updateLocalNetwork();
             globalState.appController.addCheckIpNumDebounce();
@@ -268,10 +412,14 @@ class ApplicationState extends ConsumerState<Application>
             final locale = ref.watch(
               appSettingProvider.select((state) => state.locale),
             );
-            final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont
-                ? 'HarmonyOS_Sans'
-                : null;
+            final zodiacDef = ref.watch(currentZodiacThemeProvider);
+            final lightColorScheme = ref.watch(
+              genColorSchemeProvider(Brightness.light),
+            );
+            final darkColorScheme = ref.watch(
+              genColorSchemeProvider(Brightness.dark),
+            );
+            const String? fontFamily = null;
 
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -302,247 +450,10 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              themeMode: themeProps.themeMode,
-              theme: ThemeData(
-                useMaterial3: true,
-                pageTransitionsTheme: _pageTransitionsTheme,
-                scaffoldBackgroundColor: _getAppColorScheme(
-                  brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
-                ).surfaceContainer,
-                appBarTheme: const AppBarTheme(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  surfaceTintColor: Colors.transparent,
-                  systemOverlayStyle: SystemUiOverlayStyle(
-                    statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: Brightness.dark,
-                    statusBarBrightness: Brightness.light,
-                    systemStatusBarContrastEnforced: false,
-                  ),
-                ),
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
-                ),
-                fontFamily: fontFamily,
-                floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  elevation: 3,
-                  hoverElevation: 5,
-                ),
-                dialogTheme: DialogThemeData(
-                  backgroundColor: _getAppColorScheme(
-                    brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
-                  ).surfaceContainerLowest,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 10,
-                  shadowColor: Colors.black.withValues(alpha: 0.3),
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
-                      ).outlineVariant.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ),
-                bottomSheetTheme: const BottomSheetThemeData(
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(28),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                ),
-                popupMenuTheme: const PopupMenuThemeData(
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                ),
-                dividerTheme: DividerThemeData(
-                  color: _getAppColorScheme(
-                    brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
-                  ).outlineVariant.withValues(alpha: 0.45),
-                  thickness: 1,
-                  space: 1,
-                ),
-                inputDecorationTheme: _inputDecorationTheme(
-                  _getAppColorScheme(
-                    brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
-                  ),
-                ),
-                switchTheme: _switchTheme(
-                  _getAppColorScheme(
-                    brightness: Brightness.light,
-                    primaryColor: themeProps.primaryColor,
-                  ),
-                ),
-                chipTheme: ChipThemeData(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                  side: BorderSide(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
-                    ).outlineVariant.withValues(alpha: 0.6),
-                  ),
-                ),
-                tooltipTheme: TooltipThemeData(
-                  decoration: BoxDecoration(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
-                    ).inverseSurface,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  textStyle: TextStyle(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.light,
-                      primaryColor: themeProps.primaryColor,
-                    ).onInverseSurface,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              darkTheme: ThemeData(
-                useMaterial3: true,
-                pageTransitionsTheme: _pageTransitionsTheme,
-                scaffoldBackgroundColor: _getAppColorScheme(
-                  brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
-                ).toPureBlack(themeProps.pureBlack).surfaceContainer,
-                appBarTheme: const AppBarTheme(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  surfaceTintColor: Colors.transparent,
-                  systemOverlayStyle: SystemUiOverlayStyle(
-                    statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: Brightness.light,
-                    statusBarBrightness: Brightness.dark,
-                    systemStatusBarContrastEnforced: false,
-                  ),
-                ),
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
-                ).toPureBlack(themeProps.pureBlack),
-                fontFamily: fontFamily,
-                floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  elevation: 3,
-                  hoverElevation: 5,
-                ),
-                dialogTheme: DialogThemeData(
-                  backgroundColor: _getAppColorScheme(
-                    brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
-                  ).toPureBlack(themeProps.pureBlack).surfaceContainerHigh,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 10,
-                  shadowColor: Colors.black.withValues(alpha: 0.6),
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color:
-                          _getAppColorScheme(
-                                brightness: Brightness.dark,
-                                primaryColor: themeProps.primaryColor,
-                              )
-                              .toPureBlack(themeProps.pureBlack)
-                              .outlineVariant
-                              .withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
-                bottomSheetTheme: const BottomSheetThemeData(
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(28),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                ),
-                popupMenuTheme: const PopupMenuThemeData(
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                ),
-                dividerTheme: DividerThemeData(
-                  color:
-                      _getAppColorScheme(
-                            brightness: Brightness.dark,
-                            primaryColor: themeProps.primaryColor,
-                          )
-                          .toPureBlack(themeProps.pureBlack)
-                          .outlineVariant
-                          .withValues(alpha: 0.25),
-                  thickness: 1,
-                  space: 1,
-                ),
-                inputDecorationTheme: _inputDecorationTheme(
-                  _getAppColorScheme(
-                    brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
-                  ).toPureBlack(themeProps.pureBlack),
-                ),
-                switchTheme: _switchTheme(
-                  _getAppColorScheme(
-                    brightness: Brightness.dark,
-                    primaryColor: themeProps.primaryColor,
-                  ).toPureBlack(themeProps.pureBlack),
-                ),
-                chipTheme: ChipThemeData(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                  side: BorderSide(
-                    color:
-                        _getAppColorScheme(
-                              brightness: Brightness.dark,
-                              primaryColor: themeProps.primaryColor,
-                            )
-                            .toPureBlack(themeProps.pureBlack)
-                            .outlineVariant
-                            .withValues(alpha: 0.5),
-                  ),
-                ),
-                tooltipTheme: TooltipThemeData(
-                  decoration: BoxDecoration(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.dark,
-                      primaryColor: themeProps.primaryColor,
-                    ).toPureBlack(themeProps.pureBlack).inverseSurface,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  textStyle: TextStyle(
-                    color: _getAppColorScheme(
-                      brightness: Brightness.dark,
-                      primaryColor: themeProps.primaryColor,
-                    ).toPureBlack(themeProps.pureBlack).onInverseSurface,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
+              // T115 spec: brightness follows the system only.
+              themeMode: ThemeMode.system,
+              theme: _themeOf(lightColorScheme, fontFamily, zodiacDef),
+              darkTheme: _themeOf(darkColorScheme, fontFamily, zodiacDef),
               home: child!,
             );
           },
@@ -553,12 +464,19 @@ class ApplicationState extends ConsumerState<Application>
   }
 
   @override
+  void reassemble() {
+    super.reassemble();
+    _themeCache.clear();
+  }
+
+  @override
   void dispose() {
     globalState.backgroundMode.removeListener(_syncAutoUpdateTasks);
     WidgetsBinding.instance.removeObserver(this);
     linkManager.destroy();
     _autoUpdateGroupTaskTimer?.cancel();
     _autoUpdateProfilesTaskTimer?.cancel();
+    _autoSyncGeoTaskTimer?.cancel();
     ExternalControl.stop();
     if (!system.isAndroid && !globalState.isExiting) {
       unawaited(globalState.appController.handleExit());

@@ -51,6 +51,23 @@ List<_Tile> _resolveTiles(List<_ToolItem> tools, List<String> saved) {
   return tiles;
 }
 
+typedef ToolboxEntry = ({
+  IconData icon,
+  Color color,
+  String title,
+  void Function(BuildContext context) open,
+});
+
+List<ToolboxEntry> orderedToolboxEntries(List<String> saved) => [
+  for (final tile in _resolveTiles(_buildTools(), saved))
+    (
+      icon: tile.item.icon,
+      color: tile.item.color,
+      title: tile.item.title,
+      open: tile.item.open,
+    ),
+];
+
 class _ToolItem {
   final String id;
   final IconData icon;
@@ -85,29 +102,12 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const SpeedTestPage()),
     ),
     _ToolItem(
-      id: 'routeTrace',
-      icon: Icons.route_rounded,
-      color: const Color(0xFF7B61FF),
-      title: appLocalizations.routeTrace,
-      description: appLocalizations.routeTraceDesc,
-      size: _TileSize.tall,
-      open: (context) => push(context, const RouteTracePage()),
-    ),
-    _ToolItem(
       id: 'ipLookup',
       icon: Icons.travel_explore_rounded,
       color: const Color(0xFF00A3A3),
       title: appLocalizations.ipLookup,
       description: appLocalizations.ipLookupDesc,
       open: (context) => push(context, const IpLookupPage()),
-    ),
-    _ToolItem(
-      id: 'mrsLookup',
-      icon: Icons.manage_search_rounded,
-      color: const Color(0xFFE58A00),
-      title: appLocalizations.mrsLookup,
-      description: appLocalizations.mrsLookupDesc,
-      open: (context) => push(context, const MrsLookupPage()),
     ),
     _ToolItem(
       id: 'dnsQuery',
@@ -134,31 +134,12 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const LocalPingPage()),
     ),
     _ToolItem(
-      id: 'iperf',
-      icon: Icons.lan_rounded,
-      color: const Color(0xFFC2571A),
-      title: appLocalizations.iperfTest,
-      description: appLocalizations.iperfTestDesc,
-      open: (context) => push(context, const IperfPage()),
-    ),
-    _ToolItem(
       id: 'ageTool',
       icon: Icons.lock_rounded,
       color: const Color(0xFF5C6BC0),
       title: appLocalizations.ageTool,
       description: appLocalizations.ageToolDesc,
       open: (context) => push(context, const AgeToolPage()),
-    ),
-    _ToolItem(
-      id: 'connectivity',
-      icon: Icons.wifi_tethering_rounded,
-      color: const Color(0xFF0097D6),
-      title: appLocalizations.mediaUnlock,
-      description: appLocalizations.toolConnectivityDesc,
-      open: (context) => showExtend(
-        context,
-        builder: (_, type) => MediaUnlockPage(type: type),
-      ),
     ),
   ];
 }

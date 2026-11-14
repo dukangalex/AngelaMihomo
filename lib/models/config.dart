@@ -45,7 +45,7 @@ const defaultNetworkProps = NetworkProps();
 const defaultProxiesStyle = ProxiesStyle();
 const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
-final defaultThemeProps = ThemeProps(primaryColor: defaultPrimaryColor);
+const defaultThemeProps = ThemeProps();
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
@@ -70,47 +70,42 @@ const List<DashboardWidget> defaultAndroidDashboardWidgets = [
   DashboardWidget.startButton,
 ];
 
+List<DashboardWidget> _decodeDashboardWidgets(
+  List<dynamic>? dashboardWidgets,
+  List<DashboardWidget> fallback,
+) {
+  if (dashboardWidgets == null) return fallback;
+  final decoded = <DashboardWidget>[];
+  for (final e in dashboardWidgets) {
+    try {
+      decoded.add($enumDecode(_$DashboardWidgetEnumMap, e));
+    } catch (_) {
+      // Skip entries whose widget type no longer exists (e.g. a widget
+      // removed in a newer version) instead of resetting the user's
+      // whole dashboard layout to defaults.
+    }
+  }
+  return decoded.isEmpty ? fallback : decoded;
+}
+
 List<DashboardWidget> dashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        (system.isAndroid
-            ? defaultAndroidDashboardWidgets
-            : defaultDashboardWidgets);
-  } catch (_) {
-    return system.isAndroid
+  return _decodeDashboardWidgets(dashboardWidgets, system.isAndroid
         ? defaultAndroidDashboardWidgets
-        : defaultDashboardWidgets;
-  }
+        : defaultDashboardWidgets);
 }
 
 List<DashboardWidget> mobileDashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        defaultAndroidDashboardWidgets;
-  } catch (_) {
-    return defaultAndroidDashboardWidgets;
-  }
+  return _decodeDashboardWidgets(dashboardWidgets, defaultAndroidDashboardWidgets);
 }
 
 List<DashboardWidget> desktopDashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
 ) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        defaultDashboardWidgets;
-  } catch (_) {
-    return defaultDashboardWidgets;
-  }
+  return _decodeDashboardWidgets(dashboardWidgets, defaultDashboardWidgets);
 }
 
 const List<SidebarFlyoutEntry> defaultSidebarFlyoutEntries = [
@@ -137,45 +132,6 @@ List<SidebarFlyoutEntry> sidebarFlyoutEntriesSafeFromJson(
   }
 }
 
-const List<MediaPlatform> defaultPinnedMediaPlatforms = [
-  MediaPlatform.reddit,
-  MediaPlatform.gemini,
-  MediaPlatform.cloudflare,
-];
-
-List<MediaPlatform> pinnedMediaPlatformsSafeFromJson(
-  List<dynamic>? pinnedMediaPlatforms,
-) {
-  try {
-    if (pinnedMediaPlatforms == null) return defaultPinnedMediaPlatforms;
-    final list = <MediaPlatform>[];
-    for (final e in pinnedMediaPlatforms) {
-      final str = e.toString();
-      if (str == 'chatgpt') {
-        list.add(MediaPlatform.openai);
-        continue;
-      }
-      if (str == 'qqnews') {
-        list.add(MediaPlatform.tencent);
-        continue;
-      }
-      if (str == 'alidnsprobe') {
-        list.add(MediaPlatform.alibaba);
-        continue;
-      }
-      if (str == 'bytedance') {
-        list.add(MediaPlatform.douyin);
-        continue;
-      }
-      final p = MediaPlatform.values.where((v) => v.name == str).firstOrNull;
-      if (p != null) list.add(p);
-    }
-    return list.isEmpty ? defaultPinnedMediaPlatforms : list;
-  } catch (_) {
-    return defaultPinnedMediaPlatforms;
-  }
-}
-
 @freezed
 abstract class AppSettingProps with _$AppSettingProps {
   const factory AppSettingProps({
@@ -189,14 +145,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(defaultDashboardWidgets)
     @JsonKey(fromJson: desktopDashboardWidgetsSafeFromJson)
     List<DashboardWidget> desktopDashboardWidgets,
-    @Default(defaultPinnedMediaPlatforms)
-    @JsonKey(fromJson: pinnedMediaPlatformsSafeFromJson)
-    List<MediaPlatform> pinnedMediaPlatforms,
-    @Default(false) bool mediaUnlockMoreStreamingPlatforms,
-    @Default(false) bool mediaUnlockExtraDetails,
-    @Default(true) bool mediaUnlockRefreshOnNodeChange,
-    @Default(true) bool mediaUnlockColorfulIcons,
-    @Default(true) bool mediaUnlockRefreshByCategory,
     @Default(true) bool onlyStatisticsProxy,
     @Default(false) bool autoLaunch,
     @Default(false) bool silentLaunch,
@@ -205,7 +153,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
     @Default(true) bool logAiSearch,
-    @Default(false) bool flushDnsOnNetworkChange,
     @Default(defaultTestUrl) String testUrl,
     @Default(true) bool showStartSwitch,
     @Default(StartSwitchStyle.outlined) StartSwitchStyle startSwitchStyle,
@@ -216,9 +163,8 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool showLabel,
     @Default(false) bool disclaimerAccepted,
     @Default(true) bool minimizeOnExit,
-    @Default(false) bool hidden,
+    @Default(true) bool hidden,
     @Default(true) bool keepDockIcon,
-    @Default(false) bool developerMode,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default('') String backupPassword,
     @Default(false) bool enableHighPriority,
@@ -230,13 +176,8 @@ abstract class AppSettingProps with _$AppSettingProps {
     @JsonKey(fromJson: sidebarFlyoutEntriesSafeFromJson)
     List<SidebarFlyoutEntry> sidebarFlyoutEntries,
     String? dashboardTitle,
+    @Default(false) bool dashboardWatermark,
     @Default(<String>[]) List<String> toolboxTiles,
-    @Default(false) bool mrsCopyRawLink,
-    @JsonKey(unknownEnumValue: MrsRawSource.metaRulesDat)
-    @Default(MrsRawSource.metaRulesDat)
-    MrsRawSource mrsRawSource,
-    @Default(true) bool mrsResolveDns,
-    @Default(IperfOptions()) IperfOptions iperfOptions,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,
     @Default(<String, String>{}) Map<String, String> desktopDashboardSizes,
@@ -360,6 +301,11 @@ List<String> bypassDomainSafeFromJson(List<dynamic>? bypassDomain) {
   }
 }
 
+int concurrencyLimitFromJson(Object? value) {
+  if (value is! int || value > 32) return maxDelayTestConcurrency;
+  return value < 1 ? 1 : value;
+}
+
 @freezed
 abstract class NetworkProps with _$NetworkProps {
   const factory NetworkProps({
@@ -369,7 +315,7 @@ abstract class NetworkProps with _$NetworkProps {
     List<String> bypassDomain,
     @Default(true) bool bypassPrivateRoute,
     @Default([]) List<String> bypassPrivateRouteAddress,
-    @Default(true) bool autoSetSystemDns,
+    @Default(ProfileSwitchMode.hotReload) ProfileSwitchMode profileSwitchMode,
   }) = _NetworkProps;
 
   factory NetworkProps.fromJson(Map<String, Object?>? json) =>
@@ -396,9 +342,12 @@ abstract class ProxiesStyle with _$ProxiesStyle {
     @Default(DelayAnimationType.pulse) DelayAnimationType delayAnimation,
     @Default(true) bool syncDelayAnimation,
     @Default({}) Map<String, String> iconMap,
-    @Default(250) int concurrencyLimit,
+    @Default(maxDelayTestConcurrency)
+    @JsonKey(fromJson: concurrencyLimitFromJson)
+    int concurrencyLimit,
     @Default(false) bool autoStickyHeader,
     @Default(false) bool showHiddenItems,
+    @Default(false) bool hideTimeoutProxies,
     @Default(false) bool hasCustomizedStyle,
   }) = _ProxiesStyle;
 
@@ -420,14 +369,18 @@ abstract class TextScale with _$TextScale {
 @freezed
 abstract class ThemeProps with _$ThemeProps {
   const factory ThemeProps({
-    int? primaryColor,
-    @Default(defaultPrimaryColors) List<int> primaryColors,
+    // T115: the twelve-constellation family is the only theme
+    // authority. [zodiacSign] stores the family theme id; unknown
+    // values fall back to the default (Sagittarius). The legacy
+    // upstream fields below stay parseable for stored-config
+    // compatibility but no longer take effect: brightness follows
+    // the system only, and there is no seed/variant generation.
+    @Default('sagittarius') String zodiacSign,
     @Default(ThemeMode.system) ThemeMode themeMode,
-    @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,
     @Default(false) bool pureBlack,
+    @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,
     @Default(TextScale()) TextScale textScale,
     @Default(false) bool useDarkIcon,
-    @Default(false) bool useHarmonyFont,
     @Default(false) bool invertTrayIcon,
   }) = _ThemeProps;
 
@@ -449,7 +402,11 @@ abstract class ThemeProps with _$ThemeProps {
 @freezed
 abstract class ScriptProps with _$ScriptProps {
   const factory ScriptProps({
-    String? currentId,
+    // Legacy global script id: read from stored configs so the
+    // one-time migration in Config.compatibleFromJson can move it
+    // onto each profile, but never written back — after migration
+    // the per-profile scriptId is the only storage.
+    @JsonKey(includeToJson: false) String? currentId,
     @Default([]) List<Script> scripts,
   }) = _ScriptProps;
 
@@ -473,6 +430,12 @@ extension ScriptPropsExt on ScriptProps {
     }
     return null;
   }
+
+  Script? findScript(String? id) =>
+      scripts.where((script) => script.id == id).firstOrNull;
+
+  Script? scriptOf(Profile profile) =>
+      profile.isManaged ? null : findScript(profile.scriptId);
 
   Script? scriptById(String id) {
     final index = scripts.indexWhere((script) => script.id == id);
@@ -526,12 +489,10 @@ abstract class Config with _$Config {
     @Default([]) List<Profile> profiles,
     @Default([]) List<HotKeyAction> hotKeyActions,
     String? currentProfileId,
-    @Default(false) bool overrideDns,
     @Default(false) bool overrideNtp,
     @Default(false) bool overrideSniffer,
     @Default(false) bool overrideTunnel,
     @Default(false) bool overrideExperimental,
-    @Default(true) bool overrideTestUrl,
     DAV? dav,
     @Default(defaultNetworkProps) NetworkProps networkProps,
     @JsonKey(fromJson: VpnProps.safeFromJson)
@@ -539,6 +500,7 @@ abstract class Config with _$Config {
     VpnProps vpnProps,
     @JsonKey(fromJson: ThemeProps.safeFromJson) required ThemeProps themeProps,
     @Default(defaultProxiesStyle) ProxiesStyle proxiesStyle,
+    @Default(defaultTrafficStatsProps) TrafficStatsProps trafficStatsProps,
     @Default(defaultWindowProps) WindowProps windowProps,
     @JsonKey(fromJson: ClashConfig.safeFormJson)
     @Default(defaultClashConfig)
@@ -603,18 +565,6 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
-    try {
-      final themeProps = json['themeProps'];
-      if (themeProps is Map &&
-          themeProps['primaryColor'] != legacyPrimaryColors.last) {
-        final colors = themeProps['primaryColors'];
-        if (colors is List &&
-            intListEquality.equals(colors.cast<int>(), legacyPrimaryColors)) {
-          themeProps.remove('primaryColors');
-        }
-      }
-    } catch (_) {}
-
     // Migrate stored geo data URLs that still point at the legacy
     // upstream mirror to the official MetaCubeX/meta-rules-dat source.
     // Only exact legacy defaults are rewritten; custom URLs are kept.
@@ -648,6 +598,24 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
+    try {
+      final scriptProps = json['scriptProps'];
+      final profiles = json['profiles'];
+      if (scriptProps is Map && profiles is List) {
+        final currentId = scriptProps.remove('currentId');
+        for (final profile in profiles) {
+          if (profile is! Map) continue;
+          final enabled = profile.remove('useScriptOverride') != false;
+          if (currentId is String &&
+              enabled &&
+              profile['scriptId'] == null &&
+              profile['bundle'] == null) {
+            profile['scriptId'] = currentId;
+          }
+        }
+      }
+    } catch (_) {}
+
     // Migrate a stored TUN device name that still carries the legacy
     // product name to the current one. Only the exact legacy value is
     // rewritten; a device name set on purpose is kept.
@@ -657,6 +625,18 @@ abstract class Config with _$Config {
         final tun = patchConfig['tun'];
         if (tun is Map && tun['device'] == 'Bettbox') {
           tun['device'] = 'AngelaMihomo';
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final themeProps = json['themeProps'];
+      if (themeProps is Map &&
+          themeProps['primaryColor'] != legacyPrimaryColors.last) {
+        final colors = themeProps['primaryColors'];
+        if (colors is List &&
+            intListEquality.equals(colors.cast<int>(), legacyPrimaryColors)) {
+          themeProps.remove('primaryColors');
         }
       }
     } catch (_) {}

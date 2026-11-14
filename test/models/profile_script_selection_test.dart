@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bett_box/common/builtin_script.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -47,6 +48,28 @@ void main() {
         scriptB,
       );
     });
+
+    test('bundled script sits in the library unbound until chosen', () {
+      const builtin = Script(id: BuiltinScript.id, label: 'HiClash 内置脚本');
+      const library = ScriptProps(scripts: [builtin]);
+      final fresh = Profile.normal(label: 'fresh');
+      // Present in the library, but a fresh profile does not resolve it.
+      expect(
+        library.resolveScript(
+          useScriptOverride: fresh.useScriptOverride,
+          scriptId: fresh.scriptId,
+        ),
+        isNull,
+      );
+      // Only the user's own per-profile choice activates it.
+      expect(
+        library.resolveScript(
+          useScriptOverride: true,
+          scriptId: BuiltinScript.id,
+        ),
+        builtin,
+      );
+    });
   });
 
   group('Profile scriptId persistence', () {
@@ -56,11 +79,15 @@ void main() {
       );
       final profile = Profile.normal(label: 'x').copyWith(scriptId: 'b');
       expect(decode(profile).scriptId, 'b');
+      // T95 (revised): fresh profiles start unbound — the bundled
+      // HiClash script only applies once the user picks it.
       expect(Profile.normal(label: 'y').scriptId, isNull);
+      expect(Profile.normal(label: 'y').useScriptOverride, isFalse);
       final legacyJson =
           jsonDecode(jsonEncode(Profile.normal(label: 'z').toJson()))
               as Map<String, dynamic>
-            ..remove('scriptId');
+            ..remove('scriptId')
+            ..remove('useScriptOverride');
       final legacy = Profile.fromJson(legacyJson);
       expect(legacy.scriptId, isNull);
       expect(legacy.useScriptOverride, isFalse);

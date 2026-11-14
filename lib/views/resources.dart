@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bett_box/clash/clash.dart';
@@ -44,6 +45,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     GeoItem(label: 'GeoSite', fileName: geoSiteFileName, key: 'geosite'),
     GeoItem(label: 'MMDB', fileName: mmdbFileName, key: 'mmdb'),
     GeoItem(label: 'ASN', fileName: asnFileName, key: 'asn'),
+    GeoItem(label: 'CITY', fileName: cityFileName, key: 'city'),
     GeoItem(label: 'MRS', fileName: bundleMRSFileName, key: 'mrs'),
   ];
 
@@ -57,6 +59,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     updatingKeysNotifier.state = syncItems.map((e) => e.key).toSet();
 
     final errors = <String>[];
+    final failedKeys = <String>{};
     try {
       await Future.wait(
         syncItems.map((geoItem) async {
@@ -69,9 +72,11 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
             );
             if (message.isNotEmpty) {
               errors.add('${geoItem.label}: $message');
+              failedKeys.add(geoItem.key);
             }
           } catch (e) {
             errors.add('${geoItem.label}: $e');
+            failedKeys.add(geoItem.key);
           } finally {
             if (mounted) {
               updatingKeysNotifier.update(
@@ -87,6 +92,13 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           message: TextSpan(text: errors.join('\n')),
           cancelable: false,
         );
+      }
+      // T111 D-02: the CITY/MMDB databases feed the detection
+      // card's local attribution — after they change, re-run the
+      // detection so the card does not keep showing the old
+      // country/city until some unrelated refresh.
+      if (!failedKeys.contains('city') || !failedKeys.contains('mmdb')) {
+        globalState.appController.addCheckIpNumDebounce();
       }
     } finally {
       if (mounted) {
@@ -244,9 +256,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
       body: ScrollEdgeRise(
         builder: (context, rise) => ListView(
           padding: EdgeInsets.only(
-            bottom:
-                (globalState.isAndroidTV ? 48.0 : 16.0) +
-                MediaQuery.of(context).padding.bottom,
+            bottom: 16.0 + MediaQuery.paddingOf(context).bottom,
             top: 8 + rise,
           ),
           children: [
@@ -258,15 +268,125 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
                 top: 4,
                 bottom: 8,
               ),
+              actions: [
+                if (Theme.of(context).materialTapTargetSize ==
+                    MaterialTapTargetSize.padded)
+                  const SizedBox(height: kMinInteractiveDimension),
+              ],
             ),
             ...generateSection(
               items: geoItems.map(
                 (geoItem) => GeoDataListItem(geoItem: geoItem),
               ),
             ),
+            ListHeader(
+              title: appLocalizations.geoAutoSync,
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 8,
+                top: 12,
+                bottom: 8,
+              ),
+            ),
+            ...generateSection(items: const [GeoAutoSyncSettings()]),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Auto sync settings for the GEO resources above (T107): an
+/// opt-in switch (default off — automatic network activity is
+/// opt-in under the privacy baseline) and the sync period. Stored
+/// by GeoAutoSyncStore; the actual scheduling runs on the app's
+/// existing auto-update lifecycle in Application.
+class GeoAutoSyncSettings extends StatefulWidget {
+  const GeoAutoSyncSettings({super.key});
+
+  @override
+  State<GeoAutoSyncSettings> createState() => _GeoAutoSyncSettingsState();
+}
+
+class _GeoAutoSyncSettingsState extends State<GeoAutoSyncSettings> {
+  bool _enabled = false;
+  GeoAutoSyncPeriod _period = GeoAutoSyncPeriod.weekly;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    GeoAutoSyncStore.load().then((settings) {
+      if (!mounted) return;
+      setState(() {
+        _enabled = settings.enabled;
+        _period = settings.period;
+        _loaded = true;
+      });
+    });
+  }
+
+  String get _periodLabel => switch (_period) {
+    GeoAutoSyncPeriod.daily => appLocalizations.geoAutoSyncPeriodDaily,
+    GeoAutoSyncPeriod.weekly => appLocalizations.geoAutoSyncPeriodWeekly,
+    GeoAutoSyncPeriod.monthly => appLocalizations.geoAutoSyncPeriodMonthly,
+  };
+
+  Future<void> _handleEnabledChange(bool value) async {
+    setState(() => _enabled = value);
+    await GeoAutoSyncStore.saveEnabled(value);
+    if (value) {
+      // Turning it on may already be due (never synced, or the
+      // period elapsed while it was off): check right away.
+      unawaited(globalState.appController.autoSyncGeoResources());
+    }
+  }
+
+  Future<void> _handlePeriodChange() async {
+    final res = await globalState.showCommonDialog<GeoAutoSyncPeriod>(
+      child: OptionsDialog<GeoAutoSyncPeriod>(
+        title: appLocalizations.geoAutoSyncPeriod,
+        options: GeoAutoSyncPeriod.values,
+        textBuilder: (period) => switch (period) {
+          GeoAutoSyncPeriod.daily => appLocalizations.geoAutoSyncPeriodDaily,
+          GeoAutoSyncPeriod.weekly => appLocalizations.geoAutoSyncPeriodWeekly,
+          GeoAutoSyncPeriod.monthly =>
+            appLocalizations.geoAutoSyncPeriodMonthly,
+        },
+        value: _period,
+      ),
+    );
+    if (res == null || res == _period) return;
+    setState(() => _period = res);
+    await GeoAutoSyncStore.savePeriod(res);
+    if (_enabled) {
+      unawaited(globalState.appController.autoSyncGeoResources());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListItem.switchItem(
+          title: Text(appLocalizations.geoAutoSync),
+          subtitle: Text(appLocalizations.geoAutoSyncDesc),
+          delegate: SwitchDelegate(
+            value: _enabled,
+            onChanged: _loaded ? _handleEnabledChange : null,
+          ),
+        ),
+        ListItem(
+          onTap: _handlePeriodChange,
+          title: Text(appLocalizations.geoAutoSyncPeriod),
+          subtitle: Text(_periodLabel),
+          trailing: FilledButton(
+            onPressed: _handlePeriodChange,
+            child: Text(_periodLabel),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -345,6 +465,10 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
             ),
           );
           if (message.isNotEmpty) throw message;
+          // T111 D-02: same re-detection as sync-all.
+          if (geoItem.key == 'city' || geoItem.key == 'mmdb') {
+            globalState.appController.addCheckIpNumDebounce();
+          }
         } finally {
           if (mounted) {
             updatingKeysNotifier.update((s) => Set.of(s)..remove(geoItem.key));
@@ -381,11 +505,15 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
       geoUpdatingKeysProvider.select((s) => s.contains(geoItem.key)),
     );
     final isBundleMRS = geoItem.key == 'mrs';
+    // The city database has no user-configurable URL (the core builds
+    // the official monthly URL itself), but it still shows its file
+    // info, source attribution and a sync action like the other items.
+    final isCity = geoItem.key == 'city';
 
     return ListItem(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(geoItem.label),
-      subtitle: (url == null && !isBundleMRS)
+      subtitle: (url == null && !isBundleMRS && !isCity)
           ? const SizedBox()
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,6 +540,8 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 Text(
                   isBundleMRS
                       ? 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/BundleMRS.7z'
+                      : isCity
+                      ? 'Data by DB-IP · https://db-ip.com · CC BY 4.0'
                       : url!,
                   style: context.textTheme.bodyMedium?.toLight,
                 ),
@@ -422,13 +552,14 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                     spacing: 12,
                     runAlignment: WrapAlignment.center,
                     children: [
-                      CommonChip(
-                        avatar: const Icon(Icons.edit),
-                        label: appLocalizations.edit,
-                        onPressed: isSyncing || url == null
-                            ? null
-                            : () => _updateUrl(url),
-                      ),
+                      if (url != null)
+                        CommonChip(
+                          avatar: const Icon(Icons.edit),
+                          label: appLocalizations.edit,
+                          onPressed: isSyncing
+                              ? null
+                              : () => _updateUrl(url),
+                        ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -483,6 +614,12 @@ class _UpdateGeoUrlFormDialogState extends State<UpdateGeoUrlFormDialog> {
   void initState() {
     super.initState();
     urlController = TextEditingController(text: widget.url);
+  }
+
+  @override
+  void dispose() {
+    urlController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleReset() async {

@@ -1,6 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
+import 'package:bett_box/widgets/zodiac_surface.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -66,16 +67,26 @@ class InfoHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [...actions],
+          // T115 homepage hard line: the title keeps its intrinsic
+          // width; status chips on the right shrink to fit instead
+          // of squeezing the title into an ellipsis.
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [...actions],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
+
 
 class CommonCard extends StatelessWidget {
   const CommonCard({
@@ -86,12 +97,14 @@ class CommonCard extends StatelessWidget {
     this.onLongPress,
     this.selectWidget,
     this.radius,
+    this.emphasis = false,
     required this.child,
     this.padding,
     this.enterAnimated = false,
     this.info,
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
+    this.subtle = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -104,56 +117,17 @@ class CommonCard extends StatelessWidget {
   final Info? info;
   final CommonCardType type;
   final double? radius;
+
+  /// Panel-tier emphasis (T115): the home page's primary surfaces
+  /// (outbound mode, start control) take the skeleton's panel
+  /// material; selected cards read as panel tier too.
+  final bool emphasis;
   final Clip clipBehavior;
   final bool elevated;
-
-  // final WidgetStateProperty<Color?>? backgroundColor;
-  // final WidgetStateProperty<BorderSide?>? borderSide;
-
-  BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
-    final colorScheme = context.colorScheme;
-    final hoverColor = isSelected
-        ? colorScheme.primary.opacity80
-        : colorScheme.primary.opacity60;
-    if (states.contains(WidgetState.hovered) ||
-        states.contains(WidgetState.focused) ||
-        states.contains(WidgetState.pressed)) {
-      return BorderSide(
-        color: hoverColor,
-        strokeAlign: BorderSide.strokeAlignInside,
-      );
-    }
-    final isLight = colorScheme.brightness == Brightness.light;
-    return BorderSide(
-      color: isSelected
-          ? colorScheme.primary
-          : colorScheme.outlineVariant.withValues(
-              alpha: elevated ? (isLight ? 0.65 : 0.35) : (isLight ? 0.8 : 0.4),
-            ),
-      strokeAlign: BorderSide.strokeAlignInside,
-    );
-  }
-
-  Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
-    final colorScheme = context.colorScheme;
-    if (isSelected) {
-      return type == CommonCardType.filled
-          ? colorScheme.secondaryContainer.opacity80
-          : colorScheme.secondaryContainer;
-    }
-    final isLight = colorScheme.brightness == Brightness.light;
-    return isLight
-        ? Color.lerp(
-            colorScheme.surface,
-            colorScheme.surfaceContainerLowest,
-            0.5,
-          )
-        : colorScheme.surfaceContainerHigh;
-  }
+  final bool subtle;
 
   @override
   Widget build(BuildContext context) {
-    final actualRadius = radius ?? 20.0;
     var childWidget = child;
 
     if (info != null) {
@@ -177,51 +151,104 @@ class CommonCard extends StatelessWidget {
     }
 
     final isInteractive = onPressed != null || onLongPress != null;
-    final isLight = context.colorScheme.brightness == Brightness.light;
+    final colorScheme = context.colorScheme;
+    final spec = context.zodiac.spec;
+    final actualRadius =
+        radius ??
+        ((emphasis || isSelected) ? spec.panelRadius : spec.smallRadius);
     final shape = RoundedSuperellipseBorder(
       borderRadius: BorderRadius.circular(actualRadius),
     );
-    Widget card = OutlinedButton(
-      onLongPress: onLongPress,
-      clipBehavior: clipBehavior,
-      style: ButtonStyle(
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        shape: WidgetStatePropertyAll(shape),
-        iconColor: WidgetStatePropertyAll(context.colorScheme.primary),
-        iconSize: WidgetStateProperty.all(20),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => getBackgroundColor(context, states),
+    // The constellation surface paints fill, border and shadow; the
+    // button layer is fully transparent and only contributes
+    // interaction and ink.
+    Widget card = ZodiacSurface(
+      tone: (emphasis || isSelected)
+          ? ZodiacTone.panel
+          : ZodiacTone.card,
+      radius: radius,
+      selected: isSelected,
+      child: OutlinedButton(
+        onLongPress: onLongPress,
+        clipBehavior: clipBehavior,
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+          shape: WidgetStatePropertyAll(shape),
+          iconColor: WidgetStatePropertyAll(colorScheme.primary),
+          iconSize: WidgetStateProperty.all(20),
+          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return colorScheme.primary.withValues(alpha: 0.08);
+            }
+            if (states.contains(WidgetState.hovered) ||
+                states.contains(WidgetState.focused)) {
+              return colorScheme.primary.withValues(alpha: 0.05);
+            }
+            return null;
+          }),
+          side: const WidgetStatePropertyAll(BorderSide.none),
+          minimumSize: WidgetStatePropertyAll(
+            isInteractive ? null : Size.zero,
+          ),
+          tapTargetSize: isInteractive
+              ? null
+              : MaterialTapTargetSize.shrinkWrap,
         ),
-        side: WidgetStateProperty.resolveWith(
-          (states) => getBorderSide(context, states),
-        ),
-        minimumSize: WidgetStatePropertyAll(isInteractive ? null : Size.zero),
-        tapTargetSize: isInteractive ? null : MaterialTapTargetSize.shrinkWrap,
+        onPressed: onPressed,
+        child: childWidget,
       ),
-      onPressed: onPressed,
-      child: childWidget,
     );
-
-    if (elevated) {
-      card = DecoratedBox(
-        decoration: ShapeDecoration(
-          shape: shape,
-          shadows: [
-            BoxShadow(
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-              color: Colors.black.withValues(alpha: isLight ? 0.045 : 0.25),
-            ),
-          ],
-        ),
-        child: card,
-      );
-    }
 
     return switch (enterAnimated) {
       true => FadeScaleEnterBox(child: card),
       false => card,
     };
+  }
+}
+
+class _CardPressScale extends StatefulWidget {
+  const _CardPressScale({required this.builder});
+
+  final Widget Function(WidgetStatesController controller) builder;
+
+  @override
+  State<_CardPressScale> createState() => _CardPressScaleState();
+}
+
+class _CardPressScaleState extends State<_CardPressScale> {
+  final _controller = WidgetStatesController();
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleStates);
+  }
+
+  void _handleStates() {
+    final pressed = _controller.value.contains(WidgetState.pressed);
+    if (pressed == _pressed) return;
+    setState(() => _pressed = pressed);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleStates);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: _pressed ? 0.98 : 1.0,
+      duration: _pressed
+          ? const Duration(milliseconds: 100)
+          : const Duration(milliseconds: 260),
+      curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
+      child: widget.builder(_controller),
+    );
   }
 }
 
@@ -254,9 +281,10 @@ class SettingsBlock extends StatelessWidget {
       child: Column(
         children: [
           InfoHeader(info: Info(label: title)),
-          Card(
-            color: context.colorScheme.surfaceContainer,
-            clipBehavior: Clip.antiAlias,
+          // Settings lists are long surfaces on the family's group
+          // material, same language as the rest of the app.
+          ZodiacSurface(
+            tone: ZodiacTone.group,
             child: Column(children: settings),
           ),
         ],

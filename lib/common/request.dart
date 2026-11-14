@@ -5,15 +5,35 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:intl/intl.dart';
+import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 
-import 'release_updates.dart';
+class _LimitedByteSink extends ByteConversionSinkBase {
+  _LimitedByteSink(this.maxBytes);
+
+  final int maxBytes;
+  final BytesBuilder _builder = BytesBuilder(copy: false);
+
+  Uint8List takeBytes() => _builder.takeBytes();
+
+  @override
+  void add(List<int> chunk) {
+    if (_builder.length + chunk.length > maxBytes) {
+      throw const FormatException('Decompressed data exceeds limit');
+    }
+    _builder.add(chunk);
+  }
+
+  @override
+  void close() {}
+}
 
 class Request {
+  static const _maxDecompressedBytes = 64 * 1024 * 1024;
+
   late final Dio _dio;
   late final Dio _clashDio;
   String? userAgent;
@@ -41,6 +61,17 @@ class Request {
     );
   }
 
+  Uint8List _decodeWithLimit(
+    Converter<List<int>, List<int>> decoder,
+    Uint8List input,
+  ) {
+    final sink = _LimitedByteSink(_maxDecompressedBytes);
+    final inputSink = decoder.startChunkedConversion(sink);
+    inputSink.add(input);
+    inputSink.close();
+    return sink.takeBytes();
+  }
+
   Uint8List _decompressIfNeeded(Uint8List bytes, Headers headers) {
     final encodings =
         headers['content-encoding']?.map((e) => e.toLowerCase()).toList() ?? [];
@@ -57,7 +88,7 @@ class Request {
           break;
         }
         try {
-          current = Uint8List.fromList(gzip.decode(current));
+          current = _decodeWithLimit(gzip.decoder, current);
           wantGzip = false;
           continue;
         } catch (_) {
@@ -66,14 +97,12 @@ class Request {
       }
       if (wantDeflate) {
         try {
-          current = Uint8List.fromList(zlib.decode(current));
+          current = _decodeWithLimit(zlib.decoder, current);
           wantDeflate = false;
           continue;
         } catch (_) {
           try {
-            current = Uint8List.fromList(
-              ZLibDecoder(raw: true).convert(current),
-            );
+            current = _decodeWithLimit(ZLibDecoder(raw: true), current);
             wantDeflate = false;
             continue;
           } catch (_) {
@@ -92,10 +121,7 @@ class Request {
     return Uint8List.fromList((data as List).cast<int>());
   }
 
-  Future<Response> _getFileResponseForUrl(
-    String url,
-    ResponseType responseType,
-  ) async {
+  Future<({File file, String? fileName})> _localFileForUrl(String url) async {
     final uri = Uri.parse(url);
     final segments = uri.pathSegments
         .where((segment) => segment.isNotEmpty)
@@ -110,13 +136,29 @@ class Request {
     if (!await file.exists()) {
       throw Exception('Local file not found: $filePath');
     }
+    return (file: file, fileName: segments.lastOrNull);
+  }
 
-    final bytes = await file.readAsBytes();
+  Headers? _fileHeaders(String? fileName) {
+    if (fileName == null) return null;
+    return Headers.fromMap({
+      'content-disposition': [
+        'attachment; filename*=UTF-8\'\'${Uri.encodeComponent(fileName)}',
+      ],
+    });
+  }
+
+  Future<Response> _getFileResponseForUrl(
+    String url,
+    ResponseType responseType,
+  ) async {
+    final local = await _localFileForUrl(url);
+    final bytes = await local.file.readAsBytes();
     return _buildResponseFromBytes(
       url: url,
       bytes: bytes,
       responseType: responseType,
-      fileName: segments.lastOrNull,
+      fileName: local.fileName,
     );
   }
 
@@ -141,14 +183,7 @@ class Request {
     String? fileName,
   }) {
     final requestOptions = RequestOptions(path: url);
-    final disposition = fileName == null
-        ? null
-        : 'attachment; filename*=UTF-8\'\'${Uri.encodeComponent(fileName)}';
-    final headers = disposition == null
-        ? null
-        : Headers.fromMap({
-            'content-disposition': [disposition],
-          });
+    final headers = _fileHeaders(fileName);
     if (responseType == ResponseType.plain) {
       return Response(
         requestOptions: requestOptions,
@@ -165,14 +200,7 @@ class Request {
     );
   }
 
-  Future<Response> _getResponseForUrl(
-    String url,
-    ResponseType responseType,
-  ) async {
-    if (url.isFileUrl) {
-      return _getFileResponseForUrl(url, responseType);
-    }
-
+  (String, Map<String, dynamic>) _authorizedRequest(String url) {
     String? userInfo;
     String requestUrl = url;
 
@@ -202,9 +230,68 @@ class Request {
       headers['Authorization'] = 'Basic $auth';
     }
 
-    final response = await _clashDio.get(
-      requestUrl,
-      options: Options(responseType: ResponseType.bytes, headers: headers),
+    return (requestUrl, headers);
+  }
+
+  Future<T> _withPlainEncodingRetry<T>(
+    Map<String, dynamic> headers,
+    Future<T> Function(Map<String, dynamic> requestHeaders) send,
+  ) async {
+    try {
+      return await send(headers);
+    } on DioException catch (e) {
+      final error = e.error;
+      if (error is! HttpException ||
+          !error.message.contains(HttpHeaders.contentEncodingHeader)) {
+        rethrow;
+      }
+      return send({...headers, HttpHeaders.acceptEncodingHeader: 'identity'});
+    }
+  }
+
+  Future<({String path, Headers? headers, bool remote})> fetchProfileSource(
+    String url,
+    String downloadPath,
+  ) async {
+    if (url.isFileUrl) {
+      final local = await _localFileForUrl(url);
+      await local.file.copy(downloadPath);
+      return (
+        path: downloadPath,
+        headers: _fileHeaders(local.fileName),
+        remote: false,
+      );
+    }
+    final (requestUrl, headers) = _authorizedRequest(url);
+    final response = await _withPlainEncodingRetry(
+      headers,
+      (requestHeaders) => _clashDio.download(
+        requestUrl,
+        downloadPath,
+        options: Options(headers: requestHeaders),
+      ),
+    );
+    return (path: downloadPath, headers: response.headers, remote: true);
+  }
+
+  Future<Response> _getResponseForUrl(
+    String url,
+    ResponseType responseType,
+  ) async {
+    if (url.isFileUrl) {
+      return _getFileResponseForUrl(url, responseType);
+    }
+
+    final (requestUrl, headers) = _authorizedRequest(url);
+    final response = await _withPlainEncodingRetry(
+      headers,
+      (requestHeaders) => _clashDio.get(
+        requestUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: requestHeaders,
+        ),
+      ),
     );
 
     final rawBytes = _bytesFromResponse(response);
@@ -236,10 +323,6 @@ class Request {
     }
   }
 
-  Future<Response> getFileResponseForUrl(String url) async {
-    return _getResponseForUrl(url, ResponseType.bytes);
-  }
-
   Future<Response> getTextResponseForUrl(String url) async {
     return _getResponseForUrl(url, ResponseType.plain);
   }
@@ -256,6 +339,17 @@ class Request {
     return MemoryImage(bytes);
   }
 
+  Future<Uint8List?> getBytes(String url, {CancelToken? cancelToken}) async {
+    final response = await _dio.get<Uint8List>(
+      url,
+      cancelToken: cancelToken,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final data = response.data;
+    if (data == null) return null;
+    return _decompressIfNeeded(data, response.headers);
+  }
+
   Future<Map<String, dynamic>?> checkForUpdate() async {
     try {
       final release = await ReleaseUpdates(repository: repository).latest();
@@ -270,35 +364,18 @@ class Request {
     return null;
   }
 
-  List<String> _getPrimaryIpSources() {
-    final locale = Intl.getCurrentLocale().toLowerCase();
-    final isZh = locale.startsWith('zh');
-    return [
-      isZh ? 'http://ip-api.com/json/?lang=zh-CN' : 'http://ip-api.com/json',
-      'https://get.geojs.io/v1/ip/geo.json',
-    ];
-  }
-
-  final List<String> _domesticIpSources = [
-    'https://myip.ipip.net/json',
-    'https://uapis.cn/api/v1/network/myip',
-  ];
-
-  final List<String> _cloudflareIpInfoSources = [
-    'https://ip.sb/cdn-cgi/trace',
-    'https://api.ip.sb/cdn-cgi/trace',
-  ];
-
-  final List<String> _cloudflareDomesticIpSources = [
-    'https://www.qualcomm.cn/cdn-cgi/trace',
-    'https://www.teamviewer.cn/cdn-cgi/trace',
-  ];
+  // Exit IP discovery uses only Cloudflare's official trace endpoint:
+  // the service sees nothing beyond the exit IP itself. All geo
+  // enrichment (country/province/city/ASN) is resolved on-device from
+  // the core's local databases; no third-party geo API is ever queried.
+  static const _exitIpTraceSources = ['https://cloudflare.com/cdn-cgi/trace'];
 
   Future<Result<IpInfo?>> _checkIpFromSources(
     List<String> sources,
     CancelToken? cancelToken,
     Duration? timeout, {
     void Function(IpInfo info)? onUpdate,
+    String? proxy,
   }) async {
     final effectiveTimeout = timeout ?? const Duration(seconds: 5);
 
@@ -314,6 +391,7 @@ class Request {
         final client = HttpClient();
         client.autoUncompress = false;
         client.connectionTimeout = effectiveTimeout;
+        if (proxy != null) client.findProxy = (_) => proxy;
         return client;
       },
     );
@@ -367,12 +445,7 @@ class Request {
                 if (text.startsWith('{')) {
                   final jsonMap = json.decode(text);
                   if (jsonMap is Map<String, dynamic>) {
-                    if (url.contains('ip-api.com') &&
-                        jsonMap['status'] != 'success') {
-                      ipInfo = null;
-                    } else {
-                      ipInfo = IpInfo.fromJson(jsonMap);
-                    }
+                    ipInfo = IpInfo.fromJson(jsonMap);
                   }
                 } else {
                   ipInfo = IpInfo.fromCloudflareTrace(text);
@@ -423,16 +496,49 @@ class Request {
     );
   }
 
+  Future<Result<IpInfo?>> _checkIpWithLocalGeo({
+    CancelToken? cancelToken,
+    Duration? timeout,
+    void Function(IpInfo info)? onUpdate,
+    String? proxy,
+  }) async {
+    final res = await _checkIpFromSources(
+      _exitIpTraceSources,
+      cancelToken,
+      timeout,
+      onUpdate: onUpdate,
+      proxy: proxy,
+    );
+    final traceInfo = res.data;
+    if (res.isError || traceInfo == null || traceInfo.ip.isEmpty) {
+      return res;
+    }
+    // Local enrichment is best-effort: the databases live in the core,
+    // and a lookup that is unavailable or stuck must never block the
+    // detection result — the trace data alone is a valid answer.
+    try {
+      final enriched = await clashCore
+          .queryIpGeo(traceInfo.ip)
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      if (enriched != null) {
+        onUpdate?.call(enriched);
+        return Result.success(enriched);
+      }
+    } catch (_) {}
+    return res;
+  }
+
   Future<Result<IpInfo?>> checkIp({
     CancelToken? cancelToken,
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
+    String? proxy,
   }) async {
-    return _checkIpFromSources(
-      _getPrimaryIpSources(),
-      cancelToken,
-      timeout,
+    return _checkIpWithLocalGeo(
+      cancelToken: cancelToken,
+      timeout: timeout,
       onUpdate: onUpdate,
+      proxy: proxy,
     );
   }
 
@@ -441,29 +547,10 @@ class Request {
     Duration? timeout,
     void Function(IpInfo info)? onUpdate,
   }) async {
-    return _checkIpFromSources(
-      _domesticIpSources,
-      cancelToken,
-      timeout,
+    return _checkIpWithLocalGeo(
+      cancelToken: cancelToken,
+      timeout: timeout,
       onUpdate: onUpdate,
-    );
-  }
-
-  Future<Result<IpInfo?>> checkIpCloudflare({
-    CancelToken? cancelToken,
-    Duration? timeout,
-  }) async {
-    return _checkIpFromSources(_cloudflareIpInfoSources, cancelToken, timeout);
-  }
-
-  Future<Result<IpInfo?>> checkIpDomesticCloudflare({
-    CancelToken? cancelToken,
-    Duration? timeout,
-  }) async {
-    return _checkIpFromSources(
-      _cloudflareDomesticIpSources,
-      cancelToken,
-      timeout,
     );
   }
 
@@ -587,48 +674,22 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout,
   }) async {
-    final isZh = Intl.getCurrentLocale().toLowerCase().startsWith('zh');
-    final cacheKey = '${ip}_${isZh ? 'zh' : 'en'}';
+    final cacheKey = ip;
 
     final cached = await _getValidCachedIp(cacheKey);
     if (cached != null) {
       return Result.success(cached);
     }
 
-    final effectiveTimeout = timeout ?? const Duration(seconds: 5);
-    final url = isZh
-        ? 'http://ip-api.com/json/$ip?lang=zh-CN'
-        : 'http://ip-api.com/json/$ip';
-
-    try {
-      final res = await _dio.get<Map<String, dynamic>>(
-        url,
-        cancelToken: cancelToken,
-        options: Options(
-          responseType: ResponseType.json,
-          receiveTimeout: effectiveTimeout,
-          sendTimeout: effectiveTimeout,
-        ),
-      );
-
-      if (res.statusCode == HttpStatus.ok && res.data != null) {
-        final data = res.data!;
-        final status = data['status']?.toString();
-        if (status == 'fail') {
-          final message = data['message']?.toString() ?? 'query failed';
-          return Result.error(message);
-        }
-        final ipInfo = IpInfo.fromJson(data);
-        await _saveCachedIp(cacheKey, ipInfo);
-        return Result.success(ipInfo);
-      }
+    // Fully local: the detail is resolved from the on-device GeoIP
+    // databases through the core bridge. No online geo service is
+    // queried, so the lookup leaks nothing and also works offline.
+    final ipInfo = await clashCore.queryIpGeo(ip);
+    if (ipInfo == null) {
       return Result.error('query failed');
-    } catch (e) {
-      if (e is DioException && e.type == DioExceptionType.cancel) {
-        return Result.error('cancelled');
-      }
-      return Result.error(e.toString());
     }
+    await _saveCachedIp(cacheKey, ipInfo);
+    return Result.success(ipInfo);
   }
 }
 

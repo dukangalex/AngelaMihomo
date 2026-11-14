@@ -1,5 +1,4 @@
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/controller.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/models/models.dart';
@@ -172,65 +171,13 @@ void main() {
     expect(_rows, findsNWidgets(2));
   });
 
-  testWidgets('展开行是 AI 巡检入口：跳巡检页且不打开任何外链', (tester) async {
-    final urls = <String>[];
-    const channel = MethodChannel('plugins.flutter.io/url_launcher');
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
-      call,
-    ) async {
-      urls.add('${(call.arguments as Map)['url']}');
-      return true;
-    });
-    addTearDown(
-      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        channel,
-        null,
-      ),
-    );
-    // Same harness as _pump, plus a captured WidgetRef so a real
-    // AppController can route the patrol button into observable state.
-    tester.view.physicalSize = const Size(360, 720);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final container = ProviderContainer(
-      overrides: [isMobileViewProvider.overrideWith((ref) => true)],
-    );
-    addTearDown(container.dispose);
-    late WidgetRef capturedRef;
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          home: Scaffold(
-            body: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return LogsConsole(onAdjustLevel: () {});
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-    globalState.appController = AppController(
-      tester.element(find.byType(LogsConsole)),
-      capturedRef,
-    );
-    container.read(logsProvider.notifier).addLogs([
-      _log('Geodata Loader mode: memconservative'),
-    ]);
-    await tester.pump();
-    await tester.pump();
+  testWidgets('展开行不再有 AI 巡检入口（巡检已拆除）', (tester) async {
+    await _pump(tester, logs: [_log('Geodata Loader mode: memconservative')]);
 
     await tester.tap(_row('Geodata'));
     await tester.pump();
     expect(find.text('搜索'), findsNothing);
-    expect(find.text('AI 巡检'), findsOneWidget);
-
-    await tester.tap(find.text('AI 巡检'));
-    await tester.pump();
-    expect(container.read(currentPageLabelProvider), PageLabel.patrol);
-    expect(urls, isEmpty);
+    expect(find.text('AI 巡检'), findsNothing);
   });
 
   testWidgets('展开时新日志不推动列表，并提示新日志数量', (tester) async {
@@ -465,27 +412,25 @@ void main() {
     expect(_rows, findsOneWidget);
   });
 
-  testWidgets('标签宽度随文字自适应，下划线滑动到选中项下方', (tester) async {
+  testWidgets('标签宽度随文字自适应，点击后切换选中项', (tester) async {
     await _pump(tester, logs: [_log('plain'), _log('[APP] y')]);
-    final indicator = find.byType(AnimatedPositionedDirectional);
-    Rect line() => tester.getRect(
-      find.descendant(of: indicator, matching: find.byType(DecoratedBox)),
+    Finder segment(String label) => find.ancestor(
+      of: find.text(label),
+      matching: find.byType(SegmentButton),
     );
+    bool selected(String label) =>
+        tester.widget<SegmentButton>(segment(label)).selected;
     expect(
-      tester.getSize(find.text('DNS')).width,
-      isNot(tester.getSize(find.text('全部')).width),
+      tester.getSize(segment('DNS')).width,
+      isNot(tester.getSize(segment('全部')).width),
     );
-    expect(line().center.dx, closeTo(tester.getCenter(find.text('全部')).dx, 1));
+    expect(selected('全部'), isTrue);
+    expect(selected('DNS'), isFalse);
 
     await tester.tap(find.text('DNS'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    final moving = line().center.dx;
-    expect(moving, greaterThan(tester.getCenter(find.text('全部')).dx));
-    expect(moving, lessThan(tester.getCenter(find.text('DNS')).dx));
     await tester.pumpAndSettle();
-    expect(line().center.dx, closeTo(tester.getCenter(find.text('DNS')).dx, 1));
-    expect(line().width, closeTo(tester.getSize(find.text('DNS')).width, 1));
+    expect(selected('全部'), isFalse);
+    expect(selected('DNS'), isTrue);
   });
 
   testWidgets('非 debug 等级下没有 DNS 标签，行用更宽松的排版', (tester) async {

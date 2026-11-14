@@ -1,13 +1,68 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/proxies/common.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'tile.dart';
+
+/// Card-face location text: country · city (city only when the local
+/// GeoIP lookup produced one and it differs from the country name).
+String networkDetectionLocationText(IpInfo ipInfo) {
+  return [
+    ipInfo.country,
+    if (ipInfo.city != ipInfo.country) ipInfo.city,
+  ].where((item) => item?.isNotEmpty ?? false).join(' · ');
+}
+
+/// Card-face operator text: ASN + AS name (ISP as fallback).
+String networkDetectionOperatorText(IpInfo ipInfo) {
+  return [
+    ipInfo.asn,
+    ipInfo.asName ?? ipInfo.isp,
+  ].where((item) => item?.isNotEmpty ?? false).join(' ');
+}
+
+/// Compact-card attribution block (T109). The location and operator
+/// used to share one ellipsized line next to the IP, which cut the
+/// city down to a stub ('United States · B…') on narrow cards. The
+/// attribution now sits full-width under the IP line, each element
+/// on its own line(s) with no ellipsis: the location (country ·
+/// city) may wrap to two lines, the operator gets a full-width line
+/// of its own.
+class NetworkDetectionAttribution extends StatelessWidget {
+  final String location;
+  final String operator;
+
+  const NetworkDetectionAttribution({
+    super.key,
+    required this.location,
+    required this.operator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.textTheme.labelSmall?.copyWith(
+      color: context.colorScheme.onSurfaceVariant,
+      height: 1.1,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (location.isNotEmpty)
+          Text(location, maxLines: 2, softWrap: true, style: style),
+        if (operator.isNotEmpty)
+          Text(operator, maxLines: 1, softWrap: true, style: style),
+      ],
+    );
+  }
+}
 
 class NetworkDetection extends ConsumerStatefulWidget {
   final DashboardTileSize? size;
@@ -19,6 +74,125 @@ class NetworkDetection extends ConsumerStatefulWidget {
 }
 
 class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
+  // T113 global speed test state: while a run is in flight the card
+  // header shows live progress; after it finishes the header keeps a
+  // one-line summary until the next run or refresh replaces it.
+  bool _globalTesting = false;
+  int _globalDone = 0;
+  int _globalTotal = 0;
+  String? _globalSummary;
+
+  String get _headerTitle {
+    if (_globalTesting) {
+      return '${appLocalizations.globalSpeedTest} $_globalDone/$_globalTotal';
+    }
+    return _globalSummary ?? appLocalizations.networkDetection;
+  }
+
+  Widget _buildGlobalSpeedTestAction(BuildContext context) {
+    if (_globalTesting) {
+      return AspectRatio(
+        aspectRatio: 1,
+        child: Center(
+          child: SizedBox.square(
+            dimension: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
+    return AspectRatio(
+      aspectRatio: 1,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        tooltip: appLocalizations.globalSpeedTest,
+        onPressed: _runGlobalSpeedTest,
+        icon: Icon(
+          size: 16.ap,
+          Icons.speed_rounded,
+          color: context.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runGlobalSpeedTest() async {
+    if (_globalTesting) return;
+    if (ref.read(runTimeProvider) == null) {
+      globalState.showNotifier(appLocalizations.globalSpeedTestNeedCore);
+      return;
+    }
+    setState(() {
+      _globalTesting = true;
+      _globalDone = 0;
+      _globalTotal = 0;
+      _globalSummary = null;
+    });
+    try {
+      final result = await runGlobalDelayTest(
+        onProgress: (done, total) {
+          if (!mounted) return;
+          setState(() {
+            _globalDone = done;
+            _globalTotal = total;
+          });
+        },
+      );
+      if (!mounted) return;
+      setState(() {
+        _globalTesting = false;
+        _globalSummary = result.totalNodes == 0
+            ? null
+            : appLocalizations.globalSpeedTestSummary(
+                result.availableNodes,
+                result.totalNodes,
+              );
+      });
+      if (result.totalNodes == 0) {
+        globalState.showNotifier(appLocalizations.globalSpeedTestNoProxies);
+        return;
+      }
+      _showGlobalSpeedTestResult(result);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _globalTesting = false;
+      });
+      globalState.showNotifier(appLocalizations.globalSpeedTestFailed);
+    }
+  }
+
+  void _showGlobalSpeedTestResult(GlobalDelayTestResult result) {
+    globalState.showCommonDialog(
+      child: CommonDialog(
+        title: appLocalizations.globalSpeedTest,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+            child: Text(appLocalizations.confirm),
+          ),
+        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${appLocalizations.globalSpeedTestTestedLabel}${result.totalNodes}',
+            ),
+            Text(
+              '${appLocalizations.globalSpeedTestAvailableLabel}${result.availableNodes}',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _countryCodeToEmoji(String countryCode) {
     final String code = countryCode.toUpperCase();
     if (code.length != 2) {
@@ -64,6 +238,37 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+
+  Widget _buildSettingsButton(BuildContext context) {
+    return CommonPopupBox(
+      targetBuilder: (open) => IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => open(offset: const Offset(0, 20)),
+        icon: Icon(
+          size: 16.ap,
+          Icons.settings_outlined,
+          color: context.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      popup: CommonPopupMenu(
+        items: [
+          PopupMenuItemData(
+            icon: Icons.sync,
+            label: appLocalizations.manualRefreshIp,
+            onPressed: detectionState.manualRefresh,
+          ),
+          PopupMenuItemData(
+            icon: detectionState.isIpMasked
+                ? Icons.check_circle_rounded
+                : Icons.security,
+            label: appLocalizations.ipPrivacyProtection,
+            onPressed: detectionState.toggleIpPrivacy,
+          ),
+        ],
       ),
     );
   }
@@ -124,21 +329,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
     );
   }
 
-  Widget _buildIconButton({
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onPressed,
-  }) {
-    return IconButton(
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-      icon: Icon(icon, size: 15, color: context.colorScheme.onSurfaceVariant),
-      tooltip: tooltip,
-      onPressed: onPressed,
-    );
-  }
-
   void _showMoreIpInfoDialog() {
     final rawIpInfo = detectionState.rawIpInfo;
     if (rawIpInfo == null) return;
@@ -186,14 +376,6 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
         iconColor: context.colorScheme.primary,
         label: appLocalizations.ipAddress,
         value: rawIpInfo.ip,
-        action: _buildIconButton(
-          icon: Icons.open_in_new,
-          tooltip: appLocalizations.viewDetailedIpData,
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop();
-            globalState.openUrl('https://www.ip2location.com/demo');
-          },
-        ),
       ),
       if (countryContinent.isNotEmpty || flagEmoji.isNotEmpty)
         _buildStatTile(
@@ -287,7 +469,9 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
 
   Widget _buildHeader(BuildContext context, IpInfo? ipInfo) {
     return Container(
-      height: globalState.measure.titleMediumHeight + 16,
+      // T109: 6dp shorter than the shared card header so the
+      // two-line attribution block fits the one-row card height.
+      height: globalState.measure.titleMediumHeight + 10,
       padding: baseInfoEdgeInsets.copyWith(bottom: 0),
       child: Row(
         children: [
@@ -308,7 +492,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           Flexible(
             child: TooltipText(
               text: Text(
-                appLocalizations.networkDetection,
+                _headerTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.titleSmall?.copyWith(
@@ -317,6 +501,8 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
               ),
             ),
           ),
+          const SizedBox(width: 2),
+          _buildGlobalSpeedTestAction(context),
           const SizedBox(width: 2),
           AspectRatio(
             aspectRatio: 1,
@@ -349,8 +535,10 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           ),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            // T109: detail values (location, operator) wrap to two
+            // lines instead of ellipsizing the tail away.
+            maxLines: 2,
+            softWrap: true,
             style: context.textTheme.bodyMedium?.toLight,
           ),
         ],
@@ -369,29 +557,38 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           final masked = detectionState.isIpMasked;
           final location = ipInfo == null
               ? ''
-              : [
-                  ipInfo.country,
-                  if (ipInfo.city != ipInfo.country) ipInfo.city,
-                ].where((item) => item?.isNotEmpty ?? false).join(' · ');
+              : networkDetectionLocationText(ipInfo);
           final operator = ipInfo == null
               ? ''
-              : [
-                  ipInfo.asn,
-                  ipInfo.asName ?? ipInfo.isp,
-                ].where((item) => item?.isNotEmpty ?? false).join(' ');
+              : networkDetectionOperatorText(ipInfo);
           final countryCode = ipInfo?.countryCode ?? '';
           final ipText = ipInfo != null
               ? Text(
-                  ipInfo.ip,
-                  style: context.textTheme.bodyMedium?.toLight.adjustSize(1),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
+                    ipInfo.ip,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      // Whitespace / plain-paper skeletons set their
+                      // status display in serif (spec 3.5).
+                      fontFamily:
+                          (context.zodiac.def.skeleton ==
+                                      ZodiacSkeleton.easternWhitespace ||
+                                  context.zodiac.def.skeleton ==
+                                      ZodiacSkeleton.plainPaper)
+                          ? 'serif'
+                          : null,
+                      fontFeatures: const [
+                        FontFeature.tabularFigures(),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
               : state.isLoading == false
               ? Text(
                   state.errorMessage ?? 'timeout',
                   style: context.textTheme.bodyMedium
-                      ?.copyWith(color: Colors.red)
+                      ?.copyWith(color: context.zodiac.palette.error)
                       .adjustSize(1),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -405,7 +602,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                   ),
                 );
           return CommonCard(
-            onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
             child: DashboardDecor(
               mark: countryCode.length == 2
                   ? DashboardDecor.flag(countryCode, 80)
@@ -419,60 +616,80 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                 children: [
                   _buildHeader(context, ipInfo),
                   if (isTall)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 12, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: globalState.measure.bodyMediumHeight + 2,
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: ipText,
+                    // T115 homepage hard line: the tall card's content
+                    // scales down as a whole when the wrapped detail
+                    // values outgrow the fixed tile height, instead
+                    // of the last line being clipped by the card edge.
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topLeft,
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                10,
+                                12,
+                                0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height:
+                                        globalState.measure.titleMediumHeight +
+                                        2,
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
+                                      child: ipText,
+                                    ),
+                                  ),
+                                  if (!masked && location.isNotEmpty)
+                                    _buildDetail(
+                                      context,
+                                      appLocalizations.countryOrRegion,
+                                      location,
+                                    ),
+                                  if (!masked && operator.isNotEmpty)
+                                    _buildDetail(
+                                      context,
+                                      appLocalizations.operatorOrAsn,
+                                      operator,
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                          if (!masked && location.isNotEmpty)
-                            _buildDetail(
-                              context,
-                              appLocalizations.countryOrRegion,
-                              location,
-                            ),
-                          if (!masked && operator.isNotEmpty)
-                            _buildDetail(
-                              context,
-                              appLocalizations.operatorOrAsn,
-                              operator,
-                            ),
-                        ],
+                        ),
                       ),
                     )
                   else
                     Padding(
                       padding: baseInfoEdgeInsets.copyWith(top: 0),
-                      child: SizedBox(
-                        height: globalState.measure.bodyMediumHeight + 2,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Flexible(child: ipText),
-                            if (!masked && ipInfo != null) ...[
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  [location, operator]
-                                      .where((item) => item.isNotEmpty)
-                                      .join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.textTheme.bodySmall?.copyWith(
-                                    color: context.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: globalState.measure.bodyMediumHeight + 2,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [Flexible(child: ipText)],
+                            ),
+                          ),
+                          if (!masked && ipInfo != null) ...[
+                            const SizedBox(height: 2),
+                            NetworkDetectionAttribution(
+                              location: location,
+                              operator: operator,
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                 ],
@@ -494,13 +711,22 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
         builder: (_, state, _) {
           final ipInfo = state.ipInfo;
           final isLoading = state.isLoading;
+          final masked = detectionState.isIpMasked;
+          final location = ipInfo == null
+              ? ''
+              : networkDetectionLocationText(ipInfo);
+          final operator = ipInfo == null
+              ? ''
+              : networkDetectionOperatorText(ipInfo);
           return CommonCard(
-            onPressed: ipInfo != null ? _showMoreIpInfoDialog : () {},
+            onPressed: ipInfo != null ? _showMoreIpInfoDialog : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  height: globalState.measure.titleMediumHeight + 16,
+                  // T109: see _buildHeader — 6dp shorter so the
+                  // two-line attribution fits the one-row height.
+                  height: globalState.measure.titleMediumHeight + 10,
                   padding: baseInfoEdgeInsets.copyWith(bottom: 0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
@@ -530,7 +756,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                         flex: 1,
                         child: TooltipText(
                           text: Text(
-                            appLocalizations.networkDetection,
+                            _headerTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.titleSmall
@@ -541,61 +767,89 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                         ),
                       ),
                       SizedBox(width: 2),
+                      _buildGlobalSpeedTestAction(context),
+                      SizedBox(width: 2),
                       AspectRatio(
                         aspectRatio: 1,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: _showIpClickBehaviorSettings,
-                          icon: Icon(
-                            size: 16.ap,
-                            Icons.settings_outlined,
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+                        child: _buildSettingsButton(context),
                       ),
                     ],
                   ),
                 ),
                 Container(
                   padding: baseInfoEdgeInsets.copyWith(top: 0),
-                  child: SizedBox(
-                    height: globalState.measure.bodyMediumHeight + 2,
-                    child: FadeThroughBox(
-                      child: ipInfo != null
-                          ? TooltipText(
-                              text: Text(
-                                ipInfo.ip,
-                                style: context.textTheme.bodyMedium?.toLight
-                                    .adjustSize(1),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            )
-                          : FadeThroughBox(
-                              child: isLoading == false && ipInfo == null
-                                  ? Text(
-                                      state.errorMessage ?? 'timeout',
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(color: Colors.red)
-                                          .adjustSize(1),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
-                                  : Container(
-                                      padding: const EdgeInsets.all(2),
-                                      child: Center(
-                                        child: OverflowBox(
-                                          maxWidth: 30,
-                                          maxHeight: 16,
-                                          child: SpinKitThreeBounce(
-                                            color: context.colorScheme.primary,
-                                            size: 16,
-                                          ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: globalState.measure.bodyMediumHeight + 2,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(
+                              child: FadeThroughBox(
+                                child: ipInfo != null
+                                    ? TooltipText(
+                                        text: Text(
+                                          ipInfo.ip,
+                                          style: context
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.toLight
+                                              .adjustSize(1),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
+                                      )
+                                    : FadeThroughBox(
+                                        child:
+                                            isLoading == false && ipInfo == null
+                                            ? Text(
+                                                state.errorMessage ?? 'timeout',
+                                                style: context
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Colors.red,
+                                                    )
+                                                    .adjustSize(1),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            : Container(
+                                                padding: const EdgeInsets.all(
+                                                  2,
+                                                ),
+                                                child: Center(
+                                                  child: OverflowBox(
+                                                    maxWidth: 30,
+                                                    maxHeight: 16,
+                                                    child: SpinKitThreeBounce(
+                                                      color: context
+                                                          .colorScheme
+                                                          .primary,
+                                                      size: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                       ),
-                                    ),
+                              ),
                             ),
-                    ),
+                          ],
+                        ),
+                      ),
+                      if (!masked &&
+                          (location.isNotEmpty || operator.isNotEmpty)) ...[
+                        const SizedBox(height: 2),
+                        NetworkDetectionAttribution(
+                          location: location,
+                          operator: operator,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],

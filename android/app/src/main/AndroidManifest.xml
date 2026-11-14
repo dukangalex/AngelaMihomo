@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
@@ -140,8 +141,16 @@
         </activity-alias>
 
         <activity
+            android:name=".NotificationTrampolineActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/TransparentTheme" />
+
+        <activity
             android:name=".TempActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/TransparentTheme">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -150,6 +159,42 @@
                 <action android:name="${applicationId}.action.CHANGE" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".widget.HomeWidgetLargeProvider"
+            android:exported="false"
+            android:label="@string/home_widget_large_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_widget_large_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HomeWidgetWideProvider"
+            android:exported="false"
+            android:label="@string/home_widget_wide_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_widget_wide_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HomeWidgetSquareProvider"
+            android:exported="false"
+            android:label="@string/home_widget_square_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_widget_square_info" />
+        </receiver>
 
         <service
             android:name=".services.AngelaMihomoTileService"
@@ -171,8 +216,7 @@
             android:authorities="${applicationId}.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="android.permission.MANAGE_DOCUMENTS"
-            android:process=":background">
+            android:permission="android.permission.MANAGE_DOCUMENTS">
             <intent-filter>
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
@@ -182,6 +226,7 @@
             android:name=".services.AngelaMihomoVpnService"
             android:exported="false"
             android:foregroundServiceType="specialUse"
+            android:stopWithTask="false"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
@@ -193,6 +238,7 @@
         <service
             android:name=".services.AngelaMihomoService"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Proxy" />
         </service>

@@ -111,13 +111,13 @@ enum TunStack { gvisor, system, mixed, mips }
 
 enum TunDnsMode { disabled, native, hijack }
 
-enum CongestionController { cubic, reno, bbr, bbr3 }
+enum ProfileSwitchMode { hotReload, fullRestart }
 
 enum AccessControlMode { acceptSelected, rejectSelected }
 
 enum AccessSortType { none, installTime, updateTime }
 
-enum ProfileType { file, url }
+enum ProfileType { file, url, bundle }
 
 enum ConnectionsSortType {
   defaultSort,
@@ -135,12 +135,11 @@ enum ResultType {
 
 enum AppMessageType {
   log,
-  delay,
+  delays,
+  groupsChanged,
   request,
-  loaded,
   speedTest,
   stunTest,
-  iperf,
   localPing,
 }
 
@@ -237,20 +236,26 @@ enum ActionMethod {
   forceGc,
   shutdown,
   validateConfig,
+  importProfile,
   updateConfig,
   getConfig,
   getRuntimeConfig,
   exportConfig,
+  mergeProfiles,
   getProxies,
   changeProxy,
   getTraffic,
-  getTotalTraffic,
+  getTrafficSnapshot,
   resetTraffic,
   asyncTestDelay,
+  asyncTestDelays,
+  setForeground,
   getConnections,
+  getConnectionsSummary,
   closeConnections,
   resetConnections,
   closeConnection,
+  closeGroupConnections,
   getExternalProviders,
   getExternalProvider,
   updateGeoData,
@@ -267,6 +272,7 @@ enum ActionMethod {
   startListener,
   stopListener,
   getCountryCode,
+  queryIpGeo,
   getMemory,
   crash,
   setupConfig,
@@ -278,24 +284,23 @@ enum ActionMethod {
   getMode,
   parseExternalProviderContent,
   getCoreStatus,
+  getInterfaces,
   startSpeedTest,
   cancelSpeedTest,
   probeSpeedTest,
   getSpeedTestServers,
   startStunTest,
   cancelStunTest,
-  routeTrace,
   dnsQuery,
-  mrsPrepare,
-  mrsLookup,
-  cancelMrsLookup,
+  getTrafficStats,
+  clearTrafficStats,
+  storeGet,
+  storeSet,
+  storeList,
+  storeClear,
   startToolProxy,
   stopToolProxy,
   ageCrypt,
-  startIperfServer,
-  stopIperfServer,
-  startIperfClient,
-  cancelIperfClient,
   startLocalPing,
   cancelLocalPing,
 
@@ -311,13 +316,6 @@ enum ActionMethod {
 
 enum StunTestPhase { connecting, binding, filtering, mapping, done }
 
-enum IperfRole { client, server }
-
-enum IperfPhase { connecting, running, done }
-
-enum IperfProtocol { tcp, udp }
-
-enum IperfDirection { upload, download, bidir }
 
 enum LocalPingProtocol { icmp, tcp, udp }
 
@@ -360,6 +358,7 @@ enum AuthorizeCode { none, success, error }
 enum WindowsHelperServiceStatus { none, presence, running }
 
 enum FunctionTag {
+  homeWidget,
   updateClashConfig,
   setupClashConfig,
   updateStatus,
@@ -369,7 +368,7 @@ enum FunctionTag {
   savePreferences,
   changeProxy,
   checkIp,
-  updateDelay,
+  checkIpRisk,
   vpnTip,
   autoLaunch,
   renderPause,
@@ -380,6 +379,8 @@ enum FunctionTag {
   requests,
   autoScrollToEnd,
   autoBackup,
+  generateBundles,
+  delaySort,
 }
 
 enum DashboardWidget {
@@ -389,6 +390,7 @@ enum DashboardWidget {
   ),
   outboundModeV2(GridItem(crossAxisCellCount: 8, child: OutboundModeV2())),
   outboundMode(GridItem(crossAxisCellCount: 4, child: OutboundMode())),
+  profileInfo(GridItem(crossAxisCellCount: 8, child: ProfileInfo())),
   trafficUsage(GridItem(crossAxisCellCount: 4, child: TrafficUsage())),
   networkDetection(GridItem(crossAxisCellCount: 4, child: NetworkDetection())),
   tunButton(
@@ -411,14 +413,14 @@ enum DashboardWidget {
     GridItem(crossAxisCellCount: 4, child: WakelockSwitch()),
     platforms: desktopPlatforms,
   ),
-  dnsOverride(GridItem(crossAxisCellCount: 4, child: DnsOverride())),
   snifferOverride(GridItem(crossAxisCellCount: 4, child: SnifferOverride())),
   ntpOverride(GridItem(crossAxisCellCount: 4, child: NtpOverride())),
   providersInfo(GridItem(crossAxisCellCount: 4, child: ProvidersInfo())),
-  fcmStatus(GridItem(crossAxisCellCount: 4, child: FcmStatus())),
   onlinePanel(GridItem(crossAxisCellCount: 4, child: OnlinePanel())),
-  mediaUnlock(GridItem(crossAxisCellCount: 8, child: MediaUnlock())),
-  mediaUnlockSmall(GridItem(crossAxisCellCount: 4, child: MediaUnlockSmall())),
+  toolboxShortcut(
+    GridItem(crossAxisCellCount: 4, child: ToolboxShortcut()),
+    platforms: [SupportPlatform.Android],
+  ),
   startButton(
     GridItem(crossAxisCellCount: 4, isDeletable: false, child: StartButton()),
   );
@@ -431,7 +433,6 @@ enum DashboardWidget {
   static const _variantGroups = [
     [networkSpeedSmall, networkSpeed],
     [outboundModeV2, outboundMode],
-    [mediaUnlockSmall, mediaUnlock],
   ];
 
   List<DashboardWidget> get variants => _variantGroups.firstWhere(
@@ -443,9 +444,9 @@ enum DashboardWidget {
       variants.reduce((a, b) => a.index <= b.index ? a : b);
 
   DashboardTileSize get nativeSize => switch (this) {
-    networkSpeed || mediaUnlock => DashboardTileSize.large,
-    outboundModeV2 => DashboardTileSize.wide,
-    outboundMode || mediaUnlockSmall || trafficUsage => DashboardTileSize.tall,
+    networkSpeed => DashboardTileSize.large,
+    outboundModeV2 || profileInfo => DashboardTileSize.wide,
+    outboundMode || trafficUsage => DashboardTileSize.tall,
     _ => DashboardTileSize.small,
   };
 
@@ -457,10 +458,16 @@ enum DashboardWidget {
       DashboardTileSize.large,
     ],
     trafficUsage => const [DashboardTileSize.tall, DashboardTileSize.wide],
+    profileInfo => const [
+      DashboardTileSize.wide,
+      DashboardTileSize.large,
+      DashboardTileSize.tall,
+    ],
     networkDetection ||
     intranetIp ||
     memoryInfo ||
     connectionsCount ||
+    toolboxShortcut ||
     startButton => const [
       DashboardTileSize.small,
       DashboardTileSize.wide,
@@ -501,7 +508,6 @@ enum PageLabel {
   script,
   toolbox,
   connections,
-  patrol,
 }
 
 extension PageLabelExtension on PageLabel {
@@ -525,8 +531,6 @@ extension PageLabelExtension on PageLabel {
         return appLocalizations.toolbox;
       case PageLabel.connections:
         return appLocalizations.navConnections;
-      case PageLabel.patrol:
-        return appLocalizations.aiPatrol;
     }
   }
 }
@@ -583,13 +587,21 @@ extension RuleActionExt on RuleAction {
   ].contains(this);
 }
 
-enum OverrideRuleType { override, added }
-
 enum RuleTarget { DIRECT, REJECT }
 
 enum RecoveryStrategy { compatible, override }
 
 enum StartSwitchStyle { tonal, outlined }
+
+enum ProfileUsageStyle { bar, ring, concentric }
+
+extension ProfileUsageStyleExt on ProfileUsageStyle {
+  String get localizedName => switch (this) {
+    ProfileUsageStyle.bar => appLocalizations.usageStyleBar,
+    ProfileUsageStyle.ring => appLocalizations.usageStyleRing,
+    ProfileUsageStyle.concentric => appLocalizations.usageStyleConcentric,
+  };
+}
 
 enum SidebarFlyoutEntry {
   resources,
@@ -674,14 +686,4 @@ enum DelayAnimationType {
   waveSpinner,
 }
 
-enum MrsRawSource {
-  metaRulesDat(
-    'meta-rules-dat',
-    'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/',
-  );
-
-  final String label;
-  final String baseUrl;
-
-  const MrsRawSource(this.label, this.baseUrl);
-}
+enum StoreSpace { ip, speedTest, toolbox }

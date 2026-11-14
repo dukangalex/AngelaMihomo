@@ -471,6 +471,46 @@ fn merges_policy_group_options_from_both_markers() {
 }
 
 #[test]
+fn extracts_policy_group_options_from_the_angela_marker() {
+    let script = "const Compatible_With_AngelaMihomo = { policyGroupOptions: ['AI', 'Gaming'] };\nfunction main(config) { return config }";
+
+    let options: Json = serde_json::from_str(&extract_options(script).unwrap()).unwrap();
+
+    assert_eq!(options["policyGroupOptions"], json!(["AI", "Gaming"]));
+}
+
+#[test]
+fn passes_host_context_and_options_as_second_argument() {
+    let script = "function main(config, context) { config.host = context.host; config.opts = context.customOptions; return config }";
+
+    let output = run_with(
+        script,
+        json!({}),
+        Some("{\"flag\": true, \"__angelaHost\": {\"allowLan\": true}}"),
+    )
+    .unwrap();
+
+    assert_eq!(output["host"], json!({ "allowLan": true }));
+    assert_eq!(output["opts"], json!({ "flag": true }));
+}
+
+#[test]
+fn second_argument_stays_undefined_without_supplied_options() {
+    // Scripts in the HiClash protocol validate context.customOptions only
+    // when present; with nothing supplied it must arrive as undefined,
+    // while the ruleOptionsEnable global merge keeps working on its own.
+    let script = "const ruleOptionsEnable = { a: false };\nfunction main(config, context) { config.supplied = typeof context.customOptions !== 'undefined'; config.a = ruleOptionsEnable.a; return config }";
+
+    let output = run(script, json!({})).unwrap();
+    assert_eq!(output["supplied"], json!(false));
+    assert_eq!(output["a"], json!(false));
+
+    let output = run_with(script, json!({}), Some("{\"a\": true}")).unwrap();
+    assert_eq!(output["supplied"], json!(true));
+    assert_eq!(output["a"], json!(true));
+}
+
+#[test]
 fn extracts_empty_options_from_a_plain_script() {
     let options: Json =
         serde_json::from_str(&extract_options("function main(config) { return config }").unwrap())

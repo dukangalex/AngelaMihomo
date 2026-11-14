@@ -1,13 +1,12 @@
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/pages/scan.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'edit_profile.dart';
-import 'tv_qr_import_dialog.dart';
 
 class AddProfileView extends StatelessWidget {
   final BuildContext context;
@@ -84,13 +83,6 @@ class AddProfileView extends StatelessWidget {
   Future<void> _toScan() async {
     if (system.isDesktop) {
       globalState.appController.addProfileFormQrCode();
-      return;
-    }
-    if (globalState.isAndroidTV) {
-      await showDialog(
-        context: context,
-        builder: (_) => const TvQrImportDialog(),
-      );
       return;
     }
     final url = await BaseNavigator.push(context, const ScanPage());
@@ -176,6 +168,7 @@ class AddProfileView extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );

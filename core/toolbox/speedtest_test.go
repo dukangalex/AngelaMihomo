@@ -76,6 +76,39 @@ func TestSpeedTestParsers(t *testing.T) {
 	}
 }
 
+type speedTestRoundTripFunc func(*mhttp.Request) (*mhttp.Response, error)
+
+func (f speedTestRoundTripFunc) RoundTrip(req *mhttp.Request) (*mhttp.Response, error) {
+	return f(req)
+}
+
+func TestCloudflareCountryFromColo(t *testing.T) {
+	for _, tc := range []struct{ colo, country string }{
+		{"tpe", "TW"},
+		{"HKG", "HK"},
+		{"ZZZ", ""},
+	} {
+		tester := newSpeedTester(SpeedTestParams{Provider: "cloudflare", Duration: 1}, true)
+		tester.client = &mhttp.Client{Transport: speedTestRoundTripFunc(func(req *mhttp.Request) (*mhttp.Response, error) {
+			header := mhttp.Header{}
+			header.Set("cf-ray", "1-TPE")
+			return &mhttp.Response{
+				StatusCode: mhttp.StatusOK,
+				Header:     header,
+				Body:       io.NopCloser(strings.NewReader("ip=1.2.3.4\nloc=T1\ncolo=" + tc.colo + "\n")),
+				Request:    req,
+			}, nil
+		})}
+		target, err := prepareCloudflareSpeedTest(context.Background(), tester)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if target.server.Country != tc.country || target.server.Colo != strings.ToUpper(tc.colo) {
+			t.Fatalf("colo %s: server = %+v", tc.colo, target.server)
+		}
+	}
+}
+
 func newSpeedTestServer(t *testing.T) *httptest.Server {
 	chunk := make([]byte, 32*1024)
 	mux := http.NewServeMux()
@@ -84,7 +117,7 @@ func newSpeedTestServer(t *testing.T) *httptest.Server {
 		w.Header().Set("cf-meta-city", "Hong Kong")
 	})
 	mux.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-		for i := 0; i < 64; i++ {
+		for range 64 {
 			if _, err := w.Write(chunk); err != nil {
 				return
 			}
@@ -193,7 +226,7 @@ func newQuicTestServer(t *testing.T) string {
 		}),
 		Handler: mhttp.HandlerFunc(func(w mhttp.ResponseWriter, r *mhttp.Request) {
 			if r.URL.Path == "/download" {
-				for i := 0; i < 32; i++ {
+				for range 32 {
 					if _, err := w.Write(chunk); err != nil {
 						return
 					}
@@ -465,28 +498,30 @@ func TestSpeedTesterResolvesExitIP(t *testing.T) {
 }
 
 func TestSpeedTesterProbeFetchesExitInfo(t *testing.T) {
-	var gotQuery string
-	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotQuery = r.URL.RawQuery
-		_, _ = w.Write([]byte(`{"status":"success","country":"Hong Kong","countryCode":"HK","city":"Central","isp":"HKT","query":"203.0.113.9"}`))
+	// Exit info is assembled on-device: the exit IP comes from the
+	// trace echo and geo fields come from the local mmdb databases,
+	// so with no databases installed the payload still carries the IP
+	// and reports hasCityDb=false. No third-party geo API is involved.
+	echo := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ip=203.0.113.9\nloc=HK\n"))
 	}))
-	t.Cleanup(api.Close)
-	old := speedTestExitInfoURL
-	speedTestExitInfoURL = api.URL + "/json/"
-	t.Cleanup(func() { speedTestExitInfoURL = old })
+	t.Cleanup(echo.Close)
+	oldURLs := speedTestExitIPURLs
+	speedTestExitIPURLs = []string{echo.URL}
+	t.Cleanup(func() { speedTestExitIPURLs = oldURLs })
 
 	tester := newTestSpeedTester(newSpeedTestServer(t))
-	tester.params.Lang = "zh-CN"
 	tester.probeOnly(context.Background())
 	state := tester.snapshot()
-	if gotQuery != "lang=zh-CN" || !strings.Contains(string(state.ExitInfo), "203.0.113.9") {
-		t.Fatalf("exit info not fetched: query=%q info=%s", gotQuery, state.ExitInfo)
+	if !strings.Contains(string(state.ExitInfo), "203.0.113.9") ||
+		!strings.Contains(string(state.ExitInfo), `"hasCityDb":false`) {
+		t.Fatalf("exit info not assembled locally: %s", state.ExitInfo)
 	}
 
-	speedTestExitInfoURL = "http://127.0.0.1:1/json/"
+	speedTestExitIPURLs = []string{"http://127.0.0.1:1/unreachable"}
 	failing := newTestSpeedTester(newSpeedTestServer(t))
 	failing.probeOnly(context.Background())
 	if state := failing.snapshot(); state.ExitInfo != nil || state.Error != "" {
-		t.Fatalf("unreachable api must not fail the probe: %+v", state)
+		t.Fatalf("unreachable echo must not fail the probe: %+v", state)
 	}
 }

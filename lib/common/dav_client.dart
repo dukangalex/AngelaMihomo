@@ -3,8 +3,32 @@ import 'dart:typed_data';
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:webdav_client/webdav_client.dart';
+
+/// Smallest size a restorable backup can plausibly have. Every
+/// backup this app writes contains at least the marker and the
+/// config entry, which already exceeds this; a versioned file below
+/// it is an empty shell or a truncated upload (T108).
+const int minRestorableBackupSize = 100;
+
+bool isSuspiciousBackupSize(int? size) =>
+    size != null && size < minRestorableBackupSize;
+
+/// Whether [name] is a versioned backup file for [baseName]
+/// (`<base>_yyyyMMdd_NN.zip`). The unversioned legacy `<base>.zip`
+/// deliberately does not match (T108): it predates versioning, may
+/// be an empty shell left by an old broken upload, and offering it
+/// for recovery once produced "empty or corrupted" failures. The
+/// file itself is left untouched on the server.
+bool isVersionedBackupFileName(String baseName, String name) {
+  final reg = RegExp(
+    '^${RegExp.escape(baseName)}_(\\d{8})_(\\d{2})\\.zip\$',
+    caseSensitive: false,
+  );
+  return reg.hasMatch(name);
+}
 
 class DAVClient {
   late Client client;
@@ -66,39 +90,40 @@ class DAVClient {
       await client.mkdir(root);
     } catch (_) {}
     final rawFiles = await client.readDir(root);
-    final reg = RegExp(
-      '^${RegExp.escape(baseName)}(?:_(\\d{8})_(\\d{2}))?\\.zip\$',
-      caseSensitive: false,
-    );
     final validFiles = rawFiles.where((f) {
       if (f.isDir == true) return false;
       final name = f.name;
       if (name == null || name.isEmpty) return false;
-      return reg.hasMatch(name);
+      return isVersionedBackupFileName(baseName, name);
     }).toList();
 
+    // Newest first: the version dialog preselects the first
+    // restorable entry, so this order is also the default choice.
     validFiles.sort((a, b) {
       final nameA = a.name ?? '';
       final nameB = b.name ?? '';
-      final matchA = reg.firstMatch(nameA);
-      final matchB = reg.firstMatch(nameB);
-      final dateA = matchA?.group(1);
-      final seqA = matchA?.group(2);
-      final dateB = matchB?.group(1);
-      final seqB = matchB?.group(2);
-      if (dateA != null && seqA != null && dateB != null && seqB != null) {
-        final cmpDate = dateB.compareTo(dateA);
-        if (cmpDate != 0) return cmpDate;
-        return seqB.compareTo(seqA);
-      }
-      if (dateA != null && dateB == null) return -1;
-      if (dateA == null && dateB != null) return 1;
+      final cmpDate = _backupDatePart(nameB).compareTo(_backupDatePart(nameA));
+      if (cmpDate != 0) return cmpDate;
+      final cmpSeq = _backupSeqPart(nameB).compareTo(_backupSeqPart(nameA));
+      if (cmpSeq != 0) return cmpSeq;
       final timeA = a.mTime ?? DateTime.fromMillisecondsSinceEpoch(0);
       final timeB = b.mTime ?? DateTime.fromMillisecondsSinceEpoch(0);
       return timeB.compareTo(timeA);
     });
 
     return validFiles;
+  }
+
+  static String _backupDatePart(String name) {
+    final match = RegExp(r'_(\d{8})_\d{2}\.zip$', caseSensitive: false)
+        .firstMatch(name);
+    return match?.group(1) ?? '';
+  }
+
+  static String _backupSeqPart(String name) {
+    final match = RegExp(r'_\d{8}_(\d{2})\.zip$', caseSensitive: false)
+        .firstMatch(name);
+    return match?.group(1) ?? '';
   }
 
   Future<String> getNextBackupFileName() async {
@@ -143,13 +168,31 @@ class DAVClient {
     }
   }
 
+  /// Make sure the backup directory exists before uploading (T108).
+  /// mkdir failures used to be swallowed as "may already exist",
+  /// after which the upload PUT failed with a 404 that the shared
+  /// error text reported as "backup file not found". mkdir failing
+  /// is only benign when the directory is in fact there, so verify
+  /// by listing it; if it cannot be listed either, fail here with a
+  /// directory diagnosis instead of uploading into the void.
+  Future<void> _ensureRootDir() async {
+    try {
+      await client.mkdir(root);
+      return;
+    } catch (e) {
+      commonPrint.warn('WebDAV mkdir warning (may already exist): $e');
+    }
+    try {
+      await client.readDir(root);
+    } catch (e) {
+      throw 'WebDAV backup directory $root does not exist and could '
+          'not be created: ${_formatError(e, operationName: 'backup')}';
+    }
+  }
+
   Future<bool> backup(Uint8List data) async {
     return await _retryOperation(() async {
-      try {
-        await client.mkdir(root);
-      } catch (e) {
-        commonPrint.warn('WebDAV mkdir warning (may already exist): $e');
-      }
+      await _ensureRootDir();
 
       final targetName = await getNextBackupFileName();
       final targetPath = '$root/$targetName';
@@ -158,7 +201,27 @@ class DAVClient {
       );
 
       await client.write(targetPath, data);
-      commonPrint.log('WebDAV backup successful');
+
+      // Read back and verify (T108): an upload the server silently
+      // truncated or stored as an empty placeholder used to count as
+      // success, and the failure only surfaced at recovery time.
+      // A mismatch fails the backup (and the retry loop above gets
+      // another attempt); the auto-backup fingerprint is only stored
+      // by the caller after this returns true.
+      final List<int> stored;
+      try {
+        stored = await client.read(targetPath);
+      } catch (e) {
+        throw 'WebDAV backup verification failed: could not read '
+            'back $targetPath after upload: $e';
+      }
+      if (stored.length != data.length ||
+          sha256.convert(stored).toString() !=
+              sha256.convert(data).toString()) {
+        throw 'WebDAV backup verification failed: server stored '
+            '${stored.length} bytes, expected ${data.length} bytes';
+      }
+      commonPrint.log('WebDAV backup successful (verified)');
 
       try {
         await _pruneOldBackups();
@@ -212,7 +275,8 @@ class DAVClient {
           commonPrint.error(
             'WebDAV $operationName failed after $maxAttempts attempts: $e',
           );
-          throw 'WebDAV $operationName failed: ${_formatError(e)}';
+          throw 'WebDAV $operationName failed: '
+              '${_formatError(e, operationName: operationName)}';
         }
 
         commonPrint.warn(
@@ -227,7 +291,7 @@ class DAVClient {
     throw 'WebDAV $operationName failed: unexpected error';
   }
 
-  String _formatError(dynamic error) {
+  String _formatError(dynamic error, {required String operationName}) {
     final errorStr = error.toString();
 
     if (errorStr.contains('SocketException') ||
@@ -244,7 +308,15 @@ class DAVClient {
     }
 
     if (errorStr.contains('404') || errorStr.contains('Not Found')) {
-      return 'Backup file not found on server.';
+      // T108: a 404 means opposite things per operation. During
+      // backup nothing is being looked up — the upload target's
+      // parent directory is missing or not writable. During
+      // recovery the requested file itself is absent.
+      return operationName == 'backup'
+          ? 'Upload failed: the backup directory does not exist on '
+                'the server or is not writable. Please check the '
+                'WebDAV path and folder permissions.'
+          : 'Backup file not found on server.';
     }
 
     if (errorStr.contains('timeout') || errorStr.contains('Timeout')) {

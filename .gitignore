@@ -1,8 +1,8 @@
 # Miscellaneous
 *.md
 !/README.md
+!/README.en.md
 !/DEVELOPMENT.md
-!/readme/*.md
 !/SIGNING-POLICY.md
 !.github/release_template.md
 !.github/release_template_pre.md
@@ -65,6 +65,7 @@ app.*.map.json
 /android/app/release
 
 /android/core/.cxx
+/android/.kotlin/
 
 #libclash
 /libclash/
@@ -84,3 +85,5 @@ app.*.map.json
 /assets/data/geoip.metadb
 /assets/data/ASN.mmdb
 /assets/data/zash.zip
+/assets/data/BundleMRS.7z
+/test/private/

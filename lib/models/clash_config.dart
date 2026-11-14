@@ -287,9 +287,6 @@ abstract class Tun with _$Tun {
     @Default(tunDeviceName) String device,
     @JsonKey(name: 'auto-route') @Default(false) bool autoRoute,
     @Default(TunStack.mips) TunStack stack,
-    @JsonKey(name: 'congestion-controller')
-    @Default(CongestionController.bbr3)
-    CongestionController congestionController,
     @JsonKey(name: 'dns-mode') TunDnsMode? dnsMode,
     @JsonKey(name: 'dns-hijack') @Default(['any:53']) List<String> dnsHijack,
     @JsonKey(name: 'route-address') @Default([]) List<String> routeAddress,
@@ -329,10 +326,14 @@ extension TunExt on Tun {
     List<String>? bypassPrivateRouteAddress,
   }) {
     if (system.isDesktop) {
+      final dnsMode = dnsHijack.isNotEmpty
+          ? TunDnsMode.hijack
+          : TunDnsMode.disabled;
       if (bypassPrivateRoute) {
         return copyWith(
           autoRoute: true,
           autoRedirect: system.isLinux,
+          dnsMode: dnsMode,
           routeAddress: [],
           routeExcludeAddress:
               bypassPrivateRouteAddress ??
@@ -342,6 +343,7 @@ extension TunExt on Tun {
       return copyWith(
         autoRoute: true,
         autoRedirect: system.isLinux,
+        dnsMode: dnsMode,
         routeAddress: [],
         routeExcludeAddress: [],
       );
@@ -366,7 +368,6 @@ abstract class FallbackFilter with _$FallbackFilter {
     @Default(false) bool geoip,
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
     @Default([]) List<String> ipcidr,
-    @Default([]) List<String> domain,
   }) = _FallbackFilter;
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
       _$FallbackFilterFromJson(json);
@@ -384,7 +385,9 @@ abstract class Dns with _$Dns {
     @Default(true) @JsonKey(name: 'use-hosts') bool useHosts,
     @Default(true) @JsonKey(name: 'use-system-hosts') bool useSystemHosts,
     @Default(false) @JsonKey(name: 'respect-rules') bool respectRules,
-    @Default(false) bool ipv6,
+    @Default(true) bool ipv6,
+    // Plaintext is kept ONLY for this bootstrap list: it exists solely to
+    // resolve the DoH servers' own hostnames before encrypted DNS is up.
     @Default(['114.114.114.114'])
     @JsonKey(name: 'default-nameserver')
     List<String> defaultNameserver,
@@ -410,13 +413,13 @@ abstract class Dns with _$Dns {
     @Default(1) @JsonKey(name: 'fake-ip-ttl') int fakeIpTtl,
     @Default({
       '+.internal.corp.com': '10.0.0.1',
-      'geosite:cn': '119.29.29.29',
+      'geosite:cn': 'https://doh.pub/dns-query',
       'geosite:private': 'system',
       '*': 'system',
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
-    @Default(['1.1.1.1']) List<String> nameserver,
+    @Default(['https://cloudflare-dns.com/dns-query']) List<String> nameserver,
     @Default([]) List<String> fallback,
     @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
     @JsonKey(name: 'proxy-server-nameserver')
@@ -457,9 +460,9 @@ extension DnsExt on Dns {
 @freezed
 abstract class Ntp with _$Ntp {
   const factory Ntp({
-    @Default(true) bool enable,
+    @Default(false) bool enable,
     @Default(false) @JsonKey(name: 'write-to-system') bool writeToSystem,
-    @Default('time.apple.com') String server,
+    @Default(defaultNtpServer) String server,
     @Default(123) int port,
     @Default(60) int interval,
   }) = _Ntp;
@@ -729,8 +732,8 @@ abstract class ClashConfig with _$ClashConfig {
     @JsonKey(name: 'skip-auth-prefixes')
     List<String> skipAuthPrefixes,
     @Default(LogLevel.error) @JsonKey(name: 'log-level') LogLevel logLevel,
-    @Default(false) bool ipv6,
-    @Default(FindProcessMode.off)
+    @Default(true) bool ipv6,
+    @Default(FindProcessMode.always)
     @JsonKey(
       name: 'find-process-mode',
       unknownEnumValue: FindProcessMode.always,
@@ -741,6 +744,7 @@ abstract class ClashConfig with _$ClashConfig {
     int keepAliveInterval,
     @Default(true) @JsonKey(name: 'unified-delay') bool unifiedDelay,
     @Default(true) @JsonKey(name: 'tcp-concurrent') bool tcpConcurrent,
+    @Default('') @JsonKey(name: 'interface-name') String interfaceName,
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,
     @Default(defaultDns) @JsonKey(fromJson: Dns.safeDnsFromJson) Dns dns,
     @Default(defaultNtp) @JsonKey(fromJson: Ntp.safeNtpFromJson) Ntp ntp,
@@ -774,16 +778,12 @@ abstract class ClashConfig with _$ClashConfig {
 
   factory ClashConfig.safeFormJson(Map<String, Object?>? json) {
     if (json == null) {
-      return system.isAndroid
-          ? const ClashConfig(findProcessMode: FindProcessMode.always)
-          : defaultClashConfig;
+      return defaultClashConfig;
     }
     try {
       return ClashConfig.fromJson(json);
     } catch (_) {
-      return system.isAndroid
-          ? const ClashConfig(findProcessMode: FindProcessMode.always)
-          : defaultClashConfig;
+      return defaultClashConfig;
     }
   }
 }

@@ -3,11 +3,49 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/providers/providers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'zodiac_surface.dart';
+
+Color navBarBodyColor(ColorScheme colorScheme) {
+  if (colorScheme.brightness == Brightness.light) {
+    return Color.lerp(
+      colorScheme.surface,
+      colorScheme.surfaceContainerLowest,
+      0.5,
+    )!;
+  }
+  return colorScheme.surfaceContainerHigh;
+}
+
+double navBarSlotResistance(double slot, int count) {
+  const maxOvershoot = 0.22;
+  final maxIndex = math.max(0, count - 1).toDouble();
+  if (slot < 0.0) {
+    return -maxOvershoot * (1.0 - math.exp(slot / maxOvershoot));
+  }
+  if (slot > maxIndex) {
+    return maxIndex +
+        maxOvershoot * (1.0 - math.exp((maxIndex - slot) / maxOvershoot));
+  }
+  return slot;
+}
+
+class SelectionHaptic {
+  int _lastTime = 0;
+
+  void call(bool enable) {
+    if (!system.isAndroid || !enable) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastTime <= 35) return;
+    _lastTime = now;
+    HapticFeedback.selectionClick();
+  }
+}
+
 
 class GoogleBottomNavBar extends ConsumerStatefulWidget {
   final List<NavigationItem> navigationItems;
@@ -27,6 +65,20 @@ class GoogleBottomNavBar extends ConsumerStatefulWidget {
 
 class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     with TickerProviderStateMixin {
+  double _clampWithResistance(double slot, int count) {
+    const maxOvershoot = 0.22;
+    final maxIndex = math.max(0, count - 1).toDouble();
+    if (slot < 0.0) {
+      return -maxOvershoot * (1.0 - math.exp(slot / maxOvershoot));
+    }
+    if (slot > maxIndex) {
+      return maxIndex +
+          maxOvershoot * (1.0 - math.exp((maxIndex - slot) / maxOvershoot));
+    }
+    return slot;
+  }
+
+
   late final AnimationController _posController = AnimationController.unbounded(
     vsync: this,
     value: widget.selectedIndex.toDouble(),
@@ -45,7 +97,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   double _anchorSlot = 0.0;
   double _barWidth = 0;
   int _lastSnappedIndex = 0;
-  int _lastHapticTime = 0;
+  final _haptic = SelectionHaptic();
   late final ValueNotifier<int> _highlightedIndex = ValueNotifier(
     widget.selectedIndex,
   );
@@ -55,7 +107,6 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   static const double _horizontalInset = 17.0;
 
   double? _posTarget;
-  bool _motion = true;
   int? _jumpFromIndex;
   int? _jumpToIndex;
 
@@ -114,7 +165,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
       _highlightedIndex.value = widget.selectedIndex;
       _lastSnappedIndex = widget.selectedIndex;
       if (!_posController.isAnimating) {
-        _glideTo(widget.selectedIndex, _motion ? 160 : 0);
+        _posController.value = widget.selectedIndex.toDouble();
       }
     }
   }
@@ -129,29 +180,6 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     super.dispose();
   }
 
-  void _triggerHapticFeedback(bool enableFeedback) {
-    if (system.isAndroid && enableFeedback) {
-      final now = DateTime.now().millisecondsSinceEpoch;
-      if (now - _lastHapticTime > 35) {
-        _lastHapticTime = now;
-        HapticFeedback.selectionClick();
-      }
-    }
-  }
-
-  double _clampWithResistance(double slot, int count) {
-    const maxOvershoot = 0.22;
-    final maxIndex = math.max(0, count - 1).toDouble();
-    if (slot < 0.0) {
-      return -maxOvershoot * (1.0 - math.exp(slot / maxOvershoot));
-    }
-    if (slot > maxIndex) {
-      return maxIndex +
-          maxOvershoot * (1.0 - math.exp((maxIndex - slot) / maxOvershoot));
-    }
-    return slot;
-  }
-
   double get _slotWidth {
     final count = widget.navigationItems.length;
     if (count == 0) return 0.0;
@@ -160,7 +188,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
 
   void _commitDragOffset() {
     if (_dragOffset.value == 0.0) return;
-    _posController.value = _clampWithResistance(
+    _posController.value = navBarSlotResistance(
       _posController.value + _dragOffset.value,
       widget.navigationItems.length,
     );
@@ -182,25 +210,12 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
     final enableFeedback = ref.watch(
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
-    _motion = enableFeedback;
-    final pureBlack = ref.watch(
-      themeSettingProvider.select((s) => s.pureBlack),
-    );
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
-    final primaryColor = colorScheme.primary;
+    // T115 spec 3.5.6: the selected tab is marked by the family
+    // secondary color alone — no filled pill, no halo.
+    final selectedColor = context.zodiac.palette.secondary;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
-
-    // Body color matching CommonCard (widget) formula for visual harmony
-    final widgetBodyColor = isLight
-        ? Color.lerp(
-            colorScheme.surface,
-            colorScheme.surfaceContainerLowest,
-            0.5,
-          )!
-        : (pureBlack ? Colors.black : colorScheme.surfaceContainerHigh);
-
-    final navColor = widgetBodyColor.withValues(alpha: 0.98);
     final shadowStrength = isLight ? 1.0 : 3.0;
 
     const itemTextStyle = TextStyle(
@@ -240,13 +255,13 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
             _highlightedIndex.value = touchedIndex;
             _pressedIndex.value = touchedIndex;
             if (touchedIndex != widget.selectedIndex) {
-              _triggerHapticFeedback(enableFeedback);
+              _haptic(enableFeedback);
             }
 
             final distance = (_posController.value - touchedIndex.toDouble())
                 .abs();
             final glideMs = (160 + (distance * 30)).clamp(180, 240).toInt();
-            _glideTo(touchedIndex, _motion ? glideMs : 0);
+            _glideTo(touchedIndex, enableFeedback ? glideMs : 0);
 
             _liftTo(1.0, 140);
           },
@@ -285,7 +300,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
             _pressedIndex.value = index;
             if (index != _lastSnappedIndex) {
               _lastSnappedIndex = index;
-              _triggerHapticFeedback(enableFeedback);
+              _haptic(enableFeedback);
             }
           },
           onPointerUp: (event) {
@@ -337,7 +352,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                   ? _posTarget != targetIndex.toDouble()
                   : distance > 0.01;
               if (needsGlide) {
-                _glideTo(targetIndex, _motion ? glideMs : 0);
+                _glideTo(targetIndex, enableFeedback ? glideMs : 0);
               }
             }
 
@@ -356,7 +371,8 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
             _pressedIndex.value = null;
             _highlightedIndex.value = widget.selectedIndex;
             _commitDragOffset();
-            _glideTo(widget.selectedIndex, 180);
+            _posController.stop();
+            _posController.value = widget.selectedIndex.toDouble();
             _liftTo(0.0, 180);
           },
           child: Padding(
@@ -366,185 +382,164 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                 _barWidth = constraints.maxWidth;
                 const barHeight = 60.0;
 
-                return RepaintBoundary(
-                  child: Container(
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: navColor,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.transparent,
-                        width: 1,
-                        strokeAlign: BorderSide.strokeAlignInside,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.08 * shadowStrength,
-                          ),
-                        ),
-                        BoxShadow(
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.04 * shadowStrength,
-                          ),
-                        ),
-                      ],
+                final barShadows = <BoxShadow>[
+                  BoxShadow(
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    color: colorScheme.shadow.withValues(
+                      alpha: 0.08 * shadowStrength,
                     ),
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        if (count > 0)
-                          Positioned.fill(
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                painter: NavBarPillPainter(
-                                  position: _posController,
-                                  lift: _liftController,
-                                  dragOffset: _dragOffset,
-                                  count: count,
-                                  slot: _clampWithResistance,
-                                  color: primaryColor,
-                                  baseAlpha: isLight ? 0.12 : 0.20,
-                                  activeAlpha: isLight ? 0.18 : 0.26,
-                                ),
-                              ),
-                            ),
-                          ),
-                        RepaintBoundary(
-                          child: AnimatedBuilder(
-                            animation: Listenable.merge([
-                              _posController,
-                              _dragOffset,
-                              _pressedIndex,
-                              _liftController,
-                            ]),
-                            builder: (context, _) {
-                              final currentPos = _clampWithResistance(
-                                _posController.value + _dragOffset.value,
-                                count,
-                              );
-                              final pressedIdx = _pressedIndex.value;
-                              final liftValue = _liftController.value;
+                  ),
+                  BoxShadow(
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                    color: colorScheme.shadow.withValues(
+                      alpha: 0.04 * shadowStrength,
+                    ),
+                  ),
+                ];
+                final barContent = Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    RepaintBoundary(
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _posController,
+                          _dragOffset,
+                          _pressedIndex,
+                          _liftController,
+                        ]),
+                        builder: (context, _) {
+                          final currentPos = _clampWithResistance(
+                            _posController.value + _dragOffset.value,
+                            count,
+                          );
+                          final pressedIdx = _pressedIndex.value;
+                          final liftValue = _liftController.value;
 
-                              final jumpFrom = _jumpFromIndex;
-                              final jumpTo = _jumpToIndex;
-                              final isNonAdjacentJump =
-                                  jumpFrom != null &&
-                                  jumpTo != null &&
-                                  (jumpFrom - jumpTo).abs() > 1;
-                              final minJump = isNonAdjacentJump
-                                  ? math.min(jumpFrom, jumpTo)
-                                  : -1;
-                              final maxJump = isNonAdjacentJump
-                                  ? math.max(jumpFrom, jumpTo)
-                                  : -1;
+                          final jumpFrom = _jumpFromIndex;
+                          final jumpTo = _jumpToIndex;
+                          final isNonAdjacentJump =
+                              jumpFrom != null &&
+                              jumpTo != null &&
+                              (jumpFrom - jumpTo).abs() > 1;
+                          final minJump = isNonAdjacentJump
+                              ? math.min(jumpFrom, jumpTo)
+                              : -1;
+                          final maxJump = isNonAdjacentJump
+                              ? math.max(jumpFrom, jumpTo)
+                              : -1;
 
-                              return Row(
-                                children: List.generate(count, (index) {
-                                  final item = widget.navigationItems[index];
-                                  final isPressed = index == pressedIdx;
-                                  final double itemScale;
-                                  final Color itemColor;
-                                  if (isNonAdjacentJump &&
-                                      index > minJump &&
-                                      index < maxJump) {
-                                    itemScale = 1.0;
-                                    itemColor = onSurfaceVariantColor;
+                          return Row(
+                            children: List.generate(count, (index) {
+                              final item = widget.navigationItems[index];
+                              final isPressed = index == pressedIdx;
+                              final double itemScale;
+                              final Color itemColor;
+                              if (isNonAdjacentJump &&
+                                  index > minJump &&
+                                  index < maxJump) {
+                                itemScale = 1.0;
+                                itemColor = onSurfaceVariantColor;
+                              } else {
+                                final double selectFactor;
+                                if (isNonAdjacentJump) {
+                                  if (index == jumpFrom) {
+                                    final distFromOrigin =
+                                        (currentPos - jumpFrom).abs().clamp(
+                                          0.0,
+                                          1.0,
+                                        );
+                                    selectFactor =
+                                        1.0 -
+                                        Curves.easeOut.transform(
+                                          distFromOrigin,
+                                        );
+                                  } else if (index == jumpTo) {
+                                    final distToTarget = (currentPos - jumpTo)
+                                        .abs()
+                                        .clamp(0.0, 1.0);
+                                    selectFactor =
+                                        1.0 -
+                                        Curves.easeOut.transform(distToTarget);
                                   } else {
-                                    final double selectFactor;
-                                    if (isNonAdjacentJump) {
-                                      if (index == jumpFrom) {
-                                        final distFromOrigin =
-                                            (currentPos - jumpFrom).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distFromOrigin,
-                                            );
-                                      } else if (index == jumpTo) {
-                                        final distToTarget =
-                                            (currentPos - jumpTo).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distToTarget,
-                                            );
-                                      } else {
-                                        selectFactor = 0.0;
-                                      }
-                                    } else {
-                                      final rawDist = (currentPos - index)
-                                          .abs();
-                                      if (rawDist >= 1.0) {
-                                        selectFactor = 0.0;
-                                      } else {
-                                        final dist = rawDist.clamp(0.0, 1.0);
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(dist);
-                                      }
-                                    }
-
-                                    if (selectFactor <= 0.0 && !isPressed) {
-                                      itemScale = 1.0;
-                                      itemColor = onSurfaceVariantColor;
-                                    } else {
-                                      itemScale = isPressed
-                                          ? (1.0 - 0.05 * liftValue)
-                                          : (1.0 + 0.04 * selectFactor);
-                                      itemColor = Color.lerp(
-                                        onSurfaceVariantColor,
-                                        primaryColor,
-                                        selectFactor,
-                                      )!;
-                                    }
+                                    selectFactor = 0.0;
                                   }
+                                } else {
+                                  final rawDist = (currentPos - index).abs();
+                                  if (rawDist >= 1.0) {
+                                    selectFactor = 0.0;
+                                  } else {
+                                    final dist = rawDist.clamp(0.0, 1.0);
+                                    selectFactor =
+                                        1.0 - Curves.easeOut.transform(dist);
+                                  }
+                                }
 
-                                  return Expanded(
-                                    child: Center(
-                                      child: Transform.scale(
-                                        scale: itemScale,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconTheme(
-                                              data: IconThemeData(
-                                                color: itemColor,
-                                                size: 22,
-                                              ),
-                                              child: item.icon,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              localizedLabels[index],
-                                              style: itemTextStyle.copyWith(
-                                                color: itemColor,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
+                                if (selectFactor <= 0.0 && !isPressed) {
+                                  itemScale = 1.0;
+                                  itemColor = onSurfaceVariantColor;
+                                } else {
+                                  itemScale = isPressed
+                                      ? (1.0 - 0.05 * liftValue)
+                                      : (1.0 + 0.04 * selectFactor);
+                                  itemColor = Color.lerp(
+                                    onSurfaceVariantColor,
+                                    selectedColor,
+                                    selectFactor,
+                                  )!;
+                                }
+                              }
+
+                              return Expanded(
+                                child: Center(
+                                  child: Transform.scale(
+                                    scale: itemScale,
+                                    alignment: Alignment.center,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconTheme(
+                                          data: IconThemeData(
+                                            color: itemColor,
+                                            size: 22,
+                                          ),
+                                          child: item.icon,
                                         ),
-                                      ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          localizedLabels[index],
+                                          style: itemTextStyle.copyWith(
+                                            color: itemColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                }),
+                                  ),
+                                ),
                               );
-                            },
-                          ),
-                        ),
-                      ],
+                            }),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+                return RepaintBoundary(
+                  child: SizedBox(
+                    height: barHeight,
+                    child: ZodiacSurface(
+                      tone: ZodiacTone.navBar,
+                      radius: 30,
+                      boxShadow: barShadows,
+                      // The 1px content inset is part of the bar's
+                      // shipped geometry.
+                      child: Padding(
+                        padding: const EdgeInsets.all(1),
+                        child: barContent,
+                      ),
                     ),
                   ),
                 );
@@ -554,67 +549,5 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
         ),
       ),
     );
-  }
-}
-
-class NavBarPillPainter extends CustomPainter {
-  final Animation<double> position;
-  final Animation<double> lift;
-  final ValueListenable<double> dragOffset;
-  final int count;
-  final double Function(double slot, int count) slot;
-  final Color color;
-  final double baseAlpha;
-  final double activeAlpha;
-
-  NavBarPillPainter({
-    required this.position,
-    required this.lift,
-    required this.dragOffset,
-    required this.count,
-    required this.slot,
-    required this.color,
-    required this.baseAlpha,
-    required this.activeAlpha,
-  }) : super(repaint: Listenable.merge([position, lift, dragOffset]));
-
-  static const double _restingGap = 4.0;
-
-  Rect pillRect(Size size) {
-    final slotWidth = size.width / count;
-    final gap = _restingGap * (1 - lift.value);
-    final width = math.max(0.0, slotWidth - 2 * gap);
-    final center =
-        (slot(position.value + dragOffset.value, count) + 0.5) * slotWidth;
-    return Rect.fromLTWH(center - width / 2, gap, width, size.height - 2 * gap);
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final t = lift.value;
-    final restingRadius = (size.height - 2 * _restingGap) / 2;
-    final radius = restingRadius + (size.height / 2 - restingRadius) * t;
-    final alpha = baseAlpha + (activeAlpha - baseAlpha) * t;
-    canvas.clipRRect(
-      RRect.fromRectAndRadius(
-        Offset.zero & size,
-        Radius.circular(size.height / 2),
-      ),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(pillRect(size), Radius.circular(radius)),
-      Paint()..color = color.withValues(alpha: alpha),
-    );
-  }
-
-  @override
-  bool shouldRepaint(NavBarPillPainter oldDelegate) {
-    return oldDelegate.position != position ||
-        oldDelegate.lift != lift ||
-        oldDelegate.dragOffset != dragOffset ||
-        oldDelegate.count != count ||
-        oldDelegate.color != color ||
-        oldDelegate.baseAlpha != baseAlpha ||
-        oldDelegate.activeAlpha != activeAlpha;
   }
 }

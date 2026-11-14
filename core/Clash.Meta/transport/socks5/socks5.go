@@ -50,15 +50,32 @@ type Addr []byte
 func (a Addr) String() string {
 	var host, port string
 
+	// Validate lengths before slicing: a truncated Addr must not panic.
+	if len(a) == 0 {
+		return ""
+	}
+
 	switch a[0] {
 	case AtypDomainName:
-		hostLen := uint16(a[1])
+		if len(a) < 2 {
+			return ""
+		}
+		hostLen := int(a[1])
+		if len(a) < 2+hostLen+2 {
+			return ""
+		}
 		host = string(a[2 : 2+hostLen])
 		port = strconv.Itoa((int(a[2+hostLen]) << 8) | int(a[2+hostLen+1]))
 	case AtypIPv4:
+		if len(a) < 1+net.IPv4len+2 {
+			return ""
+		}
 		host = net.IP(a[1 : 1+net.IPv4len]).String()
 		port = strconv.Itoa((int(a[1+net.IPv4len]) << 8) | int(a[1+net.IPv4len+1]))
 	case AtypIPv6:
+		if len(a) < 1+net.IPv6len+2 {
+			return ""
+		}
 		host = net.IP(a[1 : 1+net.IPv6len]).String()
 		port = strconv.Itoa((int(a[1+net.IPv6len]) << 8) | int(a[1+net.IPv6len+1]))
 	}
@@ -73,10 +90,16 @@ func (a Addr) UDPAddr() *net.UDPAddr {
 	}
 	switch a[0] {
 	case AtypIPv4:
+		if len(a) < 1+net.IPv4len+2 {
+			return nil
+		}
 		var ip [net.IPv4len]byte
 		copy(ip[0:], a[1:1+net.IPv4len])
 		return &net.UDPAddr{IP: net.IP(ip[:]), Port: int(binary.BigEndian.Uint16(a[1+net.IPv4len : 1+net.IPv4len+2]))}
 	case AtypIPv6:
+		if len(a) < 1+net.IPv6len+2 {
+			return nil
+		}
 		var ip [net.IPv6len]byte
 		copy(ip[0:], a[1:1+net.IPv6len])
 		return &net.UDPAddr{IP: net.IP(ip[:]), Port: int(binary.BigEndian.Uint16(a[1+net.IPv6len : 1+net.IPv6len+2]))}

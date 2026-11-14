@@ -157,21 +157,6 @@ class _IpDetailDialogState extends State<_IpDetailDialog> {
     );
   }
 
-  Widget _buildIconButton({
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onPressed,
-  }) {
-    return IconButton(
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-      icon: Icon(icon, size: 15, color: context.colorScheme.onSurfaceVariant),
-      tooltip: tooltip,
-      onPressed: onPressed,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final ipInfo = _ipInfo;
@@ -276,14 +261,6 @@ class _IpDetailDialogState extends State<_IpDetailDialog> {
             iconColor: context.colorScheme.primary,
             label: appLocalizations.ipAddress,
             value: widget.ip,
-            action: _buildIconButton(
-              icon: Icons.open_in_new,
-              tooltip: appLocalizations.viewDetailedIpData,
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                globalState.openUrl('https://www.ip2location.com/${widget.ip}');
-              },
-            ),
           ),
           const SizedBox(height: 8),
           _buildStatTile(
@@ -304,14 +281,6 @@ class _IpDetailDialogState extends State<_IpDetailDialog> {
           iconColor: context.colorScheme.primary,
           label: appLocalizations.ipAddress,
           value: widget.ip,
-          action: _buildIconButton(
-            icon: Icons.open_in_new,
-            tooltip: appLocalizations.viewDetailedIpData,
-            onPressed: () {
-              Navigator.of(context, rootNavigator: true).pop();
-              globalState.openUrl('https://www.ip2location.com/${widget.ip}');
-            },
-          ),
         ),
         if (countryText.isNotEmpty || flagEmoji.isNotEmpty)
           _buildStatTile(

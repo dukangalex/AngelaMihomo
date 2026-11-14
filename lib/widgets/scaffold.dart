@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'chip.dart';
+import 'zodiac_surface.dart';
 import 'text.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
@@ -34,6 +35,7 @@ class CommonScaffold extends StatefulWidget {
   final AppBarSearchState? searchState;
   final OnKeywordsUpdateCallback? onKeywordsUpdate;
   final bool scrollEdgeFade;
+  final VoidCallback? onAppBarDoubleTap;
 
   const CommonScaffold({
     super.key,
@@ -50,6 +52,7 @@ class CommonScaffold extends StatefulWidget {
     this.floatingActionButton,
     this.onKeywordsUpdate,
     this.scrollEdgeFade = true,
+    this.onAppBarDoubleTap,
   });
 
   @override
@@ -95,7 +98,10 @@ class CommonScaffoldState extends State<CommonScaffold> {
     }
   }
 
-  Widget _buildSearchingAppBarTheme(Widget child) {
+  Widget _buildSearchingAppBarTheme(
+    Widget child, {
+    required bool inverseHeader,
+  }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     return Theme(
@@ -103,9 +109,15 @@ class CommonScaffoldState extends State<CommonScaffold> {
         appBarTheme: theme.appBarTheme.copyWith(
           backgroundColor: Colors.transparent,
           iconTheme: theme.primaryIconTheme.copyWith(
-            color: colorScheme.onSurfaceVariant,
+            color: inverseHeader
+                ? colorScheme.onInverseSurface
+                : colorScheme.onSurfaceVariant,
           ),
-          titleTextStyle: theme.textTheme.titleLarge,
+          titleTextStyle: inverseHeader
+              ? theme.textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onInverseSurface,
+                )
+              : theme.textTheme.titleLarge,
           toolbarTextStyle: theme.textTheme.bodyMedium,
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -165,6 +177,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
     _appBarState.dispose();
     _textController.dispose();
     _floatingActionButton.dispose();
+    _keywordsNotifier.dispose();
     super.dispose();
   }
 
@@ -249,8 +262,10 @@ class CommonScaffoldState extends State<CommonScaffold> {
     ]);
   }
 
-  Widget _buildAppBarWrap(Widget child) {
-    final appBar = _isSearch ? _buildSearchingAppBarTheme(child) : child;
+  Widget _buildAppBarWrap(Widget child, {required bool inverseHeader}) {
+    final appBar = _isSearch
+        ? _buildSearchingAppBarTheme(child, inverseHeader: inverseHeader)
+        : child;
     if (_isEdit || _isSearch) {
       return SystemBackBlock(
         child: CommonPopScope(
@@ -281,31 +296,83 @@ class CommonScaffoldState extends State<CommonScaffold> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar({required bool inverseHeader}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    // T106: pages on the backdrop field get an inverse-tone header bar —
+    // a deep surface with light content on light backgrounds, a light
+    // surface with dark content on dark backgrounds — so the title
+    // and action icons never wash out against the field (real-device
+    // screenshots showed dark-on-dark headers in light mode).
+    final headerForeground = inverseHeader
+        ? colorScheme.onInverseSurface
+        : null;
+    final headerTitleStyle = inverseHeader
+        ? theme.textTheme.titleLarge?.copyWith(color: headerForeground)
+        : null;
+    final Widget appBarWidget;
+    if (widget.appBar != null) {
+      appBarWidget = inverseHeader
+          ? Theme(
+              data: theme.copyWith(
+                appBarTheme: theme.appBarTheme.copyWith(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: headerForeground,
+                  titleTextStyle: headerTitleStyle,
+                  iconTheme: IconThemeData(color: headerForeground),
+                  actionsIconTheme: IconThemeData(color: headerForeground),
+                ),
+              ),
+              child: widget.appBar!,
+            )
+          : widget.appBar!;
+    } else {
+      appBarWidget = ValueListenableBuilder<AppBarState>(
+        valueListenable: _appBarState,
+        builder: (_, state, _) {
+          return _buildAppBarWrap(
+            AppBar(
+              centerTitle: widget.centerTitle ?? false,
+              leading: _buildLeading(),
+              title: _buildTitle(state.searchState),
+              actions: _buildActions(
+                state.searchState != null,
+                state.actions.isNotEmpty ? state.actions : widget.actions ?? [],
+              ),
+              backgroundColor: inverseHeader ? Colors.transparent : null,
+              foregroundColor: headerForeground,
+              titleTextStyle: headerTitleStyle,
+              iconTheme: inverseHeader
+                  ? IconThemeData(color: headerForeground)
+                  : null,
+              actionsIconTheme: inverseHeader
+                  ? IconThemeData(color: headerForeground)
+                  : null,
+            ),
+            inverseHeader: inverseHeader,
+          );
+        },
+      );
+    }
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          widget.appBar ??
-              ValueListenableBuilder<AppBarState>(
-                valueListenable: _appBarState,
-                builder: (_, state, _) {
-                  return _buildAppBarWrap(
-                    AppBar(
-                      centerTitle: widget.centerTitle ?? false,
-                      leading: _buildLeading(),
-                      title: _buildTitle(state.searchState),
-                      actions: _buildActions(
-                        state.searchState != null,
-                        state.actions.isNotEmpty
-                            ? state.actions
-                            : widget.actions ?? [],
-                      ),
+          if (inverseHeader)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.inverseSurface.withValues(alpha: 0.94),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: context.zodiac.palette.outline,
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
+            ),
+          appBarWidget,
           _buildLoading(),
         ],
       ),
@@ -373,15 +440,22 @@ class CommonScaffoldState extends State<CommonScaffold> {
       child: Consumer(
         builder: (context, ref, _) {
           final isMobileView = ref.watch(isMobileViewProvider);
+          // Mobile pages without an explicit background sit on the
+          // constellation backdrop; the scaffold itself stays
+          // transparent so the backdrop and surfaces read as one.
+          final fieldActive = isMobileView && widget.backgroundColor == null;
           return Scaffold(
-            appBar: _buildAppBar(),
-            body: body,
+            appBar: _buildAppBar(inverseHeader: fieldActive),
+            body: fieldActive
+                ? Stack(
+                    children: [
+                      const Positioned.fill(child: ZodiacBackdrop()),
+                      Positioned.fill(child: body),
+                    ],
+                  )
+                : body,
             resizeToAvoidBottomInset: true,
-            backgroundColor:
-                widget.backgroundColor ??
-                (isMobileView
-                    ? context.colorScheme.surfaceContainer
-                    : Colors.transparent),
+            backgroundColor: widget.backgroundColor ?? Colors.transparent,
             floatingActionButton:
                 widget.floatingActionButton ??
                 ValueListenableBuilder<Widget?>(
@@ -457,11 +531,9 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        widget.backgroundColor ??
-        (ref.watch(isMobileViewProvider)
-            ? context.colorScheme.surfaceContainer
-            : null);
+    // With no explicit background the page sits on the glass field, so
+    // the edge fade runs in mask mode instead of painting a solid wedge.
+    final color = widget.backgroundColor;
     final opaque = color != null && color.a == 1;
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) => _handleScroll(

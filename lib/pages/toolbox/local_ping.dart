@@ -194,7 +194,7 @@ class _LocalPingPageState extends ConsumerState<LocalPingPage>
         validator: (value) {
           final port = int.tryParse(value?.trim() ?? '');
           return port == null || port < 1 || port > 65535
-              ? appLocalizations.iperfPortInvalid
+              ? appLocalizations.localPingPortInvalid
               : null;
         },
       ),
@@ -302,7 +302,7 @@ class _LocalPingPageState extends ConsumerState<LocalPingPage>
                   onPressed: _start,
                   child: Text(
                     state?.isDone ?? false
-                        ? appLocalizations.iperfRetest
+                        ? appLocalizations.localPingRetest
                         : appLocalizations.localPingStart,
                   ),
                 ),

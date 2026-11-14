@@ -2,6 +2,7 @@ package app.angelabettbox
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
@@ -11,10 +12,12 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import app.angelabettbox.plugins.AppPlugin
+import app.angelabettbox.services.FairMemoryHelper
 import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
-import io.flutter.embedding.android.FlutterActivity
+import app.angelabettbox.widget.HomeWidgets
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -22,9 +25,12 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     companion object {
-        private const val MAIN_ENGINE_ID = "bettbox_main_engine"
+        // Referenced by BaseServiceInterface when it builds the
+        // notification content intent through the cached-engine
+        // intent builder (T110).
+        const val MAIN_ENGINE_ID = "bettbox_main_engine"
     }
 
     private fun isTvDevice(context: Context): Boolean {
@@ -45,6 +51,30 @@ class MainActivity : FlutterActivity() {
             installSplashScreen()
         }
         super.onCreate(savedInstanceState)
+        // T110 forensic marker: which entry branch a launch took
+        // (cached engine vs cold create), written to the same
+        // app-private trail that log exports attach, so a future
+        // first-frame death leaves branch evidence behind.
+        FairMemoryHelper.recordCallback(
+            this,
+            "MainActivity",
+            "ON_CREATE engineCached=$isEngineCached",
+        )
+        Log.i("MainActivity", "onCreate engineCached=$isEngineCached")
+        HomeWidgets.handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val isEngineCached = FlutterEngineCache.getInstance().contains(MAIN_ENGINE_ID)
+        FairMemoryHelper.recordCallback(
+            this,
+            "MainActivity",
+            "ON_NEW_INTENT engineCached=$isEngineCached",
+        )
+        Log.i("MainActivity", "onNewIntent engineCached=$isEngineCached")
+        setIntent(intent)
+        HomeWidgets.handleIntent(intent)
     }
 
     override fun onResume() {

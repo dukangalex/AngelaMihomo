@@ -15,6 +15,8 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.angelabettbox.GlobalState
+import app.angelabettbox.core.Core
+import app.angelabettbox.RunState
 import app.angelabettbox.extensions.getIpv4RouteAddress
 import app.angelabettbox.extensions.getIpv6RouteAddress
 import app.angelabettbox.extensions.toCIDR
@@ -25,12 +27,22 @@ import app.angelabettbox.R
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     companion object {
         private const val TAG = "AngelaMihomoVpnService"
+
+        // Hostname pattern accepted by ProxyInfo's exclusion list;
+        // bypass domains that do not match are dropped instead of
+        // failing the whole VPN configuration.
+        private val proxyExclusionPattern =
+            Regex("[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*(\\.[a-zA-Z0-9*]+(-[a-zA-Z0-9*]+)*)*")
     }
+
+    private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override val destructionComplete = CompletableDeferred<Unit>()
 
@@ -87,7 +99,11 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         fairMemoryHelper.register(
             context = this,
             onTrim = { GlobalState.getCurrentVPNPlugin()?.requestGc() },
-            onKill = { /* system will kill process; service has no extra state to save */ }
+            onKill = {
+                // T110: leave forensic evidence of the OEM kill
+                // pre-notice; nothing else — the process is going away.
+                FairMemoryHelper.recordCallback(this, TAG, "KILL")
+            }
         )
     }
 
@@ -98,8 +114,10 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
             Log.d("addAddress", "address: ${cidr.address} prefixLength:${cidr.prefixLength}")
             val routes = options.getIpv4RouteAddress()
             if (routes.isNotEmpty()) {
-                runCatching { routes.forEach { addRoute(it.address, it.prefixLength) } }
-                    .onFailure { addRoute("0.0.0.0", 0) }
+                runCatching {
+                    routes.forEach { addRoute(it.address, it.prefixLength) }
+                    if (routes.none { it.address.isAnyLocalAddress }) addRoute("0.0.0.0", 32)
+                }.onFailure { addRoute("0.0.0.0", 0) }
             } else {
                 addRoute("0.0.0.0", 0)
             }
@@ -163,7 +181,8 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         if (options.allowBypass) allowBypass()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.systemProxy) {
-            setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, options.bypassDomain))
+            val exclusionList = options.bypassDomain.filter { proxyExclusionPattern.matches(it) }
+            setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, exclusionList))
         }
 
         val fd = runCatching { establish()?.detachFd() }.getOrElse { e ->
@@ -186,6 +205,22 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
                 CoroutineScope(Dispatchers.Main).launch {
                     updateNotificationSpeed(profileName, speedInfo)
                 }
+            }
+        }
+        if (intent == null || intent.action == ServiceRecovery.ACTION_RECOVER) {
+            // T110: system relaunch (START_STICKY redelivery after the
+            // process was killed, e.g. by an OEM task swipe) or an
+            // explicit recovery intent (task-removal alarm fallback,
+            // notification trampoline). Verify liveness and re-trigger
+            // the start path when the core should be running but is
+            // not; release this instance afterwards if it turns out to
+            // be a redundant foreground-service start.
+            mainScope.launch {
+                ServiceRecovery.runRecoveryCheck()
+                ServiceRecovery.releaseIfIdle(
+                    this@AngelaMihomoVpnService,
+                    hasStartedForeground,
+                )
             }
         }
         return START_STICKY
@@ -318,6 +353,8 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
         super.onTrimMemory(level)
         if (level == 10 || level == 15 || level >= 40) {
             GlobalState.getCurrentVPNPlugin()?.requestGc()
+            GlobalState.notifyLowMemory()
+            Core.purge(all = false)
         }
     }
 
@@ -347,12 +384,29 @@ class AngelaMihomoVpnService : VpnService(), BaseServiceInterface {
     }
 
     override fun onRevoke() {
+        // The system revoked the VPN session (another VPN app took
+        // over, the always-on slot was reassigned, or the user
+        // confirmed the system VPN dialog). The current session must
+        // stop, but a revoke is not a user stop request: never clear
+        // the persisted is_vpn_running flag here. That flag is only
+        // cleared by a confirmed user stop (Dart handleStop), so the
+        // next system relaunch of this service can still recover the
+        // core on its own via the null-intent liveness check.
         runCatching {
             VpnPlugin.handleStop()
             getSystemService(android.app.NotificationManager::class.java)
                 ?.cancel(GlobalState.NOTIFICATION_ID)
         }.onFailure { Log.e(TAG, "onRevoke error: ${it.message}") }
         super.onRevoke()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // T110: the confirmed kill path — the user swipes the task
+        // away and the OEM kills the whole process, VPN included.
+        // Arm the system-held relaunch fallback while this service
+        // still lives; START_STICKY remains the primary mechanism.
+        ServiceRecovery.rearmAfterTaskRemoval(this, AngelaMihomoVpnService::class.java)
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {

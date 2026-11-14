@@ -10,6 +10,7 @@ import app.angelabettbox.plugins.ServicePlugin
 import app.angelabettbox.plugins.TilePlugin
 import app.angelabettbox.plugins.VpnPlugin
 import app.angelabettbox.services.AngelaMihomoTileService
+import app.angelabettbox.widget.HomeWidgets
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -66,6 +67,9 @@ object GlobalState {
     var isSmartStopped = false
 
     @Volatile
+    var smartStopOverride = false
+
+    @Volatile
     var isStopping = false
 
     @Volatile
@@ -99,6 +103,7 @@ object GlobalState {
         currentRunState = newState
         _runState.value = newState
         requestTileUpdate()
+        mainHandler.post { HomeWidgets.refreshAll(AngelaMihomoApplication.getAppContext()) }
     }
 
     private val tileRetryRunnable = Runnable {
@@ -132,8 +137,19 @@ object GlobalState {
         pendingTimeoutJob = scope.launch {
             delay(PENDING_TIMEOUT_MS)
             if (currentRunState == RunState.PENDING) {
-                android.util.Log.w("GlobalState", "PENDING state timeout, resetting to STOP")
-                updateRunState(RunState.STOP)
+                // T111 A-05: never guess STOP on timeout — a slow
+                // start may well have succeeded, and syncStatus()
+                // refuses to correct PENDING, which left the tile
+                // showing "off" while the VPN was actually running.
+                // Adopt the real service status instead, exactly
+                // like syncStatus does for non-pending states.
+                val running = runCatching { VpnPlugin.getStatus() }
+                    .getOrDefault(false)
+                android.util.Log.w(
+                    "GlobalState",
+                    "PENDING state timeout, adopting real status running=$running"
+                )
+                updateRunState(if (running) RunState.START else RunState.STOP)
             }
         }
     }
@@ -276,6 +292,12 @@ object GlobalState {
     }
 
     fun isServiceEngineRunning(): Boolean = serviceEngine != null
+
+    fun notifyLowMemory() {
+        runCatching {
+            (flutterEngine ?: serviceEngine)?.dartExecutor?.notifyLowMemoryWarning()
+        }
+    }
 
     fun reconnectIpc() {
         (serviceEngine?.plugins?.get(TilePlugin::class.java) as? TilePlugin)?.handleReconnectIpc()

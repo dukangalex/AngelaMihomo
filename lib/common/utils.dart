@@ -20,7 +20,7 @@ enum IpCategory { tun, lan, public }
 typedef _DefaultRoute = ({String gateway, String interfaceName});
 
 final _virtualInterfaceRegExp = RegExp(
-  'tun|tap|vpn|ppp|meta|clash',
+  'tun|tap|vpn|ppp|meta|clash|${RegExp.escape(tunDeviceName)}',
   caseSensitive: false,
 );
 
@@ -30,16 +30,19 @@ final _bridgeInterfaceRegExp = RegExp(
 );
 
 class Utils {
-  Color? getDelayColor(int? delay) {
+  /// Delay tier color. With a constellation [palette] the tiers
+  /// are the family's status colors (spec: delay and status share
+  /// one source); without one, the legacy defaults apply.
+  Color? getDelayColor(int? delay, {ZodiacPalette? palette}) {
     if (delay == null) return null;
-    if (delay < 0) return Colors.red;
-    if (delay < 600) return Colors.green;
-    return const Color(0xFFC57F0A);
+    if (delay < 0) return palette?.delayBad ?? Colors.red;
+    if (delay < 600) return palette?.delayGood ?? Colors.green;
+    return palette?.delayMid ?? const Color(0xFFC57F0A);
   }
 
   String countryCodeToEmoji(String countryCode) {
     final String code = countryCode.toUpperCase();
-    if (code.length != 2) {
+    if (!RegExp(r'^[A-Z]{2}$').hasMatch(code)) {
       return countryCode;
     }
     final int firstLetter = code.codeUnitAt(0) - 0x41 + 0x1F1E6;
@@ -1008,18 +1011,39 @@ class Utils {
         }
         return addresses;
       }
-      final interfaces = await NetworkInterface.list(includeLoopback: false);
-      for (final interface in interfaces) {
-        if (_virtualInterfaceRegExp.hasMatch(interface.name) ||
-            _bridgeInterfaceRegExp.hasMatch(interface.name)) {
-          continue;
-        }
-        for (final address in interface.addresses) {
-          if (address.isIPv4 && !address.isLinkLocal) add(address.address);
-        }
+      for (final address in await getInterfaceIPv4Addresses()) {
+        add(address);
       }
     } catch (_) {}
     return addresses;
+  }
+
+  Future<List<String>> getInterfaceIPv4Addresses() async {
+    final interfaces = await NetworkInterface.list(includeLoopback: false);
+    return [
+      for (final interface in interfaces)
+        if (!_virtualInterfaceRegExp.hasMatch(interface.name) &&
+            !_bridgeInterfaceRegExp.hasMatch(interface.name))
+          for (final address in interface.addresses)
+            if (address.isIPv4 && !address.isLinkLocal) address.address,
+    ];
+  }
+
+  Future<List<CoreInterface>> getNetworkInterfaces() async {
+    final interfaces = await NetworkInterface.list(includeLoopback: false);
+    final result = <CoreInterface>[
+      for (final interface in interfaces)
+        if (interface.addresses.isNotEmpty &&
+            !_virtualInterfaceRegExp.hasMatch(interface.name) &&
+            !_bridgeInterfaceRegExp.hasMatch(interface.name))
+          CoreInterface(
+            name: interface.name,
+            addresses: [
+              for (final address in interface.addresses) address.address,
+            ],
+          ),
+    ];
+    return result..sort((a, b) => a.name.compareTo(b.name));
   }
 
   Future<NetworkInfo> getNetworkInfo() async {
@@ -1249,10 +1273,20 @@ class Utils {
   }
 
   String generateSecret() {
-    final random = Random();
-    // Generate an 8-digit number (10000000 to 99999999)
-    final secret = 10000000 + random.nextInt(90000000);
-    return secret.toString();
+    const groups = [
+      'ABCDEFGHJKLMNPQRSTUVWXYZ',
+      'abcdefghijkmnpqrstuvwxyz',
+      '23456789',
+      '!@*-_~',
+    ];
+    final random = Random.secure();
+    final all = groups.join();
+    String pick(String chars) => chars[random.nextInt(chars.length)];
+    final chars = [
+      for (final group in groups) pick(group),
+      for (var i = groups.length; i < 10; i++) pick(all),
+    ]..shuffle(random);
+    return chars.join();
   }
 
   String patchYamlConfig(String content) {

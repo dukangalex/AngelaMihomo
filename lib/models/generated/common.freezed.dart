@@ -589,7 +589,7 @@ as int,
 /// @nodoc
 mixin _$Metadata {
 
- int get uid; String get network; String get sourceIP; String get sourcePort; String get destinationIP; String get destinationPort; String get host; DnsMode? get dnsMode; String get process; String get processPath; String get remoteDestination; List<String> get sourceGeoIP; List<String> get destinationGeoIP; String get destinationIPASN; String get sourceIPASN; String get specialRules; String get specialProxy;
+ int get uid; String get network; String get type; String get sourceIP; String get sourcePort; String get destinationIP; String get destinationPort; String get host; String get sniffHost; String get inboundName; String get inboundPort; String get inboundUser; DnsMode? get dnsMode; String get process; String get processPath; String get remoteDestination; List<String> get sourceGeoIP; List<String> get destinationGeoIP; String get destinationIPASN; String get sourceIPASN; String get specialRules; String get specialProxy;
 /// Create a copy of Metadata
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -603,20 +603,20 @@ $MetadataCopyWith<Metadata> get copyWith => _$MetadataCopyWithImpl<Metadata>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as Metadata;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Metadata&&(identical(other.uid, _this.uid) || other.uid == _this.uid)&&(identical(other.network, _this.network) || other.network == _this.network)&&(identical(other.sourceIP, _this.sourceIP) || other.sourceIP == _this.sourceIP)&&(identical(other.sourcePort, _this.sourcePort) || other.sourcePort == _this.sourcePort)&&(identical(other.destinationIP, _this.destinationIP) || other.destinationIP == _this.destinationIP)&&(identical(other.destinationPort, _this.destinationPort) || other.destinationPort == _this.destinationPort)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.dnsMode, _this.dnsMode) || other.dnsMode == _this.dnsMode)&&(identical(other.process, _this.process) || other.process == _this.process)&&(identical(other.processPath, _this.processPath) || other.processPath == _this.processPath)&&(identical(other.remoteDestination, _this.remoteDestination) || other.remoteDestination == _this.remoteDestination)&&const DeepCollectionEquality().equals(other.sourceGeoIP, _this.sourceGeoIP)&&const DeepCollectionEquality().equals(other.destinationGeoIP, _this.destinationGeoIP)&&(identical(other.destinationIPASN, _this.destinationIPASN) || other.destinationIPASN == _this.destinationIPASN)&&(identical(other.sourceIPASN, _this.sourceIPASN) || other.sourceIPASN == _this.sourceIPASN)&&(identical(other.specialRules, _this.specialRules) || other.specialRules == _this.specialRules)&&(identical(other.specialProxy, _this.specialProxy) || other.specialProxy == _this.specialProxy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Metadata&&(identical(other.uid, _this.uid) || other.uid == _this.uid)&&(identical(other.network, _this.network) || other.network == _this.network)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.sourceIP, _this.sourceIP) || other.sourceIP == _this.sourceIP)&&(identical(other.sourcePort, _this.sourcePort) || other.sourcePort == _this.sourcePort)&&(identical(other.destinationIP, _this.destinationIP) || other.destinationIP == _this.destinationIP)&&(identical(other.destinationPort, _this.destinationPort) || other.destinationPort == _this.destinationPort)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.sniffHost, _this.sniffHost) || other.sniffHost == _this.sniffHost)&&(identical(other.inboundName, _this.inboundName) || other.inboundName == _this.inboundName)&&(identical(other.inboundPort, _this.inboundPort) || other.inboundPort == _this.inboundPort)&&(identical(other.inboundUser, _this.inboundUser) || other.inboundUser == _this.inboundUser)&&(identical(other.dnsMode, _this.dnsMode) || other.dnsMode == _this.dnsMode)&&(identical(other.process, _this.process) || other.process == _this.process)&&(identical(other.processPath, _this.processPath) || other.processPath == _this.processPath)&&(identical(other.remoteDestination, _this.remoteDestination) || other.remoteDestination == _this.remoteDestination)&&const DeepCollectionEquality().equals(other.sourceGeoIP, _this.sourceGeoIP)&&const DeepCollectionEquality().equals(other.destinationGeoIP, _this.destinationGeoIP)&&(identical(other.destinationIPASN, _this.destinationIPASN) || other.destinationIPASN == _this.destinationIPASN)&&(identical(other.sourceIPASN, _this.sourceIPASN) || other.sourceIPASN == _this.sourceIPASN)&&(identical(other.specialRules, _this.specialRules) || other.specialRules == _this.specialRules)&&(identical(other.specialProxy, _this.specialProxy) || other.specialProxy == _this.specialProxy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Metadata;
-  return Object.hash(runtimeType,_this.uid,_this.network,_this.sourceIP,_this.sourcePort,_this.destinationIP,_this.destinationPort,_this.host,_this.dnsMode,_this.process,_this.processPath,_this.remoteDestination,const DeepCollectionEquality().hash(_this.sourceGeoIP),const DeepCollectionEquality().hash(_this.destinationGeoIP),_this.destinationIPASN,_this.sourceIPASN,_this.specialRules,_this.specialProxy);
+  return Object.hashAll([runtimeType,_this.uid,_this.network,_this.type,_this.sourceIP,_this.sourcePort,_this.destinationIP,_this.destinationPort,_this.host,_this.sniffHost,_this.inboundName,_this.inboundPort,_this.inboundUser,_this.dnsMode,_this.process,_this.processPath,_this.remoteDestination,const DeepCollectionEquality().hash(_this.sourceGeoIP),const DeepCollectionEquality().hash(_this.destinationGeoIP),_this.destinationIPASN,_this.sourceIPASN,_this.specialRules,_this.specialProxy]);
 }
 
 @override
 String toString() {
   final _this = this as Metadata;
-  return 'Metadata(uid: ${_this.uid}, network: ${_this.network}, sourceIP: ${_this.sourceIP}, sourcePort: ${_this.sourcePort}, destinationIP: ${_this.destinationIP}, destinationPort: ${_this.destinationPort}, host: ${_this.host}, dnsMode: ${_this.dnsMode}, process: ${_this.process}, processPath: ${_this.processPath}, remoteDestination: ${_this.remoteDestination}, sourceGeoIP: ${_this.sourceGeoIP}, destinationGeoIP: ${_this.destinationGeoIP}, destinationIPASN: ${_this.destinationIPASN}, sourceIPASN: ${_this.sourceIPASN}, specialRules: ${_this.specialRules}, specialProxy: ${_this.specialProxy})';
+  return 'Metadata(uid: ${_this.uid}, network: ${_this.network}, type: ${_this.type}, sourceIP: ${_this.sourceIP}, sourcePort: ${_this.sourcePort}, destinationIP: ${_this.destinationIP}, destinationPort: ${_this.destinationPort}, host: ${_this.host}, sniffHost: ${_this.sniffHost}, inboundName: ${_this.inboundName}, inboundPort: ${_this.inboundPort}, inboundUser: ${_this.inboundUser}, dnsMode: ${_this.dnsMode}, process: ${_this.process}, processPath: ${_this.processPath}, remoteDestination: ${_this.remoteDestination}, sourceGeoIP: ${_this.sourceGeoIP}, destinationGeoIP: ${_this.destinationGeoIP}, destinationIPASN: ${_this.destinationIPASN}, sourceIPASN: ${_this.sourceIPASN}, specialRules: ${_this.specialRules}, specialProxy: ${_this.specialProxy})';
 }
 
 
@@ -627,7 +627,7 @@ abstract mixin class $MetadataCopyWith<$Res>  {
   factory $MetadataCopyWith(Metadata value, $Res Function(Metadata) _then) = _$MetadataCopyWithImpl;
 @useResult
 $Res call({
- int uid, String network, String sourceIP, String sourcePort, String destinationIP, String destinationPort, String host, DnsMode? dnsMode, String process, String processPath, String remoteDestination, List<String> sourceGeoIP, List<String> destinationGeoIP, String destinationIPASN, String sourceIPASN, String specialRules, String specialProxy
+ int uid, String network, String type, String sourceIP, String sourcePort, String destinationIP, String destinationPort, String host, String sniffHost, String inboundName, String inboundPort, String inboundUser, DnsMode? dnsMode, String process, String processPath, String remoteDestination, List<String> sourceGeoIP, List<String> destinationGeoIP, String destinationIPASN, String sourceIPASN, String specialRules, String specialProxy
 });
 
 
@@ -644,15 +644,20 @@ class _$MetadataCopyWithImpl<$Res>
 
 /// Create a copy of Metadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? network = null,Object? sourceIP = null,Object? sourcePort = null,Object? destinationIP = null,Object? destinationPort = null,Object? host = null,Object? dnsMode = freezed,Object? process = null,Object? processPath = null,Object? remoteDestination = null,Object? sourceGeoIP = null,Object? destinationGeoIP = null,Object? destinationIPASN = null,Object? sourceIPASN = null,Object? specialRules = null,Object? specialProxy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? network = null,Object? type = null,Object? sourceIP = null,Object? sourcePort = null,Object? destinationIP = null,Object? destinationPort = null,Object? host = null,Object? sniffHost = null,Object? inboundName = null,Object? inboundPort = null,Object? inboundUser = null,Object? dnsMode = freezed,Object? process = null,Object? processPath = null,Object? remoteDestination = null,Object? sourceGeoIP = null,Object? destinationGeoIP = null,Object? destinationIPASN = null,Object? sourceIPASN = null,Object? specialRules = null,Object? specialProxy = null,}) {
   return _then(Metadata(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as int,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,sourceIP: null == sourceIP ? _self.sourceIP : sourceIP // ignore: cast_nullable_to_non_nullable
 as String,sourcePort: null == sourcePort ? _self.sourcePort : sourcePort // ignore: cast_nullable_to_non_nullable
 as String,destinationIP: null == destinationIP ? _self.destinationIP : destinationIP // ignore: cast_nullable_to_non_nullable
 as String,destinationPort: null == destinationPort ? _self.destinationPort : destinationPort // ignore: cast_nullable_to_non_nullable
 as String,host: null == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String,sniffHost: null == sniffHost ? _self.sniffHost : sniffHost // ignore: cast_nullable_to_non_nullable
+as String,inboundName: null == inboundName ? _self.inboundName : inboundName // ignore: cast_nullable_to_non_nullable
+as String,inboundPort: null == inboundPort ? _self.inboundPort : inboundPort // ignore: cast_nullable_to_non_nullable
+as String,inboundUser: null == inboundUser ? _self.inboundUser : inboundUser // ignore: cast_nullable_to_non_nullable
 as String,dnsMode: freezed == dnsMode ? _self.dnsMode : dnsMode // ignore: cast_nullable_to_non_nullable
 as DnsMode?,process: null == process ? _self.process : process // ignore: cast_nullable_to_non_nullable
 as String,processPath: null == processPath ? _self.processPath : processPath // ignore: cast_nullable_to_non_nullable
@@ -748,10 +753,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int uid,  String network,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int uid,  String network,  String type,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  String sniffHost,  String inboundName,  String inboundPort,  String inboundUser,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Metadata() when $default != null:
-return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
+return $default(_that.uid,_that.network,_that.type,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.sniffHost,_that.inboundName,_that.inboundPort,_that.inboundUser,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
   return orElse();
 
 }
@@ -769,10 +774,10 @@ return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.de
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int uid,  String network,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int uid,  String network,  String type,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  String sniffHost,  String inboundName,  String inboundPort,  String inboundUser,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)  $default,) {final _that = this;
 switch (_that) {
 case _Metadata():
-return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
+return $default(_that.uid,_that.network,_that.type,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.sniffHost,_that.inboundName,_that.inboundPort,_that.inboundUser,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -789,10 +794,10 @@ return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.de
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int uid,  String network,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int uid,  String network,  String type,  String sourceIP,  String sourcePort,  String destinationIP,  String destinationPort,  String host,  String sniffHost,  String inboundName,  String inboundPort,  String inboundUser,  DnsMode? dnsMode,  String process,  String processPath,  String remoteDestination,  List<String> sourceGeoIP,  List<String> destinationGeoIP,  String destinationIPASN,  String sourceIPASN,  String specialRules,  String specialProxy)?  $default,) {final _that = this;
 switch (_that) {
 case _Metadata() when $default != null:
-return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
+return $default(_that.uid,_that.network,_that.type,_that.sourceIP,_that.sourcePort,_that.destinationIP,_that.destinationPort,_that.host,_that.sniffHost,_that.inboundName,_that.inboundPort,_that.inboundUser,_that.dnsMode,_that.process,_that.processPath,_that.remoteDestination,_that.sourceGeoIP,_that.destinationGeoIP,_that.destinationIPASN,_that.sourceIPASN,_that.specialRules,_that.specialProxy);case _:
   return null;
 
 }
@@ -804,16 +809,21 @@ return $default(_that.uid,_that.network,_that.sourceIP,_that.sourcePort,_that.de
 @JsonSerializable()
 
 class _Metadata implements Metadata {
-  const _Metadata({this.uid = 0, this.network = '', this.sourceIP = '', this.sourcePort = '', this.destinationIP = '', this.destinationPort = '', this.host = '', this.dnsMode, this.process = '', this.processPath = '', this.remoteDestination = '',  List<String> sourceGeoIP = const [],  List<String> destinationGeoIP = const [], this.destinationIPASN = '', this.sourceIPASN = '', this.specialRules = '', this.specialProxy = ''}): _sourceGeoIP = sourceGeoIP,_destinationGeoIP = destinationGeoIP;
+  const _Metadata({this.uid = 0, this.network = '', this.type = '', this.sourceIP = '', this.sourcePort = '', this.destinationIP = '', this.destinationPort = '', this.host = '', this.sniffHost = '', this.inboundName = '', this.inboundPort = '', this.inboundUser = '', this.dnsMode, this.process = '', this.processPath = '', this.remoteDestination = '',  List<String> sourceGeoIP = const [],  List<String> destinationGeoIP = const [], this.destinationIPASN = '', this.sourceIPASN = '', this.specialRules = '', this.specialProxy = ''}): _sourceGeoIP = sourceGeoIP,_destinationGeoIP = destinationGeoIP;
   factory _Metadata.fromJson(Map<String, dynamic> json) => _$MetadataFromJson(json);
 
 @override@JsonKey() final  int uid;
 @override@JsonKey() final  String network;
+@override@JsonKey() final  String type;
 @override@JsonKey() final  String sourceIP;
 @override@JsonKey() final  String sourcePort;
 @override@JsonKey() final  String destinationIP;
 @override@JsonKey() final  String destinationPort;
 @override@JsonKey() final  String host;
+@override@JsonKey() final  String sniffHost;
+@override@JsonKey() final  String inboundName;
+@override@JsonKey() final  String inboundPort;
+@override@JsonKey() final  String inboundUser;
 @override final  DnsMode? dnsMode;
 @override@JsonKey() final  String process;
 @override@JsonKey() final  String processPath;
@@ -850,18 +860,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Metadata&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.network, network) || other.network == network)&&(identical(other.sourceIP, sourceIP) || other.sourceIP == sourceIP)&&(identical(other.sourcePort, sourcePort) || other.sourcePort == sourcePort)&&(identical(other.destinationIP, destinationIP) || other.destinationIP == destinationIP)&&(identical(other.destinationPort, destinationPort) || other.destinationPort == destinationPort)&&(identical(other.host, host) || other.host == host)&&(identical(other.dnsMode, dnsMode) || other.dnsMode == dnsMode)&&(identical(other.process, process) || other.process == process)&&(identical(other.processPath, processPath) || other.processPath == processPath)&&(identical(other.remoteDestination, remoteDestination) || other.remoteDestination == remoteDestination)&&const DeepCollectionEquality().equals(other.sourceGeoIP, _sourceGeoIP)&&const DeepCollectionEquality().equals(other.destinationGeoIP, _destinationGeoIP)&&(identical(other.destinationIPASN, destinationIPASN) || other.destinationIPASN == destinationIPASN)&&(identical(other.sourceIPASN, sourceIPASN) || other.sourceIPASN == sourceIPASN)&&(identical(other.specialRules, specialRules) || other.specialRules == specialRules)&&(identical(other.specialProxy, specialProxy) || other.specialProxy == specialProxy));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Metadata&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.network, network) || other.network == network)&&(identical(other.type, type) || other.type == type)&&(identical(other.sourceIP, sourceIP) || other.sourceIP == sourceIP)&&(identical(other.sourcePort, sourcePort) || other.sourcePort == sourcePort)&&(identical(other.destinationIP, destinationIP) || other.destinationIP == destinationIP)&&(identical(other.destinationPort, destinationPort) || other.destinationPort == destinationPort)&&(identical(other.host, host) || other.host == host)&&(identical(other.sniffHost, sniffHost) || other.sniffHost == sniffHost)&&(identical(other.inboundName, inboundName) || other.inboundName == inboundName)&&(identical(other.inboundPort, inboundPort) || other.inboundPort == inboundPort)&&(identical(other.inboundUser, inboundUser) || other.inboundUser == inboundUser)&&(identical(other.dnsMode, dnsMode) || other.dnsMode == dnsMode)&&(identical(other.process, process) || other.process == process)&&(identical(other.processPath, processPath) || other.processPath == processPath)&&(identical(other.remoteDestination, remoteDestination) || other.remoteDestination == remoteDestination)&&const DeepCollectionEquality().equals(other.sourceGeoIP, _sourceGeoIP)&&const DeepCollectionEquality().equals(other.destinationGeoIP, _destinationGeoIP)&&(identical(other.destinationIPASN, destinationIPASN) || other.destinationIPASN == destinationIPASN)&&(identical(other.sourceIPASN, sourceIPASN) || other.sourceIPASN == sourceIPASN)&&(identical(other.specialRules, specialRules) || other.specialRules == specialRules)&&(identical(other.specialProxy, specialProxy) || other.specialProxy == specialProxy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,uid,network,sourceIP,sourcePort,destinationIP,destinationPort,host,dnsMode,process,processPath,remoteDestination,const DeepCollectionEquality().hash(_sourceGeoIP),const DeepCollectionEquality().hash(_destinationGeoIP),destinationIPASN,sourceIPASN,specialRules,specialProxy);
+    return Object.hashAll([runtimeType,uid,network,type,sourceIP,sourcePort,destinationIP,destinationPort,host,sniffHost,inboundName,inboundPort,inboundUser,dnsMode,process,processPath,remoteDestination,const DeepCollectionEquality().hash(_sourceGeoIP),const DeepCollectionEquality().hash(_destinationGeoIP),destinationIPASN,sourceIPASN,specialRules,specialProxy]);
 }
 
 @override
 String toString() {
-    return 'Metadata(uid: $uid, network: $network, sourceIP: $sourceIP, sourcePort: $sourcePort, destinationIP: $destinationIP, destinationPort: $destinationPort, host: $host, dnsMode: $dnsMode, process: $process, processPath: $processPath, remoteDestination: $remoteDestination, sourceGeoIP: $sourceGeoIP, destinationGeoIP: $destinationGeoIP, destinationIPASN: $destinationIPASN, sourceIPASN: $sourceIPASN, specialRules: $specialRules, specialProxy: $specialProxy)';
+    return 'Metadata(uid: $uid, network: $network, type: $type, sourceIP: $sourceIP, sourcePort: $sourcePort, destinationIP: $destinationIP, destinationPort: $destinationPort, host: $host, sniffHost: $sniffHost, inboundName: $inboundName, inboundPort: $inboundPort, inboundUser: $inboundUser, dnsMode: $dnsMode, process: $process, processPath: $processPath, remoteDestination: $remoteDestination, sourceGeoIP: $sourceGeoIP, destinationGeoIP: $destinationGeoIP, destinationIPASN: $destinationIPASN, sourceIPASN: $sourceIPASN, specialRules: $specialRules, specialProxy: $specialProxy)';
 }
 
 
@@ -872,7 +882,7 @@ abstract mixin class _$MetadataCopyWith<$Res> implements $MetadataCopyWith<$Res>
   factory _$MetadataCopyWith(_Metadata value, $Res Function(_Metadata) _then) = __$MetadataCopyWithImpl;
 @override @useResult
 $Res call({
- int uid, String network, String sourceIP, String sourcePort, String destinationIP, String destinationPort, String host, DnsMode? dnsMode, String process, String processPath, String remoteDestination, List<String> sourceGeoIP, List<String> destinationGeoIP, String destinationIPASN, String sourceIPASN, String specialRules, String specialProxy
+ int uid, String network, String type, String sourceIP, String sourcePort, String destinationIP, String destinationPort, String host, String sniffHost, String inboundName, String inboundPort, String inboundUser, DnsMode? dnsMode, String process, String processPath, String remoteDestination, List<String> sourceGeoIP, List<String> destinationGeoIP, String destinationIPASN, String sourceIPASN, String specialRules, String specialProxy
 });
 
 
@@ -889,15 +899,20 @@ class __$MetadataCopyWithImpl<$Res>
 
 /// Create a copy of Metadata
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? network = null,Object? sourceIP = null,Object? sourcePort = null,Object? destinationIP = null,Object? destinationPort = null,Object? host = null,Object? dnsMode = freezed,Object? process = null,Object? processPath = null,Object? remoteDestination = null,Object? sourceGeoIP = null,Object? destinationGeoIP = null,Object? destinationIPASN = null,Object? sourceIPASN = null,Object? specialRules = null,Object? specialProxy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? network = null,Object? type = null,Object? sourceIP = null,Object? sourcePort = null,Object? destinationIP = null,Object? destinationPort = null,Object? host = null,Object? sniffHost = null,Object? inboundName = null,Object? inboundPort = null,Object? inboundUser = null,Object? dnsMode = freezed,Object? process = null,Object? processPath = null,Object? remoteDestination = null,Object? sourceGeoIP = null,Object? destinationGeoIP = null,Object? destinationIPASN = null,Object? sourceIPASN = null,Object? specialRules = null,Object? specialProxy = null,}) {
   return _then(_Metadata(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as int,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,sourceIP: null == sourceIP ? _self.sourceIP : sourceIP // ignore: cast_nullable_to_non_nullable
 as String,sourcePort: null == sourcePort ? _self.sourcePort : sourcePort // ignore: cast_nullable_to_non_nullable
 as String,destinationIP: null == destinationIP ? _self.destinationIP : destinationIP // ignore: cast_nullable_to_non_nullable
 as String,destinationPort: null == destinationPort ? _self.destinationPort : destinationPort // ignore: cast_nullable_to_non_nullable
 as String,host: null == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String,sniffHost: null == sniffHost ? _self.sniffHost : sniffHost // ignore: cast_nullable_to_non_nullable
+as String,inboundName: null == inboundName ? _self.inboundName : inboundName // ignore: cast_nullable_to_non_nullable
+as String,inboundPort: null == inboundPort ? _self.inboundPort : inboundPort // ignore: cast_nullable_to_non_nullable
+as String,inboundUser: null == inboundUser ? _self.inboundUser : inboundUser // ignore: cast_nullable_to_non_nullable
 as String,dnsMode: freezed == dnsMode ? _self.dnsMode : dnsMode // ignore: cast_nullable_to_non_nullable
 as DnsMode?,process: null == process ? _self.process : process // ignore: cast_nullable_to_non_nullable
 as String,processPath: null == processPath ? _self.processPath : processPath // ignore: cast_nullable_to_non_nullable
@@ -3197,6 +3212,285 @@ as String,interfaceName: null == interfaceName ? _self.interfaceName : interface
 as String,ip: null == ip ? _self.ip : ip // ignore: cast_nullable_to_non_nullable
 as String,gateway: null == gateway ? _self.gateway : gateway // ignore: cast_nullable_to_non_nullable
 as String,dns: null == dns ? _self._dns : dns // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$CoreInterface {
+
+ String get name; List<String> get addresses;
+/// Create a copy of CoreInterface
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CoreInterfaceCopyWith<CoreInterface> get copyWith => _$CoreInterfaceCopyWithImpl<CoreInterface>(this as CoreInterface, _$identity);
+
+  /// Serializes this CoreInterface to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as CoreInterface;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoreInterface&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.addresses, _this.addresses));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as CoreInterface;
+  return Object.hash(runtimeType,_this.name,const DeepCollectionEquality().hash(_this.addresses));
+}
+
+@override
+String toString() {
+  final _this = this as CoreInterface;
+  return 'CoreInterface(name: ${_this.name}, addresses: ${_this.addresses})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CoreInterfaceCopyWith<$Res>  {
+  factory $CoreInterfaceCopyWith(CoreInterface value, $Res Function(CoreInterface) _then) = _$CoreInterfaceCopyWithImpl;
+@useResult
+$Res call({
+ String name, List<String> addresses
+});
+
+
+
+
+}
+/// @nodoc
+class _$CoreInterfaceCopyWithImpl<$Res>
+    implements $CoreInterfaceCopyWith<$Res> {
+  _$CoreInterfaceCopyWithImpl(this._self, this._then);
+
+  final CoreInterface _self;
+  final $Res Function(CoreInterface) _then;
+
+/// Create a copy of CoreInterface
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? addresses = null,}) {
+  return _then(CoreInterface(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,addresses: null == addresses ? _self.addresses : addresses // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [CoreInterface].
+extension CoreInterfacePatterns on CoreInterface {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CoreInterface value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CoreInterface() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CoreInterface value)  $default,){
+final _that = this;
+switch (_that) {
+case _CoreInterface():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CoreInterface value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CoreInterface() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  List<String> addresses)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CoreInterface() when $default != null:
+return $default(_that.name,_that.addresses);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  List<String> addresses)  $default,) {final _that = this;
+switch (_that) {
+case _CoreInterface():
+return $default(_that.name,_that.addresses);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  List<String> addresses)?  $default,) {final _that = this;
+switch (_that) {
+case _CoreInterface() when $default != null:
+return $default(_that.name,_that.addresses);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _CoreInterface implements CoreInterface {
+  const _CoreInterface({required this.name,  List<String> addresses = const []}): _addresses = addresses;
+  factory _CoreInterface.fromJson(Map<String, dynamic> json) => _$CoreInterfaceFromJson(json);
+
+@override final  String name;
+ final  List<String> _addresses;
+@override@JsonKey() List<String> get addresses {
+  if (_addresses is EqualUnmodifiableListView) return _addresses;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_addresses);
+}
+
+
+/// Create a copy of CoreInterface
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CoreInterfaceCopyWith<_CoreInterface> get copyWith => __$CoreInterfaceCopyWithImpl<_CoreInterface>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$CoreInterfaceToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoreInterface&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.addresses, _addresses));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_addresses));
+}
+
+@override
+String toString() {
+    return 'CoreInterface(name: $name, addresses: $addresses)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CoreInterfaceCopyWith<$Res> implements $CoreInterfaceCopyWith<$Res> {
+  factory _$CoreInterfaceCopyWith(_CoreInterface value, $Res Function(_CoreInterface) _then) = __$CoreInterfaceCopyWithImpl;
+@override @useResult
+$Res call({
+ String name, List<String> addresses
+});
+
+
+
+
+}
+/// @nodoc
+class __$CoreInterfaceCopyWithImpl<$Res>
+    implements _$CoreInterfaceCopyWith<$Res> {
+  __$CoreInterfaceCopyWithImpl(this._self, this._then);
+
+  final _CoreInterface _self;
+  final $Res Function(_CoreInterface) _then;
+
+/// Create a copy of CoreInterface
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? addresses = null,}) {
+  return _then(_CoreInterface(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,addresses: null == addresses ? _self._addresses : addresses // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }
@@ -5714,6 +6008,567 @@ as Map<String, bool>?,digest: freezed == digest ? _self.digest : digest // ignor
 as String?,compatible: null == compatible ? _self.compatible : compatible // ignore: cast_nullable_to_non_nullable
 as bool,volatile: freezed == volatile ? _self.volatile : volatile // ignore: cast_nullable_to_non_nullable
 as bool?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$IconSetIcon {
+
+ String get name; String get url;
+/// Create a copy of IconSetIcon
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$IconSetIconCopyWith<IconSetIcon> get copyWith => _$IconSetIconCopyWithImpl<IconSetIcon>(this as IconSetIcon, _$identity);
+
+  /// Serializes this IconSetIcon to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as IconSetIcon;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IconSetIcon&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.url, _this.url) || other.url == _this.url));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as IconSetIcon;
+  return Object.hash(runtimeType,_this.name,_this.url);
+}
+
+@override
+String toString() {
+  final _this = this as IconSetIcon;
+  return 'IconSetIcon(name: ${_this.name}, url: ${_this.url})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $IconSetIconCopyWith<$Res>  {
+  factory $IconSetIconCopyWith(IconSetIcon value, $Res Function(IconSetIcon) _then) = _$IconSetIconCopyWithImpl;
+@useResult
+$Res call({
+ String name, String url
+});
+
+
+
+
+}
+/// @nodoc
+class _$IconSetIconCopyWithImpl<$Res>
+    implements $IconSetIconCopyWith<$Res> {
+  _$IconSetIconCopyWithImpl(this._self, this._then);
+
+  final IconSetIcon _self;
+  final $Res Function(IconSetIcon) _then;
+
+/// Create a copy of IconSetIcon
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? url = null,}) {
+  return _then(IconSetIcon(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [IconSetIcon].
+extension IconSetIconPatterns on IconSetIcon {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _IconSetIcon value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _IconSetIcon() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _IconSetIcon value)  $default,){
+final _that = this;
+switch (_that) {
+case _IconSetIcon():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _IconSetIcon value)?  $default,){
+final _that = this;
+switch (_that) {
+case _IconSetIcon() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String url)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _IconSetIcon() when $default != null:
+return $default(_that.name,_that.url);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String url)  $default,) {final _that = this;
+switch (_that) {
+case _IconSetIcon():
+return $default(_that.name,_that.url);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String url)?  $default,) {final _that = this;
+switch (_that) {
+case _IconSetIcon() when $default != null:
+return $default(_that.name,_that.url);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _IconSetIcon implements IconSetIcon {
+  const _IconSetIcon({required this.name, required this.url});
+  factory _IconSetIcon.fromJson(Map<String, dynamic> json) => _$IconSetIconFromJson(json);
+
+@override final  String name;
+@override final  String url;
+
+/// Create a copy of IconSetIcon
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$IconSetIconCopyWith<_IconSetIcon> get copyWith => __$IconSetIconCopyWithImpl<_IconSetIcon>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$IconSetIconToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _IconSetIcon&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,name,url);
+}
+
+@override
+String toString() {
+    return 'IconSetIcon(name: $name, url: $url)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$IconSetIconCopyWith<$Res> implements $IconSetIconCopyWith<$Res> {
+  factory _$IconSetIconCopyWith(_IconSetIcon value, $Res Function(_IconSetIcon) _then) = __$IconSetIconCopyWithImpl;
+@override @useResult
+$Res call({
+ String name, String url
+});
+
+
+
+
+}
+/// @nodoc
+class __$IconSetIconCopyWithImpl<$Res>
+    implements _$IconSetIconCopyWith<$Res> {
+  __$IconSetIconCopyWithImpl(this._self, this._then);
+
+  final _IconSetIcon _self;
+  final $Res Function(_IconSetIcon) _then;
+
+/// Create a copy of IconSetIcon
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? url = null,}) {
+  return _then(_IconSetIcon(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$IconSet {
+
+ String get id; String get name; String get url; List<IconSetIcon> get icons; DateTime? get lastUpdateTime;
+/// Create a copy of IconSet
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$IconSetCopyWith<IconSet> get copyWith => _$IconSetCopyWithImpl<IconSet>(this as IconSet, _$identity);
+
+  /// Serializes this IconSet to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as IconSet;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IconSet&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.url, _this.url) || other.url == _this.url)&&const DeepCollectionEquality().equals(other.icons, _this.icons)&&(identical(other.lastUpdateTime, _this.lastUpdateTime) || other.lastUpdateTime == _this.lastUpdateTime));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as IconSet;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.url,const DeepCollectionEquality().hash(_this.icons),_this.lastUpdateTime);
+}
+
+@override
+String toString() {
+  final _this = this as IconSet;
+  return 'IconSet(id: ${_this.id}, name: ${_this.name}, url: ${_this.url}, icons: ${_this.icons}, lastUpdateTime: ${_this.lastUpdateTime})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $IconSetCopyWith<$Res>  {
+  factory $IconSetCopyWith(IconSet value, $Res Function(IconSet) _then) = _$IconSetCopyWithImpl;
+@useResult
+$Res call({
+ String id, String name, String url, List<IconSetIcon> icons, DateTime? lastUpdateTime
+});
+
+
+
+
+}
+/// @nodoc
+class _$IconSetCopyWithImpl<$Res>
+    implements $IconSetCopyWith<$Res> {
+  _$IconSetCopyWithImpl(this._self, this._then);
+
+  final IconSet _self;
+  final $Res Function(IconSet) _then;
+
+/// Create a copy of IconSet
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? url = null,Object? icons = null,Object? lastUpdateTime = freezed,}) {
+  return _then(IconSet(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,icons: null == icons ? _self.icons : icons // ignore: cast_nullable_to_non_nullable
+as List<IconSetIcon>,lastUpdateTime: freezed == lastUpdateTime ? _self.lastUpdateTime : lastUpdateTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [IconSet].
+extension IconSetPatterns on IconSet {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _IconSet value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _IconSet() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _IconSet value)  $default,){
+final _that = this;
+switch (_that) {
+case _IconSet():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _IconSet value)?  $default,){
+final _that = this;
+switch (_that) {
+case _IconSet() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String url,  List<IconSetIcon> icons,  DateTime? lastUpdateTime)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _IconSet() when $default != null:
+return $default(_that.id,_that.name,_that.url,_that.icons,_that.lastUpdateTime);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String url,  List<IconSetIcon> icons,  DateTime? lastUpdateTime)  $default,) {final _that = this;
+switch (_that) {
+case _IconSet():
+return $default(_that.id,_that.name,_that.url,_that.icons,_that.lastUpdateTime);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String url,  List<IconSetIcon> icons,  DateTime? lastUpdateTime)?  $default,) {final _that = this;
+switch (_that) {
+case _IconSet() when $default != null:
+return $default(_that.id,_that.name,_that.url,_that.icons,_that.lastUpdateTime);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _IconSet implements IconSet {
+  const _IconSet({required this.id, required this.name, this.url = '',  List<IconSetIcon> icons = const [], this.lastUpdateTime}): _icons = icons;
+  factory _IconSet.fromJson(Map<String, dynamic> json) => _$IconSetFromJson(json);
+
+@override final  String id;
+@override final  String name;
+@override@JsonKey() final  String url;
+ final  List<IconSetIcon> _icons;
+@override@JsonKey() List<IconSetIcon> get icons {
+  if (_icons is EqualUnmodifiableListView) return _icons;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_icons);
+}
+
+@override final  DateTime? lastUpdateTime;
+
+/// Create a copy of IconSet
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$IconSetCopyWith<_IconSet> get copyWith => __$IconSetCopyWithImpl<_IconSet>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$IconSetToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _IconSet&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&const DeepCollectionEquality().equals(other.icons, _icons)&&(identical(other.lastUpdateTime, lastUpdateTime) || other.lastUpdateTime == lastUpdateTime));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,id,name,url,const DeepCollectionEquality().hash(_icons),lastUpdateTime);
+}
+
+@override
+String toString() {
+    return 'IconSet(id: $id, name: $name, url: $url, icons: $icons, lastUpdateTime: $lastUpdateTime)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$IconSetCopyWith<$Res> implements $IconSetCopyWith<$Res> {
+  factory _$IconSetCopyWith(_IconSet value, $Res Function(_IconSet) _then) = __$IconSetCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String name, String url, List<IconSetIcon> icons, DateTime? lastUpdateTime
+});
+
+
+
+
+}
+/// @nodoc
+class __$IconSetCopyWithImpl<$Res>
+    implements _$IconSetCopyWith<$Res> {
+  __$IconSetCopyWithImpl(this._self, this._then);
+
+  final _IconSet _self;
+  final $Res Function(_IconSet) _then;
+
+/// Create a copy of IconSet
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? url = null,Object? icons = null,Object? lastUpdateTime = freezed,}) {
+  return _then(_IconSet(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,icons: null == icons ? _self._icons : icons // ignore: cast_nullable_to_non_nullable
+as List<IconSetIcon>,lastUpdateTime: freezed == lastUpdateTime ? _self.lastUpdateTime : lastUpdateTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
