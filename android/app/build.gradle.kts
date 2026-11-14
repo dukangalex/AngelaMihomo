@@ -21,10 +21,9 @@ val isRelease = mStoreFile.isFile &&
 val releaseTaskRequested = gradle.startParameter.taskNames.any {
     it.contains("release", ignoreCase = true)
 }
-val allowDebugPreview = System.getenv("BETTBOX_ALLOW_DEBUG_PREVIEW") == "true"
-if (releaseTaskRequested && !isRelease && !allowDebugPreview) {
+if (releaseTaskRequested && !isRelease) {
     throw GradleException(
-        "Android Release signing is required. Configure a valid keystore and all signing properties; refusing debug-signature fallback."
+        "Android Release signing is required. Configure a valid keystore and all signing properties; refusing to build an unsigned or debug-signed Release APK."
     )
 }
 

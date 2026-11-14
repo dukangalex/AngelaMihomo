@@ -108,30 +108,38 @@ jobs:
         if: matrix.platform == 'windows'
         run: git config --global core.longpaths true
 
-      - name: Setup Keystore (Android)
+      - name: Setup and Validate Release Keystore (Android)
         if: matrix.platform == 'android'
         shell: bash
         env:
-          KEYSTORE: ${{ secrets.KEYSTORE }}
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          ALLOW_DEBUG_PREVIEW: ${{ contains(github.ref_name, 'pre') }}
         run: |
           set -euo pipefail
-          if [ -z "${KEYSTORE}" ] || [ -z "${KEY_ALIAS}" ] || [ -z "${STORE_PASSWORD}" ] || [ -z "${KEY_PASSWORD}" ]; then
-            if [ "${ALLOW_DEBUG_PREVIEW}" != "true" ]; then
-              echo "::error::Stable Android releases require KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD. Refusing debug-signature fallback."
+
+          for name in KEYSTORE_B64 KEY_ALIAS STORE_PASSWORD KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Required Android release signing secret $name is missing."
               exit 1
             fi
-            echo "::warning::No complete release keystore. This prerelease APK uses a debug signature, not a production signing key."
-            echo "BETTBOX_ALLOW_DEBUG_PREVIEW=true" >> "$GITHUB_ENV"
-            exit 0
+          done
+
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > android/app/keystore.jks
+          if [[ ! -s android/app/keystore.jks ]]; then
+            echo "::error::Decoded Android keystore is empty."
+            exit 1
           fi
-          echo "${KEYSTORE}" | base64 --decode > android/app/keystore.jks
-          keytool -list -keystore android/app/keystore.jks -alias "${KEY_ALIAS}" -storepass:env STORE_PASSWORD >/dev/null
-          python3 tools/write-signing-properties.py
-          
+
+          keytool -list -keystore android/app/keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          {
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'storePassword=%s\n' "$STORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > android/local.properties
+
+          echo "Android release keystore file and alias validated."
       - name: Setup Java (Android)
         if: matrix.platform == 'android'
         uses: actions/setup-java@v5
@@ -237,6 +245,40 @@ jobs:
           test -n "$apksigner"
           python3 tools/verify-android-release.py --apksigner "$apksigner" dist/*.apk
 
+      - name: Verify Android APK Release Signatures
+        if: matrix.platform == 'android'
+        shell: bash
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          apks=(build/app/outputs/flutter-apk/*.apk)
+          if (( ${#apks[@]} == 0 )); then
+            echo "::error::No Android APKs found to verify."
+            exit 1
+          fi
+
+          expected_cert="$(keytool -exportcert -keystore android/app/keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | sha256sum | awk '{print toupper($1)}')"
+          apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [[ -z "$apksigner" || ! -x "$apksigner" ]]; then
+            echo "::error::Android apksigner tool was not found."
+            exit 1
+          fi
+
+          for apk in "${apks[@]}"; do
+            echo "Verifying signature: $apk"
+            verification_output="$("$apksigner" verify --verbose --print-certs "$apk")"
+            printf '%s\n' "$verification_output"
+            if ! grep -Eqi "certificate SHA-256 digest: *$expected_cert" <<< "$verification_output"; then
+              echo "::error::APK signature certificate does not match the configured release keystore: $apk"
+              exit 1
+            fi
+          done
+
+          echo "All Android APK signatures verified against the configured release certificate."
       - name: Install SignPath (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
