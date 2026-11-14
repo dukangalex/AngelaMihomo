@@ -10,12 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 /// 端到端驱动，故按本仓守卫单测先例，直接对其源码区域做断言：
 /// 区域内出现任何选择写入 API 即失败，迫使改动者人工复核。
 void main() {
-  final commonSource = File(
-    'lib/views/proxies/common.dart',
-  ).readAsStringSync();
-  final detectionSource = File(
-    'lib/views/dashboard/widgets/network_detection.dart',
-  ).readAsStringSync();
+  // 读文件与区域截取必须在测试区内做（setUpAll）：在 main 顶层调用
+  // expect 会抛 OutsideTestException 导致整文件加载失败。
+  late final String commonSource;
+  late final String detectionSource;
+  late final String runRegion;
 
   String regionOf(String source, String startMarker, String endMarker) {
     final start = source.indexOf(startMarker);
@@ -32,13 +31,19 @@ void main() {
         .join('\n');
   }
 
-  final runRegion = stripComments(
-    regionOf(
-      commonSource,
-      'Future<GlobalDelayTestResult> runGlobalDelayTest(',
-      '\ndouble getScrollToSelectedOffset(',
-    ),
-  );
+  setUpAll(() {
+    commonSource = File('lib/views/proxies/common.dart').readAsStringSync();
+    detectionSource = File(
+      'lib/views/dashboard/widgets/network_detection.dart',
+    ).readAsStringSync();
+    runRegion = stripComments(
+      regionOf(
+        commonSource,
+        'Future<GlobalDelayTestResult> runGlobalDelayTest(',
+        '\ndouble getScrollToSelectedOffset(',
+      ),
+    );
+  });
 
   group('全量测速后各组选择不变 (T113 只测不选)', () {
     test('测速路径不写当前选择映射', () {

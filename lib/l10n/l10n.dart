@@ -11843,6 +11843,16 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Zodiac Themes`
+  String get zodiacTheme {
+    return Intl.message(
+      'Zodiac Themes',
+      name: 'zodiacTheme',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

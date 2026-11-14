@@ -636,7 +636,7 @@ class _NodeLabel extends StatelessWidget {
           Text(
             delay > 0 ? '$delay ms' : 'Timeout',
             style: context.textTheme.labelSmall?.copyWith(
-              color: utils.getDelayColor(delay),
+              color: utils.getDelayColor(delay, palette: context.zodiac.palette),
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),

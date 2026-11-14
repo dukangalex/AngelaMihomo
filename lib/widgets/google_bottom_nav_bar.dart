@@ -3,13 +3,12 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/providers/providers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'glass.dart';
+import 'zodiac_surface.dart';
 
 Color navBarBodyColor(ColorScheme colorScheme) {
   if (colorScheme.brightness == Brightness.light) {
@@ -208,21 +207,15 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
 
   @override
   Widget build(BuildContext context) {
-    final pureBlack = ref.watch(
-      themeSettingProvider.select((state) => state.pureBlack),
-    );
     final enableFeedback = ref.watch(
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
-    final primaryColor = colorScheme.primary;
-    final rimColor = GlassTint.resolve(colorScheme).rim;
+    // T115 spec 3.5.6: the selected tab is marked by the family
+    // secondary color alone — no filled pill, no halo.
+    final selectedColor = context.zodiac.palette.secondary;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
-
-    final navColor = navBarBodyColor(
-      colorScheme,
-    ).withValues(alpha: 0.98);
     final shadowStrength = isLight ? 1.0 : 3.0;
 
     const itemTextStyle = TextStyle(
@@ -408,24 +401,6 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                 final barContent = Stack(
                   alignment: Alignment.centerLeft,
                   children: [
-                    if (count > 0)
-                      Positioned.fill(
-                        child: RepaintBoundary(
-                          child: CustomPaint(
-                            painter: NavBarPillPainter(
-                              position: _posController,
-                              lift: _liftController,
-                              dragOffset: _dragOffset,
-                              count: count,
-                              slot: _clampWithResistance,
-                              color: Color.lerp(primaryColor, rimColor, 0.30)!,
-                              glowColor: rimColor,
-                              baseAlpha: isLight ? 0.12 : 0.20,
-                              activeAlpha: isLight ? 0.18 : 0.26,
-                            ),
-                          ),
-                        ),
-                      ),
                     RepaintBoundary(
                       child: AnimatedBuilder(
                         animation: Listenable.merge([
@@ -510,7 +485,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                                       : (1.0 + 0.04 * selectFactor);
                                   itemColor = Color.lerp(
                                     onSurfaceVariantColor,
-                                    primaryColor,
+                                    selectedColor,
                                     selectFactor,
                                   )!;
                                 }
@@ -555,35 +530,17 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
                 return RepaintBoundary(
                   child: SizedBox(
                     height: barHeight,
-                    child: pureBlack && !isLight
-                        // The pure-black OLED preference keeps a solid
-                        // black bar; live glass would lift it off black.
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: navColor,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: barShadows,
-                            ),
-                            // The pre-glass Container carried a 1px
-                            // transparent border that inset the content
-                            // by 1px on every side; that inset is part
-                            // of the bar's shipped geometry, so both
-                            // hosts keep it as a 1px padding.
-                            child: Padding(
-                              padding: const EdgeInsets.all(1),
-                              child: barContent,
-                            ),
-                          )
-                        : GlassSurface(
-                            tier: GlassTier.bar,
-                            radius: 30,
-                            live: true,
-                            boxShadow: barShadows,
-                            child: Padding(
-                              padding: const EdgeInsets.all(1),
-                              child: barContent,
-                            ),
-                          ),
+                    child: ZodiacSurface(
+                      tone: ZodiacTone.navBar,
+                      radius: 30,
+                      boxShadow: barShadows,
+                      // The 1px content inset is part of the bar's
+                      // shipped geometry.
+                      child: Padding(
+                        padding: const EdgeInsets.all(1),
+                        child: barContent,
+                      ),
+                    ),
                   ),
                 );
               },
@@ -592,91 +549,5 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
         ),
       ),
     );
-  }
-}
-
-class NavBarPillPainter extends CustomPainter {
-  final Animation<double> position;
-  final Animation<double> lift;
-  final ValueListenable<double> dragOffset;
-  final int count;
-  final double Function(double slot, int count) slot;
-  final Color color;
-  final Color glowColor;
-  final double baseAlpha;
-  final double activeAlpha;
-  final Rect Function(Size size, double position)? track;
-
-  NavBarPillPainter({
-    required this.position,
-    required this.lift,
-    required this.dragOffset,
-    required this.count,
-    required this.slot,
-    required this.color,
-    required this.glowColor,
-    required this.baseAlpha,
-    required this.activeAlpha,
-    this.track,
-  }) : super(repaint: Listenable.merge([position, lift, dragOffset]));
-
-  static const double _restingGap = 4.0;
-
-  Rect pillRect(Size size) {
-    final gap = _restingGap * (1 - lift.value);
-    final pos = slot(position.value + dragOffset.value, count);
-    final slotWidth = size.width / count;
-    final base =
-        track?.call(size, pos) ??
-        Rect.fromLTWH(pos * slotWidth, 0, slotWidth, size.height);
-    final width = math.max(0.0, base.width - 2 * gap);
-    return Rect.fromLTWH(
-      base.center.dx - width / 2,
-      gap,
-      width,
-      size.height - 2 * gap,
-    );
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final t = lift.value;
-    final restingRadius = (size.height - 2 * _restingGap) / 2;
-    final radius = restingRadius + (size.height / 2 - restingRadius) * t;
-    final alpha = baseAlpha + (activeAlpha - baseAlpha) * t;
-    canvas.clipRRect(
-      RRect.fromRectAndRadius(
-        Offset.zero & size,
-        Radius.circular(size.height / 2),
-      ),
-    );
-    // Halo pass: the active slot glows in the glass rim tint, swelling
-    // with the press lift (0.55 at rest to full when lifted).
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        pillRect(size).inflate(5),
-        Radius.circular(radius + 5),
-      ),
-      Paint()
-        ..color = glowColor.withValues(alpha: 0.35 * (0.55 + 0.45 * t))
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(pillRect(size), Radius.circular(radius)),
-      Paint()..color = color.withValues(alpha: alpha),
-    );
-  }
-
-  @override
-  bool shouldRepaint(NavBarPillPainter oldDelegate) {
-    return oldDelegate.position != position ||
-        oldDelegate.lift != lift ||
-        oldDelegate.dragOffset != dragOffset ||
-        oldDelegate.count != count ||
-        oldDelegate.track != track ||
-        oldDelegate.color != color ||
-        oldDelegate.glowColor != glowColor ||
-        oldDelegate.baseAlpha != baseAlpha ||
-        oldDelegate.activeAlpha != activeAlpha;
   }
 }

@@ -568,6 +568,15 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       height: 1.2,
+                      // Whitespace / plain-paper skeletons set their
+                      // status display in serif (spec 3.5).
+                      fontFamily:
+                          (context.zodiac.def.skeleton ==
+                                      ZodiacSkeleton.easternWhitespace ||
+                                  context.zodiac.def.skeleton ==
+                                      ZodiacSkeleton.plainPaper)
+                          ? 'serif'
+                          : null,
                       fontFeatures: const [
                         FontFeature.tabularFigures(),
                       ],
@@ -579,7 +588,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
               ? Text(
                   state.errorMessage ?? 'timeout',
                   style: context.textTheme.bodyMedium
-                      ?.copyWith(color: Colors.red)
+                      ?.copyWith(color: context.zodiac.palette.error)
                       .adjustSize(1),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -607,31 +616,55 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                 children: [
                   _buildHeader(context, ipInfo),
                   if (isTall)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 12, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: globalState.measure.titleMediumHeight + 2,
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: ipText,
+                    // T115 homepage hard line: the tall card's content
+                    // scales down as a whole when the wrapped detail
+                    // values outgrow the fixed tile height, instead
+                    // of the last line being clipped by the card edge.
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topLeft,
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                10,
+                                12,
+                                0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height:
+                                        globalState.measure.titleMediumHeight +
+                                        2,
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
+                                      child: ipText,
+                                    ),
+                                  ),
+                                  if (!masked && location.isNotEmpty)
+                                    _buildDetail(
+                                      context,
+                                      appLocalizations.countryOrRegion,
+                                      location,
+                                    ),
+                                  if (!masked && operator.isNotEmpty)
+                                    _buildDetail(
+                                      context,
+                                      appLocalizations.operatorOrAsn,
+                                      operator,
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                          if (!masked && location.isNotEmpty)
-                            _buildDetail(
-                              context,
-                              appLocalizations.countryOrRegion,
-                              location,
-                            ),
-                          if (!masked && operator.isNotEmpty)
-                            _buildDetail(
-                              context,
-                              appLocalizations.operatorOrAsn,
-                              operator,
-                            ),
-                        ],
+                        ),
                       ),
                     )
                   else

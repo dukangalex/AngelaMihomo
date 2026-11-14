@@ -2028,5 +2028,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "文件系统不支持文件能力（xattr），已回退到 setuid",
     ),
     "years": m78,
+    "zodiacTheme": MessageLookupByLibrary.simpleMessage("星座主题"),
   };
 }

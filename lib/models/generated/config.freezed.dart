@@ -2278,7 +2278,7 @@ as double,
 /// @nodoc
 mixin _$ThemeProps {
 
- ThemeMode get themeMode; bool get pureBlack; DynamicSchemeVariant get schemeVariant; TextScale get textScale; bool get useDarkIcon; bool get invertTrayIcon;
+ String get zodiacSign; ThemeMode get themeMode; bool get pureBlack; DynamicSchemeVariant get schemeVariant; TextScale get textScale; bool get useDarkIcon; bool get invertTrayIcon;
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2292,20 +2292,20 @@ $ThemePropsCopyWith<ThemeProps> get copyWith => _$ThemePropsCopyWithImpl<ThemePr
 @override
 bool operator ==(Object other) {
   final _this = this as ThemeProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale)&&(identical(other.useDarkIcon, _this.useDarkIcon) || other.useDarkIcon == _this.useDarkIcon)&&(identical(other.invertTrayIcon, _this.invertTrayIcon) || other.invertTrayIcon == _this.invertTrayIcon));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.zodiacSign, _this.zodiacSign) || other.zodiacSign == _this.zodiacSign)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale)&&(identical(other.useDarkIcon, _this.useDarkIcon) || other.useDarkIcon == _this.useDarkIcon)&&(identical(other.invertTrayIcon, _this.invertTrayIcon) || other.invertTrayIcon == _this.invertTrayIcon));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ThemeProps;
-  return Object.hash(runtimeType,_this.themeMode,_this.pureBlack,_this.schemeVariant,_this.textScale,_this.useDarkIcon,_this.invertTrayIcon);
+  return Object.hash(runtimeType,_this.zodiacSign,_this.themeMode,_this.pureBlack,_this.schemeVariant,_this.textScale,_this.useDarkIcon,_this.invertTrayIcon);
 }
 
 @override
 String toString() {
   final _this = this as ThemeProps;
-  return 'ThemeProps(themeMode: ${_this.themeMode}, pureBlack: ${_this.pureBlack}, schemeVariant: ${_this.schemeVariant}, textScale: ${_this.textScale}, useDarkIcon: ${_this.useDarkIcon}, invertTrayIcon: ${_this.invertTrayIcon})';
+  return 'ThemeProps(zodiacSign: ${_this.zodiacSign}, themeMode: ${_this.themeMode}, pureBlack: ${_this.pureBlack}, schemeVariant: ${_this.schemeVariant}, textScale: ${_this.textScale}, useDarkIcon: ${_this.useDarkIcon}, invertTrayIcon: ${_this.invertTrayIcon})';
 }
 
 
@@ -2316,7 +2316,7 @@ abstract mixin class $ThemePropsCopyWith<$Res>  {
   factory $ThemePropsCopyWith(ThemeProps value, $Res Function(ThemeProps) _then) = _$ThemePropsCopyWithImpl;
 @useResult
 $Res call({
- ThemeMode themeMode, bool pureBlack, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool invertTrayIcon
+ String zodiacSign, ThemeMode themeMode, bool pureBlack, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool invertTrayIcon
 });
 
 
@@ -2333,9 +2333,10 @@ class _$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? pureBlack = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? invertTrayIcon = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? zodiacSign = null,Object? themeMode = null,Object? pureBlack = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? invertTrayIcon = null,}) {
   return _then(ThemeProps(
-themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+zodiacSign: null == zodiacSign ? _self.zodiacSign : zodiacSign // ignore: cast_nullable_to_non_nullable
+as String,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
 as DynamicSchemeVariant,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable
@@ -2435,10 +2436,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String zodiacSign,  ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
+return $default(_that.zodiacSign,_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
   return orElse();
 
 }
@@ -2456,10 +2457,10 @@ return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textSc
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String zodiacSign,  ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps():
-return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
+return $default(_that.zodiacSign,_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2476,10 +2477,10 @@ return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textSc
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String zodiacSign,  ThemeMode themeMode,  bool pureBlack,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool invertTrayIcon)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
+return $default(_that.zodiacSign,_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.invertTrayIcon);case _:
   return null;
 
 }
@@ -2491,9 +2492,10 @@ return $default(_that.themeMode,_that.pureBlack,_that.schemeVariant,_that.textSc
 @JsonSerializable()
 
 class _ThemeProps implements ThemeProps {
-  const _ThemeProps({this.themeMode = ThemeMode.system, this.pureBlack = false, this.schemeVariant = DynamicSchemeVariant.content, this.textScale = const TextScale(), this.useDarkIcon = false, this.invertTrayIcon = false});
+  const _ThemeProps({this.zodiacSign = 'sagittarius', this.themeMode = ThemeMode.system, this.pureBlack = false, this.schemeVariant = DynamicSchemeVariant.content, this.textScale = const TextScale(), this.useDarkIcon = false, this.invertTrayIcon = false});
   factory _ThemeProps.fromJson(Map<String, dynamic> json) => _$ThemePropsFromJson(json);
 
+@override@JsonKey() final  String zodiacSign;
 @override@JsonKey() final  ThemeMode themeMode;
 @override@JsonKey() final  bool pureBlack;
 @override@JsonKey() final  DynamicSchemeVariant schemeVariant;
@@ -2514,18 +2516,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.useDarkIcon, useDarkIcon) || other.useDarkIcon == useDarkIcon)&&(identical(other.invertTrayIcon, invertTrayIcon) || other.invertTrayIcon == invertTrayIcon));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.zodiacSign, zodiacSign) || other.zodiacSign == zodiacSign)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.useDarkIcon, useDarkIcon) || other.useDarkIcon == useDarkIcon)&&(identical(other.invertTrayIcon, invertTrayIcon) || other.invertTrayIcon == invertTrayIcon));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,themeMode,pureBlack,schemeVariant,textScale,useDarkIcon,invertTrayIcon);
+    return Object.hash(runtimeType,zodiacSign,themeMode,pureBlack,schemeVariant,textScale,useDarkIcon,invertTrayIcon);
 }
 
 @override
 String toString() {
-    return 'ThemeProps(themeMode: $themeMode, pureBlack: $pureBlack, schemeVariant: $schemeVariant, textScale: $textScale, useDarkIcon: $useDarkIcon, invertTrayIcon: $invertTrayIcon)';
+    return 'ThemeProps(zodiacSign: $zodiacSign, themeMode: $themeMode, pureBlack: $pureBlack, schemeVariant: $schemeVariant, textScale: $textScale, useDarkIcon: $useDarkIcon, invertTrayIcon: $invertTrayIcon)';
 }
 
 
@@ -2536,7 +2538,7 @@ abstract mixin class _$ThemePropsCopyWith<$Res> implements $ThemePropsCopyWith<$
   factory _$ThemePropsCopyWith(_ThemeProps value, $Res Function(_ThemeProps) _then) = __$ThemePropsCopyWithImpl;
 @override @useResult
 $Res call({
- ThemeMode themeMode, bool pureBlack, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool invertTrayIcon
+ String zodiacSign, ThemeMode themeMode, bool pureBlack, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool invertTrayIcon
 });
 
 
@@ -2553,9 +2555,10 @@ class __$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? pureBlack = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? invertTrayIcon = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? zodiacSign = null,Object? themeMode = null,Object? pureBlack = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? invertTrayIcon = null,}) {
   return _then(_ThemeProps(
-themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+zodiacSign: null == zodiacSign ? _self.zodiacSign : zodiacSign // ignore: cast_nullable_to_non_nullable
+as String,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
 as DynamicSchemeVariant,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable

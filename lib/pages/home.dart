@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage> {
             );
             bodyWidget = Stack(
               children: [
-                const Positioned.fill(child: GlassField()),
+                const Positioned.fill(child: ZodiacBackdrop()),
                 Positioned.fill(child: RepaintBoundary(child: pageContent)),
                 Positioned(
                   left: 0,

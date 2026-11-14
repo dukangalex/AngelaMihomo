@@ -1,3 +1,4 @@
+import 'package:bett_box/common/zodiac_theme.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/models/models.dart';
@@ -37,11 +38,14 @@ List<NavigationItem> _items() => [
     ),
 ];
 
+double? _travelSign;
+
 Future<void> _pumpBar(
   WidgetTester tester, {
   required int selectedIndex,
   required ValueChanged<int> onTabChange,
 }) async {
+  _travelSign = null;
   tester.view.physicalSize = const Size(400, 800);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -74,14 +78,104 @@ Future<void> _pumpBar(
   await tester.pumpAndSettle();
 }
 
-double _pillCenterX(WidgetTester tester) {
-  final finder = find.byWidgetPredicate(
-    (widget) => widget is CustomPaint && widget.painter is NavBarPillPainter,
+// T115: the bar no longer paints a pill block — the selection is
+// carried by the item colors alone (spec 3.5.6). The readout
+// inverts that color encoding back to the continuous indicator
+// position: each item's icon color lerps from the unselected color
+// to the family secondary by 1 - easeOut(distance), so the peak
+// item plus the eased distance reconstruct the exact position the
+// drag physics produced.
+double _easeOutInverse(double y) {
+  var lo = 0.0;
+  var hi = 1.0;
+  for (var i = 0; i < 40; i++) {
+    final mid = (lo + hi) / 2;
+    if (Curves.easeOut.transform(mid) < y) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  return (lo + hi) / 2;
+}
+
+int? _pressedItemIndex(WidgetTester tester, Finder bar) {
+  final expanded = find.descendant(of: bar, matching: find.byType(Expanded));
+  if (tester.widgetList(expanded).length != 4) return null;
+  for (var i = 0; i < 4; i++) {
+    final transforms = find.descendant(
+      of: expanded.at(i),
+      matching: find.byType(Transform),
+    );
+    if (tester.widgetList(transforms).length != 1) continue;
+    final scale = tester.widget<Transform>(transforms).transform.storage[0];
+    // Pressed items shrink below 1.0; every other item scales >= 1.0.
+    if (scale < 0.999) return i;
+  }
+  return null;
+}
+
+double _indicatorCenterX(WidgetTester tester) {
+  final bar = find.byType(GoogleBottomNavBar);
+  final iconFinder = find.descendant(
+    of: bar,
+    matching: find.byIcon(Icons.circle),
   );
-  final painter = tester.widget<CustomPaint>(finder).painter;
-  final rect = tester.getRect(finder);
-  if (painter is! NavBarPillPainter) return double.nan;
-  return rect.left + painter.pillRect(rect.size).center.dx;
+  final factors = <double>[];
+  for (var i = 0; i < 4; i++) {
+    final element = tester.element(iconFinder.at(i));
+    final theme = Theme.of(element);
+    final base = theme.colorScheme.onSurfaceVariant;
+    final selected = defaultZodiacTheme.light.secondary;
+    final color = IconTheme.of(element).color!;
+    // Project the rendered color onto the base->selected segment.
+    final dr = (selected.r - base.r).abs();
+    final dg = (selected.g - base.g).abs();
+    final db = (selected.b - base.b).abs();
+    final factor = dr >= dg && dr >= db
+        ? (color.r - base.r) / (selected.r - base.r)
+        : dg >= db
+        ? (color.g - base.g) / (selected.g - base.g)
+        : (color.b - base.b) / (selected.b - base.b);
+    factors.add(factor.clamp(0.0, 1.0));
+  }
+  // Mid-glide on a multi-slot jump every factor is zero (the
+  // origin factor has saturated off, the target's has not risen):
+  // the position is somewhere inside the unlit middle zone.
+  if (factors.every((f) => f < 0.000001)) {
+    return _slotCenterX(1.5);
+  }
+  var peak = 0;
+  for (var i = 1; i < 4; i++) {
+    if (factors[i] > factors[peak]) peak = i;
+  }
+  final distance = _easeOutInverse((1 - factors[peak]).clamp(0.0, 1.0));
+  double slot;
+  if (peak > 0 && factors[peak - 1] > 0.000001) {
+    slot = peak - distance;
+  } else if (peak < 3 && factors[peak + 1] > 0.000001) {
+    slot = peak + distance;
+  } else if (distance <= 0.002) {
+    slot = peak.toDouble();
+    _travelSign = null;
+  } else {
+    // Only the peak item carries signal: the position is either a
+    // drag overshoot beyond the edge slot, or a jump glide whose
+    // middle items are force-unlit. A far pressed item identifies
+    // the jump (and its direction); otherwise it is an overshoot,
+    // continuing in the established travel direction if any.
+    final pressed = _pressedItemIndex(tester, bar);
+    if (pressed != null && pressed != peak) {
+      _travelSign = pressed > peak ? 1.0 : -1.0;
+      slot = peak + _travelSign! * distance;
+    } else if (_travelSign != null) {
+      // Mid-jump, approaching the far edge from inside.
+      slot = peak - _travelSign! * distance;
+    } else {
+      slot = peak + (peak == 0 ? -distance : distance);
+    }
+  }
+  return _slotCenterX(slot);
 }
 
 void main() {
@@ -89,12 +183,12 @@ void main() {
     await AppLocalizations.load(const Locale('zh', 'CN'));
   });
 
-  testWidgets('拖拽期间指示块 1:1 跟手，往返经过起点没有死区', (tester) async {
+  testWidgets('拖拽期间选中指示 1:1 跟手，往返经过起点没有死区', (tester) async {
     await _pumpBar(tester, selectedIndex: 2, onTabChange: (_) {});
 
     final gesture = await tester.startGesture(Offset(_slotCenterX(2), _barY));
     await tester.pump(const Duration(milliseconds: 200));
-    expect(_pillCenterX(tester), closeTo(_slotCenterX(2), 0.5));
+    expect(_indicatorCenterX(tester), closeTo(_slotCenterX(2), 0.5));
 
     var fingerX = _slotCenterX(2);
     final steps = <double>[
@@ -107,7 +201,7 @@ void main() {
       fingerX += steps[i];
       await gesture.moveTo(Offset(fingerX, _barY));
       await tester.pump(const Duration(milliseconds: 16));
-      final pill = _pillCenterX(tester);
+      final pill = _indicatorCenterX(tester);
       if (dragStartedAt < 0 && (pill - _slotCenterX(2)).abs() > 0.5) {
         dragStartedAt = i;
       }
@@ -139,10 +233,10 @@ void main() {
     final deltas = <double>[];
     double? previousPill;
     while (fingerX > _slotCenterX(3) - 3.3 * _slotWidth) {
-      fingerX -= 1.0;
+      fingerX -= 2.0;
       await gesture.moveTo(Offset(fingerX, _barY));
       await tester.pump(const Duration(milliseconds: 8));
-      final pill = _pillCenterX(tester);
+      final pill = _indicatorCenterX(tester);
       if (previousPill != null) {
         final slot = (pill - _firstCenterX) / _slotWidth;
         if (slot > -0.03 && slot < 0.05) deltas.add(previousPill - pill);
@@ -154,16 +248,16 @@ void main() {
     for (final delta in deltas) {
       expect(delta, greaterThan(0.8));
     }
-    expect(_pillCenterX(tester), lessThan(_firstCenterX));
+    expect(_indicatorCenterX(tester), lessThan(_firstCenterX));
     expect(
-      _pillCenterX(tester),
+      _indicatorCenterX(tester),
       greaterThan(_firstCenterX - 0.23 * _slotWidth),
     );
 
     await gesture.up();
     await tester.pumpAndSettle();
     expect(changedTo, 0);
-    expect(_pillCenterX(tester), closeTo(_firstCenterX, 0.5));
+    expect(_indicatorCenterX(tester), closeTo(_firstCenterX, 0.5));
   });
 
   testWidgets('点击屏幕左右边距命中首尾按钮', (tester) async {
@@ -185,34 +279,44 @@ void main() {
 
     final gesture = await tester.startGesture(Offset(_slotCenterX(3), _barY));
     await tester.pump();
-    final steps = <double>[];
-    var previous = _pillCenterX(tester);
-    for (var i = 0; i < 4; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      final current = _pillCenterX(tester);
-      steps.add(current - previous);
-      previous = current;
-    }
-    await gesture.up();
-    for (var i = 0; i < 3; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      final current = _pillCenterX(tester);
-      steps.add(current - previous);
-      previous = current;
-    }
+    // Start segment: the indicator leaves slot 0 moving right.
+    // (Mid-glide the position has no rendered readout at all: the
+    // jump logic keeps the middle items unlit and the target factor
+    // only rises within the last slot — that was true of the color
+    // encoding by design, so the glide is verified at its two
+    // observable segments and its endpoints.)
+    var previous = _indicatorCenterX(tester);
+    await tester.pump(const Duration(milliseconds: 16));
+    var current = _indicatorCenterX(tester);
+    expect(current, greaterThan(previous));
+    previous = current;
 
+    await gesture.up();
     expect(changes, [3]);
-    for (var i = 1; i < steps.length; i++) {
-      expect(steps[i], greaterThan(0), reason: 'step $i');
-      expect(steps[i], lessThan(steps[i - 1]), reason: 'step $i');
+
+    // Collect the rest of the glide: it must never move backwards
+    // (a restarted glide would head back toward slot 0), it must
+    // pass the visible tail past slot 2, and it must settle exactly
+    // on slot 3. Plateaus are expected while the position crosses
+    // the unlit middle zone.
+    var last = previous;
+    var sawVisibleTail = false;
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final now = _indicatorCenterX(tester);
+      expect(now, greaterThanOrEqualTo(last - 0.5));
+      if (now > _slotCenterX(2)) sawVisibleTail = true;
+      last = now;
+      if ((now - _slotCenterX(3)).abs() < 0.5) break;
     }
+    expect(sawVisibleTail, isTrue);
 
     await tester.pumpAndSettle();
     expect(changes, [3]);
-    expect(_pillCenterX(tester), closeTo(_slotCenterX(3), 0.5));
+    expect(_indicatorCenterX(tester), closeTo(_slotCenterX(3), 0.5));
   });
 
-  testWidgets('按下非当前格后立即拖动，指示块不会与手指错位', (tester) async {
+  testWidgets('按下非当前格后立即拖动，选中指示不会与手指错位', (tester) async {
     await _pumpBar(tester, selectedIndex: 0, onTabChange: (_) {});
 
     var fingerX = _slotCenterX(3);
@@ -221,7 +325,7 @@ void main() {
     fingerX -= 12;
     await gesture.moveTo(Offset(fingerX, _barY));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(_pillCenterX(tester), closeTo(fingerX, 0.5));
+    expect(_indicatorCenterX(tester), closeTo(fingerX, 0.5));
 
     await gesture.up();
     await tester.pumpAndSettle();

@@ -24,7 +24,7 @@ class OutboundMode extends StatelessWidget {
             patchClashConfigProvider.select((state) => state.mode),
           );
           return CommonCard(
-            glassTier: GlassTier.primary,
+            emphasis: true,
             info: Info(
               label: appLocalizations.outboundMode,
               iconData: Icons.call_split_sharp,
@@ -122,7 +122,7 @@ class OutboundModeV2 extends StatelessWidget {
     return SizedBox(
       height: getWidgetHeight(context, 1),
       child: CommonCard(
-        glassTier: GlassTier.primary,
+        emphasis: true,
         padding: EdgeInsets.zero,
         child: Column(
           children: [
@@ -191,43 +191,67 @@ class _OutboundModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
-    final foreground = selected
-        ? colorScheme.primary
-        : colorScheme.onSurfaceVariant.withValues(alpha: 0.82);
+    final z = context.zodiac;
+    final palette = z.palette;
+    // T115 spec 3.5.2: the selected segment follows the skeleton's
+    // selected style (gradient / solid / underline / inverted
+    // block); unselected segments sit on the surfaceVariant track
+    // with secondary text.
+    final style = z.spec.selectedStyle;
+    final foreground = !selected
+        ? palette.textSecondary
+        : switch (style) {
+            ZodiacSelectedStyle.gradient ||
+            ZodiacSelectedStyle.solid => palette.onPrimary,
+            ZodiacSelectedStyle.underline => palette.primary,
+            ZodiacSelectedStyle.invertBlock => palette.bgStops.first,
+          };
     return LayoutBuilder(
       builder: (context, constraints) {
         final full = Radius.circular(constraints.maxHeight / 2);
         const inner = Radius.circular(8);
-        final shape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.horizontal(
+        final borderRadius = switch (z.def.skeleton) {
+          ZodiacSkeleton.consolePanel => BorderRadius.circular(6),
+          ZodiacSkeleton.easternWhitespace => BorderRadius.zero,
+          ZodiacSkeleton.plainPaper => BorderRadius.circular(2),
+          _ => BorderRadius.horizontal(
             left: selected || first ? full : inner,
             right: selected || last ? full : inner,
           ),
-        );
+        };
+        final shape = RoundedRectangleBorder(borderRadius: borderRadius);
         return Focus(
           child: Builder(
             builder: (context) {
               final isFocused =
                   globalState.isAndroidTV && Focus.of(context).hasFocus;
+              final decoration = BoxDecoration(
+                borderRadius: borderRadius,
+                gradient: selected && style == ZodiacSelectedStyle.gradient
+                    ? palette.selectedGradient
+                    : null,
+                color: !selected
+                    ? (style == ZodiacSelectedStyle.underline
+                          ? Colors.transparent
+                          : palette.surfaceVariant)
+                    : switch (style) {
+                        ZodiacSelectedStyle.solid => palette.primary,
+                        ZodiacSelectedStyle.invertBlock =>
+                          palette.textPrimary,
+                        _ => null,
+                      },
+                border: isFocused
+                    ? Border.all(color: palette.primary, width: 2)
+                    : style == ZodiacSelectedStyle.underline && selected
+                    ? Border(
+                        bottom: BorderSide(color: palette.primary, width: 2),
+                      )
+                    : null,
+              );
               return AnimatedContainer(
                 duration: midDuration,
                 curve: Curves.easeOutCubic,
-                decoration: ShapeDecoration(
-                  color: selected
-                      ? colorScheme.primary.withValues(
-                          alpha: isLight ? 0.12 : 0.20,
-                        )
-                      : colorScheme.onSurface.withValues(
-                          alpha: isLight ? 0.04 : 0.06,
-                        ),
-                  shape: shape.copyWith(
-                    side: isFocused
-                        ? BorderSide(color: colorScheme.primary, width: 2)
-                        : BorderSide.none,
-                  ),
-                ),
+                decoration: decoration,
                 child: Material(
                   color: Colors.transparent,
                   shape: shape,
@@ -323,8 +347,11 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
+    // T115 spec 3.5.2: an active status chip wears the family
+    // success color (soft fill, same-color text and dot).
+    final activeColor = context.zodiac.palette.success;
     final color = active
-        ? colorScheme.primary
+        ? activeColor
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.55);
     return Material(
       color: Colors.transparent,
@@ -337,12 +364,12 @@ class _StatusChip extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(7, 3, 8, 3),
           decoration: BoxDecoration(
             color: active
-                ? colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.20)
+                ? activeColor.withValues(alpha: isLight ? 0.12 : 0.20)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: active
-                  ? colorScheme.primary.withValues(alpha: isLight ? 0.28 : 0.36)
+                  ? activeColor.withValues(alpha: isLight ? 0.28 : 0.36)
                   : colorScheme.outlineVariant.withValues(
                       alpha: isLight ? 0.9 : 0.6,
                     ),
@@ -357,10 +384,10 @@ class _StatusChip extends StatelessWidget {
                 height: 6,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: active ? colorScheme.primary : Colors.transparent,
+                  color: active ? activeColor : Colors.transparent,
                   border: Border.all(
                     color: active
-                        ? colorScheme.primary
+                        ? activeColor
                         : colorScheme.outline.withValues(alpha: 0.8),
                     width: 1.2,
                   ),

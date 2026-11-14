@@ -2329,7 +2329,7 @@ final class GenColorSchemeProvider
     with $Provider<ColorScheme> {
   GenColorSchemeProvider._({
     required GenColorSchemeFamily super.from,
-    required (Brightness, {Color? color, bool ignoreConfig}) super.argument,
+    required Brightness super.argument,
   }) : super(
          retry: null,
          name: r'genColorSchemeProvider',
@@ -2345,7 +2345,7 @@ final class GenColorSchemeProvider
   String toString() {
     return r'genColorSchemeProvider'
         ''
-        '$argument';
+        '($argument)';
   }
 
   @$internal
@@ -2355,14 +2355,8 @@ final class GenColorSchemeProvider
 
   @override
   ColorScheme create(Ref ref) {
-    final argument =
-        this.argument as (Brightness, {Color? color, bool ignoreConfig});
-    return genColorScheme(
-      ref,
-      argument.$1,
-      color: argument.color,
-      ignoreConfig: argument.ignoreConfig,
-    );
+    final argument = this.argument as Brightness;
+    return genColorScheme(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -2384,14 +2378,10 @@ final class GenColorSchemeProvider
   }
 }
 
-String _$genColorSchemeHash() => r'17c13649cba901232b2066ec3d1b7a53fc3835d1';
+String _$genColorSchemeHash() => r'3e51bb7bfe3ef0486b7052fb7f8a51929ee25320';
 
 final class GenColorSchemeFamily extends $Family
-    with
-        $FunctionalFamilyOverride<
-          ColorScheme,
-          (Brightness, {Color? color, bool ignoreConfig})
-        > {
+    with $FunctionalFamilyOverride<ColorScheme, Brightness> {
   GenColorSchemeFamily._()
     : super(
         retry: null,
@@ -2401,18 +2391,59 @@ final class GenColorSchemeFamily extends $Family
         isAutoDispose: true,
       );
 
-  GenColorSchemeProvider call(
-    Brightness brightness, {
-    Color? color,
-    bool ignoreConfig = false,
-  }) => GenColorSchemeProvider._(
-    argument: (brightness, color: color, ignoreConfig: ignoreConfig),
-    from: this,
-  );
+  GenColorSchemeProvider call(Brightness brightness) =>
+      GenColorSchemeProvider._(argument: brightness, from: this);
 
   @override
   String toString() => r'genColorSchemeProvider';
 }
+
+/// The active constellation theme definition (T115).
+
+@ProviderFor(currentZodiacTheme)
+final currentZodiacThemeProvider = CurrentZodiacThemeProvider._();
+
+/// The active constellation theme definition (T115).
+
+final class CurrentZodiacThemeProvider
+    extends $FunctionalProvider<ZodiacThemeDef, ZodiacThemeDef, ZodiacThemeDef>
+    with $Provider<ZodiacThemeDef> {
+  /// The active constellation theme definition (T115).
+  CurrentZodiacThemeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentZodiacThemeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentZodiacThemeHash();
+
+  @$internal
+  @override
+  $ProviderElement<ZodiacThemeDef> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ZodiacThemeDef create(Ref ref) {
+    return currentZodiacTheme(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ZodiacThemeDef value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ZodiacThemeDef>(value),
+    );
+  }
+}
+
+String _$currentZodiacThemeHash() =>
+    r'decbd9c230fa4baa0eea7e17a80f9b96e04481de';
 
 @ProviderFor(currentProfileScript)
 final currentProfileScriptProvider = CurrentProfileScriptProvider._();
@@ -2590,7 +2621,7 @@ final class CurrentBrightnessProvider
   }
 }
 
-String _$currentBrightnessHash() => r'ab56c47af4fcae773c8f9f81c91800c1e1890b70';
+String _$currentBrightnessHash() => r'dac9e869bd314b7a960b228d88fb150ec26e2b57';
 
 @ProviderFor(systemDnsTakeover)
 final systemDnsTakeoverProvider = SystemDnsTakeoverProvider._();

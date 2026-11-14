@@ -3,7 +3,6 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/providers/state.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,7 +32,6 @@ class ThemeView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final brightness = ref.watch(currentBrightnessProvider);
     final toggleItems = <Widget>[
       if (system.isAndroid) const _DarkIconItem(),
       if (system.isWindows) const _TrayIconInvertItem(),
@@ -41,8 +39,7 @@ class ThemeView extends ConsumerWidget {
     ];
 
     final items = <Widget>[
-      const _ThemeModeItem(),
-      if (brightness == Brightness.dark) const _PrueBlackItem(),
+      const _ZodiacThemeItem(),
       if (toggleItems.isNotEmpty) ...generateSection(items: toggleItems),
     ];
     return generateListView(items);
@@ -78,99 +75,159 @@ class ItemCard extends StatelessWidget {
   }
 }
 
-class _ThemeModeItem extends ConsumerWidget {
-  const _ThemeModeItem();
+class _ZodiacThemeItem extends ConsumerWidget {
+  const _ZodiacThemeItem();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(
-      themeSettingProvider.select((state) => state.themeMode),
+    final currentId = ref.watch(
+      themeSettingProvider.select((state) => state.zodiacSign),
     );
-    final themeModeItems = <ThemeModeItem>[
-      ThemeModeItem(
-        iconData: Icons.auto_mode,
-        label: appLocalizations.auto,
-        themeMode: ThemeMode.system,
-      ),
-      ThemeModeItem(
-        iconData: Icons.light_mode,
-        label: appLocalizations.light,
-        themeMode: ThemeMode.light,
-      ),
-      ThemeModeItem(
-        iconData: Icons.dark_mode,
-        label: appLocalizations.dark,
-        themeMode: ThemeMode.dark,
-      ),
-    ];
+    final current = zodiacById(currentId);
     return ItemCard(
       info: Info(
-        label: appLocalizations.themeMode,
-        iconData: Icons.brightness_high,
+        label: appLocalizations.zodiacTheme,
+        iconData: Icons.auto_awesome,
       ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        height: 56,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: themeModeItems.length,
-          itemBuilder: (_, index) {
-            final themeModeItem = themeModeItems[index];
-            return CommonCard(
-              isSelected: themeModeItem.themeMode == themeMode,
-              onPressed: () {
+      child: Column(
+        children: [
+          for (final def in zodiacThemes)
+            _ZodiacThemeRow(
+              def: def,
+              selected: def.id == current.id,
+              isDefault: def.id == defaultZodiacTheme.id,
+              onTap: () {
                 ref
                     .read(themeSettingProvider.notifier)
                     .updateState(
-                      (state) =>
-                          state.copyWith(themeMode: themeModeItem.themeMode),
+                      (state) => state.copyWith(zodiacSign: def.id),
                     );
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Flexible(child: Icon(themeModeItem.iconData)),
-                    const SizedBox(width: 8),
-                    Flexible(child: Text(themeModeItem.label)),
-                  ],
-                ),
-              ),
-            );
-          },
-          separatorBuilder: (_, _) => const SizedBox(width: 16),
-        ),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _PrueBlackItem extends ConsumerWidget {
-  const _PrueBlackItem();
+/// One row of the constellation list (spec section 5): symbol,
+/// Chinese and English names, the light/dark primary+secondary
+/// dots, a default badge on Sagittarius, and the selection mark.
+/// Rows follow zodiac order; the default is not pushed to the top.
+class _ZodiacThemeRow extends StatelessWidget {
+  final ZodiacThemeDef def;
+  final bool selected;
+  final bool isDefault;
+  final VoidCallback onTap;
+
+  const _ZodiacThemeRow({
+    required this.def,
+    required this.selected,
+    required this.isDefault,
+    required this.onTap,
+  });
+
+  Widget _dot(Color color) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
+      ),
+    );
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final prueBlack = ref.watch(
-      themeSettingProvider.select((state) => state.pureBlack),
-    );
-    return ListItem.switchItem(
-      leading: const Icon(Icons.contrast),
-      horizontalTitleGap: 12,
-      title: Text(
-        appLocalizations.pureBlackMode,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final palette = def.paletteFor(brightness);
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+    final title = isZh ? def.nameZh : def.nameEn;
+    final subtitle = isZh ? def.nameEn : def.nameZh;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 36,
+              child: Text(
+                def.symbol,
+                style: TextStyle(fontSize: 24, color: palette.primary),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: context.textTheme.titleSmall?.copyWith(
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (isDefault) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: palette.primary.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            appLocalizations.defaultText,
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: palette.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    subtitle,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _dot(def.light.primary),
+                const SizedBox(width: 4),
+                _dot(def.light.secondary),
+                const SizedBox(width: 4),
+                _dot(def.dark.primary),
+                const SizedBox(width: 4),
+                _dot(def.dark.secondary),
+              ],
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 24,
+              child: selected
+                  ? Icon(Icons.check_circle, color: palette.primary, size: 20)
+                  : null,
+            ),
+          ],
         ),
-      ),
-      delegate: SwitchDelegate(
-        value: prueBlack,
-        onChanged: (value) {
-          ref
-              .read(themeSettingProvider.notifier)
-              .updateState((state) => state.copyWith(pureBlack: value));
-        },
       ),
     );
   }

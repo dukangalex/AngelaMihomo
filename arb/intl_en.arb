@@ -1387,5 +1387,6 @@
   "systemExplicitWebRtcOff": "Off",
   "restoreBuiltinScript": "Restore bundled version",
   "builtinScriptTag": "Built-in",
-  "builtinScriptUpdateTag": "Update available"
+  "builtinScriptUpdateTag": "Update available",
+  "zodiacTheme": "Zodiac Themes"
 }

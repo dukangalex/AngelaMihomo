@@ -369,6 +369,13 @@ abstract class TextScale with _$TextScale {
 @freezed
 abstract class ThemeProps with _$ThemeProps {
   const factory ThemeProps({
+    // T115: the twelve-constellation family is the only theme
+    // authority. [zodiacSign] stores the family theme id; unknown
+    // values fall back to the default (Sagittarius). The legacy
+    // upstream fields below stay parseable for stored-config
+    // compatibility but no longer take effect: brightness follows
+    // the system only, and there is no seed/variant generation.
+    @Default('sagittarius') String zodiacSign,
     @Default(ThemeMode.system) ThemeMode themeMode,
     @Default(false) bool pureBlack,
     @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,

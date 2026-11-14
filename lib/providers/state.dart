@@ -1036,20 +1036,23 @@ VM2<int, bool> checkIp(Ref ref) {
 }
 
 @riverpod
-ColorScheme genColorScheme(
-  Ref ref,
-  Brightness brightness, {
-  Color? color,
-  bool ignoreConfig = false,
-}) {
-  final schemeVariant = ref.watch(
-    themeSettingProvider.select((state) => state.schemeVariant),
+ColorScheme genColorScheme(Ref ref, Brightness brightness) {
+  // T115: the constellation family's palette is the color scheme,
+  // verbatim — no seed generation, no chroma clamping.
+  final signId = ref.watch(
+    themeSettingProvider.select((state) => state.zodiacSign),
   );
-  return ColorScheme.fromSeed(
-    seedColor: color ?? const Color(defaultPrimaryColor),
-    brightness: brightness,
-    dynamicSchemeVariant: schemeVariant,
-  ).toNeutralSurfaces();
+  final def = zodiacById(signId);
+  return zodiacColorScheme(def.paletteFor(brightness), brightness);
+}
+
+/// The active constellation theme definition (T115).
+@riverpod
+ZodiacThemeDef currentZodiacTheme(Ref ref) {
+  final signId = ref.watch(
+    themeSettingProvider.select((state) => state.zodiacSign),
+  );
+  return zodiacById(signId);
 }
 
 @riverpod
@@ -1162,15 +1165,9 @@ final needSetupExtraProvider = Provider<String>((ref) {
 
 @riverpod
 Brightness currentBrightness(Ref ref) {
-  final themeMode = ref.watch(
-    themeSettingProvider.select((state) => state.themeMode),
-  );
-  final systemBrightness = ref.watch(systemBrightnessProvider);
-  return switch (themeMode) {
-    ThemeMode.system => systemBrightness,
-    ThemeMode.light => Brightness.light,
-    ThemeMode.dark => Brightness.dark,
-  };
+  // T115 spec: brightness follows the system only — the app keeps
+  // no in-app light/dark switch as a second authority.
+  return ref.watch(systemBrightnessProvider);
 }
 
 @riverpod
@@ -1315,7 +1312,16 @@ HomeWidgetSnapshot homeWidgetSnapshot(Ref ref) {
     nodeLabel: appLocalizations.currentSelection,
     node: node,
     delay: delay == null ? '' : (delay > 0 ? '$delay ms' : 'Timeout'),
-    delayColor: utils.getDelayColor(delay)?.toARGB32() ?? 0,
+    delayColor:
+        utils
+            .getDelayColor(
+              delay,
+              palette: ref
+                  .watch(currentZodiacThemeProvider)
+                  .paletteFor(ref.watch(currentBrightnessProvider)),
+            )
+            ?.toARGB32() ??
+        0,
     canRefresh:
         profile.type != ProfileType.file ||
         profile.providerSubscriptions.isNotEmpty,

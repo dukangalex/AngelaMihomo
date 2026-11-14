@@ -75,9 +75,12 @@ class CurrentNodeHealthLamp extends ConsumerWidget {
       }
     }
     final colorScheme = context.colorScheme;
+    // T115 spec 3.5.1: the health lamp wears the family status
+    // tokens (success / error / secondary text).
+    final palette = context.zodiac.palette;
     final (dotColor, label, textColor) = switch (health) {
       NodeHealth.available => (
-        Colors.green,
+        palette.success,
         appLocalizations.currentNodeAvailable,
         colorScheme.onSurfaceVariant,
       ),

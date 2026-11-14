@@ -120,7 +120,7 @@ class ProxyDelayText extends StatelessWidget {
             style: context.textTheme.labelSmall?.copyWith(
               overflow: TextOverflow.ellipsis,
               fontWeight: FontWeight.w600,
-              color: utils.getDelayColor(delay),
+              color: utils.getDelayColor(delay, palette: context.zodiac.palette),
             ),
           );
 

@@ -186,7 +186,7 @@ class _StartButtonState extends ConsumerState<StartButton> {
         : null;
     final onLongPress = canPress && !isSmartStopped ? _handleLongPress : null;
     return DashboardTileCard(
-      glassTier: GlassTier.primary,
+      emphasis: true,
       size: size,
       info: Info(
         label: isSmartStopped
@@ -311,7 +311,7 @@ class _StartButtonState extends ConsumerState<StartButton> {
     return SizedBox(
       height: getWidgetHeight(context, 1),
       child: CommonCard(
-        glassTier: GlassTier.primary,
+        emphasis: true,
         info: Info(
           label: isSmartStopped
               ? appLocalizations.coreSuspended

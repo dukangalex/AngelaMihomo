@@ -1387,5 +1387,6 @@
   "systemExplicitWebRtcOff": "关闭",
   "restoreBuiltinScript": "恢复内置版本",
   "builtinScriptTag": "内置",
-  "builtinScriptUpdateTag": "有新版本"
+  "builtinScriptUpdateTag": "有新版本",
+  "zodiacTheme": "星座主题"
 }

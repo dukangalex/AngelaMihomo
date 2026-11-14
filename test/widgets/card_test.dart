@@ -1,10 +1,10 @@
 import 'package:bett_box/widgets/card.dart';
-import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/zodiac_surface.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('卡片表面由玻璃层绘制，按钮层不描边不填色', (tester) async {
+  testWidgets('卡片表面由星座表面层绘制，按钮层不描边不填色', (tester) async {
     var pressed = 0;
     await tester.pumpWidget(
       MaterialApp(
@@ -22,10 +22,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Exactly one glass surface paints fill / rim / sheen.
-    expect(find.byType(GlassSurface), findsOneWidget);
+    // Exactly one constellation surface paints fill / border / shadow.
+    expect(find.byType(ZodiacSurface), findsOneWidget);
     // The button Material itself must not paint a filled or stroked
-    // rounded rect anymore (that was the pre-glass implementation).
+    // rounded rect (that was the pre-surface implementation).
     final material = find.descendant(
       of: find.byType(CommonCard),
       matching: find.byType(Material),
@@ -37,7 +37,7 @@ void main() {
     expect(pressed, 1);
   });
 
-  testWidgets('默认次层 20 圆角，选中态升主层 30 圆角并带辉光档', (tester) async {
+  testWidgets('默认卡片层，选中态升主层', (tester) async {
     Widget card({bool selected = false}) {
       return MaterialApp(
         home: Center(
@@ -56,18 +56,18 @@ void main() {
 
     await tester.pumpWidget(card());
     await tester.pumpAndSettle();
-    var surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
-    expect(surface.tier, GlassTier.secondary);
-    expect(surface.radius, 20);
+    var surface = tester.widget<ZodiacSurface>(find.byType(ZodiacSurface));
+    expect(surface.tone, ZodiacTone.card);
+    expect(surface.selected, isFalse);
 
     await tester.pumpWidget(card(selected: true));
     await tester.pumpAndSettle();
-    surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
-    expect(surface.tier, GlassTier.primary);
-    expect(surface.radius, 30);
+    surface = tester.widget<ZodiacSurface>(find.byType(ZodiacSurface));
+    expect(surface.tone, ZodiacTone.panel);
+    expect(surface.selected, isTrue);
   });
 
-  testWidgets('显式 glassTier 覆盖选中态推导', (tester) async {
+  testWidgets('显式 emphasis 覆盖为面板层', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Center(
@@ -75,7 +75,7 @@ void main() {
             width: 200,
             height: 80,
             child: CommonCard(
-              glassTier: GlassTier.dialog,
+              emphasis: true,
               onPressed: () {},
               child: const SizedBox.expand(),
             ),
@@ -84,7 +84,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
-    expect(surface.tier, GlassTier.dialog);
+    final surface = tester.widget<ZodiacSurface>(find.byType(ZodiacSurface));
+    expect(surface.tone, ZodiacTone.panel);
   });
 }

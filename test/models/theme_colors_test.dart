@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bett_box/common/zodiac_theme.dart';
 import 'package:bett_box/models/config.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +22,21 @@ void main() {
       final config = Config.compatibleFromJson(json);
       expect(config.themeProps.themeMode, ThemeMode.dark);
       expect(config.themeProps.pureBlack, isTrue);
+    });
+
+    test('T115 星座主题：存量值原样保留，未知值在解析层回落默认射手', () {
+      final json = jsonDecode(
+        jsonEncode({
+          'themeProps': {'zodiacSign': 'leo'},
+        }),
+      ) as Map<String, Object?>;
+      final config = Config.compatibleFromJson(json);
+      expect(config.themeProps.zodiacSign, 'leo');
+      expect(zodiacById(config.themeProps.zodiacSign).sign, ZodiacSign.leo);
+      // Legacy upstream theme choices are never migrated: any value
+      // that is not a family id resolves to the default.
+      expect(zodiacById('expressive'), defaultZodiacTheme);
+      expect(ThemeProps().zodiacSign, 'sagittarius');
     });
 
     test('默认主题配置往返稳定且不再写出配色键', () {

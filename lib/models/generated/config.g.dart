@@ -500,6 +500,7 @@ Map<String, dynamic> _$TextScaleToJson(_TextScale instance) =>
     <String, dynamic>{'enable': instance.enable, 'scale': instance.scale};
 
 _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
+  zodiacSign: json['zodiacSign'] as String? ?? 'sagittarius',
   themeMode:
       $enumDecodeNullable(_$ThemeModeEnumMap, json['themeMode']) ??
       ThemeMode.system,
@@ -519,6 +520,7 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
 
 Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
     <String, dynamic>{
+      'zodiacSign': instance.zodiacSign,
       'themeMode': _$ThemeModeEnumMap[instance.themeMode]!,
       'pureBlack': instance.pureBlack,
       'schemeVariant': _$DynamicSchemeVariantEnumMap[instance.schemeVariant]!,

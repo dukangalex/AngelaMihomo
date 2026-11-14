@@ -133,11 +133,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     _saveWidgets(widgets);
   }
 
-  List<Widget> _buildActions(
-    bool showStartSwitch,
-    ThemeMode themeMode,
-    bool watermark,
-  ) {
+  List<Widget> _buildActions(bool showStartSwitch, bool watermark) {
     return [
       _buildIsEdit((isEdit) {
         if (!isEdit) return const SizedBox.shrink();
@@ -194,38 +190,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 icon: Icons.edit,
                 label: appLocalizations.edit,
                 onPressed: _handleUpdateIsEdit,
-              ),
-              PopupMenuItemData(
-                icon: switch (themeMode) {
-                  ThemeMode.system => Icons.auto_mode,
-                  ThemeMode.light => Icons.light_mode,
-                  ThemeMode.dark => Icons.dark_mode,
-                },
-                label: switch (themeMode) {
-                  ThemeMode.system => appLocalizations.auto,
-                  ThemeMode.light => appLocalizations.light,
-                  ThemeMode.dark => appLocalizations.dark,
-                },
-                onPressed: () {
-                  final nextThemeMode = switch (themeMode) {
-                    ThemeMode.system => ThemeMode.light,
-                    ThemeMode.light => ThemeMode.dark,
-                    ThemeMode.dark => ThemeMode.system,
-                  };
-                  ref
-                      .read(themeSettingProvider.notifier)
-                      .updateState(
-                        (state) => state.copyWith(themeMode: nextThemeMode),
-                      );
-                  final label = switch (nextThemeMode) {
-                    ThemeMode.system => appLocalizations.auto,
-                    ThemeMode.light => appLocalizations.light,
-                    ThemeMode.dark => appLocalizations.dark,
-                  };
-                  globalState.showNotifier(
-                    '${appLocalizations.themeMode}: $label',
-                  );
-                },
               ),
               PopupMenuItemData(
                 icon: Icons.title,
@@ -335,9 +299,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         (state) => (state.dashboardTitle, state.showStartSwitch),
       ),
     );
-    final themeMode = ref.watch(
-      themeSettingProvider.select((state) => state.themeMode),
-    );
     final watermark = ref.watch(
       appSettingProvider.select((state) => state.dashboardWatermark),
     );
@@ -364,7 +325,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
         isMobileView: isMobileView,
         showStartSwitch: showStartSwitch,
-        themeMode: themeMode,
         watermark: watermark,
         spacing: spacing,
         children: children,
@@ -377,7 +337,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     required double inset,
     required bool isMobileView,
     required bool showStartSwitch,
-    required ThemeMode themeMode,
     required bool watermark,
     required double spacing,
     required List<DashboardTile> children,
@@ -404,10 +363,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             )
           : null,
       ),
-      actions: _buildActions(showStartSwitch, themeMode, watermark),
-      body: GlassScope(
-        live: true,
-        child: ScrollEdgeRise(
+      actions: _buildActions(showStartSwitch, watermark),
+      body: ScrollEdgeRise(
           builder: (_, rise) => Align(
             alignment: Alignment.topCenter,
             child: LayoutBuilder(
@@ -498,7 +455,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -66,28 +66,39 @@ class ApplicationState extends ConsumerState<Application>
     ),
   );
 
-  final Map<Brightness, ((ColorScheme, String?), ThemeData)> _themeCache = {};
+  final Map<Brightness, ((ColorScheme, String?, String), ThemeData)>
+  _themeCache = {};
 
-  ThemeData _themeOf(ColorScheme colorScheme, String? fontFamily) {
-    final key = (colorScheme, fontFamily);
+  ThemeData _themeOf(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeDef zodiacDef,
+  ) {
+    final key = (colorScheme, fontFamily, zodiacDef.id);
     final cached = _themeCache[colorScheme.brightness];
     if (cached != null && cached.$1 == key) {
       return cached.$2;
     }
-    final theme = _buildTheme(colorScheme, fontFamily);
+    final theme = _buildTheme(colorScheme, fontFamily, zodiacDef);
     _themeCache[colorScheme.brightness] = (key, theme);
     return theme;
   }
 
-  ThemeData _buildTheme(ColorScheme colorScheme, String? fontFamily) {
+  ThemeData _buildTheme(
+    ColorScheme colorScheme,
+    String? fontFamily,
+    ZodiacThemeDef zodiacDef,
+  ) {
     final isLight = colorScheme.brightness == Brightness.light;
+    final palette = zodiacDef.paletteFor(colorScheme.brightness);
     return ThemeData(
       useMaterial3: true,
       pageTransitionsTheme: _pageTransitionsTheme,
-      scaffoldBackgroundColor: colorScheme.pageColor,
+      scaffoldBackgroundColor: palette.bgStops.first,
       appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
       colorScheme: colorScheme,
       fontFamily: fontFamily,
+      extensions: [ZodiacThemeExtension.of(zodiacDef, colorScheme.brightness)],
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -96,9 +107,7 @@ class ApplicationState extends ConsumerState<Application>
         hoverElevation: 5,
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: isLight
-            ? colorScheme.surfaceContainerLowest
-            : colorScheme.surfaceContainerHigh,
+        backgroundColor: palette.dialogSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 10,
         shadowColor: Colors.black.withValues(alpha: isLight ? 0.3 : 0.6),
@@ -130,7 +139,7 @@ class ApplicationState extends ConsumerState<Application>
         space: 1,
       ),
       inputDecorationTheme: _inputDecorationTheme(colorScheme),
-      switchTheme: _switchTheme(colorScheme),
+      switchTheme: _switchTheme(colorScheme, palette),
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -152,11 +161,21 @@ class ApplicationState extends ConsumerState<Application>
     );
   }
 
-  SwitchThemeData _switchTheme(ColorScheme colorScheme) {
+  SwitchThemeData _switchTheme(
+    ColorScheme colorScheme,
+    ZodiacPalette palette,
+  ) {
     final isLight = colorScheme.brightness == Brightness.light;
     return SwitchThemeData(
       thumbIcon: const WidgetStatePropertyAll(Icon(null)),
-      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      // T115 spec 3.5.8: on = selected color, off = surfaceVariant
+      // fill with an outline-colored track border.
+      trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.transparent;
+        }
+        return palette.outline;
+      }),
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return null;
         if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
@@ -164,10 +183,8 @@ class ApplicationState extends ConsumerState<Application>
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return null;
-        if (states.contains(WidgetState.selected)) return colorScheme.primary;
-        return isLight
-            ? colorScheme.surfaceContainerHighest
-            : colorScheme.surfaceContainerHighest.lighten(6);
+        if (states.contains(WidgetState.selected)) return palette.primary;
+        return palette.surfaceVariant;
       }),
     );
   }
@@ -395,7 +412,7 @@ class ApplicationState extends ConsumerState<Application>
             final locale = ref.watch(
               appSettingProvider.select((state) => state.locale),
             );
-            final themeProps = ref.watch(themeSettingProvider);
+            final zodiacDef = ref.watch(currentZodiacThemeProvider);
             final lightColorScheme = ref.watch(
               genColorSchemeProvider(Brightness.light),
             );
@@ -433,9 +450,10 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              themeMode: themeProps.themeMode,
-              theme: _themeOf(lightColorScheme, fontFamily),
-              darkTheme: _themeOf(darkColorScheme, fontFamily),
+              // T115 spec: brightness follows the system only.
+              themeMode: ThemeMode.system,
+              theme: _themeOf(lightColorScheme, fontFamily, zodiacDef),
+              darkTheme: _themeOf(darkColorScheme, fontFamily, zodiacDef),
               home: child!,
             );
           },

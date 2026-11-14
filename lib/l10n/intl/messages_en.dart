@@ -2731,5 +2731,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "The filesystem does not support file capabilities, falling back to setuid",
     ),
     "years": m78,
+    "zodiacTheme": MessageLookupByLibrary.simpleMessage("Zodiac Themes"),
   };
 }

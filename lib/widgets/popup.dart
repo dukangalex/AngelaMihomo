@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/common.dart';
-import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/zodiac_surface.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -810,23 +810,13 @@ class CommonPopupMenu extends StatelessWidget {
   }
 
   static Widget surface(BuildContext context, Widget child) {
-    final colorScheme = context.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
     return IntrinsicHeight(
       child: IntrinsicWidth(
-        child: GlassSurface(
-          tier: GlassTier.dialog,
+        child: ZodiacSurface(
+          tone: ZodiacTone.dialog,
           radius: 26,
-          live: true,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isLight ? 0.22 : 0.4),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
           // Transparent Material: keeps the ink surface the menu items
-          // need (the pre-glass Material provided it), paints nothing.
+          // need, paints nothing.
           child: Material(type: MaterialType.transparency, child: child),
         ),
       ),

@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/app.dart';
 import 'package:bett_box/widgets/pop_scope.dart';
-import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/zodiac_surface.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -199,10 +199,9 @@ class CommonDialog extends ConsumerWidget {
               shape: RoundedSuperellipseBorder(
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: GlassSurface(
-                tier: GlassTier.dialog,
+              child: ZodiacSurface(
+                tone: ZodiacTone.dialog,
                 radius: 28,
-                live: true,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,10 +251,9 @@ class CommonModal extends ConsumerWidget {
       child: SizedBox(
         width: size.width * 0.85,
         height: size.height * 0.85,
-        child: GlassSurface(
-          tier: GlassTier.dialog,
+        child: ZodiacSurface(
+          tone: ZodiacTone.dialog,
           radius: 20,
-          live: true,
           child: SizedBox.expand(child: child),
         ),
       ),

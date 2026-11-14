@@ -1,7 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/widgets/fade_box.dart';
-import 'package:bett_box/widgets/glass.dart';
+import 'package:bett_box/widgets/zodiac_surface.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'text.dart';
@@ -67,10 +67,19 @@ class InfoHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [...actions],
+          // T115 homepage hard line: the title keeps its intrinsic
+          // width; status chips on the right shrink to fit instead
+          // of squeezing the title into an ellipsis.
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [...actions],
+              ),
+            ),
           ),
         ],
       ),
@@ -88,7 +97,7 @@ class CommonCard extends StatelessWidget {
     this.onLongPress,
     this.selectWidget,
     this.radius,
-    this.glassTier,
+    this.emphasis = false,
     required this.child,
     this.padding,
     this.enterAnimated = false,
@@ -109,22 +118,16 @@ class CommonCard extends StatelessWidget {
   final CommonCardType type;
   final double? radius;
 
-  /// Explicit glass hierarchy tier. Defaults to the home-page ruler:
-  /// selected cards read as the primary layer, everything else secondary.
-  final GlassTier? glassTier;
+  /// Panel-tier emphasis (T115): the home page's primary surfaces
+  /// (outbound mode, start control) take the skeleton's panel
+  /// material; selected cards read as panel tier too.
+  final bool emphasis;
   final Clip clipBehavior;
   final bool elevated;
   final bool subtle;
 
-  GlassTier get tier =>
-      glassTier ?? (isSelected ? GlassTier.primary : GlassTier.secondary);
-
   @override
   Widget build(BuildContext context) {
-    final cardTier = tier;
-    // Primary cards carry the landed 30px corner token.
-    final actualRadius =
-        radius ?? (cardTier == GlassTier.primary ? 30.0 : 20.0);
     var childWidget = child;
 
     if (info != null) {
@@ -149,83 +152,53 @@ class CommonCard extends StatelessWidget {
 
     final isInteractive = onPressed != null || onLongPress != null;
     final colorScheme = context.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
+    final spec = context.zodiac.spec;
+    final actualRadius =
+        radius ??
+        ((emphasis || isSelected) ? spec.panelRadius : spec.smallRadius);
     final shape = RoundedSuperellipseBorder(
       borderRadius: BorderRadius.circular(actualRadius),
     );
-    // The glass surface paints fill, rim and sheen; the button layer is
-    // fully transparent and only contributes interaction and ink.
-    Widget card = Stack(
-      children: [
-        Positioned.fill(
-          child: GlassSurface(
-            tier: cardTier,
-            radius: actualRadius,
-            clipShape: shape,
+    // The constellation surface paints fill, border and shadow; the
+    // button layer is fully transparent and only contributes
+    // interaction and ink.
+    Widget card = ZodiacSurface(
+      tone: (emphasis || isSelected)
+          ? ZodiacTone.panel
+          : ZodiacTone.card,
+      radius: radius,
+      selected: isSelected,
+      child: OutlinedButton(
+        onLongPress: onLongPress,
+        clipBehavior: clipBehavior,
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+          shape: WidgetStatePropertyAll(shape),
+          iconColor: WidgetStatePropertyAll(colorScheme.primary),
+          iconSize: WidgetStateProperty.all(20),
+          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return colorScheme.primary.withValues(alpha: 0.08);
+            }
+            if (states.contains(WidgetState.hovered) ||
+                states.contains(WidgetState.focused)) {
+              return colorScheme.primary.withValues(alpha: 0.05);
+            }
+            return null;
+          }),
+          side: const WidgetStatePropertyAll(BorderSide.none),
+          minimumSize: WidgetStatePropertyAll(
+            isInteractive ? null : Size.zero,
           ),
+          tapTargetSize: isInteractive
+              ? null
+              : MaterialTapTargetSize.shrinkWrap,
         ),
-        OutlinedButton(
-          onLongPress: onLongPress,
-          clipBehavior: clipBehavior,
-          style: ButtonStyle(
-            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-            shape: WidgetStatePropertyAll(shape),
-            iconColor: WidgetStatePropertyAll(colorScheme.primary),
-            iconSize: WidgetStateProperty.all(20),
-            backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-            overlayColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.pressed)) {
-                return colorScheme.primary.withValues(alpha: 0.08);
-              }
-              if (states.contains(WidgetState.hovered) ||
-                  states.contains(WidgetState.focused)) {
-                return colorScheme.primary.withValues(alpha: 0.05);
-              }
-              return null;
-            }),
-            side: const WidgetStatePropertyAll(BorderSide.none),
-            minimumSize: WidgetStatePropertyAll(
-              isInteractive ? null : Size.zero,
-            ),
-            tapTargetSize: isInteractive
-                ? null
-                : MaterialTapTargetSize.shrinkWrap,
-          ),
-          onPressed: onPressed,
-          child: childWidget,
-        ),
-      ],
+        onPressed: onPressed,
+        child: childWidget,
+      ),
     );
-
-    if (elevated) {
-      final tint = GlassTint.resolve(colorScheme);
-      card = DecoratedBox(
-        decoration: ShapeDecoration(
-          shape: shape,
-          shadows: [
-            BoxShadow(
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-              color: Colors.black.withValues(alpha: isLight ? 0.045 : 0.25),
-            ),
-            // The primary layer glows in its rim color (round-7 structure).
-            if (cardTier == GlassTier.primary) ...[
-              BoxShadow(
-                blurRadius: 36,
-                offset: const Offset(0, 14),
-                color: tint.rim.withValues(alpha: isLight ? 0.22 : 0.20),
-              ),
-              BoxShadow(
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-                color: tint.rim.withValues(alpha: isLight ? 0.16 : 0.14),
-              ),
-            ],
-          ],
-        ),
-        child: card,
-      );
-    }
 
     return switch (enterAnimated) {
       true => FadeScaleEnterBox(child: card),
@@ -308,11 +281,10 @@ class SettingsBlock extends StatelessWidget {
       child: Column(
         children: [
           InfoHeader(info: Info(label: title)),
-          // Settings lists are long surfaces: static glass, secondary
-          // tier, same material language as the rest of the app.
-          GlassSurface(
-            tier: GlassTier.secondary,
-            radius: 20,
+          // Settings lists are long surfaces on the family's group
+          // material, same language as the rest of the app.
+          ZodiacSurface(
+            tone: ZodiacTone.group,
             child: Column(children: settings),
           ),
         ],

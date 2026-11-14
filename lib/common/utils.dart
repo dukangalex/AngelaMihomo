@@ -30,11 +30,14 @@ final _bridgeInterfaceRegExp = RegExp(
 );
 
 class Utils {
-  Color? getDelayColor(int? delay) {
+  /// Delay tier color. With a constellation [palette] the tiers
+  /// are the family's status colors (spec: delay and status share
+  /// one source); without one, the legacy defaults apply.
+  Color? getDelayColor(int? delay, {ZodiacPalette? palette}) {
     if (delay == null) return null;
-    if (delay < 0) return Colors.red;
-    if (delay < 600) return Colors.green;
-    return const Color(0xFFC57F0A);
+    if (delay < 0) return palette?.delayBad ?? Colors.red;
+    if (delay < 600) return palette?.delayGood ?? Colors.green;
+    return palette?.delayMid ?? const Color(0xFFC57F0A);
   }
 
   String countryCodeToEmoji(String countryCode) {

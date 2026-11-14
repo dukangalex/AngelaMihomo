@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'chip.dart';
-import 'glass.dart';
+import 'zodiac_surface.dart';
 import 'text.dart';
 
 typedef OnKeywordsUpdateCallback = void Function(List<String> keywords);
@@ -299,7 +299,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
   PreferredSizeWidget _buildAppBar({required bool inverseHeader}) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    // T106: pages on the glass field get an inverse-tone header bar —
+    // T106: pages on the backdrop field get an inverse-tone header bar —
     // a deep surface with light content on light backgrounds, a light
     // surface with dark content on dark backgrounds — so the title
     // and action icons never wash out against the field (real-device
@@ -366,9 +366,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
                   color: colorScheme.inverseSurface.withValues(alpha: 0.94),
                   border: Border(
                     bottom: BorderSide(
-                      color: GlassTint.resolve(
-                        colorScheme,
-                      ).rim.withValues(alpha: 0.7),
+                      color: context.zodiac.palette.outline,
                     ),
                   ),
                 ),
@@ -442,16 +440,16 @@ class CommonScaffoldState extends State<CommonScaffold> {
       child: Consumer(
         builder: (context, ref, _) {
           final isMobileView = ref.watch(isMobileViewProvider);
-          // Mobile pages without an explicit background sit on the glass
-          // color field; the scaffold itself stays transparent so the
-          // field (and the glass above it) reads as one material.
+          // Mobile pages without an explicit background sit on the
+          // constellation backdrop; the scaffold itself stays
+          // transparent so the backdrop and surfaces read as one.
           final fieldActive = isMobileView && widget.backgroundColor == null;
           return Scaffold(
             appBar: _buildAppBar(inverseHeader: fieldActive),
             body: fieldActive
                 ? Stack(
                     children: [
-                      const Positioned.fill(child: GlassField()),
+                      const Positioned.fill(child: ZodiacBackdrop()),
                       Positioned.fill(child: body),
                     ],
                   )
