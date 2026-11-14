@@ -61,16 +61,13 @@ var (
 	}
 )
 
-func Protect(callback unsafe.Pointer, fd int) bool {
-	if globalCallbacks.protectFunc == nil || callback == nil {
-		return false
 func purgeNativeMemory() {
 	C.purge_memory()
 }
 
-func Protect(callback unsafe.Pointer, fd int) {
-	if globalCallbacks.protectFunc != nil {
-		C.protect(globalCallbacks.protectFunc, callback, C.int(fd))
+func Protect(callback unsafe.Pointer, fd int) bool {
+	if globalCallbacks.protectFunc == nil || callback == nil {
+		return false
 	}
 	return C.protect(globalCallbacks.protectFunc, callback, C.int(fd)) != 0
 }
