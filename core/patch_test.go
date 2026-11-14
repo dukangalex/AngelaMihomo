@@ -486,10 +486,13 @@ rules:
 `), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	rawCfg, err := handleGetConfig(&GetConfigParams{Path: path, DisabledGroups: []string{"HK"}})
+	rawResult, err := handleGetConfig(&GetConfigParams{Path: path, DisabledGroups: []string{"HK"}})
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Upstream v1.19.8 widened handleGetConfig's return to any (snippet
+	// support); a non-snippet call still returns *config.RawConfig.
+	rawCfg := rawResult.(*config.RawConfig)
 	if len(rawCfg.ProxyGroup) != 1 || !reflect.DeepEqual(rawCfg.ProxyGroup[0]["proxies"], []any{"A"}) {
 		t.Fatalf("groups: %v", rawCfg.ProxyGroup)
 	}
