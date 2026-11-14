@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -22,6 +23,7 @@ import (
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
+	P "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
 	"go4.org/netipx"
@@ -238,6 +240,7 @@ func TestApplyPatchLinuxRouteExclude(t *testing.T) {
 	if !strategy.ToIpCidr().Contains(netip.MustParseAddr("192.168.1.1")) {
 		t.Errorf("route exclude rule set should contain the private range")
 	}
+	settleParsedProviders(t, cfg.Providers)
 }
 
 func TestApplyPatchDnsInjection(t *testing.T) {
@@ -321,6 +324,104 @@ func TestPrepareSetupReuse(t *testing.T) {
 	}
 }
 
+// healthCheckRoundMarkers match goroutine-stack frames that only appear
+// while a provider health-check round (or the DNS work it triggers) is
+// actively running, as opposed to the idle health-check process loop.
+var healthCheckRoundMarkers = []string{
+	"provider.(*HealthCheck).checkWith",
+	"provider.(*HealthCheck).execute",
+	"adapter.(*Proxy).URLTest",
+	"dns.batchExchange",
+	"dns.(*Resolver).ExchangeContext",
+	"component/resolver.LookupIPWithResolver",
+}
+
+func goroutineStacksContain(markers []string) (string, bool) {
+	buf := make([]byte, 1<<21)
+	stacks := string(buf[:runtime.Stack(buf, true)])
+	for _, marker := range markers {
+		if strings.Contains(stacks, marker) {
+			return marker, true
+		}
+	}
+	return "", false
+}
+
+// waitForHealthCheckRounds blocks until no provider health-check process
+// or round goroutine remains anywhere in the test binary.
+func waitForHealthCheckRounds(t *testing.T) {
+	t.Helper()
+	markers := append(append([]string{}, healthCheckRoundMarkers...), "provider.(*HealthCheck).process")
+	deadline := time.Now().Add(15 * time.Second)
+	for {
+		lingering, active := goroutineStacksContain(markers)
+		if !active {
+			return
+		}
+		if time.Now().After(deadline) {
+			buf := make([]byte, 1<<21)
+			stacks := string(buf[:runtime.Stack(buf, true)])
+			t.Fatalf("background provider work still running (%s) after Close:\n%s", lingering, stacks)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+// settleParsedProviders joins and stops every background health check a
+// parsed config may have started, in this goroutine.
+//
+// Parsing and Initial()ing a config start asynchronous health-check
+// rounds: setting a provider's proxy list launches one round per auto
+// health check, and Initial starts the periodic processes on top. Those
+// rounds resolve node names, which reads the resolver package's global
+// IPv6 switch (resolver.DisableIPv6), while config.ParseRawConfig writes
+// that switch on entry and restores it on return through a //go:linkname
+// hook into the executor. A round that outlives its test therefore races
+// the next ParseRawConfig in the suite — observed in CI as a data race
+// reported against TestDisabledGroupsCascade with
+// TestMarshalProxies' providers still running, and reproduced locally
+// (T120).
+//
+// HealthCheck is the sound join point, not a timing device: every round
+// runs through the health check's single-flight Do, so a synchronous
+// HealthCheck from this goroutine either shares the in-flight round or
+// runs after it, and in both cases happens after every access the round
+// made. Closing the providers afterwards stops the periodic processes,
+// and the final wait makes sure no round goroutine is left running.
+//
+// Every URL test also reports into the process-global pendingDelays map
+// through adapter.UrlTestHook, and the delays tests assert on that map's
+// exact contents, so the entries a join round adds are removed again
+// before returning: the join must order this test, not feed the next
+// one's bookkeeping.
+func settleParsedProviders(t *testing.T, providers map[string]P.ProxyProvider) {
+	t.Helper()
+	delayPushLock.Lock()
+	knownDelays := make(map[delayKey]struct{}, len(pendingDelays))
+	for key := range pendingDelays {
+		knownDelays[key] = struct{}{}
+	}
+	delayPushLock.Unlock()
+	defer func() {
+		delayPushLock.Lock()
+		for key := range pendingDelays {
+			if _, ok := knownDelays[key]; !ok {
+				delete(pendingDelays, key)
+			}
+		}
+		delayPushLock.Unlock()
+	}()
+	for _, pd := range providers {
+		pd.HealthCheck()
+	}
+	for _, pd := range providers {
+		if closer, ok := pd.(interface{ Close() error }); ok {
+			_ = closer.Close()
+		}
+	}
+	waitForHealthCheckRounds(t)
+}
+
 func TestMarshalProxies(t *testing.T) {
 	previousHome := constant.Path.HomeDir()
 	constant.SetHomeDir(t.TempDir())
@@ -350,6 +451,14 @@ rules:
 			t.Fatal(err)
 		}
 	}
+	// Isolation (T120): Initial() starts provider health-check processes
+	// whose background URL tests read the unsynchronized global
+	// resolver.DisableIPv6, while config.ParseRawConfig in later tests
+	// writes it — a data race first caught by CI in
+	// TestDisabledGroupsCascade. Join the rounds and drain that
+	// background work before marshalling, so no health-check goroutine
+	// is alive while this test — or any later one — runs.
+	settleParsedProviders(t, cfg.Providers)
 	compact, err := marshalProxies(cfg.Proxies)
 	if err != nil {
 		t.Fatal(err)
@@ -492,9 +601,11 @@ rules:
 	if !reflect.DeepEqual(rawCfg.Rule, want) {
 		t.Fatalf("rules: %v", rawCfg.Rule)
 	}
-	if _, err := config.ParseRawConfig(rawCfg); err != nil {
+	parsedCfg, err := config.ParseRawConfig(rawCfg)
+	if err != nil {
 		t.Fatal(err)
 	}
+	settleParsedProviders(t, parsedCfg.Providers)
 }
 
 func TestGetConfigDisabledGroups(t *testing.T) {
@@ -588,11 +699,7 @@ func parseChainConfig(t *testing.T, raw *config.RawConfig) *config.Config {
 		t.Fatalf("patched chain is not a valid Mihomo config: %v", err)
 	}
 	t.Cleanup(func() {
-		for _, pd := range parsed.Providers {
-			if closer, ok := pd.(interface{ Close() error }); ok {
-				_ = closer.Close()
-			}
-		}
+		settleParsedProviders(t, parsed.Providers)
 	})
 	return parsed
 }
@@ -852,9 +959,16 @@ func TestApplyPatchChainCircularDialerIsRejectedByMihomo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = config.ParseRawConfig(raw)
+	parsedCfg, err := config.ParseRawConfig(raw)
 	if err == nil || !strings.Contains(err.Error(), "circular dialer-proxy") {
 		t.Fatalf("cycle must be reported by actual kernel validation: %v", err)
+	}
+	// A rejected parse returns no config handle; drain any rounds the
+	// partial parse started so they cannot outlive this test (T120).
+	if parsedCfg != nil {
+		settleParsedProviders(t, parsedCfg.Providers)
+	} else {
+		waitForHealthCheckRounds(t)
 	}
 }
 
@@ -889,9 +1003,11 @@ rules:
 	if got := findGroup(raw.ProxyGroup, "Auto")["proxies"]; !reflect.DeepEqual(got, []any{"Entry"}) {
 		t.Fatalf("non-manual group must remain unchanged: %#v", got)
 	}
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("patched external chain invalid: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 func TestChainHopGroupsGetStickyHealthCheckFloors(t *testing.T) {
@@ -911,7 +1027,7 @@ rules:
 		Landing: "[ext] ExitAuto", LandingKind: "group",
 		ExternalProfile: "other", ExternalTarget: "[ext] ExitAuto", ExternalKind: "group",
 		ExternalProxies: []map[string]any{{"name": "[ext] Exit", "type": "http", "server": "exit.example", "port": 80}},
-		ExternalGroups: []map[string]any{{"name": "[ext] ExitAuto", "type": "url-test", "proxies": []any{"[ext] Exit"}, "url": "https://example.invalid", "interval": 45, "tolerance": 60, "timeout": 2000}},
+		ExternalGroups:  []map[string]any{{"name": "[ext] ExitAuto", "type": "url-test", "proxies": []any{"[ext] Exit"}, "url": "https://example.invalid", "interval": 45, "tolerance": 60, "timeout": 2000}},
 	}}
 	if _, err := applyPatch(raw, params); err != nil {
 		t.Fatal(err)
@@ -933,9 +1049,11 @@ rules:
 	assertHopFloors("EntryAuto", true)
 	assertHopFloors("[ext] ExitAuto", true)
 	assertHopFloors("Bystander", false)
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("patched chain with sticky hop floors invalid: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 func TestExternalChainIsDefaultOnlyInMainSelector(t *testing.T) {
@@ -967,9 +1085,11 @@ rules:
 	if !reflect.DeepEqual(secondary, []any{"Node", explicitChainGroup}) {
 		t.Fatalf("secondary selector must keep the chain as a trailing option: %#v", secondary)
 	}
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("patched external chain invalid: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 // The same-profile (legacy) chain must behave like the cross-profile
@@ -1035,9 +1155,11 @@ rules: ['MATCH,Main']
 	if got := findGroup(raw.ProxyGroup, "Main")["proxies"]; !reflect.DeepEqual(got, []any{explicitChainGroup, "Entry"}) {
 		t.Fatalf("main: %#v", got)
 	}
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("kernel rejected chain: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 func TestChainEntryGroupRejectsImplicitProviderFallback(t *testing.T) {
@@ -1268,9 +1390,11 @@ rules:
 	if !reflect.DeepEqual(raw.Rule, beforeRules) {
 		t.Fatalf("unrelated routing rules changed: %#v", raw.Rule)
 	}
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("explicit chain must remain a valid Mihomo config: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 func TestApplyPatchExternalGroupChainReplacesOnlyImportedChainSettings(t *testing.T) {
@@ -1316,9 +1440,11 @@ rules:
 	if got := findProxy(t, raw.Proxy, "Unrelated")["dialer-proxy"]; got != "Native Entry" {
 		t.Fatalf("unrelated active native chain changed: %v", got)
 	}
-	if _, err := config.ParseRawConfig(raw); err != nil {
+	parsed, err := config.ParseRawConfig(raw)
+	if err != nil {
 		t.Fatalf("external group chain must remain a valid Mihomo config: %v", err)
 	}
+	settleParsedProviders(t, parsed.Providers)
 }
 
 func TestExternalProfileGroupChainTwoHopConnect(t *testing.T) {
@@ -1859,4 +1985,3 @@ dns: {enable: true, listen: 0.0.0.0:1053, nameserver: [223.5.5.5]}
 		}
 	}
 }
-
