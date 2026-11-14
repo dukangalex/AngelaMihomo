@@ -130,82 +130,135 @@ class _ZodiacThemeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 28,
-              child: Text(theme.sign, style: const TextStyle(fontSize: 20)),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final variant = context.zodiac?.variant;
+    final selectedPaint = variant?.selected;
+    // Selected row form (design doc 5.1 + the finalized mockups): a
+    // translucent surfaceVariant wash, a gradient marker bar and the
+    // check — never a solid light block, which made the row unreadable
+    // in the rejected theme-dark mockup.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    color:
+                        variant?.surfaceVariant ??
+                        colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(16),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          theme.nameZh,
-                          style: textTheme.titleSmall?.copyWith(
-                            color: isSelected
-                                ? colorScheme.primary
-                                : colorScheme.onSurface,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
-                        ),
+                  if (isSelected &&
+                      selectedPaint != null &&
+                      !selectedPaint.isNone) ...[
+                    Container(
+                      width: 4,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: selectedPaint.isGradient
+                            ? LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: selectedPaint.stops!,
+                              )
+                            : null,
+                        color: selectedPaint.isGradient
+                            ? null
+                            : selectedPaint.solidColor,
                       ),
-                      if (theme.id == zodiacDefaultThemeId) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            appLocalizations.defaultText,
-                            style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      theme.sign,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                theme.nameZh,
+                                style: textTheme.titleSmall?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurface,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                              ),
                             ),
+                            if (theme.id == zodiacDefaultThemeId) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      variant?.surfaceVariant ??
+                                      colorScheme.secondaryContainer,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  appLocalizations.defaultText,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          theme.nameEn,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                  Text(
-                    theme.nameEn,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
                     ),
+                  ),
+                  _dot(theme.light.primary),
+                  const SizedBox(width: 4),
+                  _dot(theme.light.secondary),
+                  const SizedBox(width: 4),
+                  _dot(theme.dark.primary),
+                  const SizedBox(width: 4),
+                  _dot(theme.dark.secondary),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   ),
                 ],
               ),
             ),
-            _dot(theme.light.primary),
-            const SizedBox(width: 4),
-            _dot(theme.light.secondary),
-            const SizedBox(width: 4),
-            _dot(theme.dark.primary),
-            const SizedBox(width: 4),
-            _dot(theme.dark.secondary),
-            const SizedBox(width: 8),
-            Icon(
-              isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-              size: 20,
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-          ],
+          ),
         ),
       ),
     );

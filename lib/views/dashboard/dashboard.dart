@@ -767,7 +767,21 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
       ),
     );
     final isOutlined = style == StartSwitchStyle.outlined;
-    final trackColor = isOutlined
+    // Zodiac start-switch faces (design doc 3.5.1.1): on = the family's
+    // selected paint (gradient or solid) with onPrimary content; off =
+    // the surfaceVariant track with textSecondary content. The gradient
+    // is painted by a DecoratedBox around the button below, so the
+    // button's own track goes transparent in the on state.
+    final zodiacVariant = context.zodiac?.variant;
+    final zodiacOnPaint = (zodiacVariant != null && displayStart)
+        ? zodiacVariant.selected
+        : null;
+    final zodiacOn = zodiacOnPaint != null && !zodiacOnPaint.isNone;
+    final trackColor = zodiacOn
+        ? Colors.transparent
+        : zodiacVariant != null
+        ? zodiacVariant.surfaceVariant
+        : isOutlined
         ? isLight
               ? Color.lerp(
                   colorScheme.surface,
@@ -778,7 +792,9 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
         : displayStart
         ? colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.2)
         : colorScheme.onSurface.withValues(alpha: 0.06);
-    final borderSide = isOutlined
+    final borderSide = zodiacVariant != null
+        ? BorderSide.none
+        : isOutlined
         ? BorderSide(
             color: displayStart
                 ? colorScheme.primary.withValues(alpha: 0.45)
@@ -787,102 +803,123 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
                   ),
           )
         : BorderSide.none;
-    final iconColor = displayStart
-        ? colorScheme.primary
-        : colorScheme.onSurfaceVariant;
+    final zodiacOnColor = zodiacOn ? zodiacVariant!.onPrimary : null;
+    final iconColor =
+        zodiacOnColor ??
+        (displayStart ? colorScheme.primary : colorScheme.onSurfaceVariant);
     final labelMediumStyle = context.textTheme.labelMedium;
     final labels = [
       (
         offLabel ?? appLocalizations.disabled,
         !displayStart,
-        colorScheme.onSurfaceVariant,
+        zodiacVariant != null && !displayStart
+            ? zodiacVariant.textSecondary
+            : colorScheme.onSurfaceVariant,
       ),
-      (onLabel ?? appLocalizations.enabled, displayStart, colorScheme.primary),
+      (
+        onLabel ?? appLocalizations.enabled,
+        displayStart,
+        zodiacOnColor ?? colorScheme.primary,
+      ),
     ];
 
+    final button = TextButton(
+      focusNode: _focusNode,
+      onPressed: canPress ? _handleStart : null,
+      style: ButtonStyle(
+        visualDensity: VisualDensity.standard,
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
+        minimumSize: const WidgetStatePropertyAll(Size.zero),
+        backgroundColor: WidgetStatePropertyAll(trackColor),
+        shape: WidgetStateProperty.resolveWith(
+          (states) => StadiumBorder(
+            side: states.contains(WidgetState.focused)
+                ? BorderSide(color: colorScheme.primary, width: 2)
+                : borderSide,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          AnimatedPadding(
+            duration: midDuration,
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsetsDirectional.only(
+              start: displayStart ? 4 : 26,
+              end: displayStart ? 26 : 4,
+            ),
+            child: SizedBox(
+              height: 24,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  for (final (label, isActive, color) in labels)
+                    AnimatedOpacity(
+                      opacity: isActive ? 1 : 0,
+                      duration: midDuration,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        style: labelMediumStyle?.copyWith(color: color),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: AnimatedAlign(
+              duration: midDuration,
+              curve: Curves.easeOutCubic,
+              alignment: displayStart
+                  ? AlignmentDirectional.centerEnd
+                  : AlignmentDirectional.centerStart,
+              child: SizedBox.square(
+                dimension: 20,
+                child: Center(
+                  child: isBusy
+                      ? RepaintBoundary(
+                          child: SizedBox.square(
+                            dimension: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: iconColor,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.power_settings_new,
+                          size: 18,
+                          color: iconColor,
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: AnimatedOpacity(
         opacity: isAvailable ? 1 : 0.38,
         duration: midDuration,
-        child: TextButton(
-          focusNode: _focusNode,
-          onPressed: canPress ? _handleStart : null,
-          style: ButtonStyle(
-            visualDensity: VisualDensity.standard,
-            padding: const WidgetStatePropertyAll(
-              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            ),
-            minimumSize: const WidgetStatePropertyAll(Size.zero),
-            backgroundColor: WidgetStatePropertyAll(trackColor),
-            shape: WidgetStateProperty.resolveWith(
-              (states) => StadiumBorder(
-                side: states.contains(WidgetState.focused)
-                    ? BorderSide(color: colorScheme.primary, width: 2)
-                    : borderSide,
-              ),
-            ),
-          ),
-          child: Stack(
-            children: [
-              AnimatedPadding(
-                duration: midDuration,
-                curve: Curves.easeOutCubic,
-                padding: EdgeInsetsDirectional.only(
-                  start: displayStart ? 4 : 26,
-                  end: displayStart ? 26 : 4,
+        child: !zodiacOn
+            ? button
+            : DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: zodiacOnPaint.isGradient
+                      ? zodiacOnPaint.selectedGradient
+                      : null,
+                  color: zodiacOnPaint.isGradient
+                      ? null
+                      : zodiacOnPaint.solidColor,
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                child: SizedBox(
-                  height: 24,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      for (final (label, isActive, color) in labels)
-                        AnimatedOpacity(
-                          opacity: isActive ? 1 : 0,
-                          duration: midDuration,
-                          child: Text(
-                            label,
-                            maxLines: 1,
-                            style: labelMediumStyle?.copyWith(color: color),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                child: button,
               ),
-              Positioned.fill(
-                child: AnimatedAlign(
-                  duration: midDuration,
-                  curve: Curves.easeOutCubic,
-                  alignment: displayStart
-                      ? AlignmentDirectional.centerEnd
-                      : AlignmentDirectional.centerStart,
-                  child: SizedBox.square(
-                    dimension: 20,
-                    child: Center(
-                      child: isBusy
-                          ? RepaintBoundary(
-                              child: SizedBox.square(
-                                dimension: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: iconColor,
-                                ),
-                              ),
-                            )
-                          : Icon(
-                              Icons.power_settings_new,
-                              size: 18,
-                              color: iconColor,
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

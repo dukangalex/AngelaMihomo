@@ -143,6 +143,8 @@ class CommonCard extends StatelessWidget {
 
   BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
+    final zodiac = context.zodiac;
+    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
     final hoverColor = isSelected
         ? colorScheme.primary.opacity80
         : colorScheme.primary.opacity60;
@@ -151,6 +153,15 @@ class CommonCard extends StatelessWidget {
         states.contains(WidgetState.pressed)) {
       return BorderSide(
         color: hoverColor,
+        strokeAlign: BorderSide.strokeAlignInside,
+      );
+    }
+    // Immersive panels are translucent layers over the light field: the
+    // 1px token outline is what defines them (design doc 3.4.2), so they
+    // never render borderless.
+    if (immersive && !isSelected) {
+      return BorderSide(
+        color: zodiac!.variant.outline,
         strokeAlign: BorderSide.strokeAlignInside,
       );
     }
@@ -171,8 +182,17 @@ class CommonCard extends StatelessWidget {
 
   Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
+    final zodiac = context.zodiac;
+    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
     final isLight = colorScheme.brightness == Brightness.light;
-    final base = isSelected
+    // Immersive variants paint the raw translucent surface tokens so the
+    // light field shows through the card (design doc 3.4.2); the opaque
+    // composited container tones would flatten the atmosphere to a slab.
+    final base = immersive
+        ? (isSelected
+              ? zodiac!.variant.surfaceVariant
+              : zodiac!.variant.surface)
+        : isSelected
         ? (type == CommonCardType.filled
               ? colorScheme.secondaryContainer.opacity80
               : colorScheme.secondaryContainer)

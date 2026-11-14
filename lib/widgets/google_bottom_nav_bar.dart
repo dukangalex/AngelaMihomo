@@ -3,7 +3,6 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/providers/providers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -88,7 +87,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   late final ValueNotifier<int?> _pressedIndex = ValueNotifier(null);
   final ValueNotifier<double> _dragOffset = ValueNotifier(0.0);
 
-  static const double _horizontalInset = 17.0;
+  static const double _horizontalInset = 0.0;
 
   double? _posTarget;
   int? _jumpFromIndex;
@@ -167,7 +166,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   double get _slotWidth {
     final count = widget.navigationItems.length;
     if (count == 0) return 0.0;
-    return math.max(0.0, _barWidth - 2.0) / count;
+    return math.max(0.0, _barWidth) / count;
   }
 
   void _commitDragOffset() {
@@ -180,7 +179,7 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
   }
 
   int _indexFromLocalDx(double dx) {
-    const borderWidth = 1.0;
+    const borderWidth = 0.0;
     final innerWidth = math.max(0.0, _barWidth - (2 * borderWidth));
     final count = widget.navigationItems.length;
     if (innerWidth <= 0 || count == 0) return widget.selectedIndex;
@@ -195,35 +194,35 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
       appSettingProvider.select((state) => state.enableNavBarHapticFeedback),
     );
     final colorScheme = context.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
     // Zodiac tokens drive the bar: its body takes the navBar token and the
     // selected item takes the family's selection color (the immersive
     // family's arrow-teal secondary, other families' primary).
     final primaryColor = context.zodiac?.navSelected ?? colorScheme.primary;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
 
+    // The bar is a full-width strip in the navBar token at its own alpha
+    // (design doc 3.5.6): no floating capsule, no shadow, and no backing
+    // block behind the current tab — selection reads from the accent
+    // colored icon and label alone.
     final navColor =
-        (context.zodiac?.variant.navBar ?? navBarBodyColor(colorScheme))
-            .withValues(alpha: 0.98);
-    final shadowStrength = isLight ? 1.0 : 3.0;
+        context.zodiac?.variant.navBar ?? navBarBodyColor(colorScheme);
 
-    const itemTextStyle = TextStyle(
-      fontSize: 10.5,
-      fontWeight: FontWeight.w500,
-    );
+    const itemTextStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w500);
 
     final count = widget.navigationItems.length;
     final localizedLabels = [
       for (final item in widget.navigationItems) item.label.localizedName,
     ];
 
-    return SafeArea(
-      top: false,
-      left: false,
-      right: false,
-      minimum: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8),
+    return Container(
+      decoration: BoxDecoration(
+        color: navColor,
+        border: Border(top: BorderSide(color: colorScheme.outline, width: 1)),
+      ),
+      child: SafeArea(
+        top: false,
+        left: false,
+        right: false,
         child: Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: (event) {
@@ -357,272 +356,147 @@ class _GoogleBottomNavBarState extends ConsumerState<GoogleBottomNavBar>
             _posController.value = widget.selectedIndex.toDouble();
             _liftTo(0.0, 180);
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _horizontalInset),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                _barWidth = constraints.maxWidth;
-                const barHeight = 60.0;
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              _barWidth = constraints.maxWidth;
+              const barHeight = 60.0;
 
-                return RepaintBoundary(
-                  child: Container(
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: navColor,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.transparent,
-                        width: 1,
-                        strokeAlign: BorderSide.strokeAlignInside,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.08 * shadowStrength,
-                          ),
-                        ),
-                        BoxShadow(
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                          color: colorScheme.shadow.withValues(
-                            alpha: 0.04 * shadowStrength,
-                          ),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        if (count > 0)
-                          Positioned.fill(
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                painter: NavBarPillPainter(
-                                  position: _posController,
-                                  lift: _liftController,
-                                  dragOffset: _dragOffset,
-                                  count: count,
-                                  slot: navBarSlotResistance,
-                                  color: primaryColor,
-                                  baseAlpha: isLight ? 0.12 : 0.20,
-                                  activeAlpha: isLight ? 0.18 : 0.26,
+              return RepaintBoundary(
+                child: SizedBox(
+                  height: barHeight,
+                  child: RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _posController,
+                        _dragOffset,
+                        _pressedIndex,
+                        _liftController,
+                      ]),
+                      builder: (context, _) {
+                        final currentPos = navBarSlotResistance(
+                          _posController.value + _dragOffset.value,
+                          count,
+                        );
+                        final pressedIdx = _pressedIndex.value;
+                        final liftValue = _liftController.value;
+
+                        final jumpFrom = _jumpFromIndex;
+                        final jumpTo = _jumpToIndex;
+                        final isNonAdjacentJump =
+                            jumpFrom != null &&
+                            jumpTo != null &&
+                            (jumpFrom - jumpTo).abs() > 1;
+                        final minJump = isNonAdjacentJump
+                            ? math.min(jumpFrom, jumpTo)
+                            : -1;
+                        final maxJump = isNonAdjacentJump
+                            ? math.max(jumpFrom, jumpTo)
+                            : -1;
+
+                        return Row(
+                          children: List.generate(count, (index) {
+                            final item = widget.navigationItems[index];
+                            final isPressed = index == pressedIdx;
+                            final double itemScale;
+                            final Color itemColor;
+                            final FontWeight itemWeight;
+                            if (isNonAdjacentJump &&
+                                index > minJump &&
+                                index < maxJump) {
+                              itemScale = 1.0;
+                              itemColor = onSurfaceVariantColor;
+                              itemWeight = FontWeight.w500;
+                            } else {
+                              final double selectFactor;
+                              if (isNonAdjacentJump) {
+                                if (index == jumpFrom) {
+                                  final distFromOrigin = (currentPos - jumpFrom)
+                                      .abs()
+                                      .clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 -
+                                      Curves.easeOut.transform(distFromOrigin);
+                                } else if (index == jumpTo) {
+                                  final distToTarget = (currentPos - jumpTo)
+                                      .abs()
+                                      .clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 -
+                                      Curves.easeOut.transform(distToTarget);
+                                } else {
+                                  selectFactor = 0.0;
+                                }
+                              } else {
+                                final rawDist = (currentPos - index).abs();
+                                if (rawDist >= 1.0) {
+                                  selectFactor = 0.0;
+                                } else {
+                                  final dist = rawDist.clamp(0.0, 1.0);
+                                  selectFactor =
+                                      1.0 - Curves.easeOut.transform(dist);
+                                }
+                              }
+
+                              if (selectFactor <= 0.0 && !isPressed) {
+                                itemScale = 1.0;
+                                itemColor = onSurfaceVariantColor;
+                                itemWeight = FontWeight.w500;
+                              } else {
+                                itemScale = isPressed
+                                    ? (1.0 - 0.05 * liftValue)
+                                    : (1.0 + 0.04 * selectFactor);
+                                itemColor = Color.lerp(
+                                  onSurfaceVariantColor,
+                                  primaryColor,
+                                  selectFactor,
+                                )!;
+                                itemWeight = (selectFactor >= 0.5 || isPressed)
+                                    ? FontWeight.w600
+                                    : FontWeight.w500;
+                              }
+                            }
+
+                            return Expanded(
+                              child: Center(
+                                child: Transform.scale(
+                                  scale: itemScale,
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconTheme(
+                                        data: IconThemeData(
+                                          color: itemColor,
+                                          size: 22,
+                                        ),
+                                        child: item.icon,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        localizedLabels[index],
+                                        style: itemTextStyle.copyWith(
+                                          color: itemColor,
+                                          fontWeight: itemWeight,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        RepaintBoundary(
-                          child: AnimatedBuilder(
-                            animation: Listenable.merge([
-                              _posController,
-                              _dragOffset,
-                              _pressedIndex,
-                              _liftController,
-                            ]),
-                            builder: (context, _) {
-                              final currentPos = navBarSlotResistance(
-                                _posController.value + _dragOffset.value,
-                                count,
-                              );
-                              final pressedIdx = _pressedIndex.value;
-                              final liftValue = _liftController.value;
-
-                              final jumpFrom = _jumpFromIndex;
-                              final jumpTo = _jumpToIndex;
-                              final isNonAdjacentJump =
-                                  jumpFrom != null &&
-                                  jumpTo != null &&
-                                  (jumpFrom - jumpTo).abs() > 1;
-                              final minJump = isNonAdjacentJump
-                                  ? math.min(jumpFrom, jumpTo)
-                                  : -1;
-                              final maxJump = isNonAdjacentJump
-                                  ? math.max(jumpFrom, jumpTo)
-                                  : -1;
-
-                              return Row(
-                                children: List.generate(count, (index) {
-                                  final item = widget.navigationItems[index];
-                                  final isPressed = index == pressedIdx;
-                                  final double itemScale;
-                                  final Color itemColor;
-                                  if (isNonAdjacentJump &&
-                                      index > minJump &&
-                                      index < maxJump) {
-                                    itemScale = 1.0;
-                                    itemColor = onSurfaceVariantColor;
-                                  } else {
-                                    final double selectFactor;
-                                    if (isNonAdjacentJump) {
-                                      if (index == jumpFrom) {
-                                        final distFromOrigin =
-                                            (currentPos - jumpFrom).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distFromOrigin,
-                                            );
-                                      } else if (index == jumpTo) {
-                                        final distToTarget =
-                                            (currentPos - jumpTo).abs().clamp(
-                                              0.0,
-                                              1.0,
-                                            );
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(
-                                              distToTarget,
-                                            );
-                                      } else {
-                                        selectFactor = 0.0;
-                                      }
-                                    } else {
-                                      final rawDist = (currentPos - index)
-                                          .abs();
-                                      if (rawDist >= 1.0) {
-                                        selectFactor = 0.0;
-                                      } else {
-                                        final dist = rawDist.clamp(0.0, 1.0);
-                                        selectFactor =
-                                            1.0 -
-                                            Curves.easeOut.transform(dist);
-                                      }
-                                    }
-
-                                    if (selectFactor <= 0.0 && !isPressed) {
-                                      itemScale = 1.0;
-                                      itemColor = onSurfaceVariantColor;
-                                    } else {
-                                      itemScale = isPressed
-                                          ? (1.0 - 0.05 * liftValue)
-                                          : (1.0 + 0.04 * selectFactor);
-                                      itemColor = Color.lerp(
-                                        onSurfaceVariantColor,
-                                        primaryColor,
-                                        selectFactor,
-                                      )!;
-                                    }
-                                  }
-
-                                  return Expanded(
-                                    child: Center(
-                                      child: Transform.scale(
-                                        scale: itemScale,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconTheme(
-                                              data: IconThemeData(
-                                                color: itemColor,
-                                                size: 22,
-                                              ),
-                                              child: item.icon,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              localizedLabels[index],
-                                              style: itemTextStyle.copyWith(
-                                                color: itemColor,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                            );
+                          }),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
     );
-  }
-}
-
-class NavBarPillPainter extends CustomPainter {
-  final Animation<double> position;
-  final Animation<double> lift;
-  final ValueListenable<double> dragOffset;
-  final int count;
-  final double Function(double slot, int count) slot;
-  final Color color;
-  final double baseAlpha;
-  final double activeAlpha;
-  final Rect Function(Size size, double position)? track;
-
-  NavBarPillPainter({
-    required this.position,
-    required this.lift,
-    required this.dragOffset,
-    required this.count,
-    required this.slot,
-    required this.color,
-    required this.baseAlpha,
-    required this.activeAlpha,
-    this.track,
-  }) : super(repaint: Listenable.merge([position, lift, dragOffset]));
-
-  static const double _restingGap = 4.0;
-
-  Rect pillRect(Size size) {
-    final gap = _restingGap * (1 - lift.value);
-    final pos = slot(position.value + dragOffset.value, count);
-    final slotWidth = size.width / count;
-    final base =
-        track?.call(size, pos) ??
-        Rect.fromLTWH(pos * slotWidth, 0, slotWidth, size.height);
-    final width = math.max(0.0, base.width - 2 * gap);
-    return Rect.fromLTWH(
-      base.center.dx - width / 2,
-      gap,
-      width,
-      size.height - 2 * gap,
-    );
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final t = lift.value;
-    final restingRadius = (size.height - 2 * _restingGap) / 2;
-    final radius = restingRadius + (size.height / 2 - restingRadius) * t;
-    final alpha = baseAlpha + (activeAlpha - baseAlpha) * t;
-    canvas.clipRRect(
-      RRect.fromRectAndRadius(
-        Offset.zero & size,
-        Radius.circular(size.height / 2),
-      ),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(pillRect(size), Radius.circular(radius)),
-      Paint()..color = color.withValues(alpha: alpha),
-    );
-  }
-
-  @override
-  bool shouldRepaint(NavBarPillPainter oldDelegate) {
-    return oldDelegate.position != position ||
-        oldDelegate.lift != lift ||
-        oldDelegate.dragOffset != dragOffset ||
-        oldDelegate.count != count ||
-        oldDelegate.track != track ||
-        oldDelegate.color != color ||
-        oldDelegate.baseAlpha != baseAlpha ||
-        oldDelegate.activeAlpha != activeAlpha;
   }
 }

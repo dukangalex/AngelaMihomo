@@ -466,13 +466,23 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
 
   @override
   Widget build(BuildContext context) {
+    final variant = context.zodiac?.variant;
     final color =
         widget.backgroundColor ??
-        context.zodiac?.variant.backgroundBase ??
+        variant?.backgroundBase ??
         (ref.watch(isMobileViewProvider)
             ? context.colorScheme.pageColor
             : null);
-    final opaque = color != null && color.a == 1;
+    // Gradient zodiac surfaces must not take the solid-strip path: the
+    // strip paints backgroundBase (the gradient's deepest stop) over the
+    // top edge, where the live gradient near the app bar is far lighter —
+    // a hard horizontal seam (the chain.22 brow defect). Gradient pages
+    // use the mask fade instead, which is color-agnostic.
+    final opaque =
+        color != null &&
+        color.a == 1 &&
+        !(widget.backgroundColor == null &&
+            (variant?.background.isGradient ?? false));
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (notification) => _handleScroll(
         notification.metrics,

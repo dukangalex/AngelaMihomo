@@ -17,9 +17,12 @@ class _FakeThemeSetting extends ThemeSetting {
   ThemeProps build() => const ThemeProps();
 }
 
-const _barY = 758.0;
-const _slotWidth = 91.0;
-const _firstCenterX = 63.5;
+// The bar is a full-width strip (design doc 3.5.6, alignment round):
+// on a 400-wide view the four slots are 100 wide, centers at 50/150/250/350,
+// and the 60-high bar sits flush at the bottom (y 740..800).
+const _barY = 770.0;
+const _slotWidth = 100.0;
+const _firstCenterX = 50.0;
 
 double _slotCenterX(num slot) => _firstCenterX + slot * _slotWidth;
 
@@ -74,14 +77,47 @@ Future<void> _pumpBar(
   await tester.pumpAndSettle();
 }
 
-double _pillCenterX(WidgetTester tester) {
-  final finder = find.byWidgetPredicate(
-    (widget) => widget is CustomPaint && widget.painter is NavBarPillPainter,
-  );
-  final painter = tester.widget<CustomPaint>(finder).painter;
-  final rect = tester.getRect(finder);
-  if (painter is! NavBarPillPainter) return double.nan;
-  return rect.left + painter.pillRect(rect.size).center.dx;
+/// Selection is read from icon/label color alone — there is no backing
+/// block behind the current tab. Each item's tint is the projection of
+/// its IconTheme color onto the onSurfaceVariant -> primary segment:
+/// 1 = fully highlighted, 0 = resting.
+List<double> _itemTints(WidgetTester tester) {
+  final barElement = tester.element(find.byType(GoogleBottomNavBar));
+  final scheme = Theme.of(barElement).colorScheme;
+  final base = scheme.onSurfaceVariant;
+  final target = scheme.primary;
+  final dr = target.r - base.r;
+  final dg = target.g - base.g;
+  final db = target.b - base.b;
+  final denom = dr * dr + dg * dg + db * db;
+  final themes = tester
+      .widgetList<IconTheme>(
+        find.descendant(
+          of: find.byType(GoogleBottomNavBar),
+          matching: find.byType(IconTheme),
+        ),
+      )
+      .toList();
+  return [
+    for (final theme in themes)
+      if (theme.data.color == null || denom == 0)
+        0.0
+      else
+        (((theme.data.color!.r - base.r) * dr +
+                    (theme.data.color!.g - base.g) * dg +
+                    (theme.data.color!.b - base.b) * db) /
+                denom)
+            .clamp(0.0, 1.0),
+  ];
+}
+
+int _highlightIndex(WidgetTester tester) {
+  final tints = _itemTints(tester);
+  var best = 0;
+  for (var i = 1; i < tints.length; i++) {
+    if (tints[i] > tints[best]) best = i;
+  }
+  return best;
 }
 
 void main() {
@@ -89,42 +125,78 @@ void main() {
     await AppLocalizations.load(const Locale('zh', 'CN'));
   });
 
-  testWidgets('拖拽期间指示块 1:1 跟手，往返经过起点没有死区', (tester) async {
+  testWidgets('全宽平直栏：无胶囊、无选中底衬色块', (tester) async {
+    await _pumpBar(tester, selectedIndex: 1, onTabChange: (_) {});
+
+    // No CustomPaint backing block anywhere in the bar.
+    expect(
+      find.descendant(
+        of: find.byType(GoogleBottomNavBar),
+        matching: find.byType(CustomPaint),
+      ),
+      findsNothing,
+    );
+    // The bar spans the full width and sits flush on the bottom edge.
+    final barRect = tester.getRect(find.byType(GoogleBottomNavBar));
+    expect(barRect.left, 0);
+    expect(barRect.right, 400);
+    expect(barRect.bottom, 800);
+    // Exactly the selected item is tinted.
+    final tints = _itemTints(tester);
+    expect(tints.length, 4);
+    expect(tints[1], closeTo(1.0, 0.02));
+    expect(tints[0], closeTo(0.0, 0.02));
+    expect(tints[2], closeTo(0.0, 0.02));
+    expect(tints[3], closeTo(0.0, 0.02));
+  });
+
+  testWidgets('拖拽期间高亮 1:1 跟手，起步没有死区', (tester) async {
     await _pumpBar(tester, selectedIndex: 2, onTabChange: (_) {});
 
     final gesture = await tester.startGesture(Offset(_slotCenterX(2), _barY));
     await tester.pump(const Duration(milliseconds: 200));
-    expect(_pillCenterX(tester), closeTo(_slotCenterX(2), 0.5));
+    expect(_highlightIndex(tester), 2);
 
     var fingerX = _slotCenterX(2);
     final steps = <double>[
       for (var i = 0; i < 20; i++) -3.0,
       for (var i = 0; i < 33; i++) 3.0,
     ];
-    double? previousPill;
-    var dragStartedAt = -1;
+    var respondedAt = -1;
     for (var i = 0; i < steps.length; i++) {
       fingerX += steps[i];
       await gesture.moveTo(Offset(fingerX, _barY));
       await tester.pump(const Duration(milliseconds: 16));
-      final pill = _pillCenterX(tester);
-      if (dragStartedAt < 0 && (pill - _slotCenterX(2)).abs() > 0.5) {
-        dragStartedAt = i;
-      }
-      if (dragStartedAt >= 0) {
-        expect(pill, closeTo(fingerX, 0.5), reason: 'step $i');
-        if (previousPill != null) {
-          expect((pill - previousPill).abs(), greaterThan(2.5));
-        }
-      }
-      previousPill = pill;
+      final tints = _itemTints(tester);
+      // The neighbor tint rises from zero as soon as the drag moves:
+      // no dead zone at the start.
+      if (respondedAt < 0 && tints[1] > 0.01) respondedAt = i;
+      // The strongest tint always sits on the slot nearest the finger.
+      final nearest = ((fingerX - _firstCenterX) / _slotWidth)
+          .round()
+          .clamp(0, 3);
+      expect(_highlightIndex(tester), nearest, reason: 'step $i');
     }
-    expect(dragStartedAt, inInclusiveRange(0, 2));
+    expect(respondedAt, inInclusiveRange(0, 2));
     await gesture.up();
     await tester.pumpAndSettle();
   });
 
-  testWidgets('到达最左格时不会撞墙，越界为渐进阻尼', (tester) async {
+  test('槽位阻尼：范围内直通，越界渐进且有界', () {
+    expect(navBarSlotResistance(0.5, 4), 0.5);
+    expect(navBarSlotResistance(3.0, 4), 3.0);
+    final slight = navBarSlotResistance(-0.5, 4);
+    expect(slight, lessThan(0));
+    expect(slight, greaterThan(-0.5));
+    final far = navBarSlotResistance(-3.0, 4);
+    expect(far, lessThan(slight));
+    expect(far, greaterThan(-0.35));
+    final right = navBarSlotResistance(6.0, 4);
+    expect(right, greaterThan(3.0));
+    expect(right, lessThan(3.35));
+  });
+
+  testWidgets('拖到最左越界后松手吸附到首格', (tester) async {
     int? changedTo;
     await _pumpBar(
       tester,
@@ -135,35 +207,19 @@ void main() {
     var fingerX = _slotCenterX(3);
     final gesture = await tester.startGesture(Offset(fingerX, _barY));
     await tester.pump(const Duration(milliseconds: 200));
-
-    final deltas = <double>[];
-    double? previousPill;
     while (fingerX > _slotCenterX(3) - 3.3 * _slotWidth) {
-      fingerX -= 1.0;
+      fingerX -= 4.0;
       await gesture.moveTo(Offset(fingerX, _barY));
       await tester.pump(const Duration(milliseconds: 8));
-      final pill = _pillCenterX(tester);
-      if (previousPill != null) {
-        final slot = (pill - _firstCenterX) / _slotWidth;
-        if (slot > -0.03 && slot < 0.05) deltas.add(previousPill - pill);
-      }
-      previousPill = pill;
     }
-
-    expect(deltas, isNotEmpty);
-    for (final delta in deltas) {
-      expect(delta, greaterThan(0.8));
-    }
-    expect(_pillCenterX(tester), lessThan(_firstCenterX));
-    expect(
-      _pillCenterX(tester),
-      greaterThan(_firstCenterX - 0.23 * _slotWidth),
-    );
+    expect(_highlightIndex(tester), 0);
 
     await gesture.up();
     await tester.pumpAndSettle();
     expect(changedTo, 0);
-    expect(_pillCenterX(tester), closeTo(_firstCenterX, 0.5));
+    final tints = _itemTints(tester);
+    expect(tints[0], closeTo(1.0, 0.02));
+    expect(tints[3], closeTo(0.0, 0.02));
   });
 
   testWidgets('点击屏幕左右边距命中首尾按钮', (tester) async {
@@ -179,10 +235,9 @@ void main() {
     expect(changes, [0, 3]);
   });
 
-  // Upstream v1.19.8 nav-bar model: a plain tap snaps the pill to the
-  // target instantly (no glide) and switches the page immediately;
-  // only drags glide. This replaces the fork-era tap-glide spec.
-  testWidgets('跨多格点击立即切换页面且指示块吸附到位', (tester) async {
+  // Upstream v1.19.8 nav-bar model: a plain tap snaps the highlight to
+  // the target and switches the page immediately; only drags glide.
+  testWidgets('跨多格点击立即切换页面且高亮吸附到位', (tester) async {
     final changes = <int>[];
     await _pumpBar(tester, selectedIndex: 0, onTabChange: changes.add);
 
@@ -192,14 +247,16 @@ void main() {
     await tester.pump();
 
     expect(changes, [3]);
-    expect(_pillCenterX(tester), closeTo(_slotCenterX(3), 0.5));
+    expect(_highlightIndex(tester), 3);
 
     await tester.pumpAndSettle();
     expect(changes, [3]);
-    expect(_pillCenterX(tester), closeTo(_slotCenterX(3), 0.5));
+    final tints = _itemTints(tester);
+    expect(tints[3], closeTo(1.0, 0.02));
+    expect(tints[0], closeTo(0.0, 0.02));
   });
 
-  testWidgets('按下非当前格后立即拖动，指示块不会与手指错位', (tester) async {
+  testWidgets('按下非当前格后立即拖动，高亮不会与手指错位', (tester) async {
     await _pumpBar(tester, selectedIndex: 0, onTabChange: (_) {});
 
     var fingerX = _slotCenterX(3);
@@ -208,7 +265,8 @@ void main() {
     fingerX -= 12;
     await gesture.moveTo(Offset(fingerX, _barY));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(_pillCenterX(tester), closeTo(fingerX, 0.5));
+    expect(_highlightIndex(tester), 3);
+    expect(_itemTints(tester)[3], greaterThan(0.5));
 
     await gesture.up();
     await tester.pumpAndSettle();
