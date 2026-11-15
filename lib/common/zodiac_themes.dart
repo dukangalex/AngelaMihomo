@@ -29,9 +29,7 @@ class ZodiacPaint {
   final List<Color>? stops;
   final bool isAtmospherePaint;
 
-  const ZodiacPaint._(this.isAtmospherePaint)
-    : solidColor = null,
-      stops = null;
+  const ZodiacPaint._(this.isAtmospherePaint) : solidColor = null, stops = null;
 
   const ZodiacPaint.solid(Color color)
     : solidColor = color,
@@ -191,12 +189,43 @@ class ZodiacVariant {
   }
 }
 
+/// One star of a theme's asterism (doc section 7.3): normalized
+/// coordinates in the backdrop's constellation field (x right, y down,
+/// 0–1) plus a brightness tier (1 dim, 2 mid, 3 bright).
+class ZodiacStar {
+  final double x;
+  final double y;
+  final int magnitude;
+
+  const ZodiacStar(this.x, this.y, this.magnitude);
+}
+
+/// A connecting line between two stars of an asterism, by index.
+class ZodiacEdge {
+  final int a;
+  final int b;
+
+  const ZodiacEdge(this.a, this.b);
+}
+
+/// A theme's constellation element: the simplified main-star asterism
+/// that makes the sign recognizable in the light field (doc 7.3).
+class ZodiacConstellation {
+  final List<ZodiacStar> stars;
+  final List<ZodiacEdge> edges;
+
+  const ZodiacConstellation({required this.stars, required this.edges});
+
+  static const empty = ZodiacConstellation(stars: [], edges: []);
+}
+
 class ZodiacThemeDef {
   final String id;
   final String sign;
   final String nameZh;
   final String nameEn;
   final ZodiacSkeleton skeleton;
+  final ZodiacConstellation constellation;
   final ZodiacVariant light;
   final ZodiacVariant dark;
 
@@ -206,6 +235,7 @@ class ZodiacThemeDef {
     required this.nameZh,
     required this.nameEn,
     required this.skeleton,
+    this.constellation = ZodiacConstellation.empty,
     required this.light,
     required this.dark,
   });
@@ -298,9 +328,12 @@ Color? zodiacDelayColor(ZodiacVariant? variant, int? delay) {
   return variant.delayMid;
 }
 
-/// Paints the active variant's page background: the token gradient (or
-/// solid) plus, for the immersive family, its fixed radial glow spots
-/// (doc 3.4: positions never move with content).
+/// Paints the active variant's page background as a three-layer light
+/// field (doc section 7.1): the token gradient (or solid), the fixed
+/// radial glow spots (doc 3.4: positions never move with content), and
+/// the theme's constellation element layer — its asterism and a faint
+/// sign-glyph watermark — so every theme, not only the immersive
+/// family, sits in its own light field with its own sign in it.
 class ZodiacBackdrop extends StatelessWidget {
   const ZodiacBackdrop({super.key});
 
@@ -310,6 +343,7 @@ class ZodiacBackdrop extends StatelessWidget {
     if (zodiac == null) return const SizedBox.expand();
     final variant = zodiac.variant;
     final background = variant.background;
+    final def = resolveZodiacTheme(zodiac.themeId);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -333,7 +367,118 @@ class ZodiacBackdrop extends StatelessWidget {
               ),
             ),
           ),
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _ConstellationPainter(
+              constellation: def.constellation,
+              sign: def.sign,
+              variant: variant,
+              isDark: Theme.of(context).brightness == Brightness.dark,
+            ),
+          ),
+        ),
       ],
     );
+  }
+}
+
+/// Draws one theme's constellation element layer (doc 7.3/7.4): the
+/// asterism in the fixed upper field, stars as token-toned points with
+/// a soft halo on the brighter ones, and the sign glyph as a large
+/// watermark in the lower right. Everything is painted from the active
+/// variant's tokens — lines in primary, star cores in textPrimary,
+/// halos in secondary — so the layer changes character with the theme
+/// and never borrows another sign's imagery colors.
+class _ConstellationPainter extends CustomPainter {
+  final ZodiacConstellation constellation;
+  final String sign;
+  final ZodiacVariant variant;
+  final bool isDark;
+
+  const _ConstellationPainter({
+    required this.constellation,
+    required this.sign,
+    required this.variant,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glyph = TextPainter(
+      text: TextSpan(
+        text: sign,
+        style: TextStyle(
+          fontSize: size.width * 0.4,
+          fontWeight: FontWeight.w700,
+          color: variant.textPrimary.withValues(alpha: 0.05),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    glyph.paint(
+      canvas,
+      Offset(size.width - glyph.width * 0.74, size.height * 0.58),
+    );
+
+    final stars = constellation.stars;
+    if (stars.isEmpty) return;
+    final field = Rect.fromLTWH(
+      size.width * 0.07,
+      size.height * 0.05,
+      size.width * 0.86,
+      size.height * 0.44,
+    );
+    Offset at(ZodiacStar star) => Offset(
+      field.left + star.x * field.width,
+      field.top + star.y * field.height,
+    );
+
+    final linePath = Path();
+    for (final edge in constellation.edges) {
+      final a = at(stars[edge.a]);
+      final b = at(stars[edge.b]);
+      linePath.moveTo(a.dx, a.dy);
+      linePath.lineTo(b.dx, b.dy);
+    }
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = variant.primary.withValues(alpha: isDark ? 0.35 : 0.25)
+        ..strokeWidth = 1.1
+        ..style = PaintingStyle.stroke,
+    );
+
+    for (final star in stars) {
+      final center = at(star);
+      final radius = switch (star.magnitude) {
+        >= 3 => 3.0,
+        2 => 2.1,
+        _ => 1.4,
+      };
+      if (star.magnitude >= 2) {
+        canvas.drawCircle(
+          center,
+          radius * 2.8,
+          Paint()
+            ..color =
+                (star.magnitude >= 3 ? variant.secondary : variant.primary)
+                    .withValues(alpha: star.magnitude >= 3 ? 0.22 : 0.13)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+        );
+      }
+      canvas.drawCircle(
+        center,
+        radius,
+        Paint()..color = variant.textPrimary.withValues(alpha: 0.85),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConstellationPainter oldDelegate) {
+    return oldDelegate.constellation != constellation ||
+        oldDelegate.sign != sign ||
+        oldDelegate.variant != variant ||
+        oldDelegate.isDark != isDark;
   }
 }
