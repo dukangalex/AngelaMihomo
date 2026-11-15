@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'color.dart';
+
 part 'zodiac_themes_data.dart';
 
 /// The twelve-constellation theme family (DESIGN-十二星座主题家族.md).
@@ -312,6 +314,74 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
 extension ZodiacContext on BuildContext {
   ZodiacThemeExtension? get zodiac =>
       Theme.of(this).extension<ZodiacThemeExtension>();
+}
+
+/// The app-wide switch theme (T154, user decision 2026-11-15: a
+/// switch that is on must read as lit at a glance). This is the single
+/// styling source for every Material switch in the app; pages never
+/// restyle their own switches.
+///
+/// DESIGN doc section 3.4 rule 5 puts every strong "selected / on"
+/// state in the variant's `selected` gradient — primary running to
+/// secondary. A Material switch track paints one flat color, so the
+/// switch carries the gradient by its two endpoints instead: the
+/// track takes the gradient's start (the selected paint's first
+/// color — the primary for most themes; the paper skeletons give
+/// selected a pale reversal face instead, DESIGN 4.4) and the thumb
+/// its end (the last stop for gradient themes, the secondary for
+/// solid ones). The
+/// off state keeps the neutral scheme tones it has always had, and
+/// the disabled state resolves to null so the framework's muted
+/// disabled rendering applies — a disabled switch never wears the
+/// lit colors. With no zodiac variant in scope the previous
+/// scheme-only colors are used, the same fallback [zodiacDelayColor]
+/// keeps.
+SwitchThemeData zodiacSwitchTheme(
+  ColorScheme colorScheme,
+  ZodiacVariant? variant,
+) {
+  final isLight = colorScheme.brightness == Brightness.light;
+  return SwitchThemeData(
+    thumbIcon: const WidgetStatePropertyAll(Icon(null)),
+    trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+    thumbColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.disabled)) return null;
+      if (states.contains(WidgetState.selected)) {
+        return variant == null
+            ? colorScheme.onPrimary
+            : _zodiacSwitchOnThumb(variant);
+      }
+      return isLight ? Colors.white : colorScheme.onSurfaceVariant;
+    }),
+    trackColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.disabled)) return null;
+      if (states.contains(WidgetState.selected)) {
+        return variant == null
+            ? colorScheme.primary
+            : _zodiacSwitchOnTrack(variant);
+      }
+      return isLight
+          ? colorScheme.surfaceContainerHighest
+          : colorScheme.surfaceContainerHighest.lighten(6);
+    }),
+  );
+}
+
+/// The lit track: the selected gradient's start. A selected paint of
+/// none/atmosphere carries no flat tone, so the primary stands in.
+Color _zodiacSwitchOnTrack(ZodiacVariant variant) {
+  final selected = variant.selected;
+  if (selected.isNone || selected.isAtmosphere) return variant.primary;
+  return selected.firstColor;
+}
+
+/// The lit thumb: the selected gradient's end — its last stop for
+/// gradient themes, the family's counterpart secondary for solid
+/// ones (the two agree wherever a gradient exists today).
+Color _zodiacSwitchOnThumb(ZodiacVariant variant) {
+  final selected = variant.selected;
+  if (selected.isGradient) return selected.stops!.last;
+  return variant.secondary;
 }
 
 /// Delay tier color from the active variant's tokens (doc section 2:

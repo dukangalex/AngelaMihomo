@@ -145,7 +145,7 @@ class ApplicationState extends ConsumerState<Application>
         space: 1,
       ),
       inputDecorationTheme: _inputDecorationTheme(colorScheme),
-      switchTheme: _switchTheme(colorScheme),
+      switchTheme: zodiacSwitchTheme(colorScheme, zodiac.variant),
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -164,26 +164,6 @@ class ApplicationState extends ConsumerState<Application>
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         textStyle: TextStyle(color: colorScheme.onInverseSurface, fontSize: 13),
       ),
-    );
-  }
-
-  SwitchThemeData _switchTheme(ColorScheme colorScheme) {
-    final isLight = colorScheme.brightness == Brightness.light;
-    return SwitchThemeData(
-      thumbIcon: const WidgetStatePropertyAll(Icon(null)),
-      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) return null;
-        if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
-        return isLight ? Colors.white : colorScheme.onSurfaceVariant;
-      }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) return null;
-        if (states.contains(WidgetState.selected)) return colorScheme.primary;
-        return isLight
-            ? colorScheme.surfaceContainerHighest
-            : colorScheme.surfaceContainerHighest.lighten(6);
-      }),
     );
   }
 
