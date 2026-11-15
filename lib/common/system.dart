@@ -856,74 +856,102 @@ class Windows {
     await Process.run('sc', ['stop', appHelperService]);
   }
 
+  /// Whether Task Scheduler currently holds a task named [appName].
+  ///
+  /// This query is the single source of truth for the auto-launch state:
+  /// [registerTask]/[unregisterTask] verify against it, and
+  /// `AutoLaunch.isEnable` reads it.
+  Future<bool> isTaskRegistered(String appName) async {
+    try {
+      final result = await Process.run('schtasks', [
+        '/Query',
+        '/TN',
+        appName,
+      ]);
+      return result.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Polls [isTaskRegistered] until it reports [shouldExist].
+  ///
+  /// The elevated schtasks process started through ShellExecuteW runs
+  /// asynchronously, so the scheduler state can take a moment to settle.
+  Future<bool> _waitForTaskRegistration(
+    String appName, {
+    required bool shouldExist,
+  }) async {
+    for (var attempt = 0; attempt < 10; attempt++) {
+      if (attempt > 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+      if (await isTaskRegistered(appName) == shouldExist) return true;
+    }
+    return false;
+  }
+
   Future<bool> registerTask(String appName) async {
     final executablePath = Platform.resolvedExecutable;
     final workingDirectory = dirname(executablePath);
 
-    final taskXml =
-        '''
-<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo>
-    <Description>开机自动启动代理服务</Description>
-    <URI>\\$appName</URI>
-  </RegistrationInfo>
-  <Principals>
-    <Principal id="Author">
-      <LogonType>InteractiveToken</LogonType>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-    </LogonTrigger>
-  </Triggers>
-  <Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <AllowHardTerminate>false</AllowHardTerminate>
-    <StartWhenAvailable>true</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <IdleSettings>
-      <StopOnIdleEnd>false</StopOnIdleEnd>
-      <RestartOnIdle>false</RestartOnIdle>
-    </IdleSettings>
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <RunOnlyIfIdle>false</RunOnlyIfIdle>
-    <WakeToRun>false</WakeToRun>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-    <Priority>6</Priority>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>"$executablePath"</Command>
-      <WorkingDirectory>$workingDirectory</WorkingDirectory>
-    </Exec>
-  </Actions>
-</Task>''';
+    final taskXml = buildAutoLaunchTaskXml(
+      taskName: appName,
+      executablePath: executablePath,
+      workingDirectory: workingDirectory,
+    );
     final taskPath = join(await appPath.tempPath, 'task.xml');
     await File(taskPath).create(recursive: true);
     await File(
       taskPath,
     ).writeAsBytes(taskXml.encodeUtf16LeWithBom, flush: true);
-    final commandLine = [
-      '/Create',
-      '/TN',
+    final launched = runas(
+      'schtasks',
+      buildRegisterTaskCommandLine(taskName: appName, taskXmlPath: taskPath),
+    );
+    if (!launched) {
+      commonPrint.warn(
+        'registerTask: schtasks could not be started for task "$appName"',
+      );
+      return false;
+    }
+    // ShellExecuteW only reports that schtasks was started, not whether
+    // the task was actually created; verify against the scheduler.
+    final created = await _waitForTaskRegistration(
       appName,
-      '/XML',
-      '%s',
-      '/F',
-    ].join(' ');
-    return runas('schtasks', commandLine.replaceFirst('%s', taskPath));
+      shouldExist: true,
+    );
+    if (!created) {
+      commonPrint.warn(
+        'registerTask: task "$appName" not present after creation attempt',
+      );
+    }
+    return created;
   }
 
   Future<bool> unregisterTask(String appName) async {
-    final commandLine = ['/Delete', '/TN', appName, '/F'].join(' ');
-    return runas('schtasks', commandLine);
+    final launched = runas(
+      'schtasks',
+      buildDeleteTaskCommandLine(taskName: appName),
+    );
+    if (!launched) {
+      commonPrint.warn(
+        'unregisterTask: schtasks could not be started for task "$appName"',
+      );
+      return false;
+    }
+    // Same verification as registerTask: success means the scheduler no
+    // longer holds the task (already absent also counts as success).
+    final removed = await _waitForTaskRegistration(
+      appName,
+      shouldExist: false,
+    );
+    if (!removed) {
+      commonPrint.warn(
+        'unregisterTask: task "$appName" still present after delete attempt',
+      );
+    }
+    return removed;
   }
 }
 
