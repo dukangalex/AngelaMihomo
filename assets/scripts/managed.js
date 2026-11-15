@@ -61,14 +61,13 @@ const ruleOptionsEnable = {
   强制TUN: true, // 是否强制开启 TUN（含 strict-route / auto-redirect）；关闭后保留订阅或客户端自带的 tun 配置，适用于无管理员权限、Linux 缺少 iptables/nftables 或自行管理 TUN 的环境
   代理IPV4优先: false, // 是否将订阅节点统一为 IPv4 优先（与“代理IPV6优先”同时开启时不生效）
   代理IPV6优先: false, // 是否将订阅节点统一为 IPv6 优先（与“代理IPV4优先”同时开启时不生效）
-  链式代理: false, // 是否启用链式代理（自定义节点作为落地节点，经“链式中转”策略组中转）
 };
 
 /**
  * 解析外部适配器传入的自定义开关。
  *
  * Mihomo 核心不会调用此接口；能够传递第二参数的脚本宿主可使用：
- *   main(config, { customOptions: { AI: false, 链式代理: true } })
+ *   main(config, { customOptions: { AI: false, 极简模式: true } })
  * 未提供参数时保持脚本内置默认值，保证现有客户端行为不变。
  */
 function resolveRuleOptions(context) {
@@ -92,7 +91,6 @@ function resolveRuleOptions(context) {
 }
 
 let activeRuleOptions = ruleOptionsEnable;
-let activeChainLanding = false;
 
 // 定义前置规则
 const prefixRules = [
@@ -115,32 +113,6 @@ const prefixRules = [
   'RULE-SET,biliintl,默认代理',
   'RULE-SET,disney,默认代理',
 ];
-
-// 此处添加自定义节点，填入下方[]内（可选，留空则不生成“自建节点”策略组）
-// 自定义节点不参与节点过滤与 hosts 改写；与订阅节点（标准化后）重名时自动添加“自建-”前缀
-// 示例：
-// const customizeProxies = [
-//   {
-//     name: '自建-日本-01',
-//     type: 'vmess',
-//     server: '5.6.7.8',
-//     port: 443,
-//     uuid: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-//     alterId: 0,
-//     cipher: 'auto',
-//     tls: true,
-//     servername: 'example.com',
-//     network: 'ws',
-//     'ws-opts': {
-//       path: '/path',
-//       headers: { Host: 'example.com' },
-//     },
-//   },
-// ];
-const customizeProxies = [];
-
-// 链式代理启用时，自定义节点的 dialer-proxy 引用目标
-const dialerProxyName = '链式中转';
 
 // 定义全局排除节点的正则表达式，用于排除非地区节点
 const excludeFilter =
@@ -1723,7 +1695,7 @@ function getIpVersionPreference() {
 
 // @shared:begin getReservedProxyNames — 由 Script/shared/getReservedProxyNames.js 同步，请勿在此直接修改
 /**
- * 保留名：策略组、地区组、内置节点等名称。节点或自定义节点与之重名会让内核拒绝配置，需要改名避开。
+ * 保留名：策略组、地区组、内置节点等名称。节点与之重名会让内核拒绝配置，需要改名避开。
  */
 function getReservedProxyNames() {
   const names = new Set([
@@ -1732,9 +1704,6 @@ function getReservedProxyNames() {
     '漏网之鱼',
     '直连',
     '其他节点',
-    '自建节点',
-    '链式落地',
-    dialerProxyName,
     'REJECT',
     'REJECT-DROP',
     'PASS',
@@ -1930,13 +1899,13 @@ function createRegionGroup(name, icon, proxies) {
 /**
  * 将节点按地区/倍率归类，构建地区策略组、倍率策略组与“其他节点”组
  */
-function buildRegionGroups(filteredProxies, customProxies) {
+function buildRegionGroups(filteredProxies) {
   const generateRateGroupEnabled = activeRuleOptions.生成倍率组;
 
   const regionGroups = Object.fromEntries(allRegionDefinitions.map(({ name }) => [name, []]));
   const otherProxies = [];
 
-  for (const proxy of [...filteredProxies, ...customProxies]) {
+  for (const proxy of filteredProxies) {
     const matchedRegions = getMatchedRegions(proxy.name);
     const isRegionProxy = matchedRegions.some((region) => regionDefinitions.includes(region));
 
@@ -1966,90 +1935,24 @@ function buildRegionGroups(filteredProxies, customProxies) {
 }
 // @shared:end buildRegionGroups
 
-// ---构建自定义节点组---
-
-/**
- * 处理自定义节点：标准化名称、与订阅节点重名时添加“自建-”前缀、内部去重，
- * 并构建“自建节点”策略组。
- * 自定义节点不参与订阅节点过滤，也不参与 hosts 改写及 DNS 域名处理。
- */
-function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies) {
-  const chainEnabled = activeRuleOptions.链式代理;
-
-  if (!customizeList.length) {
-    if (chainEnabled && !activeChainLanding) {
-      throw new Error('启用失败，请在脚本中添加自定义节点后尝试');
-    }
-    return { customProxies: [], customProxyNames: [], customGroup: null };
-  }
-
-  const usedNames = new Set(filteredProxies.map((p) => p.name));
-  const reservedNames = getReservedProxyNames();
-  const customPrefix = '自建-';
-  const customProxies = [];
-
-  for (const proxy of customizeList) {
-    const normalized = normalizeProxyName(proxy);
-    let name = normalized.name;
-    while (usedNames.has(name) || reservedNames.has(name)) {
-      name = normalizeProxyName({ name: `${customPrefix}${name}` }).name.replace(`${customPrefix} `, customPrefix);
-    }
-    usedNames.add(name);
-
-    let customProxy = name === normalized.name ? normalized : { ...normalized, name };
-    if (chainEnabled && customProxy['dialer-proxy'] !== dialerProxyName) {
-      customProxy = { ...customProxy, 'dialer-proxy': dialerProxyName };
-    }
-    customProxies.push(customProxy);
-  }
-
-  const customProxyNames = customProxies.map((p) => p.name);
-
-  const customGroup = {
-    ...selectBaseOption,
-    name: chainEnabled ? '链式落地' : '自建节点',
-    proxies: customProxyNames,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Server.svg',
-  };
-
-  return {
-    customProxies,
-    customProxyNames,
-    customGroup,
-  };
-}
-
 // ---构建基础策略组和分流策略组---
 
 /**
  * 构建基础/分流策略组/部分节点组、GLOBAL 组与规则集，并汇总分流规则
  */
-function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customizeInfo) {
+function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
   const minimalModeEnabled = activeRuleOptions.极简模式;
   const addAllNodesToServiceGroupsEnabled = activeRuleOptions.分流组添加所有节点;
-  const chainEnabled = activeRuleOptions.链式代理;
   const hideManualSelectGroupEnabled = activeRuleOptions.隐藏地区手动选择组;
 
   const functionalGroups = [];
   const functionalRules = [];
   const finalRuleProviders = { ...baseRuleProviders };
 
-  const { customProxyNames = [], customGroup = null } = customizeInfo || {};
   const filteredProxyNames = filteredProxies.map((p) => p.name);
-  const allProxiesNames = [...customProxyNames, ...filteredProxyNames];
+  const allProxiesNames = filteredProxyNames;
   const groupNamesOfSelect = generatedRegionGroups.filter((g) => g.type === 'select').map((g) => g.name);
   const baseGroupNames = baseGroups.filter((g) => activeRuleOptions[g.name]).map((g) => g.name);
-  const customGroupNames = customGroup ? [customGroup.name] : [];
-
-  const chainGroup =
-    chainEnabled && customGroup
-      ? {
-          ...selectBaseOption,
-          name: dialerProxyName,
-          proxies: filteredProxyNames,
-          icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Bypass.svg',
-        }
-      : null;
 
   if (minimalModeEnabled) {
     const defaultGroup = {
@@ -2069,7 +1972,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     const globalGroup = {
       ...selectBaseOption,
       name: 'GLOBAL',
-      proxies: ['默认代理', ...customGroupNames, ...(chainGroup ? [chainGroup.name] : [])],
+      proxies: ['默认代理'],
       icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Global.svg',
     };
     return {
@@ -2077,7 +1980,6 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
       functionalGroups: [defaultGroup],
       functionalRules: [],
       finalRuleProviders,
-      chainGroup,
       directGroup,
     };
   }
@@ -2085,7 +1987,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
   functionalGroups.push({
     ...selectBaseOption,
     name: '默认代理',
-    proxies: [...groupNamesOfSelect, ...baseGroupNames, ...customGroupNames],
+    proxies: [...groupNamesOfSelect, ...baseGroupNames],
     icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Proxy.svg',
   });
 
@@ -2112,8 +2014,8 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
       groupProxies = ['REJECT', 'REJECT-DROP', 'PASS'];
     } else {
       groupProxies = !addAllNodesToServiceGroupsEnabled
-        ? ['默认代理', ...customGroupNames, ...baseGroupNames, ...groupNamesOfSelect]
-        : ['默认代理', ...customGroupNames, ...baseGroupNames, ...groupNamesOfSelect, ...allProxiesNames];
+        ? ['默认代理', ...baseGroupNames, ...groupNamesOfSelect]
+        : ['默认代理', ...baseGroupNames, ...groupNamesOfSelect, ...allProxiesNames];
     }
 
     functionalGroups.push({
@@ -2148,14 +2050,12 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     name: 'GLOBAL',
     proxies: [
       ...functionalGroups.map((g) => g.name),
-      ...customGroupNames,
-      ...(chainGroup ? [chainGroup.name] : []),
       ...generatedRegionGroups.map((g) => g.name),
     ],
     icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Global.svg',
   };
 
-  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directGroup };
+  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, directGroup };
 }
 
 // ---dns和hosts相关处理---
@@ -2935,7 +2835,7 @@ function getProviderRegionFilter(region) {
  * Mihomo 使用 regexp2（支持否定前瞻），所以两种范围都能精确还原：
  *  - 'region'：地区组。节点已被地区正则选中，只需排除强信息词
  *    （「日本 支持 Netflix」保留，「剩余流量 120 GB」排除）；
- *  - 'all'：收纳全部节点的基础组 / 链式组。排除 = 强信息词，或「不含任何地区特征且含弱词」
+ *  - 'all'：收纳全部节点的基础组。排除 = 强信息词，或「不含任何地区特征且含弱词」
  *    （「香港 备用 01」保留，「备用域名」「使用说明」排除）。
  * 关闭「过滤非地区节点」时返回空串（不下发 exclude-filter），与普通模式不做过滤一致。
  */
@@ -2951,11 +2851,11 @@ function getProviderExcludeFilter(scope) {
 // @shared:end getProviderExcludeFilter
 
 // @shared:begin buildProviderRegionGroups — 由 Script/shared/buildProviderRegionGroups.js 同步，请勿在此直接修改
-function buildProviderRegionGroups(filteredProxies, customProxies, providerNames) {
+function buildProviderRegionGroups(filteredProxies, providerNames) {
   // Provider 本身的远程节点在脚本执行阶段不可见，因此严格沿用原有
   // getMatchedRegions() + buildRegionGroups() 逻辑：只有当前脚本实际可见的
   // 节点能够证明某地区存在时，才创建该地区组；绝不为未知/空地区预建空组。
-  const groups = buildRegionGroups(filteredProxies, customProxies);
+  const groups = buildRegionGroups(filteredProxies);
   const regionByName = new Map(allRegionDefinitions.map((region) => [region.name, region]));
 
   for (const group of groups) {
@@ -2979,7 +2879,7 @@ function buildProviderRegionGroups(filteredProxies, customProxies, providerNames
  * provider 模式下让原有基础组直接消费 provider 节点。
  * 仅补充节点来源，不删除原有规则、组结构或功能。
  */
-function enableProviderSources(groups, chainGroup, providerNames) {
+function enableProviderSources(groups, providerNames) {
   const baseNames = new Set(baseGroups.map((group) => group.name));
   for (const group of groups) {
     if (!group || (!baseNames.has(group.name) && group.name !== '默认代理')) continue;
@@ -2989,12 +2889,6 @@ function enableProviderSources(groups, chainGroup, providerNames) {
     group['exclude-type'] = 'DIRECT|REJECT|REJECT-DROP|PASS';
   }
 
-  if (chainGroup) {
-    chainGroup.use = [...providerNames];
-    const chainExclude = getProviderExcludeFilter('all');
-    if (chainExclude) chainGroup['exclude-filter'] = chainExclude;
-    chainGroup['exclude-type'] = 'DIRECT|REJECT|REJECT-DROP|PASS';
-  }
 }
 // @shared:end enableProviderSources
 
@@ -3021,7 +2915,6 @@ function isLoopbackController(value) {
  */
 function main(config, context) {
   activeRuleOptions = resolveRuleOptions(context);
-  activeChainLanding = Boolean(context && context.customLanding);
   const providerMode = hasProxyProviders(config);
   const providerNames = providerMode ? Object.keys(config['proxy-providers']) : [];
   const newConfig = {};
@@ -3031,19 +2924,17 @@ function main(config, context) {
   const originalProxies = Array.isArray(config.proxies) ? config.proxies : [];
   const filteredProxies = providerMode ? filterProviderVisibleProxies(config) : filterAndNormalizeProxies(config);
 
-  const { customProxies, customProxyNames, customGroup } = buildCustomizeGroups(filteredProxies);
-
   const generatedRegionGroups = activeRuleOptions.极简模式
     ? []
     : providerMode
-      ? buildProviderRegionGroups(filteredProxies, customProxies, providerNames)
-      : buildRegionGroups(filteredProxies, customProxies);
+      ? buildProviderRegionGroups(filteredProxies, providerNames)
+      : buildRegionGroups(filteredProxies);
 
-  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directGroup } =
-    buildFunctionalGroups(filteredProxies, generatedRegionGroups, { customProxyNames, customGroup });
+  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, directGroup } =
+    buildFunctionalGroups(filteredProxies, generatedRegionGroups);
 
   if (providerMode) {
-    enableProviderSources(functionalGroups, chainGroup, providerNames);
+    enableProviderSources(functionalGroups, providerNames);
   }
 
   const {
@@ -3093,7 +2984,6 @@ function main(config, context) {
   // 脚本只接管其余配置结构。
   newConfig['proxies'] = [
     ...(providerMode ? originalProxies.map(applyKernelProxyDefaults) : mappedProxies),
-    ...customProxies,
     ...directProxies,
   ];
   if (providerMode) {
@@ -3102,8 +2992,6 @@ function main(config, context) {
   newConfig['proxy-groups'] = [
     globalGroup,
     ...functionalGroups,
-    ...(customGroup ? [customGroup] : []),
-    ...(chainGroup ? [chainGroup] : []),
     directGroup,
     ...generatedRegionGroups,
   ];
