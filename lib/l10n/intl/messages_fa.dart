@@ -2352,6 +2352,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "startSwitchStyle": MessageLookupByLibrary.simpleMessage("سبک"),
     "startSwitchTonal": MessageLookupByLibrary.simpleMessage("رنگی ملایم"),
     "startTest": MessageLookupByLibrary.simpleMessage("تست تاخیر"),
+    "globalDelayTest": MessageLookupByLibrary.simpleMessage("تست تأخیر سراسری زنجیره‌ای"),
+    "globalDelayTesting": MessageLookupByLibrary.simpleMessage("در حال تست"),
+    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("تست کامل شد"),
+    "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("ناموفق"),
     "startVpn": MessageLookupByLibrary.simpleMessage("در حال شروع..."),
     "status": MessageLookupByLibrary.simpleMessage("وضعیت"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(

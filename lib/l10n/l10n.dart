@@ -2510,6 +2510,46 @@ class AppLocalizations {
     return Intl.message('Delay Test', name: 'startTest', desc: '', args: []);
   }
 
+  /// `Global Linked Delay Test`
+  String get globalDelayTest {
+    return Intl.message(
+      'Global Linked Delay Test',
+      name: 'globalDelayTest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Testing`
+  String get globalDelayTesting {
+    return Intl.message(
+      'Testing',
+      name: 'globalDelayTesting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test complete`
+  String get globalDelayTestDone {
+    return Intl.message(
+      'Test complete',
+      name: 'globalDelayTestDone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed`
+  String get globalDelayTestFailed {
+    return Intl.message(
+      'Failed',
+      name: 'globalDelayTestFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Add Profile`
   String get addProfile {
     return Intl.message('Add Profile', name: 'addProfile', desc: '', args: []);

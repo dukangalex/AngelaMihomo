@@ -2334,6 +2334,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Style"),
     "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Tonal"),
     "startTest": MessageLookupByLibrary.simpleMessage("Delay Test"),
+    "globalDelayTest": MessageLookupByLibrary.simpleMessage("Global Linked Delay Test"),
+    "globalDelayTesting": MessageLookupByLibrary.simpleMessage("Testing"),
+    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("Test complete"),
+    "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("Failed"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Starting..."),
     "status": MessageLookupByLibrary.simpleMessage("Status"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(

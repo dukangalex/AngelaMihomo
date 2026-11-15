@@ -15,6 +15,7 @@ import '../profiles/managed_options.dart' show showManagedOptions;
 import '../profiles/scripts.dart'
     show showGroupSwitchOptions, showScriptCustomOptions;
 import 'advanced_settings.dart';
+import 'common.dart';
 import 'setting.dart';
 import 'tab.dart';
 
@@ -54,6 +55,31 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
         !hasScriptCustom && ref.read(currentProfileIdProvider) != null;
     final hasCustom = hasScriptCustom || hasGroupCustom;
     return [
+      AnimatedBuilder(
+        animation: Listenable.merge([
+          globalDelayTestController,
+          delayTestCoordinator,
+        ]),
+        builder: (_, _) {
+          if (globalDelayTestController.isRunning) {
+            return IconButton(
+              onPressed: () => cancelGlobalDelayTest(),
+              tooltip: appLocalizations.cancel,
+              icon: const SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
+          return IconButton(
+            onPressed: delayTestCoordinator.isTesting
+                ? null
+                : () => globalDelayTest(),
+            tooltip: appLocalizations.globalDelayTest,
+            icon: const Icon(Icons.speed),
+          );
+        },
+      ),
       if (_isTab)
         IconButton(
           onPressed: () {
@@ -275,21 +301,102 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           ? _collapseAllGroups
           : null,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      body: switch (hasGroups) {
-        false => NullStatus(
-          label: appLocalizations.noProxy,
-          icon: Icons.cloud_off_outlined,
-          description: appLocalizations.noProxyDesc,
-          action: FilledButton.tonalIcon(
-            onPressed: globalState.appController.toProfiles,
-            icon: const Icon(Icons.add, size: 18),
-            label: Text(appLocalizations.addProfile),
+      body: Column(
+        children: [
+          const _GlobalDelayTestStatusBar(),
+          Expanded(
+            child: switch (hasGroups) {
+              false => NullStatus(
+                label: appLocalizations.noProxy,
+                icon: Icons.cloud_off_outlined,
+                description: appLocalizations.noProxyDesc,
+                action: FilledButton.tonalIcon(
+                  onPressed: globalState.appController.toProfiles,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(appLocalizations.addProfile),
+                ),
+              ),
+              true => switch (proxiesType) {
+                ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
+                ProxiesType.list => ProxiesListView(key: _proxiesListKey),
+              },
+            },
           ),
-        ),
-        true => switch (proxiesType) {
-          ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
-          ProxiesType.list => ProxiesListView(key: _proxiesListKey),
-        },
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    if (globalDelayTestController.isRunning) {
+      cancelGlobalDelayTest();
+    }
+    super.dispose();
+  }
+}
+
+/// In-page progress/result strip for the global linked delay test, shown
+/// under the app bar while a run is in flight and after it completes.
+class _GlobalDelayTestStatusBar extends StatelessWidget {
+  const _GlobalDelayTestStatusBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: globalDelayTestController,
+      builder: (context, _) {
+        final state = globalDelayTestController;
+        if (state.phase == GlobalDelayTestPhase.idle) {
+          return const SizedBox.shrink();
+        }
+        final running = state.isRunning;
+        final failed = state.failed;
+        final colorScheme = context.colorScheme;
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          color: colorScheme.secondaryContainer,
+          child: Row(
+            children: [
+              if (running)
+                const SizedBox.square(
+                  dimension: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(
+                  failed > 0 ? Icons.error_outline : Icons.check_circle_outline,
+                  size: 16,
+                  color: failed > 0 ? colorScheme.error : colorScheme.primary,
+                ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  running
+                      ? '${appLocalizations.globalDelayTest} · '
+                            '${appLocalizations.globalDelayTesting} '
+                            '${state.completed}/${state.total}'
+                      : '${appLocalizations.globalDelayTest} · '
+                            '${appLocalizations.globalDelayTestDone}'
+                            '${failed > 0 ? ' · ${appLocalizations.globalDelayTestFailed} $failed' : ''}',
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+              if (!running)
+                IconButton(
+                  onPressed: state.dismiss,
+                  icon: const Icon(Icons.close, size: 16),
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(
+                    minWidth: 28,
+                    minHeight: 28,
+                  ),
+                ),
+            ],
+          ),
+        );
       },
     );
   }

@@ -2426,6 +2426,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Стиль"),
     "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Тональный"),
     "startTest": MessageLookupByLibrary.simpleMessage("Тест задержки"),
+    "globalDelayTest": MessageLookupByLibrary.simpleMessage("Глобальный тест задержки цепочки"),
+    "globalDelayTesting": MessageLookupByLibrary.simpleMessage("Тестирование"),
+    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("Тест завершён"),
+    "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("Не удалось"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Запуск VPN"),
     "status": MessageLookupByLibrary.simpleMessage("Статус"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(
