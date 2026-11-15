@@ -440,7 +440,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
       _SearchItem(
         title: appLocalizations.developerMode,
         category: otherCategory,
-        leading: const Icon(Icons.developer_board_outlined),
+        leading: const Icon(Icons.code_outlined),
         onTap: (context, _) => _pushPage(
           context,
           appLocalizations.developerMode,
@@ -1672,7 +1672,7 @@ class _DeveloperItem extends _ToolsItem {
   @override
   Widget build(BuildContext context) {
     return ListItem.next(
-      leading: const Icon(Icons.developer_board_outlined),
+      leading: const Icon(Icons.code_outlined),
       title: Text(appLocalizations.developerMode),
       delegate: NextDelegate(
         title: appLocalizations.developerMode,
