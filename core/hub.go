@@ -334,7 +334,7 @@ func marshalProxies(proxies map[string]constant.Proxy) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	rememberGroupNows(nows)
+	rememberGroupNows(proxies, nows)
 	return data, nil
 }
 

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/metacubex/mihomo/constant"
+	"github.com/metacubex/mihomo/tunnel"
 )
 
 func pendingDelayCount() int {
@@ -71,17 +73,49 @@ func TestGroupsChangedIsSentOncePerFetch(t *testing.T) {
 	if checkGroupsChanged() {
 		t.Fatal("changed without a baseline")
 	}
-	rememberGroupNows(map[string]string{"missing": "A"})
+	rememberGroupNows(map[string]constant.Proxy{}, map[string]string{"missing": "A"})
 	if !checkGroupsChanged() {
 		t.Fatal("missing group not reported")
 	}
 	if checkGroupsChanged() {
 		t.Fatal("reported twice before the next fetch")
 	}
-	rememberGroupNows(map[string]string{})
+	rememberGroupNows(map[string]constant.Proxy{}, map[string]string{})
 	if checkGroupsChanged() {
 		t.Fatal("empty baseline reported a change")
 	}
+}
+
+// TestGroupsChangedSnapshotRacesProxyUpdates is the T124 regression guard:
+// the flush/recheck timers reach checkGroupsChanged on their own goroutines
+// while config application swaps the tunnel proxies variable through
+// tunnel.UpdateProxies. checkGroupsChanged must judge from the snapshot
+// captured by rememberGroupNows and never read the live tunnel variable;
+// under -race any regression to a live read fails this test.
+func TestGroupsChangedSnapshotRacesProxyUpdates(t *testing.T) {
+	defer resetDelayState()
+	resetDelayState()
+	oldProxies, oldProviders := tunnel.Proxies(), tunnel.Providers()
+	defer tunnel.UpdateProxies(oldProxies, oldProviders)
+	empty := map[string]constant.Proxy{}
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 300; i++ {
+			tunnel.UpdateProxies(empty, oldProviders)
+			tunnel.UpdateProxies(oldProxies, oldProviders)
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 300; i++ {
+			rememberGroupNows(empty, map[string]string{"missing": "A"})
+			checkGroupsChanged()
+		}
+	}()
+	wg.Wait()
 }
 
 func TestResetDropsStaleBatchDelays(t *testing.T) {

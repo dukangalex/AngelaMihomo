@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/constant"
-	"github.com/metacubex/mihomo/tunnel"
 )
 
 const (
@@ -41,6 +40,7 @@ var (
 
 	groupNowsLock     sync.Mutex
 	lastGroupNows     map[string]string
+	lastGroupProxies  map[string]constant.Proxy
 	groupsChangedSent bool
 	groupRecheckTimer *time.Timer
 
@@ -184,8 +184,16 @@ func handleSetForeground(value bool) {
 	}
 }
 
-func rememberGroupNows(nows map[string]string) {
+// rememberGroupNows records the group Now() baseline together with the
+// proxies snapshot it was taken from. Callers must pass the exact map the
+// baseline was computed from (the get-proxies fetch path), never a fresh
+// tunnel.Proxies() read: the vendored getter is unsynchronized while
+// UpdateProxies writes under a lock, so any read of the live variable from
+// the flush/recheck timers races config application (T124). The timers
+// below only ever consult this captured snapshot.
+func rememberGroupNows(proxies map[string]constant.Proxy, nows map[string]string) {
 	groupNowsLock.Lock()
+	lastGroupProxies = proxies
 	lastGroupNows = nows
 	groupsChangedSent = false
 	groupNowsLock.Unlock()
@@ -195,11 +203,10 @@ func resetDelayState() {
 	delayPushLock.Lock()
 	pendingDelays = map[delayKey]Delay{}
 	delayPushLock.Unlock()
-	rememberGroupNows(nil)
+	rememberGroupNows(nil, nil)
 }
 
-func groupNowsChanged(nows map[string]string) bool {
-	proxies := tunnel.Proxies()
+func groupNowsChanged(proxies map[string]constant.Proxy, nows map[string]string) bool {
 	for name, now := range nows {
 		_, group, ok := proxyGroupOf(proxies[name])
 		if !ok || group.Now() != now {
@@ -211,7 +218,7 @@ func groupNowsChanged(nows map[string]string) bool {
 
 func checkGroupsChanged() bool {
 	groupNowsLock.Lock()
-	changed := !groupsChangedSent && lastGroupNows != nil && groupNowsChanged(lastGroupNows)
+	changed := !groupsChangedSent && lastGroupNows != nil && groupNowsChanged(lastGroupProxies, lastGroupNows)
 	if changed {
 		groupsChangedSent = true
 	}
