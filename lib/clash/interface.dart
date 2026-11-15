@@ -491,10 +491,19 @@ abstract class ClashHandlerInterface with ClashInterface {
   @override
   Future<SetupResult> setupConfig(SetupParams setupParams) async {
     final params = await Isolate.run(() => json.encode(setupParams));
+    // The core is the single authority on whether a config applied, and
+    // its setup duration is profile-dependent: applying a config
+    // synchronously performs the initial fetch of every cache-less
+    // provider in two waves (proxy providers, then rule providers),
+    // each fetch carrying the vehicle budget of 20s, on top of parsing
+    // the profile itself. A 15s deadline therefore declared slow-but-
+    // valid profiles failed and rolled them back (T127). 120s covers
+    // that envelope with margin; a dead core still surfaces immediately
+    // through the disconnect path instead of this deadline.
     final data = await invoke<dynamic>(
       method: ActionMethod.setupConfig,
       data: params,
-      timeout: const Duration(seconds: 15),
+      timeout: const Duration(seconds: 120),
       onTimeout: () => throw TimeoutException('setupConfig timeout'),
     );
     return SetupResult.fromData(data);

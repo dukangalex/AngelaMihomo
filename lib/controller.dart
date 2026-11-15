@@ -51,7 +51,15 @@ class AppController {
   Timer? _wakelockSyncTimer;
   final List<Log> _pendingLogs = [];
   Completer<void>? _exitLock;
-  final Lock _coreLifecycleLock = Lock(reentrant: true);
+  // Plain (non-reentrant) lock: the reentrant lock tracks nesting through
+  // Zones, and any lock-taking call that executes in a zone captured
+  // inside an earlier, already-exited block throws StateError ("inner
+  // synchronized block spawned outside the block it was started
+  // from") — the T127 switch failure. Nesting is therefore expressed by
+  // calling the lock-held bodies (_restartCore, _applyProfile,
+  // _setupCoreConfig, _updateGroups, _withAndroidVpnRebuild) directly;
+  // only the outermost entry points below take this lock.
+  final Lock _coreLifecycleLock = Lock();
   // Most recent profile whose application completed, or the prior selection
   // supplied on the first change. This is not VPN readiness confirmation.
   String? _profileRollbackId;
@@ -163,17 +171,22 @@ class AppController {
   }
 
   Future<void> restartCore() {
-    return _coreLifecycleLock.synchronized(() async {
-      _ref.read(isRestartingCoreProvider.notifier).state = true;
-      try {
-        await _restartCore();
-      } catch (err) {
-        _reportCoreRestartFailure(err);
-        rethrow;
-      } finally {
-        _ref.read(isRestartingCoreProvider.notifier).state = false;
-      }
-    });
+    return _coreLifecycleLock.synchronized(_restartCoreWithFeedback);
+  }
+
+  /// Lock-held body of [restartCore]; callers that already hold
+  /// _coreLifecycleLock (e.g. _fastStart under updateStatus) use this
+  /// directly instead of re-entering the lock.
+  Future<void> _restartCoreWithFeedback() async {
+    _ref.read(isRestartingCoreProvider.notifier).state = true;
+    try {
+      await _restartCore();
+    } catch (err) {
+      _reportCoreRestartFailure(err);
+      rethrow;
+    } finally {
+      _ref.read(isRestartingCoreProvider.notifier).state = false;
+    }
   }
 
   Future<void> _restartCore({
@@ -184,7 +197,7 @@ class AppController {
     _invalidateCoreReads();
     _cancelDelayTests();
 
-    final wasRunning = _ref.read(runTimeProvider.notifier).isStart;
+    final wasRunning = await _isServiceRunning();
     // UI run time may already be cleared after a failed transition. Resolve
     // that native cleanup obligation before init/restart can mutate the core.
     if (wasRunning ||
@@ -213,7 +226,7 @@ class AppController {
       throw StateError('Core configuration was not applied during restart');
     }
     if (refreshData && configured) {
-      await updateGroups();
+      await _updateGroups();
       await updateProviders();
       scheduleIdleGc();
     }
@@ -262,7 +275,7 @@ class AppController {
         try {
           final res = await _requestAdmin(true);
           if (res.needRestart) {
-            await restartCore();
+            await _restartCoreWithFeedback();
             return;
           }
           await globalState.handleStart([updateRunTime, updateTraffic]);
@@ -293,7 +306,7 @@ class AppController {
         try {
           final res = await _requestAdmin(true);
           if (res.needRestart) {
-            await restartCore();
+            await _restartCoreWithFeedback();
             return;
           }
           if (res.data == true) {
@@ -386,24 +399,43 @@ class AppController {
     return _checkIfNeedReapply();
   }
 
-  // All callers, including silent/setup/fast-start paths, share the same lock.
+  // Must be called with _coreLifecycleLock held (every caller chain —
+  // silent/setup/fast-start — enters through a lock-taking entry point).
   // A failed config/start stays stopped; never resume the failed configuration.
   Future<T> _withAndroidVpnRebuild<T>(
     Future<T> Function() configure, {
     bool Function(T)? accepted,
-  }) {
-    return _coreLifecycleLock.synchronized(() async {
-      final rebuild = system.isAndroid && globalState.isStart;
-      if (system.isAndroid &&
-          (rebuild || globalState.vpnTransitionUnconfirmed)) {
-        await globalState.handleStop();
+  }) async {
+    final rebuild = system.isAndroid && await _isServiceRunning();
+    if (system.isAndroid &&
+        (rebuild || globalState.vpnTransitionUnconfirmed)) {
+      await globalState.handleStop();
+    }
+    final value = await configure();
+    if (rebuild && (accepted == null || accepted(value))) {
+      await globalState.handleStart([updateRunTime, updateTraffic]);
+    }
+    return value;
+  }
+
+  /// The single authority for "is the VPN service running" in switch and
+  /// restart decisions. The app-side mirrors (globalState.startTime,
+  /// runTimeProvider) can read stopped while the Android service is in
+  /// fact live (e.g. after the app process was restarted), which used to
+  /// route running switches down the wrong branch (T127); the service's
+  /// own status wins whenever it can be asked.
+  Future<bool> _isServiceRunning() async {
+    if (system.isAndroid) {
+      final service = vpn_service.service;
+      if (service != null) {
+        try {
+          return await service.getStatus();
+        } catch (_) {
+          // Fall through to the mirrors if the channel is unavailable.
+        }
       }
-      final value = await configure();
-      if (rebuild && (accepted == null || accepted(value))) {
-        await globalState.handleStart([updateRunTime, updateTraffic]);
-      }
-      return value;
-    });
+    }
+    return globalState.isStart || _ref.read(runTimeProvider.notifier).isStart;
   }
 
   Future<bool> _setupCoreConfig({bool? enableTun}) => _withAndroidVpnRebuild(
@@ -1106,7 +1138,7 @@ class AppController {
     if (!configured) return false;
     _ref.read(delayDataSourceProvider.notifier).clear();
     _setProviders(await clashCore.getExternalProviders());
-    await updateGroups();
+    await _updateGroups();
     scheduleIdleGc();
     return true;
   }
@@ -1162,9 +1194,11 @@ class AppController {
       // full rebuild path (stop the VPN, apply the new profile in the
       // stopped state, restart the VPN), the same path as a core restart.
       // The hot-reload path below cannot fully hand over TUN, DNS and
-      // chain structure differences between profiles (T33).
-      final wasRunning =
-          globalState.isStart || _ref.read(runTimeProvider.notifier).isStart;
+      // chain structure differences between profiles (T33). The running
+      // state comes from _isServiceRunning (the service's own status is
+      // authoritative): a stale app-side mirror must not route a live
+      // switch down the hot path (T127).
+      final wasRunning = await _isServiceRunning();
       final fullRebuild =
           hardRestart || (system.isAndroid && profileChanged && wasRunning);
       if (fullRebuild) {
@@ -1225,6 +1259,20 @@ class AppController {
               !globalState.isStart) {
             _resumeServiceForProfileId = null;
             await globalState.handleStart([updateRunTime, updateTraffic]);
+          }
+          // A user-initiated profile switch ends with the new profile
+          // running: if the service was stopped, start it now so the
+          // home page shows the switched profile live instead of asking
+          // for a manual start (T127 seamless-switch requirement). A
+          // start failure lands in the same catch as an apply failure,
+          // so the switch reports and rolls back as one operation.
+          if (system.isAndroid &&
+              profileChanged &&
+              !await _isServiceRunning()) {
+            await globalState.handleStart([updateRunTime, updateTraffic]);
+            if (!_ref.read(runTimeProvider.notifier).isStart) {
+              _ref.read(runTimeProvider.notifier).value = 0;
+            }
           }
         } catch (err) {
           commonPrint.error('[Profile] Switch failed: ${err.formatErrorLog}');
