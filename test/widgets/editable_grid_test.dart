@@ -124,7 +124,12 @@ void main() {
       DashboardWidget.networkSpeedSmall.family,
       DashboardWidget.networkSpeed,
     );
-    expect(DashboardWidget.outboundMode.family, DashboardWidget.outboundModeV2);
+    expect(DashboardWidget.profileMode.family, DashboardWidget.profileMode);
+    expect(DashboardWidget.profileMode.sizes, [
+      DashboardTileSize.large,
+      DashboardTileSize.tall,
+    ]);
+    expect(DashboardWidget.profileMode.resizable, isTrue);
     expect(DashboardWidget.networkSpeed.sizes, [
       DashboardTileSize.small,
       DashboardTileSize.wide,

@@ -51,7 +51,7 @@ const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
   DashboardWidget.systemProxyButton,
   DashboardWidget.tunButton,
-  DashboardWidget.outboundMode,
+  DashboardWidget.profileMode,
   DashboardWidget.networkDetection,
   DashboardWidget.intranetIp,
   DashboardWidget.trafficUsage,
@@ -61,7 +61,7 @@ const List<DashboardWidget> defaultDashboardWidgets = [
 ];
 
 const List<DashboardWidget> defaultAndroidDashboardWidgets = [
-  DashboardWidget.outboundModeV2,
+  DashboardWidget.profileMode,
   DashboardWidget.networkSpeed,
   DashboardWidget.trafficUsage,
   DashboardWidget.networkDetection,
@@ -74,9 +74,55 @@ final _dashboardWidgetNames = {
   for (final entry in _$DashboardWidgetEnumMap.entries) entry.value: entry.key,
 };
 
-List<DashboardWidget> _decodeDashboardWidgets(List<dynamic> values) => [
-  for (final value in values) ?_dashboardWidgetNames[value],
-];
+/// T147: the profile card and the running-mode card merged into one
+/// widget. Layouts saved before the merge name the old widgets; they
+/// decode onto the merged widget, which takes the position of the
+/// first of them and appears exactly once.
+const _mergedDashboardWidgetLegacyNames = {
+  'profileInfo',
+  'outboundModeV2',
+  'outboundMode',
+};
+
+List<DashboardWidget> _decodeDashboardWidgets(List<dynamic> values) {
+  final widgets = <DashboardWidget>[];
+  for (final value in values) {
+    final widget = _mergedDashboardWidgetLegacyNames.contains(value)
+        ? DashboardWidget.profileMode
+        : _dashboardWidgetNames[value];
+    if (widget == null) continue;
+    if (widget == DashboardWidget.profileMode &&
+        widgets.contains(DashboardWidget.profileMode)) {
+      continue;
+    }
+    widgets.add(widget);
+  }
+  return widgets;
+}
+
+/// T147: size migration for the merged widget. The old profile card's
+/// large/tall sizes carry over directly; its wide size and the mode
+/// card's wide size have no merged counterpart and fall back to the
+/// merged widget's native (large) size, so no size entry is written
+/// for them. Legacy keys are dropped.
+Map<String, String> _migrateDashboardSizes(Map<String, String> sizes) {
+  if (!sizes.keys.any(_mergedDashboardWidgetLegacyNames.contains)) {
+    return sizes;
+  }
+  final migrated = {
+    for (final entry in sizes.entries)
+      if (!_mergedDashboardWidgetLegacyNames.contains(entry.key))
+        entry.key: entry.value,
+  };
+  if (!migrated.containsKey(DashboardWidget.profileMode.name)) {
+    final legacy = sizes['profileInfo'] ?? sizes['outboundModeV2'];
+    if (legacy == DashboardTileSize.tall.name) {
+      migrated[DashboardWidget.profileMode.name] =
+          DashboardTileSize.tall.name;
+    }
+  }
+  return migrated;
+}
 
 List<DashboardWidget> dashboardWidgetsSafeFromJson(
   List<dynamic>? dashboardWidgets,
@@ -213,6 +259,14 @@ abstract class AppSettingProps with _$AppSettingProps {
           props = props.copyWith(desktopDashboardWidgets: parsedOld);
         }
       }
+      props = props.copyWith(
+        mobileDashboardSizes: _migrateDashboardSizes(
+          props.mobileDashboardSizes,
+        ),
+        desktopDashboardSizes: _migrateDashboardSizes(
+          props.desktopDashboardSizes,
+        ),
+      );
     } else if (system.isAndroid) {
       props = props.copyWith(
         mobileDashboardWidgets: defaultAndroidDashboardWidgets,

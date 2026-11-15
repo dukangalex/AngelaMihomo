@@ -141,6 +141,49 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
     );
   }
 
+  /// T57 carryback: the recommended combination is a pure action, not
+  /// another state holder — it only turns the three interception
+  /// options on and leaves every other switch exactly as the user set
+  /// it. The single source of truth stays the switches themselves, so
+  /// the row carries no status badge of its own.
+  Future<void> _turnOnRecommended() async {
+    final value = SystemExplicitStore.instance.value;
+    setState(() {
+      value.privacy = true;
+      value.blockCommonWebRtc = true;
+      value.blockAds = true;
+    });
+    await _commit();
+  }
+
+  Widget _recommendItem() {
+    const id = 'recommended';
+    final expanded = _expanded.contains(id);
+    return ListItem(
+      padding: const EdgeInsets.only(left: 16, right: 8),
+      title: Text(appLocalizations.systemExplicitRecommend),
+      subtitle: expanded
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(appLocalizations.systemExplicitRecommendDesc),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: _turnOnRecommended,
+                  child: Text(appLocalizations.systemExplicitTurnOnRecommended),
+                ),
+              ],
+            )
+          : null,
+      onTap: () => _toggleExpanded(id),
+      trailing: Icon(
+        expanded ? Icons.expand_less : Icons.expand_more,
+        size: 20,
+        color: context.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+
   Widget _infoItem({
     required String id,
     required String title,
@@ -194,6 +237,7 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
               title: Text(appLocalizations.systemExplicitApplyState),
               subtitle: Text(_applyError),
             ),
+          _recommendItem(),
           _optionItem(
             id: 'privacy',
             title: appLocalizations.systemExplicitPrivacy,

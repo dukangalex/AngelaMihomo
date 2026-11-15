@@ -404,9 +404,7 @@ enum DashboardWidget {
   networkSpeedSmall(
     GridItem(crossAxisCellCount: 4, child: NetworkSpeedSmall()),
   ),
-  outboundModeV2(GridItem(crossAxisCellCount: 8, child: OutboundModeV2())),
-  outboundMode(GridItem(crossAxisCellCount: 4, child: OutboundMode())),
-  profileInfo(GridItem(crossAxisCellCount: 8, child: ProfileInfo())),
+  profileMode(GridItem(crossAxisCellCount: 8, child: ProfileModeCard())),
   trafficUsage(GridItem(crossAxisCellCount: 4, child: TrafficUsage())),
   networkDetection(GridItem(crossAxisCellCount: 4, child: NetworkDetection())),
   tunButton(
@@ -449,7 +447,6 @@ enum DashboardWidget {
 
   static const _variantGroups = [
     [networkSpeedSmall, networkSpeed],
-    [outboundModeV2, outboundMode],
   ];
 
   List<DashboardWidget> get variants => _variantGroups.firstWhere(
@@ -462,8 +459,8 @@ enum DashboardWidget {
 
   DashboardTileSize get nativeSize => switch (this) {
     networkSpeed => DashboardTileSize.large,
-    outboundModeV2 || profileInfo => DashboardTileSize.wide,
-    outboundMode || trafficUsage => DashboardTileSize.tall,
+    profileMode => DashboardTileSize.large,
+    trafficUsage => DashboardTileSize.tall,
     _ => DashboardTileSize.small,
   };
 
@@ -475,11 +472,7 @@ enum DashboardWidget {
       DashboardTileSize.large,
     ],
     trafficUsage => const [DashboardTileSize.tall, DashboardTileSize.wide],
-    profileInfo => const [
-      DashboardTileSize.wide,
-      DashboardTileSize.large,
-      DashboardTileSize.tall,
-    ],
+    profileMode => const [DashboardTileSize.large, DashboardTileSize.tall],
     networkDetection ||
     intranetIp ||
     memoryInfo ||

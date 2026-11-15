@@ -56,6 +56,29 @@ abstract class SubscriptionInfo with _$SubscriptionInfo {
 extension SubscriptionInfoExtension on SubscriptionInfo {
   bool get hasUsage => upload + download + total > 0;
 
+  // T57 carryback (T141): warning state for the profile card — expired,
+  // expiring within seven days, or less than a tenth of the traffic
+  // left. The card paints these in the error color so a subscription
+  // about to run out is visible at a glance.
+  bool get isExpired =>
+      expire > 0 &&
+      expire * 1000 < DateTime.now().millisecondsSinceEpoch;
+
+  bool get isExpiringSoon {
+    if (expire <= 0 || isExpired) return false;
+    final left = DateTime.fromMillisecondsSinceEpoch(
+      expire * 1000,
+    ).difference(DateTime.now());
+    return left <= const Duration(days: 7);
+  }
+
+  int get remainingBytes =>
+      total > 0 ? (total - upload - download).clamp(0, total) : 0;
+
+  bool get isLowTraffic => total > 0 && remainingBytes * 10 < total;
+
+  bool get hasWarning => isExpired || isExpiringSoon || isLowTraffic;
+
   String? get expireDesc {
     if (expire > 0) {
       final expireDate = DateTime.fromMillisecondsSinceEpoch(

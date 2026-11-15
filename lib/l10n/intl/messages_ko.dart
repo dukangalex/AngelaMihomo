@@ -2025,9 +2025,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitSubtitle": MessageLookupByLibrary.simpleMessage(
       "Adaptive path, privacy, China direct",
     ),
+    "systemExplicitRecommend": MessageLookupByLibrary.simpleMessage(
+      "Recommended combination",
+    ),
+    "systemExplicitRecommendDesc": MessageLookupByLibrary.simpleMessage(
+      "One tap turns on the recommended combination: privacy protection, blocking common WebRTC leaks, and ad blocking. Every other option keeps its current state. Auto-set system DNS stays in Settings \\u2192 Network and takes effect on desktop only.",
+    ),
     "systemExplicitSwitch": MessageLookupByLibrary.simpleMessage("Switch"),
     "systemExplicitTitle": MessageLookupByLibrary.simpleMessage(
-      "System options",
+      "China adaptation",
+    ),
+    "systemExplicitTurnOnRecommended": MessageLookupByLibrary.simpleMessage(
+      "Turn on recommended",
     ),
     "systemFont": MessageLookupByLibrary.simpleMessage("시스템 글꼴"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("시스템 프록시"),

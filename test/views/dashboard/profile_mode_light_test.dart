@@ -11,14 +11,14 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/views/dashboard/widgets/node_status_light.dart';
-import 'package:bett_box/views/dashboard/widgets/outbound_mode.dart';
+import 'package:bett_box/views/dashboard/widgets/profile_mode.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Fake core transport, same shape as the T133 light suite: the old
-/// OutboundMode variant must never need core traffic of its own.
+/// Fake core transport, same shape as the T133 light suite: the merged
+/// card's tall layout must never need core traffic of its own.
 class _FakeHandler extends ClashHandlerInterface {
   Object? channel = Object();
 
@@ -122,7 +122,10 @@ Future<void> _pumpCard(
               ref.watch(delayDataSourceProvider);
               return const Align(
                 alignment: Alignment.topLeft,
-                child: SizedBox(width: 400, child: OutboundMode()),
+                child: SizedBox(
+                  width: 400,
+                  child: ProfileModeCard(size: DashboardTileSize.tall),
+                ),
               );
             },
           ),
@@ -135,7 +138,7 @@ Future<void> _pumpCard(
 
 Color _dotColorInCard(WidgetTester tester) {
   final finder = find.descendant(
-    of: find.byType(OutboundMode),
+    of: find.byType(ProfileModeCard),
     matching: find.byKey(const ValueKey('nodeStatusLightDot')),
   );
   expect(finder, findsOneWidget);
@@ -144,7 +147,7 @@ Color _dotColorInCard(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('old variant shows the shared light, green on usable delay', (
+  testWidgets('tall merged card shows the shared light, green on usable delay', (
     tester,
   ) async {
     ClashCore.setHandlerForTesting(_FakeHandler());
@@ -159,7 +162,7 @@ void main() {
     expect(_dotColorInCard(tester), _sagittariusLight.success);
   });
 
-  testWidgets('old variant light is red when the current node failed', (
+  testWidgets('tall merged card light is red when the current node failed', (
     tester,
   ) async {
     ClashCore.setHandlerForTesting(_FakeHandler());
@@ -173,7 +176,7 @@ void main() {
     expect(_dotColorInCard(tester), _sagittariusLight.error);
   });
 
-  testWidgets('old variant light is grey when the core is stopped', (
+  testWidgets('tall merged card light is grey when the core is stopped', (
     tester,
   ) async {
     ClashCore.setHandlerForTesting(_FakeHandler());

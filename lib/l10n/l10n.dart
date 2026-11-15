@@ -11579,11 +11579,41 @@ class AppLocalizations {
     );
   }
 
-  /// `System options`
+  /// `China adaptation`
   String get systemExplicitTitle {
     return Intl.message(
-      'System options',
+      'China adaptation',
       name: 'systemExplicitTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recommended combination`
+  String get systemExplicitRecommend {
+    return Intl.message(
+      'Recommended combination',
+      name: 'systemExplicitRecommend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One tap turns on the recommended combination: privacy protection, blocking common WebRTC leaks, and ad blocking. Every other option keeps its current state. Auto-set system DNS stays in Settings → Network and takes effect on desktop only.`
+  String get systemExplicitRecommendDesc {
+    return Intl.message(
+      'One tap turns on the recommended combination: privacy protection, blocking common WebRTC leaks, and ad blocking. Every other option keeps its current state. Auto-set system DNS stays in Settings \u2192 Network and takes effect on desktop only.',
+      name: 'systemExplicitRecommendDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on recommended`
+  String get systemExplicitTurnOnRecommended {
+    return Intl.message(
+      'Turn on recommended',
+      name: 'systemExplicitTurnOnRecommended',
       desc: '',
       args: [],
     );

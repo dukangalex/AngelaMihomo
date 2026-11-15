@@ -61,10 +61,18 @@ void main() {
     ));
     expect((tallMemory as MemoryInfo).size, DashboardTileSize.tall);
 
-    final outbound = buildDashboardTile((
-      widget: DashboardWidget.outboundModeV2,
+    final mergedNative = buildDashboardTile((
+      widget: DashboardWidget.profileMode,
+      size: DashboardTileSize.large,
+    ));
+    expect(mergedNative, isA<ProfileModeCard>());
+    expect((mergedNative as ProfileModeCard).size, isNull);
+
+    final mergedTall = buildDashboardTile((
+      widget: DashboardWidget.profileMode,
       size: DashboardTileSize.tall,
     ));
-    expect(outbound, isA<OutboundMode>());
+    expect(mergedTall, isA<ProfileModeCard>());
+    expect((mergedTall as ProfileModeCard).size, DashboardTileSize.tall);
   });
 }

@@ -523,11 +523,21 @@ class ProfileItem extends StatelessWidget {
 
   Widget _buildTitleRow(BuildContext context) {
     final usages = profile.subscriptionUsages;
+    final usage = usages.length > 1 ? ProfileUsage.of(profile) : null;
     final subtitleText = usages.length > 1
-        ? profile.usageExpireText(ProfileUsage.of(profile))
+        ? profile.usageExpireText(usage)
         : profile.type == ProfileType.file
         ? appLocalizations.localFile
         : (usages.firstOrNull?.value ?? profile.subscriptionInfo)?.expireDesc;
+    // T57 carryback (T141): an expire date within seven days (or one
+    // already past) is a warning, painted in the error color.
+    final singleInfo = usages.firstOrNull?.value ?? profile.subscriptionInfo;
+    final expireWarning = usages.length > 1
+        ? usage != null &&
+              (usage.isExpired ||
+                  (usage.daysLeft != null && usage.daysLeft! <= 7))
+        : singleInfo != null &&
+              (singleInfo.isExpired || singleInfo.isExpiringSoon);
 
     return Row(
       children: [
@@ -549,7 +559,11 @@ class ProfileItem extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             subtitleText,
-            style: context.textTheme.labelMedium?.toLight,
+            style: expireWarning
+                ? context.textTheme.labelMedium?.copyWith(
+                    color: context.colorScheme.error,
+                  )
+                : context.textTheme.labelMedium?.toLight,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -558,8 +572,19 @@ class ProfileItem extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomText(BuildContext context, String text) {
-    final style = context.textTheme.labelMedium?.toLight;
+  Widget _buildBottomText(
+    BuildContext context,
+    String text, {
+    bool warning = false,
+  }) {
+    // T57 carryback (T141): subscription warnings (expiring within
+    // seven days, under a tenth of traffic left) paint the summary
+    // line in the error color.
+    final style = warning
+        ? context.textTheme.labelMedium?.copyWith(
+            color: context.colorScheme.error,
+          )
+        : context.textTheme.labelMedium?.toLight;
     final bundle = profile.bundle;
     if (bundle == null) {
       return Text(
@@ -638,10 +663,9 @@ class ProfileItem extends StatelessWidget {
     BuildContext context,
     SubscriptionInfo info,
   ) {
-    final expired =
-        info.expire > 0 &&
-        info.expire * 1000 < DateTime.now().millisecondsSinceEpoch;
-    return expired
+    // T57 carryback (T141): expired, expiring within seven days, or
+    // under a tenth of traffic left all read as warnings.
+    return info.hasWarning
         ? context.textTheme.labelSmall?.copyWith(
             color: context.colorScheme.error,
           )
@@ -875,11 +899,17 @@ class ProfileItem extends StatelessWidget {
   ) {
     final shown = usages.topByUsage(3);
     final more = usages.length - shown.length;
+    final aggregate = ProfileUsage.of(profile);
     final bottomText = [
-      ?ProfileUsage.of(profile)?.usageText,
+      ?aggregate?.usageText,
       profile.lastUpdateDate?.lastUpdateTimeDesc ?? '',
       if (more > 0) '+$more',
     ].join(' · ');
+    final warning =
+        aggregate != null &&
+        (aggregate.isExpired ||
+            (aggregate.daysLeft != null && aggregate.daysLeft! <= 7) ||
+            (aggregate.ratio != null && aggregate.ratio! > 0.9));
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -899,7 +929,7 @@ class ProfileItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        _buildBottomText(context, bottomText),
+        _buildBottomText(context, bottomText, warning: warning),
       ],
     );
   }
@@ -955,7 +985,9 @@ class ProfileItem extends StatelessWidget {
                                 .clamp(0.0, 1.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: context.colorScheme.primary,
+                            color: subscriptionInfo.isLowTraffic
+                                ? context.colorScheme.error
+                                : context.colorScheme.primary,
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
@@ -978,7 +1010,11 @@ class ProfileItem extends StatelessWidget {
                 ),
         ),
         const SizedBox(height: 6),
-        _buildBottomText(context, bottomText),
+        _buildBottomText(
+          context,
+          bottomText,
+          warning: subscriptionInfo?.hasWarning ?? false,
+        ),
       ],
     );
   }

@@ -1821,8 +1821,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitSubtitle": MessageLookupByLibrary.simpleMessage(
       "自适应通路、防隐私、中国直连",
     ),
+    "systemExplicitRecommend": MessageLookupByLibrary.simpleMessage(
+      "推薦組合",
+    ),
+    "systemExplicitRecommendDesc": MessageLookupByLibrary.simpleMessage(
+      "一鍵開啟推薦組合：防隱私、阻斷常見 WebRTC 洩漏、廣告攔截；其餘開關的現有狀態保持不變。自動設定系統 DNS 位於「設定 → 網路」，僅在桌面端生效。",
+    ),
     "systemExplicitSwitch": MessageLookupByLibrary.simpleMessage("切换"),
-    "systemExplicitTitle": MessageLookupByLibrary.simpleMessage("系统显式"),
+    "systemExplicitTitle": MessageLookupByLibrary.simpleMessage("中國自適應性"),
+    "systemExplicitTurnOnRecommended": MessageLookupByLibrary.simpleMessage(
+      "開啟推薦組合",
+    ),
     "systemFont": MessageLookupByLibrary.simpleMessage("系統字體"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("系統代理"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("設定系統代理"),

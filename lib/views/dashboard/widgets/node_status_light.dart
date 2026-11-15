@@ -62,9 +62,9 @@ Group? nodeLightAnchorGroup({
 /// ends, so nothing animates at rest.
 class NodeStatusLight extends ConsumerStatefulWidget {
   /// Compact form (dot and ring only, no sign glyph or status label)
-  /// for narrow cards such as the legacy OutboundMode variant, whose
-  /// header cannot fit the full labelled light. Semantics, data source
-  /// and tap-to-test behaviour are identical.
+  /// for narrow layouts such as the merged profile/mode card's tall
+  /// size, whose header cannot fit the full labelled light. Semantics,
+  /// data source and tap-to-test behaviour are identical.
   final bool compact;
 
   const NodeStatusLight({super.key, this.compact = false});
