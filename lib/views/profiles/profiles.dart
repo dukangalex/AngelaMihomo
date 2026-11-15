@@ -1032,6 +1032,23 @@ class ProfileItem extends StatelessWidget {
     appController.setProfile(latest.copyWith(usageStyle: value));
   }
 
+  /// T139: per-profile managed-mode toggle, the profile card menu's
+  /// shortcut for the same single-choice binding the scripts page
+  /// picker writes (see [profileWithScriptChoice]). Off by default;
+  /// only a deliberate tap binds the bundled managed script. Applying
+  /// mirrors the edit page's managed switch: a running profile is
+  /// re-applied, any other profile just records the choice.
+  void _handleToggleManagedMode() {
+    final appController = globalState.appController;
+    final latest = appController.ref
+        .read(profilesProvider)
+        .getProfile(profile.id);
+    if (latest == null || latest.bundle != null) return;
+    appController.setProfileAndAutoApply(
+      profileWithScriptChoice(latest, latest.managed ? null : managedScriptId),
+    );
+  }
+
   Future<void> _handleExportFile(BuildContext context) async {
     final res = await globalState.appController.safeRun<bool>(
       () async {
@@ -1086,6 +1103,16 @@ class ProfileItem extends StatelessWidget {
           _handlePushGenProfilePage(context, profile.id);
         },
       ),
+      if (profile.bundle == null)
+        PopupMenuItemData(
+          icon: profile.managed
+              ? Icons.check_circle_rounded
+              : Icons.circle_outlined,
+          label: appLocalizations.managedMode,
+          onPressed: () {
+            _handleToggleManagedMode();
+          },
+        ),
       PopupMenuItemData(
         icon: Icons.alt_route,
         label: appLocalizations.chainTitle,

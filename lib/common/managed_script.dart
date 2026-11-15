@@ -66,6 +66,23 @@ Config? purgeLegacyBuiltinScript(Config config) {
     ],
   );
 }
+
+/// Applies a script-library choice to [profile]: [choice] is
+/// [managedScriptId] for the bundled managed script, a library script
+/// id, or null for no script at all.
+///
+/// This is the single write behind every surface that binds a script
+/// to a profile — the scripts page per-profile picker and the profile
+/// card menu's managed-mode toggle — so the surfaces can never drift
+/// into parallel binding state: choosing the managed script sets
+/// [Profile.managed] and clears any library binding, choosing a
+/// library script clears the managed flag, choosing none clears both.
+Profile profileWithScriptChoice(Profile profile, String? choice) {
+  return profile.copyWith(
+    managed: choice == managedScriptId,
+    scriptId: choice == null || choice == managedScriptId ? null : choice,
+  );
+}
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
 const _managedScriptUrl =

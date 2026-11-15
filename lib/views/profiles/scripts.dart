@@ -866,11 +866,9 @@ class _ScriptSettingsSheet extends ConsumerWidget {
         .read(profilesProvider.notifier)
         .updateProfile(
           profile.id,
-          (p) => p.copyWith(
-            managed: value == managedScriptId,
-            scriptId: value == managedScriptId || value == _noScript
-                ? null
-                : value,
+          (p) => profileWithScriptChoice(
+            p,
+            value == _noScript ? null : value,
           ),
         );
   }
