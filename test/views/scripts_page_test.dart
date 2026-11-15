@@ -8,9 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// T121: the scripts page shows exactly one built-in entry — the managed
-/// mechanism's script under its own name — next to the user's scripts.
-/// The mechanism name （托管模式） must not appear as a second entry.
+/// T121 + T144: the scripts page shows exactly one built-in entry — the
+/// managed mechanism's script — next to the user's scripts. Since T144
+/// the entry presents under the mechanism's own name （托管模式）, tagged
+/// 内置脚本， and the 自定义 capability tag stays; no third-party name
+/// appears as a title anywhere on the page.
 void main() {
   setUpAll(() async {
     await AppLocalizations.load(const Locale('zh', 'CN'));
@@ -29,7 +31,7 @@ void main() {
     );
   });
 
-  testWidgets('脚本页只有一条内置条目，名为 HiClash 内置脚本', (tester) async {
+  testWidgets('脚本页只有一条内置条目，名为托管模式、标记内置脚本与自定义', (tester) async {
     final base = Config(themeProps: defaultThemeProps);
     globalState.config = base.copyWith(
       scriptProps: ScriptProps(
@@ -42,8 +44,13 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('HiClash 内置脚本'), findsOneWidget);
+    expect(find.text('托管模式'), findsOneWidget);
+    expect(find.text('内置脚本'), findsOneWidget);
+    expect(find.text('自定义'), findsOneWidget);
     expect(find.text('我的脚本'), findsOneWidget);
-    expect(find.text('托管模式'), findsNothing);
+    expect(find.text('HiClash 内置脚本'), findsNothing);
+    for (final widget in tester.widgetList<Text>(find.byType(Text))) {
+      expect(widget.data ?? '', isNot(contains('HiClash')));
+    }
   });
 }
