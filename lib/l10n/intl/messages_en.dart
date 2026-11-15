@@ -2297,6 +2297,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
       "Current node available",
     ),
+    "profileCurrent": MessageLookupByLibrary.simpleMessage("Current"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
       "Current node unavailable",
     ),

@@ -302,6 +302,7 @@
   "globalDelayTestDone": "Test complete",
   "globalDelayTestFailed": "Failed",
   "currentNodeAvailable": "Current node available",
+  "profileCurrent": "Current",
   "currentNodeUnavailable": "Current node unavailable",
   "currentNodeUnknown": "Node status unknown",
   "groupNodeCount": "{count} nodes",

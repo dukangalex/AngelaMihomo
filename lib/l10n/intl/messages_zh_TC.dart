@@ -1702,6 +1702,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("測速完成"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("失敗"),
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("當前節點可用"),
+    "profileCurrent": MessageLookupByLibrary.simpleMessage("當前"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("當前節點不可用"),
     "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("節點狀態未知"),
     "groupNodeCount": m78,

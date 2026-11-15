@@ -2385,6 +2385,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
       "Текущий узел доступен",
     ),
+    "profileCurrent": MessageLookupByLibrary.simpleMessage("Текущий"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
       "Текущий узел недоступен",
     ),

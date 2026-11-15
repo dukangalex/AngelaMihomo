@@ -302,6 +302,7 @@
   "globalDelayTestDone": "測速完成",
   "globalDelayTestFailed": "失敗",
   "currentNodeAvailable": "當前節點可用",
+  "profileCurrent": "當前",
   "currentNodeUnavailable": "當前節點不可用",
   "currentNodeUnknown": "節點狀態未知",
   "groupNodeCount": "{count} 個節點",

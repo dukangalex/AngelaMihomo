@@ -302,6 +302,7 @@
   "globalDelayTestDone": "テスト完了",
   "globalDelayTestFailed": "失敗",
   "currentNodeAvailable": "現在のノードは利用可能",
+  "profileCurrent": "使用中",
   "currentNodeUnavailable": "現在のノードは利用不可",
   "currentNodeUnknown": "ノードの状態は不明",
   "groupNodeCount": "{count} ノード",

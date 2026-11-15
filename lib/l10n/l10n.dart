@@ -2550,6 +2550,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Current`
+  String get profileCurrent {
+    return Intl.message(
+      'Current',
+      name: 'profileCurrent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Current node available`
   String get currentNodeAvailable {
     return Intl.message(

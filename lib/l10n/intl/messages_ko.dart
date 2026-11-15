@@ -1894,6 +1894,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("테스트 완료"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("실패"),
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("현재 노드 사용 가능"),
+    "profileCurrent": MessageLookupByLibrary.simpleMessage("현재"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
       "현재 노드 사용 불가",
     ),

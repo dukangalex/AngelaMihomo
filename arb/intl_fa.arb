@@ -302,6 +302,7 @@
   "globalDelayTestDone": "تست کامل شد",
   "globalDelayTestFailed": "ناموفق",
   "currentNodeAvailable": "گره فعلی در دسترس است",
+  "profileCurrent": "فعلی",
   "currentNodeUnavailable": "گره فعلی در دسترس نیست",
   "currentNodeUnknown": "وضعیت گره نامشخص است",
   "groupNodeCount": "{count} گره",

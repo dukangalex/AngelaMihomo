@@ -539,6 +539,10 @@ class ProfileItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        if (profile.id == groupValue) ...[
+          const SizedBox(width: 8),
+          const _CurrentProfileBadge(),
+        ],
         if (subtitleText != null && subtitleText.isNotEmpty) ...[
           const SizedBox(width: 6),
           Text('·', style: context.textTheme.labelMedium?.toLight),
@@ -1223,6 +1227,9 @@ class ProfileItem extends StatelessWidget {
     final isTV = globalState.isAndroidTV;
     final card = CommonCard(
       isSelected: profile.id == groupValue,
+      selectWidget: profile.id == groupValue
+          ? const _CurrentProfileMarker()
+          : null,
       onPressed: isTV ? null : () => onChanged(profile.id),
       onLongPress: isTV ? null : () => _handlePreviewRuntimeConfig(context),
       child: isTV ? _buildTVLayout(context) : _buildNormalLayout(context),
@@ -1237,6 +1244,103 @@ class ProfileItem extends StatelessWidget {
               items: _buildMenuItems(context),
             ),
       child: card,
+    );
+  }
+}
+
+/// The current profile's triple signal (T126), in the family's selected
+/// language: a gradient bar at the row start and a faint primary wash
+/// over the card, both sourced from the active variant's tokens. The
+/// third signal, the textual badge, lives in the title row.
+class _CurrentProfileMarker extends StatelessWidget {
+  const _CurrentProfileMarker();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final selected = context.zodiac?.variant.selected;
+    final Gradient barGradient;
+    if (selected != null && selected.isGradient) {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: selected.stops!,
+      );
+    } else if (selected != null && !selected.isNone) {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [selected.firstColor, colorScheme.secondary],
+      );
+    } else {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [colorScheme.primary, colorScheme.secondary],
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(
+                alpha: isLight ? 0.07 : 0.12,
+              ),
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          start: 0,
+          top: 14,
+          bottom: 14,
+          child: IgnorePointer(
+            child: Container(
+              width: 5,
+              decoration: BoxDecoration(
+                gradient: barGradient,
+                borderRadius: BorderRadius.circular(2.5),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The current profile's badge (T126): a pill in the variant's selected
+/// face (gradient where the skeleton defines one) with onPrimary text.
+class _CurrentProfileBadge extends StatelessWidget {
+  const _CurrentProfileBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final selected = context.zodiac?.variant.selected;
+    final radius = BorderRadius.circular(999);
+    final decoration = selected != null && selected.isGradient
+        ? BoxDecoration(gradient: selected.selectedGradient, borderRadius: radius)
+        : BoxDecoration(
+            color: selected != null && !selected.isNone
+                ? selected.firstColor
+                : colorScheme.primary,
+            borderRadius: radius,
+          );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: decoration,
+      child: Text(
+        appLocalizations.profileCurrent,
+        style: TextStyle(
+          color: colorScheme.onPrimary,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
     );
   }
 }

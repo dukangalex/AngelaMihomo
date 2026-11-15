@@ -302,6 +302,7 @@
   "globalDelayTestDone": "Тест завершён",
   "globalDelayTestFailed": "Не удалось",
   "currentNodeAvailable": "Текущий узел доступен",
+  "profileCurrent": "Текущий",
   "currentNodeUnavailable": "Текущий узел недоступен",
   "currentNodeUnknown": "Статус узла неизвестен",
   "groupNodeCount": "Узлов: {count}",

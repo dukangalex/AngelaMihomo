@@ -2311,6 +2311,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
       "گره فعلی در دسترس است",
     ),
+    "profileCurrent": MessageLookupByLibrary.simpleMessage("فعلی"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
       "گره فعلی در دسترس نیست",
     ),
