@@ -1768,9 +1768,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitChinaDnsDirectDesc": MessageLookupByLibrary.simpleMessage(
       "默认关闭。仅列出的中国公共 DNS IP/域名走直连，可能暴露 DNS 查询给本地网络/运营商；中国直连也可能覆盖这些地址，即使本项关闭。",
     ),
+    "systemExplicitDirectExceptionModeDesc": MessageLookupByLibrary.simpleMessage(
+      "中国直连、公共 DNS 直连、局域直连只在规则模式下生效，与全局/直连的路由方式冲突。切换后会恢复已保存的选择。拦截类选项在所有模式下都生效，不受影响。",
+    ),
+    "systemExplicitExceptionsInactive": MessageLookupByLibrary.simpleMessage(
+      "直连例外在当前模式下未生效",
+    ),
+    "systemExplicitExceptionsInactiveDesc": MessageLookupByLibrary.simpleMessage(
+      "中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。",
+    ),
     "systemExplicitInactive": MessageLookupByLibrary.simpleMessage("当前路由选项未生效"),
     "systemExplicitInactiveDesc": MessageLookupByLibrary.simpleMessage(
       "当前模式绕过这些规则，已保存的选择将在规则模式恢复；隐私通知隐藏仍保留。",
+    ),
+    "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage(
+      "拦截类选项在当前模式下生效",
+    ),
+    "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage(
+      "防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。",
     ),
     "systemExplicitIntro": MessageLookupByLibrary.simpleMessage(
       "写在脚本和配置之后，不改订阅原文。全局或直连模式会暂停规则选项，切回规则模式时恢复已保存的选择。",

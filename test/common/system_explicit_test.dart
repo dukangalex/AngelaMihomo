@@ -4,14 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'explicit routing rejects global/direct without modifying their mode',
+    'direct exceptions reject global/direct without modifying their mode',
     () {
       for (final options in [
-        SystemExplicitOptions(privacy: true),
         SystemExplicitOptions(chinaDirect: true),
         SystemExplicitOptions(chinaPublicDnsDirect: true),
         SystemExplicitOptions(lanDirect: true),
-        SystemExplicitOptions(blockCommonWebRtc: true),
       ]) {
         expect(systemExplicitModeCompatible(options, Mode.rule), isTrue);
         for (final mode in [Mode.global, Mode.direct]) {
@@ -24,6 +22,106 @@ void main() {
       }
     },
   );
+  test('interception options are compatible with every mode (T54)', () {
+    for (final options in [
+      SystemExplicitOptions(privacy: true),
+      SystemExplicitOptions(blockCommonWebRtc: true),
+      SystemExplicitOptions(blockAds: true),
+    ]) {
+      for (final mode in Mode.values) {
+        expect(systemExplicitModeCompatible(options, mode), isTrue);
+        requireSystemExplicitMode(options, mode);
+      }
+    }
+  });
+  test('global/direct synthesis: interception rules plus mode MATCH', () {
+    final options = SystemExplicitOptions(
+      privacy: true,
+      blockAds: true,
+      chinaDirect: true,
+    );
+    final global = options.buildRuntimeRulesForMode(Mode.global);
+    expect(global.last, 'MATCH,GLOBAL');
+    expect(global, contains('GEOSITE,category-ads-all,REJECT'));
+    // Direct exceptions are never emitted outside rule mode.
+    expect(global, isNot(contains('GEOSITE,geolocation-cn,DIRECT')));
+    final direct = options.buildRuntimeRulesForMode(Mode.direct);
+    expect(direct.last, 'MATCH,DIRECT');
+    expect(
+      SystemExplicitOptions(
+        chinaDirect: true,
+      ).buildRuntimeRulesForMode(Mode.global),
+      isEmpty,
+    );
+    expect(effectiveRuntimeMode(options, Mode.global), Mode.rule);
+    expect(effectiveRuntimeMode(options, Mode.direct), Mode.rule);
+    expect(
+      effectiveRuntimeMode(
+        SystemExplicitOptions(chinaDirect: true),
+        Mode.global,
+      ),
+      Mode.global,
+    );
+    expect(effectiveRuntimeMode(options, Mode.rule), Mode.rule);
+  });
+  test('T54 defect 2: interception synthesis must not flip the UI mode', () {
+    // The core runs rule under the hood when interception is on, so a
+    // core report of rule is the expected state — adopting it flipped
+    // the UI back to Rule after every group refresh and made
+    // "Global + core running + interception on" unreachable.
+    for (final userMode in [Mode.global, Mode.direct]) {
+      expect(
+        shouldAdoptCoreMode(
+          userMode: userMode,
+          coreMode: Mode.rule,
+          options: SystemExplicitOptions(privacy: true),
+        ),
+        isFalse,
+      );
+      expect(
+        shouldAdoptCoreMode(
+          userMode: userMode,
+          coreMode: Mode.rule,
+          options: SystemExplicitOptions(blockAds: true),
+        ),
+        isFalse,
+      );
+    }
+    // Steady state with nothing enabled: core matches the selection.
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.global,
+        coreMode: Mode.global,
+        options: SystemExplicitOptions(),
+      ),
+      isFalse,
+    );
+    // A genuine external change is still adopted, as before.
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.global,
+        coreMode: Mode.rule,
+        options: SystemExplicitOptions(),
+      ),
+      isTrue,
+    );
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.rule,
+        coreMode: Mode.global,
+        options: SystemExplicitOptions(),
+      ),
+      isTrue,
+    );
+    expect(
+      shouldAdoptCoreMode(
+        userMode: Mode.rule,
+        coreMode: Mode.direct,
+        options: SystemExplicitOptions(privacy: true),
+      ),
+      isTrue,
+    );
+  });
   test('disabled options preserve the selected mode', () {
     for (final mode in Mode.values) {
       expect(
@@ -91,7 +189,11 @@ void main() {
       final restored = SystemExplicitOptions.fromJson(opt.toJson());
       expect(restored.chinaPublicDnsDirect, isTrue);
       expect(restored.privacy, isTrue);
-      expect(restored.buildRuntimeRulesForMode(Mode.global), isEmpty);
+      // T54: in global mode only the interception class (privacy here)
+      // is emitted, closed by the mode MATCH; the DNS exception is not.
+      final globalRules = restored.buildRuntimeRulesForMode(Mode.global);
+      expect(globalRules.last, 'MATCH,GLOBAL');
+      expect(globalRules, isNot(contains('DOMAIN-SUFFIX,doh.pub,DIRECT')));
       expect(restored.buildRuntimeRulesForMode(Mode.rule), isNotEmpty);
     },
   );

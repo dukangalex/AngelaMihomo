@@ -1347,5 +1347,10 @@
   "systemExplicitRuleModeTitle": "切换到规则模式？",
   "systemExplicitSubtitle": "自适应通路、防隐私、中国直连",
   "systemExplicitSwitch": "切换",
-  "systemExplicitTitle": "系统显式"
+  "systemExplicitTitle": "系统显式",
+  "systemExplicitDirectExceptionModeDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效，与全局/直连的路由方式冲突。切换后会恢复已保存的选择。拦截类选项在所有模式下都生效，不受影响。",
+  "systemExplicitExceptionsInactive": "直连例外在当前模式下未生效",
+  "systemExplicitExceptionsInactiveDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。",
+  "systemExplicitInterceptionActive": "拦截类选项在当前模式下生效",
+  "systemExplicitInterceptionActiveDesc": "防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。"
 }

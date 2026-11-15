@@ -11360,6 +11360,36 @@ class AppLocalizations {
     );
   }
 
+  /// `China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.`
+  String get systemExplicitDirectExceptionModeDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.',
+      name: 'systemExplicitDirectExceptionModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct exceptions are not active in this mode`
+  String get systemExplicitExceptionsInactive {
+    return Intl.message(
+      'Direct exceptions are not active in this mode',
+      name: 'systemExplicitExceptionsInactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.`
+  String get systemExplicitExceptionsInactiveDesc {
+    return Intl.message(
+      'China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.',
+      name: 'systemExplicitExceptionsInactiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Routing options are not active`
   String get systemExplicitInactive {
     return Intl.message(
@@ -11375,6 +11405,26 @@ class AppLocalizations {
     return Intl.message(
       'The current mode bypasses these rules. Saved choices resume in rule mode; notification privacy remains enabled.',
       name: 'systemExplicitInactiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Interception is active in this mode`
+  String get systemExplicitInterceptionActive {
+    return Intl.message(
+      'Interception is active in this mode',
+      name: 'systemExplicitInterceptionActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy, WebRTC and ad blocking keep working in global/direct mode.`
+  String get systemExplicitInterceptionActiveDesc {
+    return Intl.message(
+      'Privacy, WebRTC and ad blocking keep working in global/direct mode.',
+      name: 'systemExplicitInterceptionActiveDesc',
       desc: '',
       args: [],
     );

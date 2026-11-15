@@ -2379,11 +2379,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitChinaDnsDirectDesc": MessageLookupByLibrary.simpleMessage(
       "Off by default. Listed Chinese public DNS endpoints bypass the proxy and may expose queries to the local network/provider. China-direct can also match these endpoints even if this switch is off.",
     ),
+    "systemExplicitDirectExceptionModeDesc": MessageLookupByLibrary.simpleMessage(
+      "China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.",
+    ),
+    "systemExplicitExceptionsInactive": MessageLookupByLibrary.simpleMessage(
+      "Direct exceptions are not active in this mode",
+    ),
+    "systemExplicitExceptionsInactiveDesc": MessageLookupByLibrary.simpleMessage(
+      "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
+    ),
     "systemExplicitInactive": MessageLookupByLibrary.simpleMessage(
       "Routing options are not active",
     ),
     "systemExplicitInactiveDesc": MessageLookupByLibrary.simpleMessage(
       "The current mode bypasses these rules. Saved choices resume in rule mode; notification privacy remains enabled.",
+    ),
+    "systemExplicitInterceptionActive": MessageLookupByLibrary.simpleMessage(
+      "Interception is active in this mode",
+    ),
+    "systemExplicitInterceptionActiveDesc": MessageLookupByLibrary.simpleMessage(
+      "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
     ),
     "systemExplicitIntro": MessageLookupByLibrary.simpleMessage(
       "Applied after scripts and the profile without editing it. Routing options pause in global or direct mode and saved choices resume in rule mode.",

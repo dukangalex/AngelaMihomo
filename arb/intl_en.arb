@@ -1349,5 +1349,10 @@
   "systemExplicitSwitch": "Switch",
   "systemExplicitTitle": "System options",
   "profileSwitchFailedRollback": "Couldn't switch to the new profile, so the previous profile was restored",
-  "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again"
+  "profileSwitchFailed": "Couldn't switch profiles. The current profile is unchanged; check it and try again",
+  "systemExplicitDirectExceptionModeDesc": "China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.",
+  "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
+  "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
+  "systemExplicitInterceptionActive": "Interception is active in this mode",
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode."
 }

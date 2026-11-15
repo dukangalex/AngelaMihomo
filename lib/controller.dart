@@ -1471,7 +1471,19 @@ class AppController {
       try {
         final activeMode = await clashCore.getMode();
         final currentMode = _ref.read(patchClashConfigProvider).mode;
-        if (activeMode != currentMode) {
+        // T54 defect 2: only adopt the core-reported mode when it
+        // differs from the mode the core is *expected* to run. With
+        // interception on, global/direct run as rule under the hood
+        // (effectiveRuntimeMode), so a core report of rule is the
+        // expected state — writing it back flipped the UI to Rule and
+        // made "Global + core running + interception on" unreachable.
+        // A genuine external change is still adopted, as before.
+        await SystemExplicitStore.instance.ensureLoaded();
+        if (shouldAdoptCoreMode(
+          userMode: currentMode,
+          coreMode: activeMode,
+          options: SystemExplicitStore.instance.value,
+        )) {
           if (DateTime.now().difference(_lastModeChangeTime) >
               const Duration(seconds: 2)) {
             _ref
@@ -2361,20 +2373,33 @@ class AppController {
 
   Future<void> changeMode(Mode mode) async {
     await SystemExplicitStore.instance.ensureLoaded();
-    if (!context.mounted) return;
     final explicit = SystemExplicitStore.instance.value;
     final currentMode = _ref.read(patchClashConfigProvider).mode;
     if (currentMode == mode) return;
-    final zh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
-    if (currentMode == Mode.rule && mode != Mode.rule && explicit.anyEnabled) {
+    // T54 defect 1: the confirmation dialog needs a context under the
+    // navigator, resolved at call time. The controller's captured
+    // context sits above MaterialApp (no Navigator ancestor); passing
+    // it to showDialog crashes with Navigator.of == null. Before the
+    // first frame there is no navigator yet — in that case refuse the
+    // switch instead of crashing; the UI keeps showing the old mode.
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    final localeContext = dialogContext ?? context;
+    if (!localeContext.mounted) return;
+    final zh = Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
+    // T54: only the direct-exception class pauses outside rule mode;
+    // interception options keep working, so they never trigger this.
+    if (currentMode == Mode.rule &&
+        mode != Mode.rule &&
+        explicit.directExceptionsEnabled) {
+      if (dialogContext == null || !dialogContext.mounted) return;
       final accepted = await showDialog<bool>(
-        context: context,
+        context: dialogContext,
         builder: (dialogContext) => AlertDialog(
           title: Text(zh ? '切换模式？' : 'Change routing mode?'),
           content: Text(
             zh
-                ? '全局或直连模式会暂停系统显式路由规则，包括局域网发现和常见端口阻断。直连模式不经过代理。选项会保留，切回规则模式时恢复。'
-                : 'Global or direct mode suspends system explicit routing rules, including discovery and common-port blocks. Direct mode bypasses the proxy. Choices are kept and restored in rule mode.',
+                ? '全局或直连模式会暂停系统显式的直连例外（中国直连、公共 DNS 直连、局域直连）。拦截类选项（防隐私、阻断 WebRTC、广告拦截）在新模式下继续生效。选项会保留，切回规则模式时例外恢复。'
+                : 'Global or direct mode pauses the system explicit direct exceptions (China direct, public DNS direct, LAN direct). Interception options (privacy, WebRTC block, ad block) keep working in the new mode. Choices are kept and the exceptions resume in rule mode.',
           ),
           actions: [
             TextButton(
@@ -2388,10 +2413,12 @@ class AppController {
           ],
         ),
       );
-      if (accepted != true || !context.mounted) return;
+      if (accepted != true || !dialogContext.mounted) return;
     }
     final oldMode = _ref.read(patchClashConfigProvider).mode;
-    final isZh = Localizations.maybeLocaleOf(context)?.languageCode == 'zh';
+    if (!localeContext.mounted) return;
+    final isZh =
+        Localizations.maybeLocaleOf(localeContext)?.languageCode == 'zh';
     _lastModeChangeTime = DateTime.now();
     _ref
         .read(patchClashConfigProvider.notifier)
