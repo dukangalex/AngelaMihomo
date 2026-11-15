@@ -425,6 +425,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "blacklistMode": MessageLookupByLibrary.simpleMessage("Blacklist Mode"),
     "blockComment": MessageLookupByLibrary.simpleMessage("Comment"),
     "builtIn": MessageLookupByLibrary.simpleMessage("Built-in"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("Built-in script"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("Built-in mode"),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("Subscription link"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage(
@@ -1209,7 +1210,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Can\'t reach the server",
     ),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "If other devices can\'t connect, allow incoming connections for the Bettbox core in your system firewall.",
+      "If other devices can\'t connect, allow incoming connections for the AngelaMihomo core in your system firewall.",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(

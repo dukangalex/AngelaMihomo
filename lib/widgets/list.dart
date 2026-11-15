@@ -711,14 +711,23 @@ class ContinuousListItem extends StatelessWidget {
       alpha: isLight ? 0.45 : 0.25,
     );
 
+    // Immersive panels are translucent layers over the light field
+    // (design doc 3.4.2/3.4.3): the raw surface token carries the
+    // prescribed alpha, while the composited container tones are
+    // opaque slabs that hide the constellation layer. Other skeletons
+    // keep their own material (doc 7.1.5).
+    final zodiac = context.zodiac;
+    final fill = zodiac?.skeleton == ZodiacSkeleton.immersive
+        ? zodiac!.variant.surface
+        : isLight
+        ? Color.lerp(
+            context.colorScheme.surface,
+            context.colorScheme.surfaceContainerLowest,
+            0.5,
+          )!
+        : context.colorScheme.surfaceContainerHigh;
     return _ContinuousItemFrame(
-      color: isLight
-          ? Color.lerp(
-              context.colorScheme.surface,
-              context.colorScheme.surfaceContainerLowest,
-              0.5,
-            )!
-          : context.colorScheme.surfaceContainerHigh,
+      color: fill,
       borderRadius: BorderRadius.vertical(
         top: isFirst ? const Radius.circular(20) : Radius.zero,
         bottom: isLast ? const Radius.circular(20) : Radius.zero,
@@ -771,6 +780,8 @@ class _RenderContinuousItemFrame extends RenderShiftedBox {
     this._borderRadius,
     this._dividerColor,
   ) : super(null);
+
+  Color get color => _color;
 
   set color(Color value) {
     if (value == _color) return;

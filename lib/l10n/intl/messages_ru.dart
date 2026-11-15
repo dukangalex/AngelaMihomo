@@ -444,6 +444,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "blockComment": MessageLookupByLibrary.simpleMessage("Комментарий"),
     "builtIn": MessageLookupByLibrary.simpleMessage("Встроенный"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("Встроенный скрипт"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage(
       "Встроенный режим",
     ),
@@ -1263,7 +1264,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Не удаётся связаться с сервером",
     ),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "Если другие устройства не могут подключиться, разрешите входящие подключения для ядра Bettbox в брандмауэре.",
+      "Если другие устройства не могут подключиться, разрешите входящие подключения для ядра AngelaMihomo в брандмауэре.",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(

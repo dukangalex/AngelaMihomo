@@ -363,6 +363,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "blacklistMode": MessageLookupByLibrary.simpleMessage("블랙리스트 모드"),
     "blockComment": MessageLookupByLibrary.simpleMessage("주석"),
     "builtIn": MessageLookupByLibrary.simpleMessage("내장"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("내장 스크립트"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("내장 모드"),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("구독 링크"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage(
@@ -1018,7 +1019,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "서버에 연결할 수 없습니다",
     ),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "다른 기기에서 연결할 수 없다면 시스템 방화벽에서 Bettbox 코어의 수신 연결을 허용하세요.",
+      "다른 기기에서 연결할 수 없다면 시스템 방화벽에서 AngelaMihomo 코어의 수신 연결을 허용하세요.",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(

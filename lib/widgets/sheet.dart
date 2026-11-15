@@ -291,11 +291,20 @@ class _ExpandableBottomSheet extends StatefulWidget {
 }
 
 class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
+  late final AnimationController _dismissController;
   double _dragStartY = 0.0;
   double _dragStartValue = 0.0;
+  double _dragStartDismiss = 0.0;
+
+  // Body-pull dismissal (T143): overscroll accumulated past a dead zone
+  // before the sheet starts following the finger, so a hard fling that
+  // merely lands at the top of the list cannot throw the sheet away.
+  double _overscrollFeed = 0.0;
+  static const _overscrollDeadZone = 24.0;
+  static const _dismissThresholdPx = 84.0;
 
   @override
   void initState() {
@@ -309,12 +318,17 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
       curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeInCubic,
     );
+    _dismissController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
   }
 
   @override
   void dispose() {
     _curve.dispose();
     _controller.dispose();
+    _dismissController.dispose();
     super.dispose();
   }
 
@@ -334,6 +348,36 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
 
   void _toggle() {
     _isExpanded ? _collapse() : _expand();
+  }
+
+  /// Settles a pull-down that is in progress: past the threshold (or a
+  /// fast downward fling) the sheet is dismissed; otherwise it springs
+  /// back to rest.
+  void _settleDismiss(double travelPx, {double velocityY = 0}) {
+    if (!mounted) return;
+    final offset = _dismissController.value * travelPx;
+    if (velocityY > 250 || offset > _dismissThresholdPx) {
+      Navigator.of(context).pop();
+    } else if (_dismissController.value > 0) {
+      _dismissController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  /// Feeds a body pull-down (list dragged past its top) into the dismiss
+  /// offset. The first [_overscrollDeadZone] pixels are swallowed so
+  /// ordinary scroll momentum landing on the top edge cannot move the
+  /// sheet; beyond that the sheet follows the finger one-to-one.
+  void _feedDismiss(double amountPx, double travelPx) {
+    if (amountPx <= 0 || travelPx <= 0) return;
+    _dismissController.stop();
+    _overscrollFeed += amountPx;
+    final effective = _overscrollFeed - _overscrollDeadZone;
+    if (effective <= 0) return;
+    _dismissController.value = (effective / travelPx).clamp(0.0, 1.0);
   }
 
   @override
@@ -362,31 +406,57 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
       actions: genActions(widget.actions),
     );
 
+    // One vertical position model for the header drag (T143): the
+    // sheet's displacement from rest is expandTravel up (expanded) or
+    // dismissTravel down (being pulled away). The drag moves a single
+    // virtual offset across both regimes, so every sheet — expandable
+    // or not — can be pulled down from its handle to dismiss, which
+    // the expandable gate previously made impossible.
+    final expandTravel = expandable && travel > 0 ? travel : 0.0;
+    final dismissTravel = initialHeight > 0
+        ? initialHeight + insets
+        : screenHeight * 0.58;
     final header = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: expandable && travel > 0 ? _toggle : null,
       onVerticalDragStart: (details) {
-        if (!expandable || travel <= 0) return;
+        _dismissController.stop();
         _dragStartY = details.globalPosition.dy;
         _dragStartValue = _controller.value;
+        _dragStartDismiss = _dismissController.value;
       },
       onVerticalDragUpdate: (details) {
-        if (!expandable || travel <= 0) return;
-        final delta = _dragStartY - details.globalPosition.dy;
-        _controller.value = (_dragStartValue + delta / travel).clamp(0.0, 1.0);
+        final dy = details.globalPosition.dy - _dragStartY;
+        final rest =
+            _dragStartValue * expandTravel -
+            _dragStartDismiss * dismissTravel;
+        final position = rest - dy;
+        if (position >= 0) {
+          _dismissController.value = 0;
+          if (expandTravel > 0) {
+            _controller.value = (position / expandTravel).clamp(0.0, 1.0);
+          }
+        } else {
+          if (expandTravel > 0) _controller.value = 0;
+          _dismissController.value = (-position / dismissTravel).clamp(
+            0.0,
+            1.0,
+          );
+        }
       },
       onVerticalDragEnd: (details) {
-        if (!expandable || travel <= 0) return;
         final vy = details.velocity.pixelsPerSecond.dy;
-        if (vy < -250) {
-          _expand();
+        if (_dismissController.value > 0) {
+          _settleDismiss(dismissTravel, velocityY: vy);
+        } else if (vy < -250) {
+          if (expandTravel > 0) _expand();
         } else if (vy > 250) {
           if (_dragStartValue > 0.5) {
             _collapse();
           } else {
             Navigator.of(context).pop();
           }
-        } else {
+        } else if (expandTravel > 0) {
           _controller.value >= 0.4 ? _expand() : _collapse();
         }
       },
@@ -410,26 +480,52 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
       ),
     );
 
-    Widget bodyContent = widget.body;
-    if (expandable && travel > 0) {
-      bodyContent = NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is ScrollUpdateNotification) {
-            if (notification.metrics.pixels <= 0 &&
-                (notification.scrollDelta ?? 0) < -12 &&
-                _controller.value > 0.5) {
-              _collapse();
-            }
-          } else if (notification is OverscrollNotification) {
-            if (notification.overscroll < -10 && _controller.value > 0.5) {
-              _collapse();
-            }
+    // The body participates in the same gesture family (T143): while
+    // expanded, a pull at the top of the list collapses the sheet (the
+    // long-standing behavior); while collapsed, dragging the list past
+    // its top pulls the sheet itself down toward dismissal, and
+    // scrolling back into the content cancels the pull.
+    Widget bodyContent = NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification) {
+          final delta = notification.scrollDelta ?? 0;
+          if (notification.metrics.pixels <= 0 &&
+              delta < -12 &&
+              _controller.value > 0.5) {
+            _collapse();
+          } else if (notification.dragDetails != null &&
+              notification.metrics.pixels <= 0 &&
+              delta < 0 &&
+              _controller.value < 0.5) {
+            _feedDismiss(-delta, dismissTravel);
+          } else if (delta > 0 && _dismissController.value > 0) {
+            // Direction reversal: the user is scrolling back into the
+            // content, so the pull is abandoned, never settled into a
+            // dismissal.
+            _overscrollFeed = 0;
+            _dismissController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+            );
           }
-          return false;
-        },
-        child: bodyContent,
-      );
-    }
+        } else if (notification is OverscrollNotification) {
+          if (notification.overscroll < -10 && _controller.value > 0.5) {
+            _collapse();
+          } else if (notification.overscroll < 0 &&
+              _controller.value < 0.5) {
+            _feedDismiss(-notification.overscroll, dismissTravel);
+          }
+        } else if (notification is ScrollEndNotification) {
+          _overscrollFeed = 0;
+          if (_dismissController.value > 0) {
+            _settleDismiss(dismissTravel);
+          }
+        }
+        return false;
+      },
+      child: widget.body,
+    );
 
     final backgroundColor = context.colorScheme.surfaceContainerLow;
     final isTv = globalState.isAndroidTV;
@@ -467,20 +563,23 @@ class _ExpandableBottomSheetState extends State<_ExpandableBottomSheet>
         }
       },
       child: AnimatedBuilder(
-        animation: _curve,
+        animation: Listenable.merge([_curve, _dismissController]),
         child: sheetContent,
         builder: (context, child) {
           final currentMaxHeight = (expandable && travel > 0)
               ? initialHeight + travel * _curve.value
               : math.max(initialHeight, maxHeight);
 
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: initialHeight + insets,
-              maxHeight: currentMaxHeight + insets,
-              minWidth: double.infinity,
+          return Transform.translate(
+            offset: Offset(0, _dismissController.value * dismissTravel),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: initialHeight + insets,
+                maxHeight: currentMaxHeight + insets,
+                minWidth: double.infinity,
+              ),
+              child: child,
             ),
-            child: child,
           );
         },
       ),

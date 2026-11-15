@@ -106,6 +106,16 @@ const _darkSubtleShadows = [
   BoxShadow(color: Color(0x30000000), offset: Offset(0, 1.5), blurRadius: 3.5),
 ];
 
+// Immersive dark cards are glass (surface token at 7% white): any black
+// shadow stack paints a dark blob directly under the fill, which reads
+// straight through the glass, dims the panel toward a solid slab and
+// blacks out the light field behind it (pixel-verified: the stock 50%
+// stack composited card interiors to near-opaque navy and cut the
+// constellation lines at the card edge). The approved reference — the
+// scripts page's managed card — is elevated:false and shadowless; the
+// 1px token outline is what defines immersive panels (design doc
+// 3.4.2), so immersive dark cards paint no shadow at all.
+
 class CommonCard extends StatelessWidget {
   const CommonCard({
     super.key,
@@ -267,7 +277,9 @@ class CommonCard extends StatelessWidget {
         child: childWidget,
       );
 
-      final hasShadows = elevated || subtle;
+      final immersiveDark =
+          !isLight && context.zodiac?.skeleton == ZodiacSkeleton.immersive;
+      final hasShadows = (elevated || subtle) && !immersiveDark;
       if (hasShadows) {
         final shadows = subtle
             ? (isLight ? _lightSubtleShadows : _darkSubtleShadows)
@@ -366,7 +378,11 @@ class SettingsBlock extends StatelessWidget {
         children: [
           InfoHeader(info: Info(label: title)),
           Card(
-            color: context.colorScheme.surfaceContainer,
+            // Same immersive rule as CommonCard: raw surface token over
+            // the light field, never the opaque composited tone.
+            color: context.zodiac?.skeleton == ZodiacSkeleton.immersive
+                ? context.zodiac!.variant.surface
+                : context.colorScheme.surfaceContainer,
             clipBehavior: Clip.antiAlias,
             child: Column(children: settings),
           ),

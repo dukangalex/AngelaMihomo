@@ -1,5 +1,7 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T121: stock cleanup for the scrapped chain.22 line's seeded duplicate
@@ -68,8 +70,12 @@ void main() {
     expect(purgeLegacyBuiltinScript(configWith()), isNull);
   });
 
-  test('the bundled entry carries the script name, not the mode name', () {
-    expect(bundledScriptLabel, 'HiClash 内置脚本');
+  test('T144: the managed entry presents as the mode, tagged as the '
+      'built-in script; the legacy id stays the purge key', () async {
+    await AppLocalizations.load(const Locale('zh', 'CN'));
+    expect(appLocalizations.managedMode, '托管模式');
+    expect(appLocalizations.builtInScript, '内置脚本');
+    expect(appLocalizations.custom, '自定义');
     expect(legacyBuiltinScriptId, 'builtin-hiclash');
   });
 }

@@ -422,6 +422,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "blacklistMode": MessageLookupByLibrary.simpleMessage("حالت لیست سیاه"),
     "blockComment": MessageLookupByLibrary.simpleMessage("کامنت"),
     "builtIn": MessageLookupByLibrary.simpleMessage("داخلی"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("اسکریپت داخلی"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("حالت داخلی"),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("پیوند اشتراک"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage(
@@ -1211,7 +1212,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "دسترسی به سرور ممکن نیست",
     ),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "اگر دستگاه‌های دیگر نمی‌توانند وصل شوند، اتصال‌های ورودی هستهٔ Bettbox را در دیوارهٔ آتش سیستم مجاز کنید.",
+      "اگر دستگاه‌های دیگر نمی‌توانند وصل شوند، اتصال‌های ورودی هستهٔ AngelaMihomo را در دیوارهٔ آتش سیستم مجاز کنید.",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(

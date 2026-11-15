@@ -356,6 +356,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "blacklistMode": MessageLookupByLibrary.simpleMessage("ブラックリストモード"),
     "blockComment": MessageLookupByLibrary.simpleMessage("コメント"),
     "builtIn": MessageLookupByLibrary.simpleMessage("内蔵"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("内蔵スクリプト"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("内蔵モード"),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("サブスクリプションのリンク"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage(
@@ -1009,7 +1010,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "サーバーに接続できません",
     ),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "他のデバイスから接続できない場合は、システムのファイアウォールで Bettbox コアの受信接続を許可してください。",
+      "他のデバイスから接続できない場合は、システムのファイアウォールで AngelaMihomo コアの受信接続を許可してください。",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(

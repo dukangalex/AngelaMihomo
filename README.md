@@ -2,21 +2,24 @@
   <strong>简体中文</strong> | <a href="readme/README_en.md">English</a> | <a href="readme/README_ru.md">Русский</a> | <a href="readme/README_fa.md">فارسی</a> | <a href="readme/README_ja.md">日本語</a> | <a href="readme/README_ko.md">한국어</a>
 </h4>
 
-<h1 align="center">⚡ Angela Mihomo</h1>
+<h1 align="center">♐ Angela Mihomo</h1>
 <p align="center">
-  <strong>链式代理增强版 Mihomo 客户端</strong>
+  <strong>十二星座主题的 Mihomo 客户端</strong><br/>
+  默认主题：射手座 · 靛夜飞箭
 </p>
 
 ## 关于本项目
 
-**Angela Mihomo** 是一款基于 [Mihomo](https://github.com/MetaCubeX/mihomo) 内核的跨平台代理客户端，专注链式代理、系统级防泄漏与开箱即用体验，遵循 GPL-3.0 开源协议，独立开发与发布。
+**Angela Mihomo** 是一款基于 [Mihomo](https://github.com/MetaCubeX/mihomo) 内核的跨平台代理客户端，覆盖 Android、Windows、macOS、Linux 四个平台，同版本、一套功能、同步发布。它的设计语言是十二星座主题家族：十二套星座主题各有自己的配色与星图，深浅双态齐全，界面浮在星野光场之上。
 
-本项目的特色：
+本项目的四条产品准则：
 
-* **链式代理增强**：入口与出口均可选用策略组作为跳点；出口可跨配置选择（节点或策略组）；入口组为空时自动加固为拒绝直连，避免链式失效时流量绕行直连。
-* **独立包名**：Android 包名为 `app.angelabettbox`，可与其他同类客户端并存安装，互不影响；包名保持稳定，已安装版本可直接覆盖升级。
-* **版本与内核跟进**：内核基线与 Mihomo 官方版本对齐（当前为 Mihomo v1.19.33），内置规则数据源采用 MetaCubeX 官方源。
-* **系统显式防泄漏**：WebRTC 拦截、中国公共 DNS 直连、广告拦截等一整套显式规则，与链式代理统一联动，开箱即生效。
+* **易用**：导入订阅即可直接跑起来，不要求使用者先懂概念。
+* **系统显式**：内核能做的都摆到界面上，每项能力带说明与出处，不藏着掖着。
+* **隐私本地优先**：能只留本机的只留本机，日志与数据先脱敏再落盘。
+* **长期平稳**：连接稳定、订阅更新可靠、测速准确、模式与分流正确，先于一切锦上添花。
+
+遵循 GPL-3.0 开源协议，独立开发与发布。
 
 <p align="center">
   <img src="snapshots/home.png" alt="Angela Mihomo" />
@@ -29,33 +32,37 @@
 使用交流与问题反馈见 Telegram 群组：https://t.me/AngelaMihomoGroup
 
 ---
-## 🚀 核心特性
+## ✨ 本版夺目点：十二星座主题
 
-* **开箱即用**：完善的权限引导与舒适的 TUN / VPN 体验，预置大量合理优化策略，安装即达最佳可用状态。
-* **轻量畅快**：深度调优系统与渲染管线，前台交互动画高帧率简洁丝滑，移动端低能耗，桌面端低资源占用。
-* **安全可信**：内核紧跟 Mihomo 主线，遵循各平台最小权限设计；代码完全开源，可自行审计。
-* **稳定容错**：优化多平台极端网络环境下的边界问题，内置双重配置检测验证与保护机制。
-* **架构优化**：桌面端原生 ARM64 架构深度支持，同时持续维护面向老旧设备的 Compatible 兼容版本。
-* **智能守护**：支持多平台无感智能启停、移动端低功耗休眠策略、一键禁用 QUIC 以及托盘菜单多维快捷控制。
-* **可视化设置**：提供丰富深入的可视化参数调节界面，支持改动即时生效。
-* **首页小组件**：内置多款 Widget 小组件，在首页直观掌控实时网速、连接与全局运行状态。
-* **个性化定制**：支持丰富的色彩主题、自定义图标与标题等，并内置 30 种精美的测速动效。
-* **生态与扩展**：支持外置 JS 覆写脚本的可视化 UI 适配与高性能代码编辑器。
-* **零隐私风险**：代码完全透明开源、无广告，零后台隐私收集。
+* **十二套星座主题**：白羊、金牛、双子、巨蟹、狮子、处女、天秤、天蝎、射手、摩羯、水瓶、双鱼，每套取星座的元素与意象配色，各有深色与浅色两态。
+* **默认射手座 · 靛夜飞箭**：靛夜底色、飞箭轨迹与茶壶星群，是打开应用的第一眼。
+* **星野光场界面**：卡片以半透玻璃浮在星图之上，星图透卡可见；主题切换只换令牌，全应用随之变装。
+
+---
+## 🚀 核心能力
+
+* **链式代理**：真链式——入口跳点与出口落点都可选用策略组，出口可跨配置选择；入口失效时整条链断开，绝不绕开入口直连。
+* **系统显式防泄漏**：WebRTC 拦截、中国公共 DNS 直连、广告拦截等一整套显式规则，与链式代理统一联动，开箱即生效。
+* **规则模式默认到位**：规则模式下中国流量直连、非中国流量走代理，由应用注入的规则保证，不被订阅规则穿透。
+* **隐私本地优先**：出口 IP 的国家、地区、ASN、运营商全部由本地数据库查询得出，零外发；无广告、无统计收集；更新检查只指向本仓库。
+* **托管模式内置脚本**：为配置开启托管模式后，内置脚本自动生成代理组与规则（默认关闭，按配置自愿开启）；脚本内容可按需自定义，正本随本仓库维护、更新随 App 版本走。
+* **独立包名**：Android 包名为 `app.angelabettbox`，可与其他同类客户端并存安装，互不影响；包名保持稳定，已安装版本可直接覆盖升级。
+* **版本与内核跟进**：内核基线与 Mihomo 官方版本对齐（当前为 Mihomo v1.19.34），内置规则数据源采用 MetaCubeX 官方源。
 
 ---
 ## 🛠️ 安装与下载
 
 请前往本仓库的 **[[Releases]](https://github.com/dukangalex/AngelaMihomo/releases)** 页面下载对应平台的安装包：
 
-* **桌面端支持**: 
+* **桌面端支持**:
   * **Windows 8.1+:** (x64 / arm64)
   * **Linux Kernel 5.4+:** (x64 / arm64)
   * **macOS 12.0+:** (Intel / Apple Silicon)
-* **移动端及其他**: 
-  * **Android 8.0+:** (ARMv8 / ARMv7 / x86_64 / Universal) 
+* **移动端及其他**:
+  * **Android 8.0+:** (ARMv8 / ARMv7 / x86_64 / Universal)
   * **Android TV:** 完整大屏适配，可选 ARMv7 32位版本
-  * **鸿蒙 NEXT:** 可配合 [[卓易通]](https://harmonyos.cool/android-app) 稳定使用
+
+**分发说明**：本项目仅通过 GitHub Releases 分发，未上架应用商店；Windows 安装包未做商业代码签名，macOS 安装包未经 Apple 公证，首次打开请按下方常见问题处理。
 
 **从其他版本迁移（Android）**：自 v1.19.7-chain.1 起本应用使用独立包名，可直接与其他版本并存安装；如需迁移数据，请先在原应用中导出备份，再在本应用中导入恢复。
 
@@ -101,13 +108,14 @@
 
 自定义脚本 UI 适配：
 
-* 本项目支持外置覆写脚本适配图形化 UI。以 AIsouler 的 **[脚本/配置分享](https://github.com/AIsouler/MyClash)** 为例，只需在脚本首行添加以下声明，即可直接联动内置可视化开关：
-* <code>const Compatible_With_Mihomo = { ruleOptionsEnable: true };</code>（Mihomo 系通用声明，任何支持该约定的 Mihomo 客户端均可识别）
+* 本项目支持外置覆写脚本适配图形化 UI：在脚本首行添加以下声明，即可直接联动内置可视化开关：
+* <code>const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };</code>（本项目声明）
+* Mihomo 系通用声明同样受支持：<code>const Compatible_With_Mihomo = { ruleOptionsEnable: true };</code>（任何支持该约定的 Mihomo 客户端均可识别）
 * Bettbox 声明同样受支持：<code>const Compatible_With_Bettbox = { ruleOptionsEnable: true };</code>
 * 若脚本开关中包含策略组与其他功能开关，可通过 `policyGroupOptions` 声明策略组开关名称；未声明的开关会自动归纳至「⚙️ 其他设置」二级菜单：
 
 ```js
-const Compatible_With_Mihomo = {
+const Compatible_With_AngelaMihomo = {
   ruleOptionsEnable: true,
   // 声明属于策略组的开关名称，需与 ruleOptionsEnable 的键完全一致
   policyGroupOptions: ['🚀 节点选择', '🛑 广告拦截'],

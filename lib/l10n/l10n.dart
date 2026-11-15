@@ -8576,10 +8576,10 @@ class AppLocalizations {
     );
   }
 
-  /// `If other devices can't connect, allow incoming connections for the Bettbox core in your system firewall.`
+  /// `If other devices can't connect, allow incoming connections for the AngelaMihomo core in your system firewall.`
   String get iperfFirewallTip {
     return Intl.message(
-      'If other devices can\'t connect, allow incoming connections for the Bettbox core in your system firewall.',
+      'If other devices can\'t connect, allow incoming connections for the AngelaMihomo core in your system firewall.',
       name: 'iperfFirewallTip',
       desc: '',
       args: [],
@@ -10333,6 +10333,15 @@ class AppLocalizations {
   /// `Built-in`
   String get builtIn {
     return Intl.message('Built-in', name: 'builtIn', desc: '', args: []);
+  }
+
+  String get builtInScript {
+    return Intl.message(
+      'Built-in script',
+      name: 'builtInScript',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Built-in mode`

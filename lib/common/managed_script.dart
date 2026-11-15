@@ -15,11 +15,6 @@ import 'string.dart';
 const managedScriptId = 'managed';
 const managedAnchorGroup = 'AdBlock';
 
-/// Display name of the bundled script wherever the scripts page presents
-/// the managed entry itself (card, editor, export, per-profile picker).
-/// The mechanism keeps its own name (managed mode); this is the script's.
-const bundledScriptLabel = 'HiClash 内置脚本';
-
 /// Id of the script-library record seeded by the scrapped chain.22 line
 /// (its `BuiltinScript.id`). That line is frozen and never ships; the
 /// record only survives in on-device data of builds that trialed it.

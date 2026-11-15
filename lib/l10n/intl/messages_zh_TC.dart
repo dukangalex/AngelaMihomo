@@ -333,6 +333,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "blacklistMode": MessageLookupByLibrary.simpleMessage("黑名單模式"),
     "blockComment": MessageLookupByLibrary.simpleMessage("註解"),
     "builtIn": MessageLookupByLibrary.simpleMessage("內建"),
+    "builtInScript": MessageLookupByLibrary.simpleMessage("內建腳本"),
     "builtInManagedMode": MessageLookupByLibrary.simpleMessage("內建託管模式"),
     "bundleAddUrl": MessageLookupByLibrary.simpleMessage("訂閱連結"),
     "bundleAddUrlDesc": MessageLookupByLibrary.simpleMessage("匯入為新訂閱並加入成員"),
@@ -905,7 +906,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorUdp": MessageLookupByLibrary.simpleMessage("UDP 交握失敗，可能被防火牆攔截"),
     "iperfErrorUnreachable": MessageLookupByLibrary.simpleMessage("無法連線到伺服器"),
     "iperfFirewallTip": MessageLookupByLibrary.simpleMessage(
-      "如果其他裝置無法連線，請在系統防火牆中允許 Bettbox 核心的傳入連線。",
+      "如果其他裝置無法連線，請在系統防火牆中允許 AngelaMihomo 核心的傳入連線。",
     ),
     "iperfLostPackets": m28,
     "iperfNoAddress": MessageLookupByLibrary.simpleMessage(
