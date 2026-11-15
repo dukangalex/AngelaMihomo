@@ -123,6 +123,91 @@ final _logModuleRegExp = RegExp(
   r'^\[([A-Za-z][A-Za-z0-9_-]{0,15}(?: [A-Za-z0-9_-]{1,15})?)\]\s*',
 );
 
+/// Sensitive-value redaction for log text (T130).
+///
+/// Single redaction entry for every log line in the app: [Log.app] and
+/// [Log.core] both pass their payload through here, and CommonPrint applies
+/// it before mirroring to the console, so displayed, exported and console
+/// logs never carry raw credentials.
+///
+/// Masked: subscription URLs (only scheme + authority survive; userinfo,
+/// path and query are dropped, since tokens live there), proxy share links
+/// (the whole payload is a credential), UUIDs, well-known secret
+/// key/value pairs (token / password / secret / auth / uuid / psk /
+/// private-key / url= ...) and Bearer/Basic credentials.
+/// Preserved for diagnosis: error types, target hosts, provider and
+/// profile names, status codes. The transform is idempotent.
+String redactSensitiveText(String input) {
+  if (input.isEmpty) return input;
+  var text = input;
+  text = text.replaceAllMapped(
+    _proxyShareLinkRegExp,
+    (m) => '${m[1]}://***',
+  );
+  text = text.replaceAllMapped(_httpUrlRegExp, _redactHttpUrlMatch);
+  text = text.replaceAllMapped(_secretKeyValueRegExp, (m) {
+    final value = m[3]!;
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      // Already reduced to scheme + authority by the URL pass above.
+      return m[0]!;
+    }
+    return '${m[1]}${m[2]}***';
+  });
+  text = text.replaceAllMapped(
+    _bearerCredentialRegExp,
+    (m) => '${m[1]} ***',
+  );
+  text = text.replaceAll(_uuidRegExp, '***');
+  return text;
+}
+
+final _proxyShareLinkRegExp = RegExp(
+  r'(vmess|vless|ss|ssr|trojan|hysteria2|hysteria|hy2|tuic|wireguard|snell|anytls)://[^\s"<>\]\)\}]+',
+  caseSensitive: false,
+);
+
+final _httpUrlRegExp = RegExp(r'https?://[^\s"<>\]\)\}]+', caseSensitive: false);
+
+final _secretKeyValueRegExp = RegExp(
+  r'''\b(token|api[-_]?key|password|passwd|pwd|secret|auth|uuid|psk|private[-_]?key|pre[-_]?shared[-_]?key|url)(\s*["']?\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s&"',;}\]]+)''',
+  caseSensitive: false,
+);
+
+final _bearerCredentialRegExp = RegExp(
+  r'\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]{4,}',
+  caseSensitive: false,
+);
+
+final _uuidRegExp = RegExp(
+  r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',
+);
+
+String _redactHttpUrlMatch(Match match) {
+  var token = match[0]!;
+  // Trailing sentence punctuation is not part of the URL.
+  var trailing = '';
+  while (token.isNotEmpty && '.,;:!?'.contains(token[token.length - 1])) {
+    trailing = token[token.length - 1] + trailing;
+    token = token.substring(0, token.length - 1);
+  }
+  final schemeEnd = token.indexOf('://');
+  if (schemeEnd == -1) return match[0]!;
+  final scheme = token.substring(0, schemeEnd);
+  final rest = token.substring(schemeEnd + 3);
+  var authorityEnd = rest.length;
+  for (final sep in ['/', '?', '#']) {
+    final idx = rest.indexOf(sep);
+    if (idx != -1 && idx < authorityEnd) authorityEnd = idx;
+  }
+  var authority = rest.substring(0, authorityEnd);
+  final remainder = rest.substring(authorityEnd);
+  final at = authority.lastIndexOf('@');
+  if (at != -1) authority = authority.substring(at + 1);
+  if (authority.isEmpty) return '$scheme://***$trailing';
+  final masked = remainder.isEmpty ? '' : '/***';
+  return '$scheme://$authority$masked$trailing';
+}
+
 @freezed
 abstract class Log with _$Log {
   const factory Log({
@@ -137,7 +222,9 @@ abstract class Log with _$Log {
 
   factory Log.core(Map<String, Object?> json) {
     final raw = Log.fromJson(json);
-    final log = raw.copyWith(payload: raw.payload.trimRight());
+    final log = raw.copyWith(
+      payload: redactSensitiveText(raw.payload.trimRight()),
+    );
     final match = _logModuleRegExp.firstMatch(log.payload);
     if (match == null) return log;
     final module = match.group(1);
@@ -151,7 +238,7 @@ abstract class Log with _$Log {
   factory Log.app(String payload, {LogLevel level = LogLevel.info}) {
     return Log(
       logLevel: level,
-      payload: payload.trimRight(),
+      payload: redactSensitiveText(payload.trimRight()),
       time: DateTime.now(),
       source: LogSource.app,
     );

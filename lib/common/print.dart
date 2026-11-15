@@ -22,11 +22,12 @@ class CommonPrint {
   void error(String? text) => _dispatch(text, LogLevel.error);
 
   void _dispatch(String? text, LogLevel level) {
-    debugPrint('[APP] $text');
+    final safeText = redactSensitiveText(text ?? '');
+    debugPrint('[APP] $safeText');
     if (!globalState.isInit) {
       return;
     }
-    globalState.appController.addLog(Log.app('$text', level: level));
+    globalState.appController.addLog(Log.app(safeText, level: level));
   }
 }
 

@@ -26,12 +26,15 @@ void main() {
       for (final payload in [
         '[Update padding succeed] abc',
         '[Alert from server] abc',
-        '[https://dns.example/dns-query] using HTTP/3',
       ]) {
         final log = _core(payload);
         expect(log.module, isNull, reason: payload);
         expect(log.payload, payload);
       }
+      // 方括号里的 URL 不当作模块；其路径经 T130 日志脱敏后为 /***。
+      final urlLog = _core('[https://dns.example/dns-query] using HTTP/3');
+      expect(urlLog.module, isNull);
+      expect(urlLog.payload, '[https://dns.example/***] using HTTP/3');
       expect(_core('[DNS Server] x').module, 'DNS Server');
       expect(_core('[ShadowTLS] x').module, 'ShadowTLS');
     });

@@ -208,7 +208,7 @@ Future<void> _service(List<String> flags) async {
             globalState.getCoreState(),
           );
           final message = res.message;
-          debugPrint(message);
+          debugPrint(redactSensitiveText(message));
           if (message.isNotEmpty) {
             commonPrint.error('QuickStart failed with error: $message');
             await vpn?.stop();
