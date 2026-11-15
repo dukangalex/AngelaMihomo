@@ -304,6 +304,7 @@
   "currentNodeAvailable": "現在のノードは利用可能",
   "currentNodeUnavailable": "現在のノードは利用不可",
   "currentNodeUnknown": "ノードの状態は不明",
+  "groupNodeCount": "{count} ノード",
   "addProfile": "プロファイル追加",
   "customUrl": "カスタムURL",
   "sync": "同期",

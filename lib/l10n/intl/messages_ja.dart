@@ -183,6 +183,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
+  static String m78(count) => "${count} ノード";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("アプリについて"),
@@ -1899,8 +1901,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("テスト完了"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("失敗"),
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("現在のノードは利用可能"),
-    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("現在のノードは利用不可"),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "現在のノードは利用不可",
+    ),
     "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("ノードの状態は不明"),
+    "groupNodeCount": m78,
     "startVpn": MessageLookupByLibrary.simpleMessage("起動中..."),
     "status": MessageLookupByLibrary.simpleMessage("ステータス"),
     "statusDesc": MessageLookupByLibrary.simpleMessage("オフにするとシステムDNSを使用します"),

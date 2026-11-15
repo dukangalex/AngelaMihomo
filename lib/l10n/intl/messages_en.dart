@@ -196,6 +196,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) =>
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
+  static String m78(count) => "${count} nodes";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -2284,13 +2286,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Style"),
     "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Tonal"),
     "startTest": MessageLookupByLibrary.simpleMessage("Delay Test"),
-    "globalDelayTest": MessageLookupByLibrary.simpleMessage("Global Linked Delay Test"),
+    "globalDelayTest": MessageLookupByLibrary.simpleMessage(
+      "Global Linked Delay Test",
+    ),
     "globalDelayTesting": MessageLookupByLibrary.simpleMessage("Testing"),
-    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("Test complete"),
+    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage(
+      "Test complete",
+    ),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("Failed"),
-    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("Current node available"),
-    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("Current node unavailable"),
-    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("Node status unknown"),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
+      "Current node available",
+    ),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Current node unavailable",
+    ),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage(
+      "Node status unknown",
+    ),
+    "groupNodeCount": m78,
     "startVpn": MessageLookupByLibrary.simpleMessage("Starting..."),
     "status": MessageLookupByLibrary.simpleMessage("Status"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(

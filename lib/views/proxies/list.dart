@@ -518,6 +518,11 @@ class _GroupHeader extends ConsumerWidget {
                   Row(
                     children: [
                       Text(group.type.name, style: labelLightStyle),
+                      Text('  •  ', style: labelLightStyle),
+                      Text(
+                        appLocalizations.groupNodeCount(group.all.length),
+                        style: labelLightStyle,
+                      ),
                       if (selectedProxyName.isNotEmpty) ...[
                         Text('  •  ', style: labelLightStyle),
                         if (selectedProxyIcon.isNotEmpty) ...[

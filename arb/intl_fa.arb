@@ -304,6 +304,7 @@
   "currentNodeAvailable": "گره فعلی در دسترس است",
   "currentNodeUnavailable": "گره فعلی در دسترس نیست",
   "currentNodeUnknown": "وضعیت گره نامشخص است",
+  "groupNodeCount": "{count} گره",
   "addProfile": "افزودن پروفایل",
   "customUrl": "آدرس URL سفارشی",
   "sync": "همگام‌سازی",

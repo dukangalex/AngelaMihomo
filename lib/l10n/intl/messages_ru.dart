@@ -197,6 +197,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) =>
       "${Intl.plural(count, one: 'год', few: 'года', many: 'лет', other: 'лет')}";
 
+  static String m78(count) => "Узлов: ${count}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("О программе"),
@@ -2372,13 +2374,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Стиль"),
     "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Тональный"),
     "startTest": MessageLookupByLibrary.simpleMessage("Тест задержки"),
-    "globalDelayTest": MessageLookupByLibrary.simpleMessage("Глобальный тест задержки цепочки"),
+    "globalDelayTest": MessageLookupByLibrary.simpleMessage(
+      "Глобальный тест задержки цепочки",
+    ),
     "globalDelayTesting": MessageLookupByLibrary.simpleMessage("Тестирование"),
-    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("Тест завершён"),
+    "globalDelayTestDone": MessageLookupByLibrary.simpleMessage(
+      "Тест завершён",
+    ),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("Не удалось"),
-    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("Текущий узел доступен"),
-    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("Текущий узел недоступен"),
-    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("Статус узла неизвестен"),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage(
+      "Текущий узел доступен",
+    ),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Текущий узел недоступен",
+    ),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage(
+      "Статус узла неизвестен",
+    ),
+    "groupNodeCount": m78,
     "startVpn": MessageLookupByLibrary.simpleMessage("Запуск VPN"),
     "status": MessageLookupByLibrary.simpleMessage("Статус"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(

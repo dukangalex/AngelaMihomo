@@ -2580,6 +2580,16 @@ class AppLocalizations {
     );
   }
 
+  /// `{count} nodes`
+  String groupNodeCount(Object count) {
+    return Intl.message(
+      '$count nodes',
+      name: 'groupNodeCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
   /// `Add Profile`
   String get addProfile {
     return Intl.message('Add Profile', name: 'addProfile', desc: '', args: []);

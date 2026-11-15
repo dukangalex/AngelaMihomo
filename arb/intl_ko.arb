@@ -304,6 +304,7 @@
   "currentNodeAvailable": "현재 노드 사용 가능",
   "currentNodeUnavailable": "현재 노드 사용 불가",
   "currentNodeUnknown": "노드 상태를 알 수 없음",
+  "groupNodeCount": "노드 {count}개",
   "addProfile": "프로필 추가",
   "customUrl": "사용자 지정 URL",
   "sync": "동기화",

@@ -304,6 +304,7 @@
   "currentNodeAvailable": "Текущий узел доступен",
   "currentNodeUnavailable": "Текущий узел недоступен",
   "currentNodeUnknown": "Статус узла неизвестен",
+  "groupNodeCount": "Узлов: {count}",
   "addProfile": "Добавить профиль",
   "customUrl": "Пользовательский URL",
   "sync": "Синхронизировать",

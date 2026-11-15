@@ -304,6 +304,7 @@
   "currentNodeAvailable": "當前節點可用",
   "currentNodeUnavailable": "當前節點不可用",
   "currentNodeUnknown": "節點狀態未知",
+  "groupNodeCount": "{count} 個節點",
   "addProfile": "新增配置",
   "customUrl": "自訂 URL",
   "sync": "同步",

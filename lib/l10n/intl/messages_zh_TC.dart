@@ -178,6 +178,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
+  static String m78(count) => "${count} 個節點";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("關於"),
@@ -1702,6 +1704,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("當前節點可用"),
     "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("當前節點不可用"),
     "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("節點狀態未知"),
+    "groupNodeCount": m78,
     "startVpn": MessageLookupByLibrary.simpleMessage("正在啟動"),
     "status": MessageLookupByLibrary.simpleMessage("狀態"),
     "statusDesc": MessageLookupByLibrary.simpleMessage("關閉後將使用系統 DNS"),

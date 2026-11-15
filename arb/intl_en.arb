@@ -304,6 +304,7 @@
   "currentNodeAvailable": "Current node available",
   "currentNodeUnavailable": "Current node unavailable",
   "currentNodeUnknown": "Node status unknown",
+  "groupNodeCount": "{count} nodes",
   "addProfile": "Add Profile",
   "customUrl": "Custom URL",
   "sync": "Sync",

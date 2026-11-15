@@ -184,6 +184,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m77(count) => "${Intl.plural(count, other: '#년')}";
 
+  static String m78(count) => "노드 ${count}개";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("정보"),
@@ -1892,8 +1894,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("테스트 완료"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("실패"),
     "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("현재 노드 사용 가능"),
-    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("현재 노드 사용 불가"),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "현재 노드 사용 불가",
+    ),
     "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("노드 상태를 알 수 없음"),
+    "groupNodeCount": m78,
     "startVpn": MessageLookupByLibrary.simpleMessage("시작 중..."),
     "status": MessageLookupByLibrary.simpleMessage("상태"),
     "statusDesc": MessageLookupByLibrary.simpleMessage("끄면 시스템 DNS를 사용합니다"),
