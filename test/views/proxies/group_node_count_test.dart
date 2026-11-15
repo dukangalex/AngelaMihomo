@@ -83,10 +83,7 @@ Future<void> _pumpList(WidgetTester tester) async {
       child: MaterialApp(
         theme: ThemeData(
           extensions: [
-            ZodiacThemeExtension.of(
-              resolveZodiacTheme('sagittarius'),
-              Brightness.light,
-            ),
+            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
           ],
         ),
         localizationsDelegates: const [AppLocalizations.delegate],

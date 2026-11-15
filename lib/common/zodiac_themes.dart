@@ -127,7 +127,11 @@ class ZodiacVariant {
   Color compositeOverBase(Color color) =>
       Color.alphaBlend(color, backgroundBase);
 
-  ColorScheme toColorScheme(Brightness brightness) {
+  /// The family's single variant is a dark design (DESIGN doc section
+  /// 1 rule 9, single-set decision 2026-11-15), so the scheme is always
+  /// composed at dark brightness — including when the app sits in its
+  /// Material light slot under a light system mode.
+  ColorScheme toColorScheme() {
     final base = backgroundBase;
     final surfaceSolid = compositeOverBase(surface);
     final variantSolid = compositeOverBase(surfaceVariant);
@@ -136,7 +140,7 @@ class ZodiacVariant {
         ? const Color(0xFF2A0E0E)
         : const Color(0xFFFFFFFF);
     return ColorScheme(
-      brightness: brightness,
+      brightness: Brightness.dark,
       primary: primary,
       onPrimary: onPrimary,
       primaryContainer: selected.isNone ? surfaceVariant : selected.firstColor,
@@ -161,9 +165,7 @@ class ZodiacVariant {
       onSurfaceVariant: textSecondary,
       surfaceDim: Color.alphaBlend(const Color(0x14000000), base),
       surfaceBright: surfaceSolid,
-      surfaceContainerLowest: brightness == Brightness.light
-          ? Color.alphaBlend(const Color(0x0A000000), surfaceSolid)
-          : Color.alphaBlend(const Color(0x1A000000), base),
+      surfaceContainerLowest: Color.alphaBlend(const Color(0x1A000000), base),
       surfaceContainerLow: variantSolid,
       surfaceContainer: variantSolid,
       surfaceContainerHigh: Color.alphaBlend(
@@ -226,8 +228,11 @@ class ZodiacThemeDef {
   final String nameEn;
   final ZodiacSkeleton skeleton;
   final ZodiacConstellation constellation;
-  final ZodiacVariant light;
-  final ZodiacVariant dark;
+
+  /// The theme's single variant. The family is single-set (DESIGN doc
+  /// section 1 rule 9): the former dark variant is canonical and the
+  /// light variant set was removed, so there is no brightness split.
+  final ZodiacVariant variant;
 
   const ZodiacThemeDef({
     required this.id,
@@ -236,12 +241,8 @@ class ZodiacThemeDef {
     required this.nameEn,
     required this.skeleton,
     this.constellation = ZodiacConstellation.empty,
-    required this.light,
-    required this.dark,
+    required this.variant,
   });
-
-  ZodiacVariant variant(Brightness brightness) =>
-      brightness == Brightness.dark ? dark : light;
 }
 
 /// All twelve themes in zodiac order (doc section 5.1).
@@ -273,11 +274,11 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     required this.variant,
   });
 
-  factory ZodiacThemeExtension.of(ZodiacThemeDef def, Brightness brightness) {
+  factory ZodiacThemeExtension.of(ZodiacThemeDef def) {
     return ZodiacThemeExtension(
       themeId: def.id,
       skeleton: def.skeleton,
-      variant: def.variant(brightness),
+      variant: def.variant,
     );
   }
 

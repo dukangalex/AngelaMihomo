@@ -238,13 +238,11 @@ class _ZodiacThemeRow extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _dot(theme.light.primary),
+                  // Single-set family: one palette thumbnail per theme
+                  // (primary + secondary dots of the canonical variant).
+                  _dot(theme.variant.primary),
                   const SizedBox(width: 4),
-                  _dot(theme.light.secondary),
-                  const SizedBox(width: 4),
-                  _dot(theme.dark.primary),
-                  const SizedBox(width: 4),
-                  _dot(theme.dark.secondary),
+                  _dot(theme.variant.secondary),
                   const SizedBox(width: 8),
                   Icon(
                     isSelected

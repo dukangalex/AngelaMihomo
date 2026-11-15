@@ -1,173 +1,158 @@
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/widgets/widgets.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:bett_box/widgets/card.dart';
+import 'package:bett_box/widgets/list.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
-/// T142: cards floating over the zodiac light field must be glass, not
-/// slabs. Two opaque traps are pinned here:
-///  - shared fills that reach for the composited (opaque) container
-///    tones instead of the raw translucent surface token
-///    (ContinuousListItem — the connections page);
-///  - the stock black shadow stack under a 7%-white glass fill, which
-///    composited CommonCard interiors to near-opaque navy and cut the
-///    constellation at the card edge (the dashboard tiles).
+/// T151: card glass is a family-wide discipline (DESIGN doc section
+/// 3.4 rule 7, user-verified on a real device 2026-11-15). T142 fixed
+/// the immersive skeleton only and audited the raw `surface` token —
+/// but nine themes' cards still rendered opaque, because their tokens
+/// were solid AND the shared fill path gated the glass branch on the
+/// immersive skeleton. These tests assert what the cards actually
+/// resolve to when painted — the button style's resolved fill and
+/// border, the shadow stack, and the list frame's paint color — for
+/// every theme of the (single-set) family, so the discipline cannot
+/// silently narrow again.
 void main() {
-  ThemeData themeFor(String id, Brightness brightness) {
-    final def = resolveZodiacTheme(id);
-    final variant = def.variant(brightness);
+  ThemeData themeFor(ZodiacThemeDef def) {
     return ThemeData(
-      colorScheme: variant.toColorScheme(brightness),
-      extensions: [ZodiacThemeExtension.of(def, brightness)],
+      colorScheme: def.variant.toColorScheme(),
+      extensions: [ZodiacThemeExtension.of(def)],
     );
   }
 
-  Color? cardBackground(WidgetTester tester) {
-    final button = tester.widget<OutlinedButton>(find.byType(OutlinedButton));
-    return button.style?.backgroundColor?.resolve({});
-  }
-
-  int shadowLayers(WidgetTester tester) {
-    var count = 0;
+  Future<({Color? fill, BorderSide? side, int shadows})> pumpCard(
+    WidgetTester tester,
+    ThemeData theme, {
+    bool selected = false,
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        home: Scaffold(
+          body: CommonCard(
+            isSelected: selected,
+            child: const SizedBox(width: 200, height: 80),
+          ),
+        ),
+      ),
+    );
+    final button = tester.widget<OutlinedButton>(
+      find.descendant(
+        of: find.byType(CommonCard),
+        matching: find.byType(OutlinedButton),
+      ),
+    );
+    final style = button.style!;
+    var shadows = 0;
     for (final box in tester.widgetList<DecoratedBox>(
-      find.byType(DecoratedBox),
+      find.descendant(
+        of: find.byType(CommonCard),
+        matching: find.byType(DecoratedBox),
+      ),
     )) {
       final decoration = box.decoration;
-      if (decoration is ShapeDecoration &&
-          (decoration.shadows?.isNotEmpty ?? false)) {
-        count++;
+      if (decoration is ShapeDecoration) {
+        shadows += decoration.shadows?.length ?? 0;
       }
     }
-    return count;
+    return (
+      fill: style.backgroundColor!.resolve(const <WidgetState>{}),
+      side: style.side!.resolve(const <WidgetState>{}),
+      shadows: shadows,
+    );
   }
 
-  group('CommonCard glass discipline', () {
-    for (final brightness in Brightness.values) {
-      testWidgets('immersive $brightness: fill is the raw surface token', (
-        tester,
-      ) async {
-        final variant = resolveZodiacTheme(
-          'sagittarius',
-        ).variant(brightness);
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: themeFor('sagittarius', brightness),
-            home: const Scaffold(
-              body: CommonCard(child: SizedBox(width: 80, height: 40)),
-            ),
-          ),
-        );
-        expect(cardBackground(tester), variant.surface);
+  group('glass premise: the canonical tokens are translucent', () {
+    for (final def in zodiacThemes) {
+      test('${def.id} surface tokens sit in the glass band', () {
+        final variant = def.variant;
+        for (final token in [variant.surface, variant.surfaceVariant]) {
+          expect(
+            token.a,
+            inInclusiveRange(0.03, 0.12),
+            reason: '${def.id} token $token must be dark-field glass',
+          );
+          // White-based: the rgb channels are equal and bright, so the
+          // fill lightens the field instead of tinting it.
+          expect(token.r, token.g);
+          expect(token.g, token.b);
+          expect(token.r, greaterThan(0.9));
+        }
       });
     }
-
-    testWidgets('immersive dark: no shadow stack under the glass', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: themeFor('sagittarius', Brightness.dark),
-          home: const Scaffold(
-            body: CommonCard(child: SizedBox(width: 80, height: 40)),
-          ),
-        ),
-      );
-      expect(shadowLayers(tester), 0);
-    });
-
-    testWidgets('non-immersive dark: legacy opaque fill and shadow stay', (
-      tester,
-    ) async {
-      // Aries is the layered skeleton: solid cards are its identity
-      // (design doc 7.1.5) and must not be glassed by this change.
-      final scheme = resolveZodiacTheme(
-        'aries',
-      ).variant(Brightness.dark).toColorScheme(Brightness.dark);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: themeFor('aries', Brightness.dark),
-          home: const Scaffold(
-            body: CommonCard(child: SizedBox(width: 80, height: 40)),
-          ),
-        ),
-      );
-      expect(cardBackground(tester), scheme.surfaceContainerHigh);
-      expect(shadowLayers(tester), 1);
-    });
   });
 
-  group('ContinuousListItem glass discipline', () {
-    Color frameColor(WidgetTester tester) {
-      for (final ro in tester.allRenderObjects) {
-        if (ro.runtimeType.toString() == '_RenderContinuousItemFrame') {
-          return (ro as dynamic).color as Color;
-        }
-      }
-      fail('continuous item frame not found');
-    }
-
-    for (final brightness in Brightness.values) {
-      testWidgets('immersive $brightness: fill is the raw surface token', (
+  group('every theme paints glass cards', () {
+    for (final def in zodiacThemes) {
+      testWidgets('${def.id} card fill is the raw surface token', (
         tester,
       ) async {
-        final variant = resolveZodiacTheme(
-          'sagittarius',
-        ).variant(brightness);
+        final card = await pumpCard(tester, themeFor(def));
+        expect(card.fill, def.variant.surface, reason: def.id);
+        expect(card.side?.color, def.variant.outline, reason: def.id);
+        expect(
+          card.shadows,
+          0,
+          reason: '${def.id}: glass cards carry no shadow stack',
+        );
+      });
+
+      testWidgets('${def.id} selected card fill is the surfaceVariant', (
+        tester,
+      ) async {
+        final card = await pumpCard(tester, themeFor(def), selected: true);
+        expect(card.fill, def.variant.surfaceVariant, reason: def.id);
+      });
+
+      testWidgets('${def.id} list item frame paints the surface token', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
-            theme: themeFor('sagittarius', brightness),
+            theme: themeFor(def),
             home: const Scaffold(
-              body: ContinuousListItem(
-                index: 0,
-                count: 1,
-                child: SizedBox(height: 40),
+              body: Column(
+                children: [
+                  ContinuousListItem(
+                    index: 0,
+                    count: 1,
+                    child: Text('entry'),
+                  ),
+                ],
               ),
             ),
           ),
         );
-        expect(frameColor(tester), variant.surface);
+        // The frame is a private render-object widget; read the color
+        // it was actually given to paint with.
+        Color? frameColor;
+        void visit(Element element) {
+          if (element.widget.runtimeType.toString() ==
+              '_ContinuousItemFrame') {
+            frameColor = (element.widget as dynamic).color as Color;
+          }
+          element.visitChildren(visit);
+        }
+
+        tester.element(find.byType(ContinuousListItem)).visitChildren(visit);
+        expect(frameColor, def.variant.surface, reason: def.id);
       });
     }
-
-    testWidgets('non-immersive dark: legacy opaque fill stays', (
-      tester,
-    ) async {
-      final scheme = resolveZodiacTheme(
-        'aries',
-      ).variant(Brightness.dark).toColorScheme(Brightness.dark);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: themeFor('aries', Brightness.dark),
-          home: const Scaffold(
-            body: ContinuousListItem(
-              index: 0,
-              count: 1,
-              child: SizedBox(height: 40),
-            ),
-          ),
-        ),
-      );
-      expect(frameColor(tester), scheme.surfaceContainerHigh);
-    });
   });
 
-  group('token premise', () {
-    test('every immersive variant surface is translucent, both tones', () {
-      for (final def in zodiacThemes) {
-        if (def.skeleton != ZodiacSkeleton.immersive) continue;
-        for (final brightness in Brightness.values) {
-          final variant = def.variant(brightness);
-          expect(
-            variant.surface.a,
-            lessThan(1),
-            reason: '${def.id} $brightness surface must carry alpha',
-          );
-          expect(
-            variant.surfaceVariant.a,
-            lessThan(1),
-            reason: '${def.id} $brightness surfaceVariant must carry alpha',
-          );
-        }
-      }
+  group('without a zodiac theme the legacy fills are unchanged', () {
+    testWidgets('plain dark theme keeps solid fill and its shadows', (
+      tester,
+    ) async {
+      final scheme = ColorScheme.fromSeed(
+        seedColor: const Color(0xFF6750A4),
+        brightness: Brightness.dark,
+      );
+      final card = await pumpCard(tester, ThemeData(colorScheme: scheme));
+      expect(card.fill, scheme.surfaceContainerHigh);
+      expect(card.shadows, greaterThan(0));
     });
   });
 }

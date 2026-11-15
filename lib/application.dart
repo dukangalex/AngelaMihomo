@@ -443,18 +443,19 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              // Brightness follows the system only; the zodiac family has
-              // no in-app light/dark switch (DESIGN doc section 5.3).
+              // The zodiac family is single-set (DESIGN doc section 1
+              // rule 9): both slots carry the same canonical theme, so
+              // the system brightness never changes the presentation.
               themeMode: ThemeMode.system,
               theme: _themeOf(
                 lightColorScheme,
                 fontFamily,
-                ZodiacThemeExtension.of(zodiac, Brightness.light),
+                ZodiacThemeExtension.of(zodiac),
               ),
               darkTheme: _themeOf(
                 darkColorScheme,
                 fontFamily,
-                ZodiacThemeExtension.of(zodiac, Brightness.dark),
+                ZodiacThemeExtension.of(zodiac),
               ),
               home: child!,
             );

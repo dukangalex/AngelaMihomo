@@ -3,50 +3,47 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T123 (DESIGN doc section 7): the light field is family-wide — every
-/// variant carries glow spots and a glow tone, every theme carries a
-/// recognizable asterism, and backgrounds are imagery gradients except
-/// Gemini's documented solid exception (doc 7.4).
+/// theme's single variant carries glow spots and a glow tone, every
+/// theme carries a recognizable asterism, and backgrounds are imagery
+/// gradients except Gemini's documented solid exception (doc 7.4).
+/// (Single-set family since 2026-11-15: one variant per theme.)
 void main() {
   group('light field data audit', () {
     test('every variant has a glow tone and both glow spots', () {
       for (final def in zodiacThemes) {
-        for (final brightness in Brightness.values) {
-          final variant = def.variant(brightness);
-          expect(
-            variant.glow,
-            isNotNull,
-            reason: '${def.id} $brightness must carry a glow tone',
-          );
-          expect(
-            variant.glows,
-            hasLength(2),
-            reason: '${def.id} $brightness must carry both glow spots',
-          );
-          expect(
-            variant.glows.map((spot) => spot.pos),
-            containsAll([ZodiacGlowPos.topRight, ZodiacGlowPos.centerLeft]),
-          );
-        }
+        final variant = def.variant;
+        expect(
+          variant.glow,
+          isNotNull,
+          reason: '${def.id} must carry a glow tone',
+        );
+        expect(
+          variant.glows,
+          hasLength(2),
+          reason: '${def.id} must carry both glow spots',
+        );
+        expect(
+          variant.glows.map((spot) => spot.pos),
+          containsAll([ZodiacGlowPos.topRight, ZodiacGlowPos.centerLeft]),
+        );
       }
     });
 
     test('backgrounds are gradients except the Gemini exception', () {
       for (final def in zodiacThemes) {
-        for (final brightness in Brightness.values) {
-          final background = def.variant(brightness).background;
-          if (def.id == 'gemini') {
-            expect(
-              background.isGradient,
-              isFalse,
-              reason: 'gemini keeps its solid block bg (doc 7.4)',
-            );
-          } else {
-            expect(
-              background.isGradient,
-              isTrue,
-              reason: '${def.id} $brightness bg must be an imagery gradient',
-            );
-          }
+        final background = def.variant.background;
+        if (def.id == 'gemini') {
+          expect(
+            background.isGradient,
+            isFalse,
+            reason: 'gemini keeps its solid block bg (doc 7.4)',
+          );
+        } else {
+          expect(
+            background.isGradient,
+            isTrue,
+            reason: '${def.id} bg must be an imagery gradient',
+          );
         }
       }
     });
@@ -81,23 +78,20 @@ void main() {
 
   group('backdrop rendering', () {
     for (final def in zodiacThemes) {
-      for (final brightness in Brightness.values) {
-        testWidgets('${def.id} $brightness paints without error',
-            (tester) async {
-          await tester.pumpWidget(
-            MaterialApp(
-              theme: ThemeData(
-                brightness: brightness,
-                extensions: [ZodiacThemeExtension.of(def, brightness)],
-              ),
-              home: const ZodiacBackdrop(),
+      testWidgets('${def.id} paints without error', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(
+              colorScheme: def.variant.toColorScheme(),
+              extensions: [ZodiacThemeExtension.of(def)],
             ),
-          );
-          await tester.pump();
-          expect(find.byType(CustomPaint), findsWidgets);
-          expect(tester.takeException(), isNull);
-        });
-      }
+            home: const ZodiacBackdrop(),
+          ),
+        );
+        await tester.pump();
+        expect(find.byType(CustomPaint), findsWidgets);
+        expect(tester.takeException(), isNull);
+      });
     }
   });
 }

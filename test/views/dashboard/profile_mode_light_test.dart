@@ -61,9 +61,7 @@ List<Group> _fixtureGroups() {
   ];
 }
 
-final _sagittariusLight = resolveZodiacTheme(
-  'sagittarius',
-).variant(Brightness.light);
+final _sagittarius = resolveZodiacTheme('sagittarius').variant;
 
 Future<void> _pumpCard(
   WidgetTester tester, {
@@ -104,10 +102,7 @@ Future<void> _pumpCard(
       child: MaterialApp(
         theme: ThemeData(
           extensions: [
-            ZodiacThemeExtension.of(
-              resolveZodiacTheme('sagittarius'),
-              Brightness.light,
-            ),
+            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
           ],
         ),
         localizationsDelegates: const [AppLocalizations.delegate],
@@ -147,20 +142,21 @@ Color _dotColorInCard(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('tall merged card shows the shared light, green on usable delay', (
-    tester,
-  ) async {
-    ClashCore.setHandlerForTesting(_FakeHandler());
-    await _pumpCard(
-      tester,
-      runTime: 3600,
-      delayMap: const {
-        _entryTestUrl: {'HK-02': 42},
-      },
-    );
-    expect(find.byType(NodeStatusLight), findsOneWidget);
-    expect(_dotColorInCard(tester), _sagittariusLight.success);
-  });
+  testWidgets(
+    'tall merged card shows the shared light, green on usable delay',
+    (tester) async {
+      ClashCore.setHandlerForTesting(_FakeHandler());
+      await _pumpCard(
+        tester,
+        runTime: 3600,
+        delayMap: const {
+          _entryTestUrl: {'HK-02': 42},
+        },
+      );
+      expect(find.byType(NodeStatusLight), findsOneWidget);
+      expect(_dotColorInCard(tester), _sagittarius.success);
+    },
+  );
 
   testWidgets('tall merged card light is red when the current node failed', (
     tester,
@@ -173,7 +169,7 @@ void main() {
         _entryTestUrl: {'HK-02': -1},
       },
     );
-    expect(_dotColorInCard(tester), _sagittariusLight.error);
+    expect(_dotColorInCard(tester), _sagittarius.error);
   });
 
   testWidgets('tall merged card light is grey when the core is stopped', (
@@ -187,6 +183,6 @@ void main() {
         _entryTestUrl: {'HK-02': 42},
       },
     );
-    expect(_dotColorInCard(tester), _sagittariusLight.disabled);
+    expect(_dotColorInCard(tester), _sagittarius.disabled);
   });
 }

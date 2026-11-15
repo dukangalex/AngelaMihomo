@@ -102,9 +102,7 @@ List<Group> _fixtureGroups() {
   ];
 }
 
-final _sagittariusLight = resolveZodiacTheme(
-  'sagittarius',
-).variant(Brightness.light);
+final _sagittarius = resolveZodiacTheme('sagittarius').variant;
 
 Future<ProviderContainer> _pumpLight(
   WidgetTester tester, {
@@ -145,10 +143,7 @@ Future<ProviderContainer> _pumpLight(
       child: MaterialApp(
         theme: ThemeData(
           extensions: [
-            ZodiacThemeExtension.of(
-              resolveZodiacTheme('sagittarius'),
-              Brightness.light,
-            ),
+            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
           ],
         ),
         localizationsDelegates: const [AppLocalizations.delegate],
@@ -182,9 +177,7 @@ Color _dotColor(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('green when the current node has a usable delay', (
-    tester,
-  ) async {
+  testWidgets('green when the current node has a usable delay', (tester) async {
     ClashCore.setHandlerForTesting(_FakeHandler(const {}));
     await _pumpLight(
       tester,
@@ -193,7 +186,7 @@ void main() {
         _entryTestUrl: {'HK-02': 42},
       },
     );
-    expect(_dotColor(tester), _sagittariusLight.success);
+    expect(_dotColor(tester), _sagittarius.success);
   });
 
   testWidgets('red when the latest measurement of the current node failed', (
@@ -207,13 +200,13 @@ void main() {
         _entryTestUrl: {'HK-02': -1},
       },
     );
-    expect(_dotColor(tester), _sagittariusLight.error);
+    expect(_dotColor(tester), _sagittarius.error);
   });
 
   testWidgets('grey when nothing has been measured yet', (tester) async {
     ClashCore.setHandlerForTesting(_FakeHandler(const {}));
     await _pumpLight(tester, runTime: 3600, delayMap: const {});
-    expect(_dotColor(tester), _sagittariusLight.disabled);
+    expect(_dotColor(tester), _sagittarius.disabled);
   });
 
   testWidgets('grey when the core is stopped even with a stale delay', (
@@ -227,7 +220,7 @@ void main() {
         _entryTestUrl: {'HK-02': 42},
       },
     );
-    expect(_dotColor(tester), _sagittariusLight.disabled);
+    expect(_dotColor(tester), _sagittarius.disabled);
   });
 
   testWidgets('tapping the light runs the global test and writes nothing', (

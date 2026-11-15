@@ -1062,9 +1062,12 @@ ColorScheme genColorScheme(
   final zodiacId = ref.watch(
     themeSettingProvider.select((state) => state.zodiacTheme),
   );
-  return resolveZodiacTheme(
-    zodiacId,
-  ).variant(brightness).toColorScheme(brightness);
+  // Single-set family (DESIGN doc section 1 rule 9): the zodiac scheme
+  // is brightness-independent — the canonical variant's dark scheme is
+  // returned for both Material slots, so a light system mode still
+  // renders the same constellation theme. The [brightness] argument
+  // only steers the legacy non-zodiac path above.
+  return resolveZodiacTheme(zodiacId).variant.toColorScheme();
 }
 
 @riverpod

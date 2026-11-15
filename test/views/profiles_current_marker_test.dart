@@ -33,7 +33,7 @@ void main() {
       systemUiOverlayStyle: const SystemUiOverlayStyle(),
     );
     final zodiac = resolveZodiacTheme('sagittarius');
-    final variant = zodiac.variant(brightness);
+    final variant = zodiac.variant;
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh', 'CN'),
@@ -43,9 +43,11 @@ void main() {
           ...GlobalMaterialLocalizations.delegates,
         ],
         theme: ThemeData(
-          brightness: brightness,
-          colorScheme: variant.toColorScheme(brightness),
-          extensions: [ZodiacThemeExtension.of(zodiac, brightness)],
+          // Single-set family: the zodiac scheme is always dark, so
+          // ThemeData takes its brightness from the scheme; the loop's
+          // brightness still drives AppState above.
+          colorScheme: variant.toColorScheme(),
+          extensions: [ZodiacThemeExtension.of(zodiac)],
         ),
         home: Scaffold(
           body: ProfileItem(
@@ -74,16 +76,18 @@ void main() {
   }
 
   for (final brightness in Brightness.values) {
-    testWidgets('current profile shows badge and gradient bar ($brightness)',
-        (tester) async {
+    testWidgets('current profile shows badge and gradient bar ($brightness)', (
+      tester,
+    ) async {
       await pumpItem(tester, brightness: brightness, groupValue: 'p-current');
       expect(find.text('当前'), findsOneWidget);
       expect(hasGradientBar(tester), isTrue);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('other profile shows no current signals ($brightness)',
-        (tester) async {
+    testWidgets('other profile shows no current signals ($brightness)', (
+      tester,
+    ) async {
       await pumpItem(tester, brightness: brightness, groupValue: 'p-other');
       expect(find.text('当前'), findsNothing);
       expect(hasGradientBar(tester), isFalse);

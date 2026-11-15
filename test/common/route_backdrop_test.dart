@@ -10,12 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   ThemeData theme() {
     return ThemeData(
-      extensions: [
-        ZodiacThemeExtension.of(
-          resolveZodiacTheme('sagittarius'),
-          Brightness.dark,
-        ),
-      ],
+      extensions: [ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'))],
     );
   }
 
@@ -41,11 +36,10 @@ void main() {
     return opacity;
   }
 
-  testWidgets('desktop route: page carries backdrop, contents never overlap',
-      (tester) async {
-    await tester.pumpWidget(
-      app(home: const Scaffold(body: Text('pageA'))),
-    );
+  testWidgets('desktop route: page carries backdrop, contents never overlap', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(home: const Scaffold(body: Text('pageA'))));
     final navigator = tester.state<NavigatorState>(find.byType(Navigator));
     navigator.push(
       CommonDesktopRoute<void>(
@@ -64,8 +58,7 @@ void main() {
       expect(
         aOpacity > 0.05 && bOpacity > 0.05,
         isFalse,
-        reason:
-            'ghosting at step $step: A=$aOpacity B=$bOpacity both visible',
+        reason: 'ghosting at step $step: A=$aOpacity B=$bOpacity both visible',
       );
       // Root backdrop + the pushed page's own backdrop.
       if (tester.widgetList(find.byType(ZodiacBackdrop)).length >= 2) {
@@ -78,8 +71,9 @@ void main() {
     expect(effectiveOpacity(tester, find.text('pageB')), 1.0);
   });
 
-  testWidgets('mobile route: pushed page carries its own backdrop',
-      (tester) async {
+  testWidgets('mobile route: pushed page carries its own backdrop', (
+    tester,
+  ) async {
     globalState.appState = AppState(
       brightness: Brightness.light,
       version: 0,

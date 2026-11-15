@@ -95,9 +95,7 @@ List<Group> _fixtureGroups() {
   ];
 }
 
-final _sagittariusLight = resolveZodiacTheme(
-  'sagittarius',
-).variant(Brightness.light);
+final _sagittarius = resolveZodiacTheme('sagittarius').variant;
 
 Future<ProviderContainer> _pumpCard(
   WidgetTester tester, {
@@ -138,10 +136,7 @@ Future<ProviderContainer> _pumpCard(
       child: MaterialApp(
         theme: ThemeData(
           extensions: [
-            ZodiacThemeExtension.of(
-              resolveZodiacTheme('sagittarius'),
-              Brightness.light,
-            ),
+            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
           ],
         ),
         localizationsDelegates: const [AppLocalizations.delegate],
@@ -199,10 +194,7 @@ void main() {
       final dot = tester.widget<Container>(
         find.byKey(const ValueKey('nodeStatusLightDot')),
       );
-      expect(
-        (dot.decoration as BoxDecoration).color,
-        _sagittariusLight.success,
-      );
+      expect((dot.decoration as BoxDecoration).color, _sagittarius.success);
       // No second speed-test trigger anywhere in the card.
       expect(find.byIcon(Icons.network_ping), findsNothing);
       // T149: no refresh/update button on the card either — a refresh
@@ -232,27 +224,28 @@ void main() {
     },
   );
 
-  testWidgets('tapping a mode button switches the mode through the controller', (
-    tester,
-  ) async {
-    ClashCore.setHandlerForTesting(_FakeHandler(const {}));
-    final container = await _pumpCard(
-      tester,
-      delayMap: const {
-        _entryTestUrl: {'HK-02': 42},
-      },
-    );
-    expect(container.read(patchClashConfigProvider).mode, Mode.rule);
-    await tester.tap(find.text('Global'));
-    // changeMode awaits store/platform futures that only settle in the
-    // real async zone (same pattern as the system-explicit suite).
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 300)),
-    );
-    await tester.pump();
-    expect(container.read(patchClashConfigProvider).mode, Mode.global);
+  testWidgets(
+    'tapping a mode button switches the mode through the controller',
+    (tester) async {
+      ClashCore.setHandlerForTesting(_FakeHandler(const {}));
+      final container = await _pumpCard(
+        tester,
+        delayMap: const {
+          _entryTestUrl: {'HK-02': 42},
+        },
+      );
+      expect(container.read(patchClashConfigProvider).mode, Mode.rule);
+      await tester.tap(find.text('Global'));
+      // changeMode awaits store/platform futures that only settle in the
+      // real async zone (same pattern as the system-explicit suite).
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 300)),
+      );
+      await tester.pump();
+      expect(container.read(patchClashConfigProvider).mode, Mode.global);
 
-    // Drain the bridge watchdog timer that every invoke leaves behind.
-    await tester.pump(const Duration(seconds: 30));
-  });
+      // Drain the bridge watchdog timer that every invoke leaves behind.
+      await tester.pump(const Duration(seconds: 30));
+    },
+  );
 }

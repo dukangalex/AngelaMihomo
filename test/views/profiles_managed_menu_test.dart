@@ -92,7 +92,7 @@ void main() {
       addTearDown(container.dispose);
       container.listen(profilesProvider, (_, _) {});
       final zodiac = resolveZodiacTheme('sagittarius');
-      final variant = zodiac.variant(Brightness.light);
+      final variant = zodiac.variant;
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -104,9 +104,8 @@ void main() {
               ...GlobalMaterialLocalizations.delegates,
             ],
             theme: ThemeData(
-              brightness: Brightness.light,
-              colorScheme: variant.toColorScheme(Brightness.light),
-              extensions: [ZodiacThemeExtension.of(zodiac, Brightness.light)],
+              colorScheme: variant.toColorScheme(),
+              extensions: [ZodiacThemeExtension.of(zodiac)],
             ),
             home: Scaffold(
               body: Consumer(

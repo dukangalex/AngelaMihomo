@@ -363,7 +363,8 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
 
           return _buildListTile(
             context,
-            trailing: trailing ??
+            trailing:
+                trailing ??
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
@@ -393,7 +394,8 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
 
       return _buildListTile(
         context,
-        trailing: trailing ??
+        trailing:
+            trailing ??
             Icon(
               Icons.chevron_right_rounded,
               size: 20,
@@ -711,14 +713,14 @@ class ContinuousListItem extends StatelessWidget {
       alpha: isLight ? 0.45 : 0.25,
     );
 
-    // Immersive panels are translucent layers over the light field
-    // (design doc 3.4.2/3.4.3): the raw surface token carries the
-    // prescribed alpha, while the composited container tones are
-    // opaque slabs that hide the constellation layer. Other skeletons
-    // keep their own material (doc 7.1.5).
+    // Zodiac panels are translucent layers over the light field
+    // (design doc 3.4.2/3.4.3, family-wide since the T151 pass): the
+    // raw surface token carries the prescribed alpha, while the
+    // composited container tones are opaque slabs that hide the
+    // constellation layer.
     final zodiac = context.zodiac;
-    final fill = zodiac?.skeleton == ZodiacSkeleton.immersive
-        ? zodiac!.variant.surface
+    final fill = zodiac != null
+        ? zodiac.variant.surface
         : isLight
         ? Color.lerp(
             context.colorScheme.surface,

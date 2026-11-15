@@ -106,15 +106,21 @@ const _darkSubtleShadows = [
   BoxShadow(color: Color(0x30000000), offset: Offset(0, 1.5), blurRadius: 3.5),
 ];
 
-// Immersive dark cards are glass (surface token at 7% white): any black
-// shadow stack paints a dark blob directly under the fill, which reads
-// straight through the glass, dims the panel toward a solid slab and
-// blacks out the light field behind it (pixel-verified: the stock 50%
-// stack composited card interiors to near-opaque navy and cut the
-// constellation lines at the card edge). The approved reference — the
-// scripts page's managed card — is elevated:false and shadowless; the
-// 1px token outline is what defines immersive panels (design doc
-// 3.4.2), so immersive dark cards paint no shadow at all.
+// Dark cards are glass across the whole zodiac family (surface token
+// at 7% white): any black shadow stack paints a dark blob directly
+// under the fill, which reads straight through the glass, dims the
+// panel toward a solid slab and blacks out the light field behind it
+// (pixel-verified: the stock 50% stack composited card interiors to
+// near-opaque navy and cut the constellation lines at the card edge).
+// The approved reference — the scripts page's managed card — is
+// elevated:false and shadowless; the 1px token outline is what defines
+// the panels (design doc 3.4.2), so dark cards paint no shadow at all.
+// T151: the glass discipline was immersive-skeleton-only until the
+// user's 2026-11-15 full-family pass (only scorpio/sagittarius/pisces
+// were translucent on device; the other nine themes rendered solid).
+// All twelve themes now carry glass surface tokens (design doc 3.4
+// rule 7) and every fill below keys on "zodiac theme in scope", never
+// on the skeleton.
 
 class CommonCard extends StatelessWidget {
   const CommonCard({
@@ -154,7 +160,7 @@ class CommonCard extends StatelessWidget {
   BorderSide getBorderSide(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
     final zodiac = context.zodiac;
-    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
+    final glass = zodiac != null;
     final hoverColor = isSelected
         ? colorScheme.primary.opacity80
         : colorScheme.primary.opacity60;
@@ -166,12 +172,12 @@ class CommonCard extends StatelessWidget {
         strokeAlign: BorderSide.strokeAlignInside,
       );
     }
-    // Immersive panels are translucent layers over the light field: the
+    // Zodiac panels are translucent layers over the light field: the
     // 1px token outline is what defines them (design doc 3.4.2), so they
     // never render borderless.
-    if (immersive && !isSelected) {
+    if (glass && !isSelected) {
       return BorderSide(
-        color: zodiac!.variant.outline,
+        color: zodiac.variant.outline,
         strokeAlign: BorderSide.strokeAlignInside,
       );
     }
@@ -193,15 +199,13 @@ class CommonCard extends StatelessWidget {
   Color? getBackgroundColor(BuildContext context, Set<WidgetState> states) {
     final colorScheme = context.colorScheme;
     final zodiac = context.zodiac;
-    final immersive = zodiac?.skeleton == ZodiacSkeleton.immersive;
+    final glass = zodiac != null;
     final isLight = colorScheme.brightness == Brightness.light;
-    // Immersive variants paint the raw translucent surface tokens so the
+    // Zodiac variants paint the raw translucent surface tokens so the
     // light field shows through the card (design doc 3.4.2); the opaque
     // composited container tones would flatten the atmosphere to a slab.
-    final base = immersive
-        ? (isSelected
-              ? zodiac!.variant.surfaceVariant
-              : zodiac!.variant.surface)
+    final base = glass
+        ? (isSelected ? zodiac.variant.surfaceVariant : zodiac.variant.surface)
         : isSelected
         ? (type == CommonCardType.filled
               ? colorScheme.secondaryContainer.opacity80
@@ -277,9 +281,8 @@ class CommonCard extends StatelessWidget {
         child: childWidget,
       );
 
-      final immersiveDark =
-          !isLight && context.zodiac?.skeleton == ZodiacSkeleton.immersive;
-      final hasShadows = (elevated || subtle) && !immersiveDark;
+      final glassDark = !isLight && context.zodiac != null;
+      final hasShadows = (elevated || subtle) && !glassDark;
       if (hasShadows) {
         final shadows = subtle
             ? (isLight ? _lightSubtleShadows : _darkSubtleShadows)
@@ -378,9 +381,9 @@ class SettingsBlock extends StatelessWidget {
         children: [
           InfoHeader(info: Info(label: title)),
           Card(
-            // Same immersive rule as CommonCard: raw surface token over
+            // Same glass rule as CommonCard: raw surface token over
             // the light field, never the opaque composited tone.
-            color: context.zodiac?.skeleton == ZodiacSkeleton.immersive
+            color: context.zodiac != null
                 ? context.zodiac!.variant.surface
                 : context.colorScheme.surfaceContainer,
             clipBehavior: Clip.antiAlias,
