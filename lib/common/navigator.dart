@@ -1,3 +1,4 @@
+import 'package:bett_box/common/zodiac_themes.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/app.dart';
 import 'package:bett_box/state.dart';
@@ -65,6 +66,28 @@ class _KeyboardObserver with WidgetsBindingObserver {
   }
 }
 
+/// Carries the app-wide zodiac backdrop inside a pushed page, so the
+/// page owns an opaque bottom painted from the same light field as the
+/// root backdrop (T125). Page surfaces are translucent by design; while
+/// two pages overlap during a transition, a page without its own bottom
+/// lets the page beneath show through its cards (ghosting). With the
+/// backdrop inside the page, the incoming page occludes the outgoing
+/// one pixel-for-pixel with the settled look, because both backdrops
+/// are the same screen-fixed light field.
+class _PageWithBackdrop extends StatelessWidget {
+  const _PageWithBackdrop({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [const ZodiacBackdrop(), child],
+    );
+  }
+}
+
 class _CleanCupertinoPageRoute<T> extends CupertinoPageRoute<T> {
   _CleanCupertinoPageRoute({
     required super.builder,
@@ -97,19 +120,20 @@ class _CleanCupertinoPageRoute<T> extends CupertinoPageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    final page = _PageWithBackdrop(child: child);
     if (defaultTargetPlatform != TargetPlatform.android) {
       return super.buildTransitions(
         context,
         animation,
         secondaryAnimation,
-        child,
+        page,
       );
     }
     return CupertinoPageTransition(
       primaryRouteAnimation: animation,
       secondaryRouteAnimation: secondaryAnimation,
       linearTransition: false,
-      child: child,
+      child: page,
     );
   }
 }
@@ -122,11 +146,16 @@ class CommonDesktopRoute<T> extends PageRoute<T> {
   @override
   final bool maintainState;
 
-  static final _enterTween = CurveTween(curve: const Interval(0.2, 1));
+  // Content fades are phased so the two pages' contents never overlap
+  // mid-transition (T125): the covered page's content leaves over the
+  // first 30% while the entering page's content arrives over the last
+  // 65%. The page backdrop itself never fades — it is identical on both
+  // pages, so swapping it is invisible and the top page stays opaque.
+  static final _enterTween = CurveTween(curve: const Interval(0.35, 1));
   static final _exitTween = Tween<double>(
     begin: 1,
     end: 0,
-  ).chain(CurveTween(curve: const Interval(0, 0.4)));
+  ).chain(CurveTween(curve: const Interval(0, 0.3)));
 
   static Widget? _buildExitTransition(
     BuildContext context,
@@ -160,9 +189,18 @@ class CommonDesktopRoute<T> extends PageRoute<T> {
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
-      child: FadeTransition(
-        opacity: _enterTween.animate(animation),
-        child: result,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ZodiacBackdrop(),
+          FadeTransition(
+            opacity: _exitTween.animate(secondaryAnimation),
+            child: FadeTransition(
+              opacity: _enterTween.animate(animation),
+              child: result,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -174,17 +212,16 @@ class CommonDesktopRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return FadeTransition(
-      opacity: _exitTween.animate(secondaryAnimation),
-      child: child,
-    );
+    // Both fades live in buildPage, outside/inside the page's own
+    // backdrop; nothing to add at the route level.
+    return child;
   }
 
   @override
-  Duration get transitionDuration => Duration(milliseconds: 200);
+  Duration get transitionDuration => Duration(milliseconds: 260);
 
   @override
-  Duration get reverseTransitionDuration => Duration(milliseconds: 200);
+  Duration get reverseTransitionDuration => Duration(milliseconds: 260);
 }
 
 class RouteIdleObserver extends NavigatorObserver {
