@@ -61,7 +61,13 @@ Group? nodeLightAnchorGroup({
 /// ring's gapped arc rotates; the animation stops the moment the run
 /// ends, so nothing animates at rest.
 class NodeStatusLight extends ConsumerStatefulWidget {
-  const NodeStatusLight({super.key});
+  /// Compact form (dot and ring only, no sign glyph or status label)
+  /// for narrow cards such as the legacy OutboundMode variant, whose
+  /// header cannot fit the full labelled light. Semantics, data source
+  /// and tap-to-test behaviour are identical.
+  final bool compact;
+
+  const NodeStatusLight({super.key, this.compact = false});
 
   @override
   ConsumerState<NodeStatusLight> createState() => _NodeStatusLightState();
@@ -110,8 +116,9 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
       NodeLightStatus.available => const Color(0xFF2E9E4F),
       NodeLightStatus.unavailable => colorScheme.error,
       NodeLightStatus.testing => const Color(0xFFC57F0A),
-      NodeLightStatus.unknown =>
-        colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
+      NodeLightStatus.unknown => colorScheme.onSurfaceVariant.withValues(
+        alpha: 0.45,
+      ),
     };
   }
 
@@ -174,8 +181,7 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
                 NodeLightStatus.unavailable =>
                   appLocalizations.currentNodeUnavailable,
                 NodeLightStatus.testing => appLocalizations.globalDelayTesting,
-                NodeLightStatus.unknown =>
-                  appLocalizations.currentNodeUnknown,
+                NodeLightStatus.unknown => appLocalizations.currentNodeUnknown,
               };
         return Material(
           color: Colors.transparent,
@@ -222,28 +228,30 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
                       ],
                     ),
                   ),
-                  const SizedBox(width: 7),
-                  if (sign != null) ...[
-                    Text(
-                      sign,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: variant?.accent.withValues(alpha: 0.9),
+                  if (!widget.compact) ...[
+                    const SizedBox(width: 7),
+                    if (sign != null) ...[
+                      Text(
+                        sign,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: variant?.accent.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textTheme.labelMedium?.copyWith(
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 4),
                   ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.labelMedium?.copyWith(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),

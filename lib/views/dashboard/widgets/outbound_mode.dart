@@ -24,83 +24,108 @@ class OutboundMode extends StatelessWidget {
             patchClashConfigProvider.select((state) => state.mode),
           );
           return CommonCard(
-            info: Info(
-              label: appLocalizations.outboundMode,
-              iconData: Icons.call_split_sharp,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (final item in Mode.values)
-                    Flexible(
-                      fit: FlexFit.tight,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Focus(
-                          child: Builder(
-                            builder: (context) {
-                              final isFocused = Focus.of(context).hasFocus;
-                              return InkWell(
-                                borderRadius: BorderRadius.circular(10),
-                                onTap: () {
-                                  globalState.appController.changeMode(item);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: isFocused && globalState.isAndroidTV
-                                        ? context.colorScheme.primary
-                                              .withValues(alpha: 0.15)
-                                        : Colors.transparent,
-                                    border: isFocused && globalState.isAndroidTV
-                                        ? Border.all(
-                                            color: context.colorScheme.primary,
-                                            width: 2,
-                                          )
-                                        : null,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 16.ap,
-                                    vertical: 8.ap,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        item == mode
-                                            ? Icons.check_circle_rounded
-                                            : Icons.circle_outlined,
-                                        size: 21,
-                                        color: item == mode
-                                            ? context.colorScheme.primary
-                                            : context
-                                                  .colorScheme
-                                                  .onSurfaceVariant
-                                                  .withValues(alpha: 0.6),
-                                      ),
-                                      SizedBox(width: 12.ap),
-                                      Expanded(
-                                        child: Text(
-                                          Intl.message(item.name),
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium?.toSoftBold,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InfoHeader(
+                  padding: baseInfoEdgeInsets.copyWith(bottom: 0),
+                  info: Info(
+                    label: appLocalizations.outboundMode,
+                    iconData: Icons.call_split_sharp,
+                  ),
+                  actions: const [NodeStatusLight(compact: true)],
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (final item in Mode.values)
+                          Flexible(
+                            fit: FlexFit.tight,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Focus(
+                                child: Builder(
+                                  builder: (context) {
+                                    final isFocused = Focus.of(
+                                      context,
+                                    ).hasFocus;
+                                    return InkWell(
+                                      borderRadius: BorderRadius.circular(10),
+                                      onTap: () {
+                                        globalState.appController.changeMode(
+                                          item,
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          color:
+                                              isFocused &&
+                                                  globalState.isAndroidTV
+                                              ? context.colorScheme.primary
+                                                    .withValues(alpha: 0.15)
+                                              : Colors.transparent,
+                                          border:
+                                              isFocused &&
+                                                  globalState.isAndroidTV
+                                              ? Border.all(
+                                                  color: context
+                                                      .colorScheme
+                                                      .primary,
+                                                  width: 2,
+                                                )
+                                              : null,
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 16.ap,
+                                          vertical: 8.ap,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              item == mode
+                                                  ? Icons.check_circle_rounded
+                                                  : Icons.circle_outlined,
+                                              size: 21,
+                                              color: item == mode
+                                                  ? context.colorScheme.primary
+                                                  : context
+                                                        .colorScheme
+                                                        .onSurfaceVariant
+                                                        .withValues(alpha: 0.6),
+                                            ),
+                                            SizedBox(width: 12.ap),
+                                            Expanded(
+                                              child: Text(
+                                                Intl.message(item.name),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.toSoftBold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+                ),
+              ],
             ),
           );
         },
