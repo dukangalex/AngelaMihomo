@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:bett_box/common/chain_health.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
@@ -93,12 +94,14 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
     String? currentProfileId, {
     bool nested = false,
     bool? expanded,
+    ChainCardHealth? chainHealth,
   }) {
     return ProfileItem(
       key: Key(profile.id),
       profile: profile,
       nested: nested,
       expanded: expanded,
+      chainHealth: chainHealth,
       onToggleExpanded: expanded == null
           ? null
           : () => _toggleExpanded(profile.id),
@@ -118,6 +121,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
     String? currentProfileId,
     int columns,
     Set<String> folded,
+    Map<String, ChainCardHealth> chainHealth,
   ) {
     final items = <GridItem>[];
     for (final profile in profiles) {
@@ -127,7 +131,12 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
         items.add(
           GridItem(
             key: ValueKey(profile.id),
-            child: _buildProfileItem(profile, profiles, currentProfileId),
+            child: _buildProfileItem(
+              profile,
+              profiles,
+              currentProfileId,
+              chainHealth: chainHealth[profile.id],
+            ),
           ),
         );
         continue;
@@ -141,6 +150,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
             profiles,
             currentProfileId,
             expanded: expanded,
+            chainHealth: chainHealth[profile.id],
           ),
         ),
       );
@@ -166,6 +176,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
                   profiles,
                   currentProfileId,
                   nested: true,
+                  chainHealth: chainHealth[member.id],
                 )) {
                   final child when revealing && member.id != currentProfileId =>
                     _buildRevealed(child, revealed++ ~/ columns),
@@ -321,11 +332,15 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
               : topLevel < profilesSelectorState.columns
               ? topLevel
               : profilesSelectorState.columns;
+          final chainHealth =
+              ref.watch(chainCardHealthProvider).value ??
+              const <String, ChainCardHealth>{};
           final items = _buildGridItems(
             profiles,
             profilesSelectorState.currentProfileId,
             columns,
             folded,
+            chainHealth,
           );
           return ScrollEdgeRise(
             builder: (context, rise) {
@@ -406,6 +421,12 @@ class ProfileItem extends StatelessWidget {
   final VoidCallback? onToggleExpanded;
   final void Function(String? value) onChanged;
 
+  /// T152: this profile's chain health projection for the card's chain
+  /// marker. Null while the projection has not computed (or failed
+  /// wholesale) — the card then shows no chain marker. A display
+  /// projection only; see common/chain_health.dart.
+  final ChainCardHealth? chainHealth;
+
   const ProfileItem({
     super.key,
     required this.profile,
@@ -415,6 +436,7 @@ class ProfileItem extends StatelessWidget {
     this.nested = false,
     this.expanded,
     this.onToggleExpanded,
+    this.chainHealth,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context) async {
@@ -558,6 +580,19 @@ class ProfileItem extends StatelessWidget {
         if (profile.id == groupValue) ...[
           const SizedBox(width: 8),
           const _CurrentProfileBadge(),
+        ],
+        // T152: status markers in the same pill language as the current
+        // badge — managed shows only when on (no color semantics), the
+        // chain marker only when a chain is enabled (green when both
+        // ends resolve, red when any end is stale).
+        if (profile.runsManagedScript) ...[
+          const SizedBox(width: 8),
+          const _ManagedProfileBadge(),
+        ],
+        if (chainHealth == ChainCardHealth.healthy ||
+            chainHealth == ChainCardHealth.stale) ...[
+          const SizedBox(width: 8),
+          _ChainProfileBadge(healthy: chainHealth == ChainCardHealth.healthy),
         ],
         if (subtitleText != null && subtitleText.isNotEmpty) ...[
           const SizedBox(width: 6),
@@ -1409,6 +1444,78 @@ class _CurrentProfileBadge extends StatelessWidget {
           fontWeight: FontWeight.w700,
           height: 1.2,
         ),
+      ),
+    );
+  }
+}
+
+/// The managed-mode badge (T152): shown only while the profile runs the
+/// managed script (the T139 authority, [Profile.runsManagedScript]).
+/// Neutral face, no color semantics — presence alone is the signal. Same
+/// pill geometry as [_CurrentProfileBadge].
+class _ManagedProfileBadge extends StatelessWidget {
+  const _ManagedProfileBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        appLocalizations.managedMode,
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+/// The chain health badge (T152): shown only while the profile has a
+/// chain enabled. Green when the saved entry and exit references both
+/// resolve, red when any end is stale; the colors are the current
+/// zodiac variant's semantic tokens (the node status light's source),
+/// never hard-coded hues. Same pill geometry as [_CurrentProfileBadge].
+class _ChainProfileBadge extends StatelessWidget {
+  final bool healthy;
+
+  const _ChainProfileBadge({required this.healthy});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final variant = context.zodiac?.variant;
+    final color = healthy
+        ? (variant?.success ?? const Color(0xFF2E9E4F))
+        : (variant?.error ?? colorScheme.error);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.link_rounded, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            appLocalizations.chainBadge,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1369,5 +1369,6 @@
   "profileUpdateFailed": "Failed to update profile {name}. Reason: {reason}. Check your network, or make sure the subscription link is still valid, then try again.",
   "profileAutoUpdateFailed": "Profile {name} failed to update automatically. Reason: {reason}. Check your network, or make sure the subscription link is still valid.",
   "profileAutoUpdateFailedMore": "And {count} more also failed to update.",
-  "serviceStartStopFailed": "Couldn't start or stop the service. Reason: {reason}. Check the current profile and the port settings, then try again."
+  "serviceStartStopFailed": "Couldn't start or stop the service. Reason: {reason}. Check the current profile and the port settings, then try again.",
+  "chainBadge": "Chain"
 }

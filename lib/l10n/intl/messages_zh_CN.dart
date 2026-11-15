@@ -378,6 +378,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("取消全选"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("全部"),
     "chainAttention": MessageLookupByLibrary.simpleMessage("链式设置未就绪"),
+    "chainBadge": MessageLookupByLibrary.simpleMessage("链式"),
     "chainChooseOtherProfile": MessageLookupByLibrary.simpleMessage("请选择其它配置"),
     "chainChooseTarget": MessageLookupByLibrary.simpleMessage("选择节点或策略组"),
     "chainEnable": MessageLookupByLibrary.simpleMessage("启用"),

@@ -1,5 +1,7 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/common/chain_health.dart';
 import 'package:bett_box/common/explicit_policy.dart';
+import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
@@ -212,6 +214,65 @@ ProxyState proxyState(Ref ref) {
 final wakelockStateProvider = StateProvider<bool>((ref) => false);
 
 final isRestartingCoreProvider = StateProvider<bool>((ref) => false);
+
+/// T152: per-profile chain health for the profile cards' markers. A
+/// read-only display projection over the same existence facts the chain
+/// assembly consumes (the profile list plus the target sets of each
+/// effective config) — never a second authority over whether a switch
+/// succeeds, and it never throws: an unreadable config reads as an empty
+/// target set (its references cannot resolve), and a wholesale failure
+/// yields no markers at all rather than breaking the profile list.
+/// Profiles without an enabled chain are absent from the map. The chain
+/// settings page invalidates this after every saved change; profile
+/// imports, updates and deletions recompute it via [profilesProvider].
+final chainCardHealthProvider =
+    FutureProvider<Map<String, ChainCardHealth>>((ref) async {
+      final profiles = ref.watch(profilesProvider);
+      try {
+        await ProfileChainStore.instance.ensureLoaded();
+        final store = ProfileChainStore.instance;
+        final targetCache = <String, Set<String>>{};
+        Future<Set<String>> targetsOf(String profileId) async {
+          final cached = targetCache[profileId];
+          if (cached != null) return cached;
+          Set<String> targets;
+          try {
+            final config = await globalState.getProfileConfig(
+              profileId,
+              effective: true,
+            );
+            targets = chainTargetKeysOf(config);
+          } catch (_) {
+            targets = const {};
+          }
+          return targetCache[profileId] = targets;
+        }
+
+        final health = <String, ChainCardHealth>{};
+        for (final profile in profiles) {
+          final chain = store.of(profile.id);
+          if (!chain.enabled) continue;
+          final landingProfileId = chain.resolvedLandingProfileId(
+            profile.id,
+          );
+          final landingExists = profiles.any(
+            (item) => item.id == landingProfileId,
+          );
+          health[profile.id] = chainCardHealth(
+            chain: chain,
+            currentProfileId: profile.id,
+            landingProfileExists: landingExists,
+            entryTargets: await targetsOf(profile.id),
+            landingTargets: landingExists
+                ? await targetsOf(landingProfileId)
+                : const {},
+          );
+        }
+        return health;
+      } catch (_) {
+        return const {};
+      }
+    });
 
 @riverpod
 TrayState trayState(Ref ref) {

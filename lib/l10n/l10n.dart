@@ -11229,6 +11229,11 @@ class AppLocalizations {
     return Intl.message('Chain', name: 'chainTitle', desc: '', args: []);
   }
 
+  /// `Chain`
+  String get chainBadge {
+    return Intl.message('Chain', name: 'chainBadge', desc: '', args: []);
+  }
+
   /// `Adaptive path`
   String get systemExplicitAdapt {
     return Intl.message(

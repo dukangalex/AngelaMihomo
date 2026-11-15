@@ -1367,5 +1367,6 @@
   "profileUpdateFailed": "配置{name}更新失敗。原因：{reason}。請檢查網路，或確認訂閱連結仍有效後重試。",
   "profileAutoUpdateFailed": "配置{name}自動更新失敗。原因：{reason}。請檢查網路，或確認訂閱連結仍有效。",
   "profileAutoUpdateFailedMore": "另有{count}個配置也更新失敗。",
-  "serviceStartStopFailed": "服務啟動或停止失敗。原因：{reason}。請檢查目前配置與連接埠設定後重試。"
+  "serviceStartStopFailed": "服務啟動或停止失敗。原因：{reason}。請檢查目前配置與連接埠設定後重試。",
+  "chainBadge": "鏈式"
 }

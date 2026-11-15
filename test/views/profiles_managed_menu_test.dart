@@ -166,10 +166,13 @@ void main() {
       expect(stored().scriptId, viaPicker.scriptId);
 
       // Reopened menu shows the on state; toggling again turns it off.
+      // (T152: the card now also carries a managed badge with the same
+      // words, so the toggle tap targets the menu row's state icon,
+      // which only the menu item has.)
       await openMenu(tester);
       expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
       expect(find.byIcon(Icons.circle_outlined), findsNothing);
-      await tester.tap(find.text('托管模式'));
+      await tester.tap(find.byIcon(Icons.check_circle_rounded));
       await tester.pumpAndSettle();
       expect(stored().managed, isFalse);
       expect(stored().scriptId, isNull);

@@ -1365,5 +1365,6 @@
   "profileUpdateFailed": "プロファイル{name}の更新に失敗しました。理由：{reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してから再試行してください。",
   "profileAutoUpdateFailed": "プロファイル{name}の自動更新に失敗しました。理由：{reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してください。",
   "profileAutoUpdateFailedMore": "さらに{count}件のプロファイルも更新に失敗しました。",
-  "serviceStartStopFailed": "サービスの開始または停止に失敗しました。理由：{reason}。現在のプロファイルとポート設定を確認してから再試行してください。"
+  "serviceStartStopFailed": "サービスの開始または停止に失敗しました。理由：{reason}。現在のプロファイルとポート設定を確認してから再試行してください。",
+  "chainBadge": "チェーン"
 }

@@ -515,6 +515,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainAttention": MessageLookupByLibrary.simpleMessage(
       "Chain settings need attention",
     ),
+    "chainBadge": MessageLookupByLibrary.simpleMessage("Цепь"),
     "chainChooseOtherProfile": MessageLookupByLibrary.simpleMessage(
       "Choose another profile",
     ),

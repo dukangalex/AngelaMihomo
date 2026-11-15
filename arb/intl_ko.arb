@@ -1365,5 +1365,6 @@
   "profileUpdateFailed": "프로필 {name} 업데이트에 실패했습니다. 이유: {reason}. 네트워크를 확인하거나 구독 링크가 아직 유효한지 확인한 후 다시 시도하세요.",
   "profileAutoUpdateFailed": "프로필 {name} 자동 업데이트에 실패했습니다. 이유: {reason}. 네트워크를 확인하거나 구독 링크가 아직 유효한지 확인하세요.",
   "profileAutoUpdateFailedMore": "그 외 {count}개 프로필도 업데이트에 실패했습니다.",
-  "serviceStartStopFailed": "서비스를 시작하거나 중지하지 못했습니다. 이유: {reason}. 현재 프로필과 포트 설정을 확인한 후 다시 시도하세요."
+  "serviceStartStopFailed": "서비스를 시작하거나 중지하지 못했습니다. 이유: {reason}. 현재 프로필과 포트 설정을 확인한 후 다시 시도하세요.",
+  "chainBadge": "체인"
 }

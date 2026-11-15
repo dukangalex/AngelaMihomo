@@ -1,8 +1,10 @@
 import 'package:bett_box/clash/core.dart';
+import 'package:bett_box/common/chain_health.dart';
 import 'package:bett_box/common/path_score.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/profile_chain.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -109,30 +111,13 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
     });
   }
 
-  List<_ChainChoice> _choicesFromConfig(Map<String, dynamic> config) {
-    final choices = <_ChainChoice>[];
-    final seen = <String>{};
-    void add(ChainTargetKind kind, dynamic name) {
-      final text = name?.toString() ?? '';
-      if (text.isEmpty || reservedPathNames.contains(text)) return;
-      final key = chainTargetKey(kind, text);
-      if (seen.add(key)) choices.add(_ChainChoice(kind, text));
-    }
-
-    final proxies = config['proxies'];
-    if (proxies is List) {
-      for (final proxy in proxies) {
-        if (proxy is Map) add(ChainTargetKind.proxy, proxy['name']);
-      }
-    }
-    final groups = config['proxy-groups'];
-    if (groups is List) {
-      for (final group in groups) {
-        if (group is Map) add(ChainTargetKind.group, group['name']);
-      }
-    }
-    return choices;
-  }
+  // The extraction rules live in common/chain_health.dart so the chain
+  // page's choice lists and the profile-card health projection read the
+  // same definition of what exists in a profile.
+  List<_ChainChoice> _choicesFromConfig(Map<String, dynamic> config) => [
+    for (final target in chainTargetsOf(config))
+      _ChainChoice(target.kind, target.name),
+  ];
 
   String get _landingProfileId {
     final chain = ProfileChainStore.instance.of(widget.profile.id);
@@ -206,6 +191,9 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
         store.byProfile[widget.profile.id] = previous;
         rethrow;
       }
+      // The saved selection changed: the profile cards' chain health
+      // markers (T152) must be recomputed against it.
+      ref.invalidate(chainCardHealthProvider);
       if (globalState.config.currentProfile?.id == widget.profile.id) {
         globalState.appController.applyProfileDebounce();
       }
