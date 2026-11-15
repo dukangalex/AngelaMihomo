@@ -10,11 +10,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/metacubex/mihomo/component/geodata/router"
 	"github.com/metacubex/mihomo/constant"
+	"google.golang.org/protobuf/proto"
 )
 
-// T146 regression: the profile-switch verdict is the core setupConfig
-// result. External (non-converter) subscription shapes — HTTP proxy and
+// T146 regression: the profile-switch verdict is exactly the error of
+// setupConfig's prepareSetup stage (parseProfile -> applyPatch ->
+// config.ParseRawConfig); errors from the later ApplyConfig stage never
+// reach the switch flow. The test therefore asserts at that seam and
+// stays out of the live-process surface (listeners, applied providers),
+// whose vendored background goroutines are not race-clean under -race. External (non-converter) subscription shapes — HTTP proxy and
 // rule providers, url-test/fallback/load-balance groups built on `use`,
 // emoji node names, China-split rules — must apply successfully through
 // the full app patch pipeline, and converter-shaped profiles must not
@@ -209,14 +215,10 @@ func TestProfileSwitchExternalShapes(t *testing.T) {
 	}))
 	defer server.Close()
 
-	seed := map[string][]byte{}
-	for _, name := range []string{"geoip.metadb", "GeoSite.dat", "ASN.mmdb"} {
-		data, err := os.ReadFile(filepath.Join("..", "assets", "data", name))
-		if err != nil {
-			t.Fatal(err)
-		}
-		seed[name] = data
-	}
+	// Hermetic geo fixtures generated in-test: the real databases under
+	// assets/data are gitignored (downloaded at build time), so a clean
+	// checkout has nothing to seed from.
+	seed := switchTestGeoFixtures(t)
 
 	run := func(name, content string, mutate func(*PatchParams)) {
 		home := t.TempDir()
@@ -235,13 +237,17 @@ func TestProfileSwitchExternalShapes(t *testing.T) {
 			mutate(patch)
 		}
 		start := time.Now()
-		_, err := setupConfig(&SetupParams{
+		prepared, err := prepareSetup(&SetupParams{
 			ProfilePath: path,
 			TestURL:     "http://127.0.0.1/",
 			Patch:       patch,
 		})
 		if err != nil {
-			t.Errorf("%s: setup failed: %v", name, err)
+			t.Errorf("%s: setup verdict failed: %v", name, err)
+		} else {
+			// Parsing starts provider health-check rounds; join and
+			// stop them before the next case (see settleParsedProviders).
+			settleParsedProviders(t, prepared.cfg.Providers)
 		}
 		t.Logf("%s: elapsed=%s err=%v", name, time.Since(start).Round(time.Millisecond), err)
 	}
@@ -256,3 +262,81 @@ func TestProfileSwitchExternalShapes(t *testing.T) {
 	})
 	run("external-dead-providers", switchExternalProfile("http://127.0.0.1:1"), nil)
 }
+
+// switchTestGeoFixtures builds minimal but valid geo databases covering
+// the codes the fixtures reference (CN, GEOLOCATION-CN, CATEGORY-ADS-ALL,
+// PRIVATE; every IP resolves to CN).
+func switchTestGeoFixtures(t *testing.T) map[string][]byte {
+	t.Helper()
+	site := func(code, domain string) *router.GeoSite {
+		return &router.GeoSite{
+			CountryCode: code,
+			Domain:      []*router.Domain{{Type: router.Domain_Domain, Value: domain}},
+		}
+	}
+	geoSite, err := proto.Marshal(&router.GeoSiteList{Entry: []*router.GeoSite{
+		site("CN", "example.cn"),
+		site("GEOLOCATION-CN", "example.cn"),
+		site("CATEGORY-ADS-ALL", "ads.example.com"),
+		site("PRIVATE", "local"),
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return map[string][]byte{
+		"GeoSite.dat":  geoSite,
+		"geoip.metadb": switchTestMMDB(),
+	}
+}
+
+func mmdbStr(s string) []byte {
+	return append([]byte{0x40 | byte(len(s))}, s...)
+}
+
+func mmdbU16(v uint16) []byte {
+	if v == 0 {
+		return []byte{0xa0}
+	}
+	if v <= 0xff {
+		return []byte{0xa1, byte(v)}
+	}
+	return []byte{0xa2, byte(v >> 8), byte(v)}
+}
+
+// switchTestMMDB hand-builds the smallest valid MaxMind DB: one node,
+// both branches pointing at a single record {country:{iso_code:"CN"}}.
+func switchTestMMDB() []byte {
+	record := []byte{0xe1}
+	record = append(record, mmdbStr("country")...)
+	record = append(record, 0xe1)
+	record = append(record, mmdbStr("iso_code")...)
+	record = append(record, mmdbStr("CN")...)
+
+	meta := []byte{0xe9} // map, 9 entries
+	add := func(key string, value []byte) {
+		meta = append(meta, mmdbStr(key)...)
+		meta = append(meta, value...)
+	}
+	add("binary_format_major_version", mmdbU16(2))
+	add("binary_format_minor_version", mmdbU16(0))
+	// build_epoch: uint64 (extended type 9 -> ext 2), 4-byte value.
+	add("build_epoch", []byte{0x04, 0x02, 0x65, 0x53, 0xf1, 0x00})
+	add("database_type", mmdbStr("GeoIP2-Country"))
+	desc := append([]byte{0xe1}, mmdbStr("en")...)
+	desc = append(desc, mmdbStr("Test")...)
+	add("description", desc)
+	add("ip_version", mmdbU16(4))
+	lang := []byte{0x01, 0x04} // array (extended type 11 -> ext 4), 1 item
+	lang = append(lang, mmdbStr("en")...)
+	add("languages", lang)
+	add("node_count", []byte{0xc1, 0x01}) // uint32, 1 byte
+	add("record_size", mmdbU16(24))
+
+	out := []byte{0, 0, 17, 0, 0, 17} // tree: 1 node, both records -> data offset 16
+	out = append(out, make([]byte, 16)...)
+	out = append(out, record...)
+	out = append(out, []byte("\xab\xcd\xefMaxMind.com")...)
+	out = append(out, meta...)
+	return out
+}
+
