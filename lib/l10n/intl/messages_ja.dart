@@ -184,6 +184,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
   static String m78(count) => "${count} ノード";
+  static String m79(reason) => "新しいプロファイルに切り替えられなかったため、前のプロファイルに戻しました。理由：${reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。";
+  static String m80(reason) => "プロファイルを切り替えられませんでした。現在のプロファイルは変更されていません。理由：${reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。";
+  static String m81(name, reason) => "プロファイル${name}の更新に失敗しました。理由：${reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してから再試行してください。";
+  static String m82(name, reason) => "プロファイル${name}の自動更新に失敗しました。理由：${reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してください。";
+  static String m83(count) => "さらに${count}件のプロファイルも更新に失敗しました。";
+  static String m84(reason) => "サービスの開始または停止に失敗しました。理由：${reason}。現在のプロファイルとポート設定を確認してから再試行してください。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2236,5 +2242,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "ファイルシステムがファイルケーパビリティ（xattr）に対応していないため、setuid にフォールバックしました",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "出口プロファイルではスクリプトを有効にしないでください。",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "チェーンの入口に選択したグループまたはノードは、現在のプロファイルにもう存在しません。チェーン設定で入口を選び直してください。",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "チェーンの出口に選択したプロファイルはもう存在しません。チェーン設定で出口プロファイルを選び直してください。",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "チェーンの出口は別のプロファイルから選択する必要があります。チェーン設定で出口を選び直してください。",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "チェーンの出口に選択したグループまたはノードは、出口プロファイルにもう存在しません。チェーン設定で出口を選び直してください。",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "しばらくしてから再試行してください。繰り返し失敗する場合はアプリを再起動してください。",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }

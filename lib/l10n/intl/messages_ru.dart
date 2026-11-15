@@ -198,6 +198,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "${Intl.plural(count, one: 'год', few: 'года', many: 'лет', other: 'лет')}";
 
   static String m78(count) => "Узлов: ${count}";
+  static String m79(reason) => "Не удалось переключиться на новый профиль, поэтому восстановлен предыдущий. Причина: ${reason}. Проверьте целевой профиль или импортируйте его заново и повторите попытку.";
+  static String m80(reason) => "Не удалось переключить профиль; текущий профиль не изменён. Причина: ${reason}. Проверьте целевой профиль или импортируйте его заново и повторите попытку.";
+  static String m81(name, reason) => "Не удалось обновить профиль ${name}. Причина: ${reason}. Проверьте сеть или убедитесь, что ссылка подписки ещё действительна, и повторите попытку.";
+  static String m82(name, reason) => "Не удалось автоматически обновить профиль ${name}. Причина: ${reason}. Проверьте сеть или убедитесь, что ссылка подписки ещё действительна.";
+  static String m83(count) => "Ещё ${count} профилей также не удалось обновить.";
+  static String m84(reason) => "Не удалось запустить или остановить службу. Причина: ${reason}. Проверьте текущий профиль и настройки портов, затем повторите попытку.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2790,5 +2796,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "Файловая система не поддерживает file capabilities (xattr), выполнен откат на setuid",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "Не включайте скрипт для профиля выхода.",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "Группа или узел, выбранные в качестве входа цепочки, больше не входят в текущий профиль. Выберите вход заново в настройках цепочки.",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "Профиль, выбранный в качестве выхода цепочки, больше не существует. Выберите профиль выхода заново в настройках цепочки.",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "Выход цепочки должен быть выбран из другого профиля. Выберите выход заново в настройках цепочки.",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "Группа или узел, выбранные в качестве выхода цепочки, больше не входят в профиль выхода. Выберите выход заново в настройках цепочки.",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "Повторите попытку позже; если ошибка повторяется, перезапустите приложение.",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }

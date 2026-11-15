@@ -1357,5 +1357,17 @@
   "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
   "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
   "systemExplicitInterceptionActive": "Interception is active in this mode",
-  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode."
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
+  "chainStaleExitProfile": "The profile chosen as the chain exit no longer exists. Please reselect the exit profile in the chain settings.",
+  "chainStaleExitTarget": "The group or node chosen as the chain exit is no longer in the exit profile. Please reselect the exit in the chain settings.",
+  "chainStaleEntry": "The group or node chosen as the chain entry is no longer in the current profile. Please reselect the entry in the chain settings.",
+  "chainStaleExitSameProfile": "The chain exit must be chosen from another profile. Please reselect the exit in the chain settings.",
+  "chainExitScriptHint": "Please do not enable a script on the exit profile.",
+  "restartCoreFailedSolution": "Please try again later; if it keeps failing, restart the app.",
+  "profileSwitchFailedRollbackReason": "Couldn't switch to the new profile, so the previous profile was restored. Reason: {reason}. Check the target profile, or re-import it and try again.",
+  "profileSwitchFailedReason": "Couldn't switch profiles; the current profile is unchanged. Reason: {reason}. Check the target profile, or re-import it and try again.",
+  "profileUpdateFailed": "Failed to update profile {name}. Reason: {reason}. Check your network, or make sure the subscription link is still valid, then try again.",
+  "profileAutoUpdateFailed": "Profile {name} failed to update automatically. Reason: {reason}. Check your network, or make sure the subscription link is still valid.",
+  "profileAutoUpdateFailedMore": "And {count} more also failed to update.",
+  "serviceStartStopFailed": "Couldn't start or stop the service. Reason: {reason}. Check the current profile and the port settings, then try again."
 }

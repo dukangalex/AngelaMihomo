@@ -11638,6 +11638,126 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `The profile chosen as the chain exit no longer exists. Please reselect the exit profile in the chain settings.`
+  String get chainStaleExitProfile {
+    return Intl.message(
+      'The profile chosen as the chain exit no longer exists. Please reselect the exit profile in the chain settings.',
+      name: 'chainStaleExitProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The group or node chosen as the chain exit is no longer in the exit profile. Please reselect the exit in the chain settings.`
+  String get chainStaleExitTarget {
+    return Intl.message(
+      'The group or node chosen as the chain exit is no longer in the exit profile. Please reselect the exit in the chain settings.',
+      name: 'chainStaleExitTarget',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The group or node chosen as the chain entry is no longer in the current profile. Please reselect the entry in the chain settings.`
+  String get chainStaleEntry {
+    return Intl.message(
+      'The group or node chosen as the chain entry is no longer in the current profile. Please reselect the entry in the chain settings.',
+      name: 'chainStaleEntry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The chain exit must be chosen from another profile. Please reselect the exit in the chain settings.`
+  String get chainStaleExitSameProfile {
+    return Intl.message(
+      'The chain exit must be chosen from another profile. Please reselect the exit in the chain settings.',
+      name: 'chainStaleExitSameProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please do not enable a script on the exit profile.`
+  String get chainExitScriptHint {
+    return Intl.message(
+      'Please do not enable a script on the exit profile.',
+      name: 'chainExitScriptHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please try again later; if it keeps failing, restart the app.`
+  String get restartCoreFailedSolution {
+    return Intl.message(
+      'Please try again later; if it keeps failing, restart the app.',
+      name: 'restartCoreFailedSolution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't switch to the new profile, so the previous profile was restored. Reason: {reason}. Check the target profile, or re-import it and try again.`
+  String profileSwitchFailedRollbackReason(Object reason) {
+    return Intl.message(
+      'Couldn\'t switch to the new profile, so the previous profile was restored. Reason: $reason. Check the target profile, or re-import it and try again.',
+      name: 'profileSwitchFailedRollbackReason',
+      desc: '',
+      args: [reason],
+    );
+  }
+
+  /// `Couldn't switch profiles; the current profile is unchanged. Reason: {reason}. Check the target profile, or re-import it and try again.`
+  String profileSwitchFailedReason(Object reason) {
+    return Intl.message(
+      'Couldn\'t switch profiles; the current profile is unchanged. Reason: $reason. Check the target profile, or re-import it and try again.',
+      name: 'profileSwitchFailedReason',
+      desc: '',
+      args: [reason],
+    );
+  }
+
+  /// `Failed to update profile {name}. Reason: {reason}. Check your network, or make sure the subscription link is still valid, then try again.`
+  String profileUpdateFailed(Object name, Object reason) {
+    return Intl.message(
+      'Failed to update profile $name. Reason: $reason. Check your network, or make sure the subscription link is still valid, then try again.',
+      name: 'profileUpdateFailed',
+      desc: '',
+      args: [name, reason],
+    );
+  }
+
+  /// `Profile {name} failed to update automatically. Reason: {reason}. Check your network, or make sure the subscription link is still valid.`
+  String profileAutoUpdateFailed(Object name, Object reason) {
+    return Intl.message(
+      'Profile $name failed to update automatically. Reason: $reason. Check your network, or make sure the subscription link is still valid.',
+      name: 'profileAutoUpdateFailed',
+      desc: '',
+      args: [name, reason],
+    );
+  }
+
+  /// `And {count} more also failed to update.`
+  String profileAutoUpdateFailedMore(Object count) {
+    return Intl.message(
+      'And $count more also failed to update.',
+      name: 'profileAutoUpdateFailedMore',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Couldn't start or stop the service. Reason: {reason}. Check the current profile and the port settings, then try again.`
+  String serviceStartStopFailed(Object reason) {
+    return Intl.message(
+      'Couldn\'t start or stop the service. Reason: $reason. Check the current profile and the port settings, then try again.',
+      name: 'serviceStartStopFailed',
+      desc: '',
+      args: [reason],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -871,7 +871,9 @@ class GlobalState {
       return await writeScriptedConfig(profile, script, managed: managed);
     } catch (e) {
       commonPrint.error('Script execution failed: $e');
-      showNotifier('${appLocalizations.profileParseErrorDesc}: $e');
+      showNotifier(
+        '${appLocalizations.profileParseErrorDesc}: ${redactSensitiveText('$e')}',
+      );
       if (managed && ManagedScript.syncedVersion(config.managedProps) != null) {
         return await writeBundledManagedConfig(profile);
       }
@@ -1118,13 +1120,15 @@ class GlobalState {
     final landingProfileId = chain.resolvedLandingProfileId(profile.id);
     if (!chain.enabled) return policy;
     if (landingProfileId == profile.id) {
-      throw const FormatException(
+      throw const ChainSelectionStaleException(
+        ChainStaleReference.exitSameProfile,
         'The chain exit must be selected from another profile.',
       );
     }
     final sourceProfile = config.profiles.getProfile(landingProfileId);
     if (sourceProfile == null) {
-      throw const FormatException(
+      throw const ChainSelectionStaleException(
+        ChainStaleReference.exitProfile,
         'The selected exit profile is no longer available.',
       );
     }

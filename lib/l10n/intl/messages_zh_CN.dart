@@ -179,6 +179,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
   static String m78(count) => "${count} 个节点";
+  static String m79(reason) => "新配置切换失败，已切回原来的配置。原因：${reason}。请检查目标配置，或重新导入后再试。";
+  static String m80(reason) => "配置切换失败，当前配置未更改。原因：${reason}。请检查目标配置，或重新导入后再试。";
+  static String m81(name, reason) => "配置${name}更新失败。原因：${reason}。请检查网络，或确认订阅链接仍有效后重试。";
+  static String m82(name, reason) => "配置${name}自动更新失败。原因：${reason}。请检查网络，或确认订阅链接仍有效。";
+  static String m83(count) => "另有${count}个配置也更新失败。";
+  static String m84(reason) => "服务启动或停止失败。原因：${reason}。请检查当前配置与端口设置后重试。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1987,5 +1993,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "文件系统不支持文件能力（xattr），已回退到 setuid",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "出口配置请不要启用脚本。",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "链式入口所选的分组或节点已不在当前配置中。请到链式设置重新选择入口。",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "链式出口所选的配置已不存在。请到链式设置重新选择出口配置。",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "链式出口必须从其它配置中选择。请到链式设置重新选择出口。",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "链式出口所选的分组或节点已不在出口配置中。请到链式设置重新选择出口。",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "请稍后重试；如反复失败，请重启应用。",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }

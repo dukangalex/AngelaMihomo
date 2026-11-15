@@ -9,6 +9,25 @@ enum ProfileChainIssue {
   unavailable,
 }
 
+/// Which end of a saved chain selection can no longer be resolved against
+/// the current profile contents. Selections go stale when the referenced
+/// profile is re-imported (new id) or updated (renamed groups/nodes).
+enum ChainStaleReference { exitProfile, exitTarget, entry, exitSameProfile }
+
+/// Thrown when a saved chain selection points at a profile, group or node
+/// that no longer exists. The presentation layer maps this to a dedicated
+/// notice that names the stale end and tells the user to reselect the
+/// entry/exit in the chain settings (see common/failure_notice.dart).
+/// It extends [FormatException] and carries the legacy English wording as
+/// its message, so fail-closed checks and event-log lines keep the exact
+/// shape they had when these were plain FormatExceptions.
+class ChainSelectionStaleException extends FormatException {
+  final ChainStaleReference reference;
+
+  const ChainSelectionStaleException(this.reference, String detail)
+    : super(detail);
+}
+
 enum ChainTargetKind { proxy, group }
 
 String chainTargetKey(ChainTargetKind kind, String name) =>

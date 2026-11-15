@@ -7,6 +7,7 @@ export 'dashboard_metrics.dart';
 export 'converter.dart';
 export 'datetime.dart';
 export 'event_log.dart';
+export 'failure_notice.dart';
 export 'fixed.dart';
 export 'identity.dart';
 export 'function.dart';

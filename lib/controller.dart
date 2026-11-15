@@ -474,7 +474,7 @@ class AppController {
         '${currentProfile.label ?? currentProfile.id}: $message',
       );
       globalState.showNotifier(
-        '${appLocalizations.profileParseErrorDesc}: $message',
+        '${appLocalizations.profileParseErrorDesc}: ${redactSensitiveText(message)}',
       );
       final fallbackScripted =
           currentProfile.runsManagedScript &&
@@ -1159,7 +1159,7 @@ class AppController {
       try {
         return await _applyProfile();
       } catch (err) {
-        globalState.showNotifier(err.toString());
+        globalState.showNotifier(failureNoticeOf(err));
         rethrow;
       }
     });
@@ -1171,7 +1171,7 @@ class AppController {
         try {
           await _applyProfile();
         } catch (err) {
-          globalState.showNotifier(err.toString());
+          globalState.showNotifier(failureNoticeOf(err));
           rethrow;
         }
       } else {
@@ -1244,10 +1244,12 @@ class AppController {
               _resumeServiceForProfileId = fallback;
             }
             globalState.showNotifier(
-              appLocalizations.profileSwitchFailedRollback,
+              profileSwitchFailureNotice(err, rolledBack: true),
             );
           } else {
-            globalState.showNotifier(appLocalizations.profileSwitchFailed);
+            globalState.showNotifier(
+              profileSwitchFailureNotice(err, rolledBack: false),
+            );
             if (hardRestart) rethrow;
           }
         } finally {
@@ -1311,9 +1313,7 @@ class AppController {
             requestedProfileId: requestedProfileId,
           );
           globalState.showNotifier(
-            fallback != null
-                ? appLocalizations.profileSwitchFailedRollback
-                : appLocalizations.profileSwitchFailed,
+            profileSwitchFailureNotice(err, rolledBack: fallback != null),
           );
         }
         await clashCore.closeConnections();
@@ -1353,10 +1353,9 @@ class AppController {
   }
 
   void _reportCoreRestartFailure(Object error) {
-    final message = error.formatError;
     commonPrint.error('[Core] Restart failed: ${error.formatErrorLog}');
     appEventLog.record('core', 'core restart failed: ${error.formatErrorLog}');
-    globalState.showNotifier('${appLocalizations.restartCoreTitle}: $message');
+    globalState.showNotifier(coreRestartFailureNotice(error));
   }
 
   void updateBrightness() {
@@ -1376,6 +1375,7 @@ class AppController {
   }
 
   Future<void> autoUpdateProfiles() async {
+    final failures = <(String, Object)>[];
     for (final profile in _ref.read(profilesProvider)) {
       if (!_isProfileUpdateNeeded(profile)) continue;
       try {
@@ -1389,8 +1389,23 @@ class AppController {
           'auto update failed for profile ${profile.label ?? profile.id}: '
           '${e.formatErrorLog}',
         );
+        failures.add((profile.label ?? profile.id, e));
       }
     }
+    _notifyAutoUpdateFailures(failures);
+  }
+
+  /// Automatic update failures used to exist only in the log; surface
+  /// them like every other failure (reason + next step, T150). One
+  /// notice per run: the first failure in full, the rest as a count.
+  void _notifyAutoUpdateFailures(List<(String, Object)> failures) {
+    if (failures.isEmpty) return;
+    final (name, error) = failures.first;
+    var text = profileUpdateFailureNotice(name, error, automatic: true);
+    if (failures.length > 1) {
+      text = '$text ${appLocalizations.profileAutoUpdateFailedMore(failures.length - 1)}';
+    }
+    globalState.showNotifier(text);
   }
 
   Future<void> checkAndUpdateMissedProfiles() async {
@@ -1401,6 +1416,7 @@ class AppController {
     }
     if (profilesToUpdate.isNotEmpty) {
       var updated = false;
+      final failures = <(String, Object)>[];
       for (final profile in profilesToUpdate) {
         try {
           await updateProfile(profile, validate: false, applyUnchanged: false);
@@ -1414,6 +1430,7 @@ class AppController {
             'missed update failed for profile ${profile.label ?? profile.id}: '
             '${e.formatErrorLog}',
           );
+          failures.add((profile.label ?? profile.id, e));
         }
         if (profilesToUpdate.length > 1) {
           await Future.delayed(const Duration(seconds: 2));
@@ -1422,6 +1439,7 @@ class AppController {
       if (updated) {
         commonPrint.log('Updating external providers');
       }
+      _notifyAutoUpdateFailures(failures);
     }
 
     await _syncExternalProviders();
@@ -3381,7 +3399,7 @@ class AppController {
       return res;
     } on Object catch (e) {
       commonPrint.error(e.formatErrorLog);
-      final errorMessage = e.formatError;
+      final errorMessage = failureNoticeOf(e);
       if (needLoading) {
         _ref.read(loadingProvider.notifier).value = false;
       }

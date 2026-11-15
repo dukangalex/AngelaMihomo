@@ -40,6 +40,7 @@ class _StartButtonState extends ConsumerState<StartButton> {
       await globalState.appController.updateStatus(newState);
     } catch (e) {
       commonPrint.error('updateStatus failed: $e');
+      globalState.showNotifier(serviceToggleFailureNotice(e));
     } finally {
       if (mounted) {
         setState(() {

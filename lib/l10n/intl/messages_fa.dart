@@ -192,6 +192,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '# سال')}";
 
   static String m78(count) => "${count} گره";
+  static String m79(reason) => "جابه‌جایی به نمایه جدید انجام نشد و نمایه قبلی بازگردانده شد. دلیل: ${reason}. نمایه مقصد را بررسی کنید یا آن را دوباره وارد کنید و دوباره تلاش کنید.";
+  static String m80(reason) => "جابه‌جایی نمایه انجام نشد؛ نمایه فعلی تغییری نکرده است. دلیل: ${reason}. نمایه مقصد را بررسی کنید یا آن را دوباره وارد کنید و دوباره تلاش کنید.";
+  static String m81(name, reason) => "به‌روزرسانی نمایه ${name} انجام نشد. دلیل: ${reason}. شبکه را بررسی کنید یا مطمئن شوید پیوند اشتراک هنوز معتبر است و دوباره تلاش کنید.";
+  static String m82(name, reason) => "به‌روزرسانی خودکار نمایه ${name} انجام نشد. دلیل: ${reason}. شبکه را بررسی کنید یا مطمئن شوید پیوند اشتراک هنوز معتبر است.";
+  static String m83(count) => "${count} نمایه دیگر نیز به‌روزرسانی نشدند.";
+  static String m84(reason) => "شروع یا توقف سرویس انجام نشد. دلیل: ${reason}. نمایه فعلی و تنظیمات درگاه را بررسی کنید و دوباره تلاش کنید.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2700,5 +2706,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "سیستم فایل از قابلیت‌های فایل (xattr) پشتیبانی نمی‌کند؛ به setuid بازگشت داده شد",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "برای نمایه خروجی اسکریپت را فعال نکنید.",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "گروه یا گره انتخاب‌شده به‌عنوان ورودی زنجیره دیگر در نمایه فعلی نیست. لطفاً ورودی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "نمایه‌ای که به‌عنوان خروجی زنجیره انتخاب شده بود دیگر وجود ندارد. لطفاً نمایه خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "خروجی زنجیره باید از نمایه دیگری انتخاب شود. لطفاً خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "گروه یا گره انتخاب‌شده به‌عنوان خروجی زنجیره دیگر در نمایه خروجی نیست. لطفاً خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "لطفاً بعداً دوباره تلاش کنید؛ اگر خطا تکرار شد، برنامه را دوباره اجرا کنید.",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }

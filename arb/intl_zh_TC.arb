@@ -1355,5 +1355,17 @@
   "systemExplicitExceptionsInactive": "直连例外在当前模式下未生效",
   "systemExplicitExceptionsInactiveDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。",
   "systemExplicitInterceptionActive": "拦截类选项在当前模式下生效",
-  "systemExplicitInterceptionActiveDesc": "防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。"
+  "systemExplicitInterceptionActiveDesc": "防隐私、阻断 WebRTC、广告拦截在全局/直连模式下同样生效。",
+  "chainStaleExitProfile": "鏈式出口所選的配置已不存在。請到鏈式設定重新選擇出口配置。",
+  "chainStaleExitTarget": "鏈式出口所選的分組或節點已不在出口配置中。請到鏈式設定重新選擇出口。",
+  "chainStaleEntry": "鏈式入口所選的分組或節點已不在目前配置中。請到鏈式設定重新選擇入口。",
+  "chainStaleExitSameProfile": "鏈式出口必須從其它配置中選擇。請到鏈式設定重新選擇出口。",
+  "chainExitScriptHint": "出口配置請不要啟用腳本。",
+  "restartCoreFailedSolution": "請稍後重試；如反覆失敗，請重啟應用。",
+  "profileSwitchFailedRollbackReason": "新配置切換失敗，已切回原來的配置。原因：{reason}。請檢查目標配置，或重新匯入後再試。",
+  "profileSwitchFailedReason": "配置切換失敗，目前配置未更改。原因：{reason}。請檢查目標配置，或重新匯入後再試。",
+  "profileUpdateFailed": "配置{name}更新失敗。原因：{reason}。請檢查網路，或確認訂閱連結仍有效後重試。",
+  "profileAutoUpdateFailed": "配置{name}自動更新失敗。原因：{reason}。請檢查網路，或確認訂閱連結仍有效。",
+  "profileAutoUpdateFailedMore": "另有{count}個配置也更新失敗。",
+  "serviceStartStopFailed": "服務啟動或停止失敗。原因：{reason}。請檢查目前配置與連接埠設定後重試。"
 }

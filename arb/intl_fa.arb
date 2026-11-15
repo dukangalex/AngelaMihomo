@@ -1353,5 +1353,17 @@
   "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
   "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
   "systemExplicitInterceptionActive": "Interception is active in this mode",
-  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode."
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
+  "chainStaleExitProfile": "نمایه‌ای که به‌عنوان خروجی زنجیره انتخاب شده بود دیگر وجود ندارد. لطفاً نمایه خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+  "chainStaleExitTarget": "گروه یا گره انتخاب‌شده به‌عنوان خروجی زنجیره دیگر در نمایه خروجی نیست. لطفاً خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+  "chainStaleEntry": "گروه یا گره انتخاب‌شده به‌عنوان ورودی زنجیره دیگر در نمایه فعلی نیست. لطفاً ورودی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+  "chainStaleExitSameProfile": "خروجی زنجیره باید از نمایه دیگری انتخاب شود. لطفاً خروجی را در تنظیمات زنجیره دوباره انتخاب کنید.",
+  "chainExitScriptHint": "برای نمایه خروجی اسکریپت را فعال نکنید.",
+  "restartCoreFailedSolution": "لطفاً بعداً دوباره تلاش کنید؛ اگر خطا تکرار شد، برنامه را دوباره اجرا کنید.",
+  "profileSwitchFailedRollbackReason": "جابه‌جایی به نمایه جدید انجام نشد و نمایه قبلی بازگردانده شد. دلیل: {reason}. نمایه مقصد را بررسی کنید یا آن را دوباره وارد کنید و دوباره تلاش کنید.",
+  "profileSwitchFailedReason": "جابه‌جایی نمایه انجام نشد؛ نمایه فعلی تغییری نکرده است. دلیل: {reason}. نمایه مقصد را بررسی کنید یا آن را دوباره وارد کنید و دوباره تلاش کنید.",
+  "profileUpdateFailed": "به‌روزرسانی نمایه {name} انجام نشد. دلیل: {reason}. شبکه را بررسی کنید یا مطمئن شوید پیوند اشتراک هنوز معتبر است و دوباره تلاش کنید.",
+  "profileAutoUpdateFailed": "به‌روزرسانی خودکار نمایه {name} انجام نشد. دلیل: {reason}. شبکه را بررسی کنید یا مطمئن شوید پیوند اشتراک هنوز معتبر است.",
+  "profileAutoUpdateFailedMore": "{count} نمایه دیگر نیز به‌روزرسانی نشدند.",
+  "serviceStartStopFailed": "شروع یا توقف سرویس انجام نشد. دلیل: {reason}. نمایه فعلی و تنظیمات درگاه را بررسی کنید و دوباره تلاش کنید."
 }

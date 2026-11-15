@@ -30,7 +30,11 @@ Future<void> _updateProfile(Profile profile) async {
     globalState.showMessage(
       title: appLocalizations.tip,
       message: TextSpan(
-        text: '${profile.label ?? profile.id}: ${e.formatError}',
+        text: profileUpdateFailureNotice(
+          profile.label ?? profile.id,
+          e,
+          automatic: false,
+        ),
       ),
       cancelable: false,
     );

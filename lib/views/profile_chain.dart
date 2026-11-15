@@ -210,7 +210,7 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
         globalState.appController.applyProfileDebounce();
       }
     } on Object catch (error) {
-      if (mounted) setState(() => _error = error.formatError);
+      if (mounted) setState(() => _error = failureNoticeOf(error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -300,6 +300,10 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
                         ),
                       ),
                     ),
+                  ListItem(
+                    title: Text(appLocalizations.tip),
+                    subtitle: Text(appLocalizations.chainExitScriptHint),
+                  ),
                   if (entryChoices.isEmpty)
                     ListItem(
                       title: Text(appLocalizations.chainNoEntry),

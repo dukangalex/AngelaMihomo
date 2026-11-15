@@ -197,6 +197,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
   static String m78(count) => "${count} nodes";
+  static String m79(reason) => "Couldn't switch to the new profile, so the previous profile was restored. Reason: ${reason}. Check the target profile, or re-import it and try again.";
+  static String m80(reason) => "Couldn't switch profiles; the current profile is unchanged. Reason: ${reason}. Check the target profile, or re-import it and try again.";
+  static String m81(name, reason) => "Failed to update profile ${name}. Reason: ${reason}. Check your network, or make sure the subscription link is still valid, then try again.";
+  static String m82(name, reason) => "Profile ${name} failed to update automatically. Reason: ${reason}. Check your network, or make sure the subscription link is still valid.";
+  static String m83(count) => "And ${count} more also failed to update.";
+  static String m84(reason) => "Couldn't start or stop the service. Reason: ${reason}. Check the current profile and the port settings, then try again.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2674,5 +2680,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "The filesystem does not support file capabilities, falling back to setuid",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "Please do not enable a script on the exit profile.",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "The group or node chosen as the chain entry is no longer in the current profile. Please reselect the entry in the chain settings.",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "The profile chosen as the chain exit no longer exists. Please reselect the exit profile in the chain settings.",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "The chain exit must be chosen from another profile. Please reselect the exit in the chain settings.",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "The group or node chosen as the chain exit is no longer in the exit profile. Please reselect the exit in the chain settings.",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "Please try again later; if it keeps failing, restart the app.",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }

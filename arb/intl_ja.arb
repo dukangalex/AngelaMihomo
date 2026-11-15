@@ -1353,5 +1353,17 @@
   "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
   "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
   "systemExplicitInterceptionActive": "Interception is active in this mode",
-  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode."
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
+  "chainStaleExitProfile": "チェーンの出口に選択したプロファイルはもう存在しません。チェーン設定で出口プロファイルを選び直してください。",
+  "chainStaleExitTarget": "チェーンの出口に選択したグループまたはノードは、出口プロファイルにもう存在しません。チェーン設定で出口を選び直してください。",
+  "chainStaleEntry": "チェーンの入口に選択したグループまたはノードは、現在のプロファイルにもう存在しません。チェーン設定で入口を選び直してください。",
+  "chainStaleExitSameProfile": "チェーンの出口は別のプロファイルから選択する必要があります。チェーン設定で出口を選び直してください。",
+  "chainExitScriptHint": "出口プロファイルではスクリプトを有効にしないでください。",
+  "restartCoreFailedSolution": "しばらくしてから再試行してください。繰り返し失敗する場合はアプリを再起動してください。",
+  "profileSwitchFailedRollbackReason": "新しいプロファイルに切り替えられなかったため、前のプロファイルに戻しました。理由：{reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。",
+  "profileSwitchFailedReason": "プロファイルを切り替えられませんでした。現在のプロファイルは変更されていません。理由：{reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。",
+  "profileUpdateFailed": "プロファイル{name}の更新に失敗しました。理由：{reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してから再試行してください。",
+  "profileAutoUpdateFailed": "プロファイル{name}の自動更新に失敗しました。理由：{reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してください。",
+  "profileAutoUpdateFailedMore": "さらに{count}件のプロファイルも更新に失敗しました。",
+  "serviceStartStopFailed": "サービスの開始または停止に失敗しました。理由：{reason}。現在のプロファイルとポート設定を確認してから再試行してください。"
 }

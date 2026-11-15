@@ -203,7 +203,9 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
       try {
         await globalState.appController.updateProfile(profile);
       } on Object catch (e) {
-        messages.add('${profile.label ?? profile.id}: ${e.formatError}\n');
+        messages.add(
+          '${profileUpdateFailureNotice(profile.label ?? profile.id, e, automatic: false)}\n',
+        );
         globalState.appController.setProfile(
           profile.copyWith(isUpdating: false),
         );
@@ -474,7 +476,11 @@ class ProfileItem extends StatelessWidget {
       globalState.showMessage(
         title: appLocalizations.tip,
         message: TextSpan(
-          text: '${profile.label ?? profile.id}: ${e.formatError}',
+          text: profileUpdateFailureNotice(
+            profile.label ?? profile.id,
+            e,
+            automatic: false,
+          ),
         ),
         cancelable: false,
       );

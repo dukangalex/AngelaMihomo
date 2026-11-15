@@ -1357,5 +1357,17 @@
   "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
   "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",
   "systemExplicitInterceptionActive": "Interception is active in this mode",
-  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode."
+  "systemExplicitInterceptionActiveDesc": "Privacy, WebRTC and ad blocking keep working in global/direct mode.",
+  "chainStaleExitProfile": "Профиль, выбранный в качестве выхода цепочки, больше не существует. Выберите профиль выхода заново в настройках цепочки.",
+  "chainStaleExitTarget": "Группа или узел, выбранные в качестве выхода цепочки, больше не входят в профиль выхода. Выберите выход заново в настройках цепочки.",
+  "chainStaleEntry": "Группа или узел, выбранные в качестве входа цепочки, больше не входят в текущий профиль. Выберите вход заново в настройках цепочки.",
+  "chainStaleExitSameProfile": "Выход цепочки должен быть выбран из другого профиля. Выберите выход заново в настройках цепочки.",
+  "chainExitScriptHint": "Не включайте скрипт для профиля выхода.",
+  "restartCoreFailedSolution": "Повторите попытку позже; если ошибка повторяется, перезапустите приложение.",
+  "profileSwitchFailedRollbackReason": "Не удалось переключиться на новый профиль, поэтому восстановлен предыдущий. Причина: {reason}. Проверьте целевой профиль или импортируйте его заново и повторите попытку.",
+  "profileSwitchFailedReason": "Не удалось переключить профиль; текущий профиль не изменён. Причина: {reason}. Проверьте целевой профиль или импортируйте его заново и повторите попытку.",
+  "profileUpdateFailed": "Не удалось обновить профиль {name}. Причина: {reason}. Проверьте сеть или убедитесь, что ссылка подписки ещё действительна, и повторите попытку.",
+  "profileAutoUpdateFailed": "Не удалось автоматически обновить профиль {name}. Причина: {reason}. Проверьте сеть или убедитесь, что ссылка подписки ещё действительна.",
+  "profileAutoUpdateFailedMore": "Ещё {count} профилей также не удалось обновить.",
+  "serviceStartStopFailed": "Не удалось запустить или остановить службу. Причина: {reason}. Проверьте текущий профиль и настройки портов, затем повторите попытку."
 }

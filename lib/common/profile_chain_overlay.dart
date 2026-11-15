@@ -68,7 +68,8 @@ class ProfileChainOverlay {
         ? proxyByName.containsKey(targetName)
         : groupByName.containsKey(targetName);
     if (!targetExists) {
-      throw FormatException(
+      throw ChainSelectionStaleException(
+        ChainStaleReference.exitTarget,
         'The selected ${targetKind.name} is no longer in this profile.',
       );
     }
@@ -116,7 +117,13 @@ class ProfileChainOverlay {
     void addProvider(String name) {
       final provider = providers[name];
       if (provider is! Map) {
-        throw FormatException('Group references missing provider "$name".');
+        // The exit group uses a provider the exit profile no longer
+        // declares (renamed or removed by an update): the saved exit
+        // selection can no longer be resolved in that profile.
+        throw ChainSelectionStaleException(
+          ChainStaleReference.exitTarget,
+          'Group references missing provider "$name".',
+        );
       }
       if (!importedProviderNames.add(name)) return;
       final copied = _cloneMap(provider);
@@ -176,7 +183,10 @@ class ProfileChainOverlay {
     void addGroup(String name) {
       final group = groupByName[name];
       if (group == null) {
-        throw FormatException('Group "$name" is no longer in this profile.');
+        throw ChainSelectionStaleException(
+          ChainStaleReference.exitTarget,
+          'Group "$name" is no longer in this profile.',
+        );
       }
       if (visitedGroups.contains(name)) return;
       if (!visitingGroups.add(name)) {
@@ -220,7 +230,11 @@ class ProfileChainOverlay {
           } else if (protected.contains(member)) {
             remapped.add(member);
           } else {
-            throw FormatException(
+            // A member the exit profile used to provide is gone (renamed
+            // or removed by an update): the saved exit selection can no
+            // longer be resolved in that profile.
+            throw ChainSelectionStaleException(
+              ChainStaleReference.exitTarget,
               'Group "$name" references unavailable member "$member".',
             );
           }

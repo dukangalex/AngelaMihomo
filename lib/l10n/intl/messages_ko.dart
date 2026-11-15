@@ -185,6 +185,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '#년')}";
 
   static String m78(count) => "노드 ${count}개";
+  static String m79(reason) => "새 프로필로 전환하지 못해 이전 프로필로 복원했습니다. 이유: ${reason}. 대상 프로필을 확인하거나 다시 가져온 후 시도하세요.";
+  static String m80(reason) => "프로필을 전환하지 못했습니다. 현재 프로필은 변경되지 않았습니다. 이유: ${reason}. 대상 프로필을 확인하거나 다시 가져온 후 시도하세요.";
+  static String m81(name, reason) => "프로필 ${name} 업데이트에 실패했습니다. 이유: ${reason}. 네트워크를 확인하거나 구독 링크가 아직 유효한지 확인한 후 다시 시도하세요.";
+  static String m82(name, reason) => "프로필 ${name} 자동 업데이트에 실패했습니다. 이유: ${reason}. 네트워크를 확인하거나 구독 링크가 아직 유효한지 확인하세요.";
+  static String m83(count) => "그 외 ${count}개 프로필도 업데이트에 실패했습니다.";
+  static String m84(reason) => "서비스를 시작하거나 중지하지 못했습니다. 이유: ${reason}. 현재 프로필과 포트 설정을 확인한 후 다시 시도하세요.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2231,5 +2237,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "파일 시스템이 파일 capability(xattr)를 지원하지 않아 setuid로 대체했습니다",
     ),
     "years": m77,
+    "chainExitScriptHint": MessageLookupByLibrary.simpleMessage(
+      "출구 프로필에서는 스크립트를 활성화하지 마세요.",
+    ),
+    "chainStaleEntry": MessageLookupByLibrary.simpleMessage(
+      "체인 입구로 선택한 그룹 또는 노드가 현재 프로필에 더 이상 없습니다. 체인 설정에서 입구를 다시 선택하세요.",
+    ),
+    "chainStaleExitProfile": MessageLookupByLibrary.simpleMessage(
+      "체인 출구로 선택한 프로필이 더 이상 존재하지 않습니다. 체인 설정에서 출구 프로필을 다시 선택하세요.",
+    ),
+    "chainStaleExitSameProfile": MessageLookupByLibrary.simpleMessage(
+      "체인 출구는 다른 프로필에서 선택해야 합니다. 체인 설정에서 출구를 다시 선택하세요.",
+    ),
+    "chainStaleExitTarget": MessageLookupByLibrary.simpleMessage(
+      "체인 출구로 선택한 그룹 또는 노드가 출구 프로필에 더 이상 없습니다. 체인 설정에서 출구를 다시 선택하세요.",
+    ),
+    "profileAutoUpdateFailed": m82,
+    "profileAutoUpdateFailedMore": m83,
+    "profileSwitchFailedReason": m80,
+    "profileSwitchFailedRollbackReason": m79,
+    "profileUpdateFailed": m81,
+    "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
+      "잠시 후 다시 시도하세요. 계속 실패하면 앱을 다시 시작하세요.",
+    ),
+    "serviceStartStopFailed": m84,
   };
 }
