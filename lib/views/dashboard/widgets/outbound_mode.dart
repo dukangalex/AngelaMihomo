@@ -4,6 +4,7 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 
+import 'node_status_light.dart';
 import 'quick_options.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,7 +126,11 @@ class OutboundModeV2 extends StatelessWidget {
                 label: appLocalizations.runningMode,
                 iconData: Icons.call_split_sharp,
               ),
-              actions: const [_OutboundStatusChips()],
+              actions: const [
+                NodeStatusLight(),
+                SizedBox(width: 2),
+                _OutboundStatusChips(),
+              ],
             ),
             Expanded(
               child: Padding(

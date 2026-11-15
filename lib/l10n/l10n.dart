@@ -2550,6 +2550,36 @@ class AppLocalizations {
     );
   }
 
+  /// `Current node available`
+  String get currentNodeAvailable {
+    return Intl.message(
+      'Current node available',
+      name: 'currentNodeAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node unavailable`
+  String get currentNodeUnavailable {
+    return Intl.message(
+      'Current node unavailable',
+      name: 'currentNodeUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node status unknown`
+  String get currentNodeUnknown {
+    return Intl.message(
+      'Node status unknown',
+      name: 'currentNodeUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Add Profile`
   String get addProfile {
     return Intl.message('Add Profile', name: 'addProfile', desc: '', args: []);

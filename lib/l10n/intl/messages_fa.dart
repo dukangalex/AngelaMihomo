@@ -2304,6 +2304,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTesting": MessageLookupByLibrary.simpleMessage("در حال تست"),
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("تست کامل شد"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("ناموفق"),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("گره فعلی در دسترس است"),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("گره فعلی در دسترس نیست"),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("وضعیت گره نامشخص است"),
     "startVpn": MessageLookupByLibrary.simpleMessage("در حال شروع..."),
     "status": MessageLookupByLibrary.simpleMessage("وضعیت"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(

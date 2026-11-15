@@ -2376,6 +2376,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "globalDelayTesting": MessageLookupByLibrary.simpleMessage("Тестирование"),
     "globalDelayTestDone": MessageLookupByLibrary.simpleMessage("Тест завершён"),
     "globalDelayTestFailed": MessageLookupByLibrary.simpleMessage("Не удалось"),
+    "currentNodeAvailable": MessageLookupByLibrary.simpleMessage("Текущий узел доступен"),
+    "currentNodeUnavailable": MessageLookupByLibrary.simpleMessage("Текущий узел недоступен"),
+    "currentNodeUnknown": MessageLookupByLibrary.simpleMessage("Статус узла неизвестен"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Запуск VPN"),
     "status": MessageLookupByLibrary.simpleMessage("Статус"),
     "statusDesc": MessageLookupByLibrary.simpleMessage(
