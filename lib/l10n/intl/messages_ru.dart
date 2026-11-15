@@ -123,9 +123,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "Из источника ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "Проверено ${done}/${total} · доступно ${unlocked}";
-
   static String m45(size) => "Освобождено ${size}";
 
   static String m46(index) => "Объединённая подписка ${index}";
@@ -505,16 +502,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Показать системные приложения",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("Отменить выбор"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("Все"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("Китай (прямой)"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("Криптовалюта"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage(
-      "Для разработчиков",
-    ),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("Игровой центр"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage("Сообщество"),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("Стриминг"),
     "chainAttention": MessageLookupByLibrary.simpleMessage(
       "Chain settings need attention",
     ),
@@ -966,7 +954,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "Включить определение процессов",
     ),
-    "flagged": MessageLookupByLibrary.simpleMessage("Помечен"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "Очистка кэша DNS",
     ),
@@ -1364,7 +1351,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("Ширина"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("Действие ЛКМ"),
     "light": MessageLookupByLibrary.simpleMessage("Светлая"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("Только оригиналы"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("Перенос строк"),
     "list": MessageLookupByLibrary.simpleMessage("Список"),
     "listen": MessageLookupByLibrary.simpleMessage("Прослушивание"),
@@ -1479,48 +1465,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Все узлы, кроме DIRECT",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("Тест"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage(
-      "Нет узлов для проверки",
-    ),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage(
       "Выберите, что проверить",
     ),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage(
-      "Пакетная проверка узлов",
-    ),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Проверка доступности"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "Показывать цветные значки по умолчанию",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "Детали проверки доступности",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "Настройки отображения",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "Показывать больше сведений об IP",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "Прочие настройки",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "Больше платформ стриминга",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "Закрепить до 3 элементов в виджете",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "Частичное обновление по текущей категории",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "Автообновление при смене узла",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "Можно выбрать максимум 3 элемента",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Разблокировано"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "Память уже оптимальна",
     ),
@@ -1769,7 +1716,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Невозможно выбрать эту группу прокси",
     ),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "Высокий приоритет",
     ),
@@ -2564,7 +2510,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Разрешить параллельные TCP-соединения",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("URL теста"),
-    "testing": MessageLookupByLibrary.simpleMessage("Проверка"),
     "textScale": MessageLookupByLibrary.simpleMessage("Масштаб текста"),
     "theme": MessageLookupByLibrary.simpleMessage("Тема"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Цвет темы"),
@@ -2590,9 +2535,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("Переключить"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Тональный акцент"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("Максимум 5 правил"),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "Доступность сервисов и пакетная проверка узлов",
-    ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage(
       "Очистить историю",
     ),
@@ -2737,7 +2679,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("Неизвестно"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("Открепить"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("Завершено"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Без имени"),
     "unpin": MessageLookupByLibrary.simpleMessage("Открепить"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),

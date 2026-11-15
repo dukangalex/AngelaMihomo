@@ -113,9 +113,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "上游 ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "已检测 ${done}/${total} · 可用 ${unlocked}";
-
   static String m45(size) => "已释放 ${size}";
 
   static String m46(index) => "合并订阅${index}";
@@ -370,14 +367,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cancel": MessageLookupByLibrary.simpleMessage("取消"),
     "cancelFilterSystemApp": MessageLookupByLibrary.simpleMessage("取消过滤系统应用"),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("取消全选"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("全部"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("国内直连"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("加密货币"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("开发者"),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("游戏中心"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage("社区平台"),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("流媒体"),
     "chainAttention": MessageLookupByLibrary.simpleMessage("链式设置未就绪"),
     "chainChooseOtherProfile": MessageLookupByLibrary.simpleMessage("请选择其它配置"),
     "chainChooseTarget": MessageLookupByLibrary.simpleMessage("选择节点或策略组"),
@@ -707,7 +697,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "filterSystemApp": MessageLookupByLibrary.simpleMessage("过滤系统应用"),
     "findProcessMode": MessageLookupByLibrary.simpleMessage("查找进程"),
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage("开启后可以匹配查找进程"),
-    "flagged": MessageLookupByLibrary.simpleMessage("已标记"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "清理 DNS 缓存",
     ),
@@ -976,7 +965,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("布局"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("左键点击"),
     "light": MessageLookupByLibrary.simpleMessage("浅色"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("仅自制"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("自动换行"),
     "list": MessageLookupByLibrary.simpleMessage("列表"),
     "listen": MessageLookupByLibrary.simpleMessage("监听"),
@@ -1065,36 +1053,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "检测所有节点，不含 DIRECT",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("检测"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage("没有可检测的节点"),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("选择检测范围"),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage("节点批量检测"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("连通性测试"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "默认显示彩色 ICON 图标",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("连通性测试详情"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("显示设置"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "返回更多 IP 详细信息",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("杂项设置"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "更多流媒体解锁项目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "可选 3 个在小部件常驻展示的项目",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "根据当前分组状态局部刷新",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "节点变化时自动刷新检测",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最多只能选择 3 个项目",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("已解锁"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("内存已处于最佳状态"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("内存与运行时"),
     "memoryFreed": m45,
@@ -1273,7 +1232,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "none": MessageLookupByLibrary.simpleMessage("无"),
     "notRecommended": MessageLookupByLibrary.simpleMessage("不推荐"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage("当前代理组无法选中"),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("未解锁"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage("高优先级"),
     "notificationHighPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "调整当前通知栏为前台高优先级",
@@ -1843,7 +1801,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP并发"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage("开启后允许 TCP 并发连接"),
     "testUrl": MessageLookupByLibrary.simpleMessage("测试链接"),
-    "testing": MessageLookupByLibrary.simpleMessage("检测中"),
     "textScale": MessageLookupByLibrary.simpleMessage("文本缩放"),
     "theme": MessageLookupByLibrary.simpleMessage("主题"),
     "themeColor": MessageLookupByLibrary.simpleMessage("主题色彩"),
@@ -1863,9 +1820,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("切换"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("调性点缀"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("最多允许 5 个规则"),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "检测常用服务可用性，支持按节点批量检测",
-    ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage("清空历史"),
     "toolSpeedTestDesc": MessageLookupByLibrary.simpleMessage("测量下载、上传速度与网络延迟"),
     "toolbox": MessageLookupByLibrary.simpleMessage("工具箱"),
@@ -1952,7 +1906,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "unifiedDelayDesc": MessageLookupByLibrary.simpleMessage("去除握手解析等额外延迟"),
     "unknown": MessageLookupByLibrary.simpleMessage("未知"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("解除锁定"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("已完成"),
     "unnamed": MessageLookupByLibrary.simpleMessage("未命名"),
     "unpin": MessageLookupByLibrary.simpleMessage("取消置顶"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),

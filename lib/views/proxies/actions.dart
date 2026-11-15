@@ -2,7 +2,6 @@ import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
-import 'package:bett_box/pages/media_unlock.dart';
 import 'package:bett_box/pages/speed_test.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
@@ -39,16 +38,6 @@ Future<void> showProxyActions(
               SpeedTestPage(initialProxy: proxy.name, type: type),
         );
       },
-    ),
-    PopupMenuItemData(
-      icon: Icons.travel_explore_rounded,
-      label: appLocalizations.mediaUnlock,
-      onPressed: coreRunning
-          ? () {
-              if (!context.mounted) return;
-              showNodeMediaUnlock(context, proxy.name);
-            }
-          : null,
     ),
     PopupMenuItemData(
       icon: Icons.shield_outlined,

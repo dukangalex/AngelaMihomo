@@ -167,17 +167,6 @@ List<_ToolItem> _buildTools() {
       open: (context) => push(context, const AgeToolPage()),
     ),
     _ToolItem(
-      id: 'connectivity',
-      icon: Icons.wifi_tethering_rounded,
-      color: const Color(0xFF0097D6),
-      title: appLocalizations.mediaUnlock,
-      description: appLocalizations.toolConnectivityDesc,
-      open: (context) => showExtend(
-        context,
-        builder: (_, type) => MediaUnlockPage(type: type),
-      ),
-    ),
-    _ToolItem(
       id: 'trafficStats',
       icon: Icons.data_usage_rounded,
       color: const Color(0xFFAA47BC),

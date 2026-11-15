@@ -120,9 +120,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "بالادستی ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "${done}/${total} بررسی شد · ${unlocked} در دسترس";
-
   static String m45(size) => "${size} آزاد شد";
 
   static String m46(index) => "اشتراک ادغام‌شده ${index}";
@@ -479,16 +476,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "لغو فیلتر برنامه‌های سیستم",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("لغو انتخاب همه"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("همه"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("مستقیم چین"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("ارز دیجیتال"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("توسعه‌دهندگان"),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("مرکز بازی"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage(
-      "پلتفرم‌های اجتماعی",
-    ),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("رسانه‌های جاری"),
     "chainAttention": MessageLookupByLibrary.simpleMessage(
       "Chain settings need attention",
     ),
@@ -930,7 +918,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "امکان جستجو و تطبیق پردازش‌ها",
     ),
-    "flagged": MessageLookupByLibrary.simpleMessage("نشانه‌گذاری‌شده"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "پاک‌سازی کش DNS",
     ),
@@ -1308,7 +1295,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("چیدمان"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("کلیک چپ"),
     "light": MessageLookupByLibrary.simpleMessage("روشن"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("فقط اختصاصی"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("شکستن خطوط"),
     "list": MessageLookupByLibrary.simpleMessage("فهرست"),
     "listen": MessageLookupByLibrary.simpleMessage("شنود"),
@@ -1427,46 +1413,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "همهٔ نودها به‌جز DIRECT",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("تست"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage(
-      "نودی برای آزمون وجود ندارد",
-    ),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage(
       "انتخاب محدودهٔ آزمون",
     ),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage("آزمون گروهی نودها"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("تست اتصال"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "جزئیات تست اتصال",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات نمایش",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "نمایش جزئیات بیشتر IP",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات متفرقه",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "موارد بیشتر آنلاک استریم",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "پین کردن حداکثر ۳ مورد در ویجت",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "تازه‌سازی جزئی بر اساس دسته‌بندی فعلی",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "به‌روزرسانی خودکار هنگام تغییر گره",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "حداکثر می‌توانید ۳ مورد را انتخاب کنید",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("قفل‌گشایی شده"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "حافظه از قبل بهینه است",
     ),
@@ -1705,7 +1654,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "گروه پروکسی فعلی قابل انتخاب نیست",
     ),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("مسدود"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "اولویت بالا",
     ),
@@ -2486,7 +2434,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "اجازه به اتصال‌های همزمان TCP",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("آدرس تست"),
-    "testing": MessageLookupByLibrary.simpleMessage("در حال بررسی"),
     "textScale": MessageLookupByLibrary.simpleMessage("مقیاس متن"),
     "theme": MessageLookupByLibrary.simpleMessage("پوسته"),
     "themeColor": MessageLookupByLibrary.simpleMessage("رنگ پوسته"),
@@ -2511,9 +2458,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("تونال اسپات"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage(
       "حداکثر ۵ قانون مجاز است",
-    ),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "بررسی دسترسی سرویس‌ها با آزمون گروهی نودها",
     ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage(
       "پاک کردن تاریخچه",
@@ -2649,7 +2593,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("نامشخص"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("باز کردن قفل"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("تکمیل شد"),
     "unnamed": MessageLookupByLibrary.simpleMessage("بدون نام"),
     "unpin": MessageLookupByLibrary.simpleMessage("برداشتن پین"),
     "update": MessageLookupByLibrary.simpleMessage("بروزرسانی"),

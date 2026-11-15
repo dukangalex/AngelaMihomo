@@ -115,9 +115,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "アップストリーム ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "${done}/${total} 検査済み · 利用可 ${unlocked}";
-
   static String m45(size) => "${size} を解放しました";
 
   static String m46(index) => "統合サブスクリプション${index}";
@@ -407,14 +404,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "システムアプリ除外を解除",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("全選択解除"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("すべて"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("中国直通"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("暗号資産"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("開発者"),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("ゲームセンター"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage("コミュニティ"),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("動画配信"),
     "chainAttention": MessageLookupByLibrary.simpleMessage(
       "Chain settings need attention",
     ),
@@ -786,7 +776,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "プロセス名をマッチングして検索",
     ),
-    "flagged": MessageLookupByLibrary.simpleMessage("フラグ付き"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "DNS キャッシュをクリア",
     ),
@@ -1096,7 +1085,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("レイアウト"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("左クリック"),
     "light": MessageLookupByLibrary.simpleMessage("ライト"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("自作のみ"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("折り返し"),
     "list": MessageLookupByLibrary.simpleMessage("リスト"),
     "listen": MessageLookupByLibrary.simpleMessage("リスニング"),
@@ -1191,36 +1179,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "DIRECT を除くすべてのノード",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("テスト"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage("検査できるノードがありません"),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("検査範囲を選択"),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage("ノード一括検査"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("接続性テスト"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "既定でカラーアイコンを表示",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("接続性テスト詳細"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("表示設定"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "IP の詳細情報を表示",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("その他の設定"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "その他のストリーミング解除項目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "ウィジェットに最大3項目を固定",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "現在のカテゴリに基づいて部分更新",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "ノード変更時に自動更新",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最大3項目まで選択できます",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("ロック解除済み"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("メモリは最適な状態です"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("メモリとランタイム"),
     "memoryFreed": m45,
@@ -1423,7 +1382,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "none": MessageLookupByLibrary.simpleMessage("なし"),
     "notRecommended": MessageLookupByLibrary.simpleMessage("非推奨"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage("選択できないプロキシグループです"),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("未解除"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage("高優先度"),
     "notificationHighPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "通知を高優先度（フォアグラウンド）に設定",
@@ -2060,7 +2018,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP並列接続"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage("TCPの同時並列接続を許可"),
     "testUrl": MessageLookupByLibrary.simpleMessage("テストURL"),
-    "testing": MessageLookupByLibrary.simpleMessage("検出中"),
     "textScale": MessageLookupByLibrary.simpleMessage("テキスト倍率"),
     "theme": MessageLookupByLibrary.simpleMessage("テーマ"),
     "themeColor": MessageLookupByLibrary.simpleMessage("テーマカラー"),
@@ -2080,9 +2037,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("切替"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("トーナルスポット"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("ルールは最大5つまでです"),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "主要サービスの利用可否を検査、ノード一括検査に対応",
-    ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage("履歴を消去"),
     "toolSpeedTestDesc": MessageLookupByLibrary.simpleMessage(
       "ダウンロード・アップロード速度と遅延を測定",
@@ -2195,7 +2149,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("不明"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("固定を解除"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("完了"),
     "unnamed": MessageLookupByLibrary.simpleMessage("無題"),
     "unpin": MessageLookupByLibrary.simpleMessage("固定解除"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),

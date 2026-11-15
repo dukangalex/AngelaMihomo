@@ -113,9 +113,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "上游 ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "已檢測 ${done}/${total} · 可用 ${unlocked}";
-
   static String m45(size) => "已釋放 ${size}";
 
   static String m46(index) => "合併訂閱${index}";
@@ -372,14 +369,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cancel": MessageLookupByLibrary.simpleMessage("取消"),
     "cancelFilterSystemApp": MessageLookupByLibrary.simpleMessage("取消過濾系統應用程式"),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("取消全選"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("全部"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("國內直連"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("加密貨幣"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("開發者"),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("遊戲中心"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage("社群平台"),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("串流媒體"),
     "chainAttention": MessageLookupByLibrary.simpleMessage("链式设置未就绪"),
     "chainChooseOtherProfile": MessageLookupByLibrary.simpleMessage("请选择其它配置"),
     "chainChooseTarget": MessageLookupByLibrary.simpleMessage("选择节点或策略组"),
@@ -711,7 +701,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "開啟後可以匹配尋找處理程序",
     ),
-    "flagged": MessageLookupByLibrary.simpleMessage("已標記"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "清理 DNS 快取",
     ),
@@ -984,7 +973,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("版面配置"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("左鍵點擊"),
     "light": MessageLookupByLibrary.simpleMessage("淺色"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("僅自製"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("自動換行"),
     "list": MessageLookupByLibrary.simpleMessage("清單"),
     "listen": MessageLookupByLibrary.simpleMessage("監聽"),
@@ -1073,36 +1061,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "檢測所有節點，不含 DIRECT",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("檢測"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage("沒有可檢測的節點"),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage("選擇檢測範圍"),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage("節點批次檢測"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("連通性測試"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "預設顯示彩色 ICON 圖示",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("連通性測試詳情"),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("顯示設定"),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "返回更多 IP 詳細資訊",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("雜項設定"),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "更多串流媒體解鎖項目",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "可選 3 個在小組件常駐展示的項目",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "根據當前分組狀態局部重新整理",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "節點變化時自動重新整理檢測",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "最多只能選擇 3 個項目",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("已解鎖"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage("記憶體已處於最佳狀態"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("記憶體與執行時"),
     "memoryFreed": m45,
@@ -1283,7 +1242,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "none": MessageLookupByLibrary.simpleMessage("無"),
     "notRecommended": MessageLookupByLibrary.simpleMessage("不推薦"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage("目前的代理群組無法選取"),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("未解鎖"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage("高優先級"),
     "notificationHighPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "調整目前通知欄為前台高優先級",
@@ -1849,7 +1807,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP 並發"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage("開啟後允許 TCP 併發連接"),
     "testUrl": MessageLookupByLibrary.simpleMessage("測試連結"),
-    "testing": MessageLookupByLibrary.simpleMessage("檢測中"),
     "textScale": MessageLookupByLibrary.simpleMessage("文字縮放"),
     "theme": MessageLookupByLibrary.simpleMessage("主題"),
     "themeColor": MessageLookupByLibrary.simpleMessage("主題色彩"),
@@ -1869,9 +1826,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("切換"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("調性點綴"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("最多允許 5 個規則"),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "檢測常用服務可用性，支援依節點批次檢測",
-    ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage("清空歷史"),
     "toolSpeedTestDesc": MessageLookupByLibrary.simpleMessage("測量下載、上傳速度與網路延遲"),
     "toolbox": MessageLookupByLibrary.simpleMessage("工具箱"),
@@ -1960,7 +1914,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "unifiedDelayDesc": MessageLookupByLibrary.simpleMessage("去除交握解析等額外延遲"),
     "unknown": MessageLookupByLibrary.simpleMessage("未知"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("解除鎖定"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("已完成"),
     "unnamed": MessageLookupByLibrary.simpleMessage("未命名"),
     "unpin": MessageLookupByLibrary.simpleMessage("取消置頂"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),

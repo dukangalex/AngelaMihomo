@@ -121,9 +121,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m43(version) => "Upstream ${version}";
 
-  static String m44(done, total, unlocked) =>
-      "${done}/${total} tested · ${unlocked} available";
-
   static String m45(size) => "Freed ${size}";
 
   static String m46(index) => "Merged subscription ${index}";
@@ -480,14 +477,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Show System Apps",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("Deselect All"),
-    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
     "categoryAll": MessageLookupByLibrary.simpleMessage("All"),
-    "categoryChina": MessageLookupByLibrary.simpleMessage("China Direct"),
-    "categoryCrypto": MessageLookupByLibrary.simpleMessage("Crypto"),
-    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("Developer"),
-    "categoryGaming": MessageLookupByLibrary.simpleMessage("Gaming Center"),
-    "categorySocial": MessageLookupByLibrary.simpleMessage("Social Platforms"),
-    "categoryStreaming": MessageLookupByLibrary.simpleMessage("Streaming"),
     "chainAttention": MessageLookupByLibrary.simpleMessage(
       "Chain settings need attention",
     ),
@@ -931,7 +921,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "Enable process matching",
     ),
-    "flagged": MessageLookupByLibrary.simpleMessage("Flagged"),
     "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
       "Clear DNS Cache",
     ),
@@ -1304,7 +1293,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("Layout"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("Left Click"),
     "light": MessageLookupByLibrary.simpleMessage("Light"),
-    "limitedUnlock": MessageLookupByLibrary.simpleMessage("Originals Only"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("Wrap Lines"),
     "list": MessageLookupByLibrary.simpleMessage("List"),
     "listen": MessageLookupByLibrary.simpleMessage("Listen"),
@@ -1417,46 +1405,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Every node, excluding DIRECT",
     ),
     "mediaBatchGroup": MessageLookupByLibrary.simpleMessage("Test"),
-    "mediaBatchNoNodes": MessageLookupByLibrary.simpleMessage(
-      "No nodes to test",
-    ),
     "mediaBatchScope": MessageLookupByLibrary.simpleMessage(
       "Choose what to test",
     ),
-    "mediaBatchSummary": m44,
-    "mediaBatchTest": MessageLookupByLibrary.simpleMessage("Batch Node Test"),
-    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Connectivity Test"),
-    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
-      "Show colored icons by default",
-    ),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
-      "Connectivity Test Details",
-    ),
-    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
-      "Display Settings",
-    ),
-    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
-      "Show more IP details",
-    ),
-    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
-      "Misc Settings",
-    ),
-    "mediaUnlockMoreStreamingPlatforms": MessageLookupByLibrary.simpleMessage(
-      "More Streaming Unlock Items",
-    ),
-    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "Pin up to 3 items on widget",
-    ),
-    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
-      "Partially refresh based on current category",
-    ),
-    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
-      "Auto refresh on node change",
-    ),
-    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "You can select up to 3 items",
-    ),
-    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Unlocked"),
     "memoryAlreadyOptimal": MessageLookupByLibrary.simpleMessage(
       "Memory already optimal",
     ),
@@ -1695,7 +1646,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Current proxy group cannot be selected.",
     ),
-    "notUnlocked": MessageLookupByLibrary.simpleMessage("Not Unlocked"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "High Priority",
     ),
@@ -2466,7 +2416,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow concurrent TCP connections",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("Test URL"),
-    "testing": MessageLookupByLibrary.simpleMessage("Testing"),
     "textScale": MessageLookupByLibrary.simpleMessage("Text Scaling"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Theme Color"),
@@ -2490,9 +2439,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("Toggle"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Tonal Spot"),
     "tooManyRules": MessageLookupByLibrary.simpleMessage("Max 5 rules allowed"),
-    "toolConnectivityDesc": MessageLookupByLibrary.simpleMessage(
-      "Check common services, with per-node batch testing",
-    ),
     "toolHistoryClear": MessageLookupByLibrary.simpleMessage("Clear history"),
     "toolSpeedTestDesc": MessageLookupByLibrary.simpleMessage(
       "Measure download, upload and latency",
@@ -2623,7 +2569,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("Unknown"),
     "unlockProxy": MessageLookupByLibrary.simpleMessage("Unlock"),
-    "unlocked": MessageLookupByLibrary.simpleMessage("Completed"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Unnamed"),
     "unpin": MessageLookupByLibrary.simpleMessage("Unpin"),
     "update": MessageLookupByLibrary.simpleMessage("Update"),

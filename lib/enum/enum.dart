@@ -434,8 +434,6 @@ enum DashboardWidget {
   providersInfo(GridItem(crossAxisCellCount: 4, child: ProvidersInfo())),
   fcmStatus(GridItem(crossAxisCellCount: 4, child: FcmStatus())),
   onlinePanel(GridItem(crossAxisCellCount: 4, child: OnlinePanel())),
-  mediaUnlock(GridItem(crossAxisCellCount: 8, child: MediaUnlock())),
-  mediaUnlockSmall(GridItem(crossAxisCellCount: 4, child: MediaUnlockSmall())),
   toolboxShortcut(
     GridItem(crossAxisCellCount: 4, child: ToolboxShortcut()),
     platforms: [SupportPlatform.Android],
@@ -452,7 +450,6 @@ enum DashboardWidget {
   static const _variantGroups = [
     [networkSpeedSmall, networkSpeed],
     [outboundModeV2, outboundMode],
-    [mediaUnlockSmall, mediaUnlock],
   ];
 
   List<DashboardWidget> get variants => _variantGroups.firstWhere(
@@ -464,9 +461,9 @@ enum DashboardWidget {
       variants.reduce((a, b) => a.index <= b.index ? a : b);
 
   DashboardTileSize get nativeSize => switch (this) {
-    networkSpeed || mediaUnlock => DashboardTileSize.large,
+    networkSpeed => DashboardTileSize.large,
     outboundModeV2 || profileInfo => DashboardTileSize.wide,
-    outboundMode || mediaUnlockSmall || trafficUsage => DashboardTileSize.tall,
+    outboundMode || trafficUsage => DashboardTileSize.tall,
     _ => DashboardTileSize.small,
   };
 

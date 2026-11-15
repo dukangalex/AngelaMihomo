@@ -64,11 +64,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         detectionState.flushPendingCheck();
       }
     });
-    ref.listenManual(checkMediaUnlockProvider, (prev, next) {
-      if (next.b && (prev?.a != next.a)) {
-        mediaUnlockState.startCheckOnNodeChange();
-      }
-    });
     ref.listenManual(configStateProvider, (prev, next) {
       if (prev != next) {
         globalState.appController.savePreferencesDebounce();
@@ -83,7 +78,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateDashboardRefreshState();
       detectionState.tryStartCheck();
-      mediaUnlockState.tryStartCheck();
       globalState.appController.updateGroupsDebounce();
     });
     if (window == null) {
@@ -206,7 +200,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       }
 
       detectionState.checkOnForegroundResume();
-      mediaUnlockState.checkOnForegroundResume();
     }
     if (state == AppLifecycleState.resumed && system.isAndroid) {
       final hidden = ref.read(appSettingProvider.select((s) => s.hidden));

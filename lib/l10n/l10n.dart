@@ -6121,114 +6121,26 @@ class AppLocalizations {
   }
 
   /// `Connectivity Test`
-  String get mediaUnlock {
-    return Intl.message(
-      'Connectivity Test',
-      name: 'mediaUnlock',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Connectivity Test Details`
-  String get mediaUnlockDetails {
-    return Intl.message(
-      'Connectivity Test Details',
-      name: 'mediaUnlockDetails',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Display Settings`
-  String get mediaUnlockDisplaySettings {
-    return Intl.message(
-      'Display Settings',
-      name: 'mediaUnlockDisplaySettings',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Misc Settings`
-  String get mediaUnlockMiscSettings {
-    return Intl.message(
-      'Misc Settings',
-      name: 'mediaUnlockMiscSettings',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `More Streaming Unlock Items`
-  String get mediaUnlockMoreStreamingPlatforms {
-    return Intl.message(
-      'More Streaming Unlock Items',
-      name: 'mediaUnlockMoreStreamingPlatforms',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Show more IP details`
-  String get mediaUnlockExtraDetails {
-    return Intl.message(
-      'Show more IP details',
-      name: 'mediaUnlockExtraDetails',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Auto refresh on node change`
-  String get mediaUnlockRefreshOnNodeChange {
-    return Intl.message(
-      'Auto refresh on node change',
-      name: 'mediaUnlockRefreshOnNodeChange',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Show colored icons by default`
-  String get mediaUnlockColorfulIcons {
-    return Intl.message(
-      'Show colored icons by default',
-      name: 'mediaUnlockColorfulIcons',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Partially refresh based on current category`
-  String get mediaUnlockRefreshByCategory {
-    return Intl.message(
-      'Partially refresh based on current category',
-      name: 'mediaUnlockRefreshByCategory',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Pin up to 3 items on widget`
-  String get mediaUnlockPinnedSettingsDesc {
-    return Intl.message(
-      'Pin up to 3 items on widget',
-      name: 'mediaUnlockPinnedSettingsDesc',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `You can select up to 3 items`
-  String get mediaUnlockSelectLimit {
-    return Intl.message(
-      'You can select up to 3 items',
-      name: 'mediaUnlockSelectLimit',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `All`
   String get categoryAll {
@@ -6236,94 +6148,26 @@ class AppLocalizations {
   }
 
   /// `AI`
-  String get categoryAi {
-    return Intl.message('AI', name: 'categoryAi', desc: '', args: []);
-  }
 
   /// `Streaming`
-  String get categoryStreaming {
-    return Intl.message(
-      'Streaming',
-      name: 'categoryStreaming',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `China Direct`
-  String get categoryChina {
-    return Intl.message(
-      'China Direct',
-      name: 'categoryChina',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Social Platforms`
-  String get categorySocial {
-    return Intl.message(
-      'Social Platforms',
-      name: 'categorySocial',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Developer`
-  String get categoryDeveloper {
-    return Intl.message(
-      'Developer',
-      name: 'categoryDeveloper',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Gaming Center`
-  String get categoryGaming {
-    return Intl.message(
-      'Gaming Center',
-      name: 'categoryGaming',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Crypto`
-  String get categoryCrypto {
-    return Intl.message('Crypto', name: 'categoryCrypto', desc: '', args: []);
-  }
 
   /// `Completed`
-  String get unlocked {
-    return Intl.message('Completed', name: 'unlocked', desc: '', args: []);
-  }
 
   /// `Unlocked`
-  String get mediaUnlocked {
-    return Intl.message('Unlocked', name: 'mediaUnlocked', desc: '', args: []);
-  }
 
   /// `Originals Only`
-  String get limitedUnlock {
-    return Intl.message(
-      'Originals Only',
-      name: 'limitedUnlock',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Not Unlocked`
-  String get notUnlocked {
-    return Intl.message(
-      'Not Unlocked',
-      name: 'notUnlocked',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Timeout`
   String get checkFailed {
@@ -6331,14 +6175,8 @@ class AppLocalizations {
   }
 
   /// `Testing`
-  String get testing {
-    return Intl.message('Testing', name: 'testing', desc: '', args: []);
-  }
 
   /// `Flagged`
-  String get flagged {
-    return Intl.message('Flagged', name: 'flagged', desc: '', args: []);
-  }
 
   /// `Scan / LAN Import`
   String get tvScanImport {
@@ -7566,14 +7404,6 @@ class AppLocalizations {
   }
 
   /// `Check common services, with per-node batch testing`
-  String get toolConnectivityDesc {
-    return Intl.message(
-      'Check common services, with per-node batch testing',
-      name: 'toolConnectivityDesc',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Route Trace`
   String get routeTrace {
@@ -8466,34 +8296,10 @@ class AppLocalizations {
   }
 
   /// `Batch Node Test`
-  String get mediaBatchTest {
-    return Intl.message(
-      'Batch Node Test',
-      name: 'mediaBatchTest',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `{done}/{total} tested · {unlocked} available`
-  String mediaBatchSummary(Object done, Object total, Object unlocked) {
-    return Intl.message(
-      '$done/$total tested · $unlocked available',
-      name: 'mediaBatchSummary',
-      desc: '',
-      args: [done, total, unlocked],
-    );
-  }
 
   /// `No nodes to test`
-  String get mediaBatchNoNodes {
-    return Intl.message(
-      'No nodes to test',
-      name: 'mediaBatchNoNodes',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Clear history`
   String get toolHistoryClear {
