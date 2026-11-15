@@ -5,7 +5,6 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,19 +14,14 @@ import 'quick_options.dart';
 
 const List<double> _emptySegments = [0];
 
-extension on Profile {
-  bool get canRefresh =>
-      type != ProfileType.file || providerSubscriptions.isNotEmpty;
-}
-
 /// The merged home card (T147): the former profile card and the former
 /// running-mode card as one dashboard widget, still added, removed and
 /// resized as a single grid item. The two zones keep every function of
 /// the cards they replace —
 ///
 /// * profile zone: name with the switch-sheet entry, last-update time,
-///   subscription usage with its segment bar, the current selection
-///   (node name + delay) and the refresh action;
+///   subscription usage with its segment bar and the current selection
+///   (node name + delay);
 /// * mode zone: the node status light, the VPN / system-proxy chips
 ///   and the rule / global / direct mode switch.
 ///
@@ -36,7 +30,11 @@ extension on Profile {
 /// measure-only). The current selection's delay number reads the very
 /// same delay data source the light reads, so the two always agree.
 /// The upstream per-group test entry the old profile card carried into
-/// its group sheet is not part of this card.
+/// its group sheet is not part of this card. The card carries no
+/// refresh action either (T149): subscription refresh lives on the
+/// profiles page, because a refresh makes the core re-test delays
+/// through the upstream path and would read as a second test entry
+/// on this card.
 class ProfileModeCard extends ConsumerWidget {
   final DashboardTileSize? size;
 
@@ -74,10 +72,6 @@ class _ProfileZone extends ConsumerWidget {
   final bool tall;
 
   const _ProfileZone({required this.tall});
-
-  List<Widget> _actions(Profile profile) => [
-    if (profile.canRefresh) _RefreshButton(profile: profile),
-  ];
 
   Widget _nameRow(
     BuildContext context,
@@ -141,7 +135,7 @@ class _ProfileZone extends ConsumerWidget {
     // name row doubles as the zone header, so the merged card's two
     // zones fit the two grid rows the pair of cards used to occupy.
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 10.ap, 6.ap),
+      padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 16.ap, 6.ap),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -164,8 +158,6 @@ class _ProfileZone extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              ..._actions(profile),
             ],
           ),
           if (subtitle.isNotEmpty) ...[
@@ -559,48 +551,6 @@ class _ProfileName extends StatelessWidget {
           color: context.colorScheme.onSurfaceVariant,
         ),
       ],
-    );
-  }
-}
-
-class _RefreshButton extends ConsumerWidget {
-  final Profile profile;
-
-  const _RefreshButton({required this.profile});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = context.colorScheme;
-    final isProviderUpdating = ref.watch(
-      providersProvider.select(
-        (providers) =>
-            providers.any((item) => item.type == 'Proxy' && item.isUpdating),
-      ),
-    );
-    return SizedBox.square(
-      dimension: 24,
-      child: profile.isUpdating || isProviderUpdating
-          ? Padding(
-              padding: const EdgeInsets.all(4),
-              child: SyncedLoading(
-                size: 16,
-                child: SpinKitFadingCircle(
-                  color: colorScheme.primary,
-                  size: 16,
-                ),
-              ),
-            )
-          : IconButton(
-              padding: EdgeInsets.zero,
-              tooltip: appLocalizations.update,
-              onPressed: () =>
-                  refreshProfileSubscription(context, ref, profile),
-              icon: Icon(
-                Icons.sync,
-                size: 16.ap,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
     );
   }
 }
