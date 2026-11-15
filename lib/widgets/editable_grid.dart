@@ -26,6 +26,7 @@ class EditableGrid<T extends Object> extends StatefulWidget {
   final ValueChanged<T>? onResize;
   final bool Function(T item)? canDelete;
   final ValueChanged<T>? onDelete;
+  final bool Function(T item)? canMove;
   final void Function(T from, T to)? onMove;
   final VoidCallback? onLongPress;
   final EditableGridWrapper? overlayWrapper;
@@ -46,6 +47,7 @@ class EditableGrid<T extends Object> extends StatefulWidget {
     this.onResize,
     this.canDelete,
     this.onDelete,
+    this.canMove,
     this.onMove,
     this.onLongPress,
     this.overlayWrapper,
@@ -111,6 +113,7 @@ class _EditableGridState<T extends Object> extends State<EditableGrid<T>>
     }
     final canResize = widget.canResize?.call(item) ?? false;
     final canDelete = widget.canDelete?.call(item) ?? false;
+    final canMove = widget.canMove?.call(item) ?? true;
     final onResize = widget.onResize;
     final onDelete = widget.onDelete;
     return _EditTile<T>(
@@ -126,7 +129,9 @@ class _EditableGridState<T extends Object> extends State<EditableGrid<T>>
             }
           : null,
       onDelete: canDelete && onDelete != null ? () => onDelete(item) : null,
-      onMove: widget.onMove == null ? null : _move,
+      // An item that cannot move is neither a drag source nor a drop
+      // target, so nothing can displace it either.
+      onMove: widget.onMove == null || !canMove ? null : _move,
       overlayWrapper: widget.overlayWrapper,
       child: child,
     );

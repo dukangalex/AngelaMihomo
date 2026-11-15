@@ -1,4 +1,5 @@
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/views/dashboard/widgets/tile.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -49,6 +50,7 @@ class _HarnessState extends State<_Harness> {
               widget.log.add('delete $item');
               setState(() => items = [...items]..remove(item));
             },
+            canMove: (item) => item != 'C',
             onMove: (from, to) {
               widget.log.add('move $from>$to');
               setState(() {
@@ -119,17 +121,98 @@ void main() {
     expect(log, contains('move A>D'));
   });
 
+  testWidgets('不可移动项既不能被拖动、也不能被拖到其上（T153）', (tester) async {
+    final log = <String>[];
+    await tester.pumpWidget(_Harness(editing: true, log: log));
+    await tester.pump();
+
+    // Dragging another tile onto the immovable one must not move it.
+    final onto = await tester.startGesture(tester.getCenter(find.text('B')));
+    await tester.pump(const Duration(milliseconds: 600));
+    await onto.moveBy(const Offset(10, 10));
+    await tester.pump();
+    await onto.moveTo(tester.getCenter(find.text('C').first));
+    await tester.pump(const Duration(milliseconds: 100));
+    await onto.up();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(log.where((entry) => entry.startsWith('move')), isEmpty);
+
+    // The immovable tile itself cannot be picked up.
+    final from = await tester.startGesture(tester.getCenter(find.text('C')));
+    await tester.pump(const Duration(milliseconds: 600));
+    await from.moveBy(const Offset(10, 10));
+    await tester.pump();
+    await from.moveTo(tester.getCenter(find.text('B').first));
+    await tester.pump(const Duration(milliseconds: 100));
+    await from.up();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(log.where((entry) => entry.startsWith('move')), isEmpty);
+  });
+
+  testWidgets('编辑态：合并卡无删除叉无缩放柄，其它部件两者俱在（T153）', (tester) async {
+    // Wired with the same predicate expressions DashboardView uses.
+    const tiles = <DashboardTile>[
+      (widget: DashboardWidget.profileMode, size: DashboardTileSize.large),
+      (widget: DashboardWidget.memoryInfo, size: DashboardTileSize.small),
+    ];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: EditableGrid<DashboardTile>(
+              items: tiles,
+              editing: true,
+              crossAxisCount: 8,
+              mainAxisExtent: 108,
+              keyOf: (tile) => tile.widget.family,
+              crossAxisCellCountOf: (tile) => tile.size.cross * 4,
+              itemBuilder: (_, tile) => ColoredBox(
+                color: Colors.blueGrey,
+                child: Center(child: Text(tile.widget.name)),
+              ),
+              canResize: (tile) => tile.widget.resizable,
+              onResize: (_) {},
+              canDelete: (tile) => tile.widget.widget.isDeletable,
+              onDelete: (_) {},
+              canMove: (tile) => !tile.widget.pinned,
+              onMove: (_, _) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    // Exactly one of each badge exists, and both sit on the memory
+    // tile's row (below the merged card's label), not on the merged
+    // card.
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.open_in_full_rounded), findsOneWidget);
+    final mergedLabelY = tester.getCenter(find.text('profileMode')).dy;
+    expect(
+      tester.getCenter(find.byIcon(Icons.close_rounded)).dy,
+      greaterThan(mergedLabelY),
+    );
+    expect(
+      tester.getCenter(find.byIcon(Icons.open_in_full_rounded)).dy,
+      greaterThan(mergedLabelY),
+    );
+  });
+
   test('仪表盘组件按组归并并提供可选尺寸', () {
     expect(
       DashboardWidget.networkSpeedSmall.family,
       DashboardWidget.networkSpeed,
     );
     expect(DashboardWidget.profileMode.family, DashboardWidget.profileMode);
-    expect(DashboardWidget.profileMode.sizes, [
-      DashboardTileSize.large,
-      DashboardTileSize.tall,
-    ]);
-    expect(DashboardWidget.profileMode.resizable, isTrue);
+    // T153: the merged card is pinned — fixed native size, not
+    // resizable, not deletable; other widgets keep their affordances.
+    expect(DashboardWidget.profileMode.sizes, [DashboardTileSize.large]);
+    expect(DashboardWidget.profileMode.resizable, isFalse);
+    expect(DashboardWidget.profileMode.pinned, isTrue);
+    expect(DashboardWidget.profileMode.widget.isDeletable, isFalse);
+    expect(DashboardWidget.memoryInfo.pinned, isFalse);
+    expect(DashboardWidget.memoryInfo.widget.isDeletable, isTrue);
     expect(DashboardWidget.networkSpeed.sizes, [
       DashboardTileSize.small,
       DashboardTileSize.wide,

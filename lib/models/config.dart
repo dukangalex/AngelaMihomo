@@ -48,10 +48,10 @@ const defaultAccessControl = AccessControl();
 const defaultThemeProps = ThemeProps();
 
 const List<DashboardWidget> defaultDashboardWidgets = [
+  DashboardWidget.profileMode,
   DashboardWidget.networkSpeed,
   DashboardWidget.systemProxyButton,
   DashboardWidget.tunButton,
-  DashboardWidget.profileMode,
   DashboardWidget.networkDetection,
   DashboardWidget.intranetIp,
   DashboardWidget.trafficUsage,
@@ -76,8 +76,11 @@ final _dashboardWidgetNames = {
 
 /// T147: the profile card and the running-mode card merged into one
 /// widget. Layouts saved before the merge name the old widgets; they
-/// decode onto the merged widget, which takes the position of the
-/// first of them and appears exactly once.
+/// decode onto the merged widget, which appears exactly once.
+/// T153: the merged widget is pinned — normalization below restores
+/// exactly one of it at the head of every decoded layout (a layout
+/// that lost it, duplicated it or moved it is repaired here), while
+/// every other widget keeps its relative order.
 const _mergedDashboardWidgetLegacyNames = {
   'profileInfo',
   'outboundModeV2',
@@ -97,31 +100,26 @@ List<DashboardWidget> _decodeDashboardWidgets(List<dynamic> values) {
     }
     widgets.add(widget);
   }
+  widgets.remove(DashboardWidget.profileMode);
+  widgets.insert(0, DashboardWidget.profileMode);
   return widgets;
 }
 
-/// T147: size migration for the merged widget. The old profile card's
-/// large/tall sizes carry over directly; its wide size and the mode
-/// card's wide size have no merged counterpart and fall back to the
-/// merged widget's native (large) size, so no size entry is written
-/// for them. Legacy keys are dropped.
-Map<String, String> _migrateDashboardSizes(Map<String, String> sizes) {
-  if (!sizes.keys.any(_mergedDashboardWidgetLegacyNames.contains)) {
-    return sizes;
-  }
-  final migrated = {
+/// Size-table normalization for the dashboard layouts.
+/// T147: legacy keys of the pre-merge widgets are dropped; their
+/// sizes have no merged counterpart worth keeping.
+/// T153: the merged widget's size is fixed at its native (large)
+/// size, so any saved entry for it — a legacy tall carried over by
+/// the T147 mapping, or a tall saved while resizing was still
+/// possible — is dropped; with no entry the size resolves to the
+/// native size. Every other widget's entry is kept as saved.
+Map<String, String> _normalizeDashboardSizes(Map<String, String> sizes) {
+  return {
     for (final entry in sizes.entries)
-      if (!_mergedDashboardWidgetLegacyNames.contains(entry.key))
+      if (!_mergedDashboardWidgetLegacyNames.contains(entry.key) &&
+          entry.key != DashboardWidget.profileMode.name)
         entry.key: entry.value,
   };
-  if (!migrated.containsKey(DashboardWidget.profileMode.name)) {
-    final legacy = sizes['profileInfo'] ?? sizes['outboundModeV2'];
-    if (legacy == DashboardTileSize.tall.name) {
-      migrated[DashboardWidget.profileMode.name] =
-          DashboardTileSize.tall.name;
-    }
-  }
-  return migrated;
 }
 
 List<DashboardWidget> dashboardWidgetsSafeFromJson(
@@ -260,10 +258,10 @@ abstract class AppSettingProps with _$AppSettingProps {
         }
       }
       props = props.copyWith(
-        mobileDashboardSizes: _migrateDashboardSizes(
+        mobileDashboardSizes: _normalizeDashboardSizes(
           props.mobileDashboardSizes,
         ),
-        desktopDashboardSizes: _migrateDashboardSizes(
+        desktopDashboardSizes: _normalizeDashboardSizes(
           props.desktopDashboardSizes,
         ),
       );

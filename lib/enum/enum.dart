@@ -404,7 +404,9 @@ enum DashboardWidget {
   networkSpeedSmall(
     GridItem(crossAxisCellCount: 4, child: NetworkSpeedSmall()),
   ),
-  profileMode(GridItem(crossAxisCellCount: 8, child: ProfileModeCard())),
+  profileMode(
+    GridItem(crossAxisCellCount: 8, isDeletable: false, child: ProfileModeCard()),
+  ),
   trafficUsage(GridItem(crossAxisCellCount: 4, child: TrafficUsage())),
   networkDetection(GridItem(crossAxisCellCount: 4, child: NetworkDetection())),
   tunButton(
@@ -472,7 +474,7 @@ enum DashboardWidget {
       DashboardTileSize.large,
     ],
     trafficUsage => const [DashboardTileSize.tall, DashboardTileSize.wide],
-    profileMode => const [DashboardTileSize.large, DashboardTileSize.tall],
+    profileMode => const [DashboardTileSize.large],
     networkDetection ||
     intranetIp ||
     memoryInfo ||
@@ -487,6 +489,14 @@ enum DashboardWidget {
   };
 
   bool get resizable => sizes.length > 1;
+
+  /// T153: a pinned widget always heads the dashboard at its native
+  /// size. It is present in every layout (decode normalization in
+  /// models/config.dart restores it), cannot be removed, resized or
+  /// moved in edit mode, and never appears in the add-widget surface.
+  /// Only the merged profile/mode card is pinned: resized to a narrow
+  /// size its content breaks down, so its size is fixed by design.
+  bool get pinned => this == DashboardWidget.profileMode;
 
   DashboardWidget variantFor(DashboardTileSize size) => variants.firstWhere(
     (item) => item.nativeSize == size,

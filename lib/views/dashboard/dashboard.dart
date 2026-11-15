@@ -60,17 +60,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     );
   }
 
-  List<DashboardWidget> _addableWidgets(List<DashboardWidget> current) {
-    final families = {for (final item in current) item.family};
-    return [
-      for (final item in DashboardWidget.values)
-        if (item == item.family &&
-            !families.contains(item) &&
-            item.platforms.contains(SupportPlatform.currentPlatform))
-          item,
-    ];
-  }
-
   List<DashboardWidget> _currentWidgets() =>
       ref.read(dashboardStateProvider).dashboardWidgets;
 
@@ -143,7 +132,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         if (!isEdit) return const SizedBox.shrink();
         return Consumer(
           builder: (_, ref, child) {
-            final addable = _addableWidgets(
+            final addable = addableDashboardWidgets(
               ref.watch(dashboardStateProvider).dashboardWidgets,
             );
             if (addable.isEmpty || child == null) {
@@ -269,7 +258,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               type: type,
               body: _AddDashboardWidgetModal(
                 items: [
-                  for (final item in _addableWidgets(current)) item.widget,
+                  for (final item in addableDashboardWidgets(current))
+                    item.widget,
                 ],
                 onAdd: (gridItem) {
                   final widget = DashboardWidget.values.firstWhere(
@@ -474,6 +464,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           onResize: _resizeWidget,
                           canDelete: (tile) => tile.widget.widget.isDeletable,
                           onDelete: _deleteWidget,
+                          canMove: (tile) => !tile.widget.pinned,
                           onMove: _moveWidget,
                           overlayWrapper: (child) => DashboardWidgetMetrics(
                             unitHeight: unitHeight,
@@ -500,6 +491,24 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       ),
     );
   }
+}
+
+/// The add-widget surface's data source: widget families not already
+/// on the dashboard. T153: pinned widgets (the merged profile/mode
+/// card) are always present and can never be added, so they are
+/// excluded here even if a layout somehow lacks one.
+List<DashboardWidget> addableDashboardWidgets(
+  List<DashboardWidget> current,
+) {
+  final families = {for (final item in current) item.family};
+  return [
+    for (final item in DashboardWidget.values)
+      if (item == item.family &&
+          !item.pinned &&
+          !families.contains(item) &&
+          item.platforms.contains(SupportPlatform.currentPlatform))
+        item,
+  ];
 }
 
 List<GridItem> packGridItems(List<GridItem> items, int totalColumns) {
