@@ -59,6 +59,7 @@ Future<void> main(List<String> args) async {
     clashCore.preload(),
     loadBundledRouteIcons(),
   ]);
+  appEventLog.record('app', 'app started, version $version');
 
   try {
     await uiManager.initializeUI();

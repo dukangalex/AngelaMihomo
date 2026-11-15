@@ -468,6 +468,11 @@ class AppController {
     var message = result.message;
     if (message.isNotEmpty && params.scriptedConfig.isNotEmpty) {
       commonPrint.error('[Core] Scripted setup config failed: $message');
+      appEventLog.record(
+        'core',
+        'scripted setup config failed for profile '
+        '${currentProfile.label ?? currentProfile.id}: $message',
+      );
       globalState.showNotifier(
         '${appLocalizations.profileParseErrorDesc}: $message',
       );
@@ -484,6 +489,11 @@ class AppController {
     }
     if (message.isNotEmpty) {
       commonPrint.error('[Core] Setup config failed: $message');
+      appEventLog.record(
+        'core',
+        'setup config failed for profile '
+        '${currentProfile.label ?? currentProfile.id}: $message',
+      );
       throw message;
     }
     _applyGlobalSelection(result.global);
@@ -1212,9 +1222,18 @@ class AppController {
           }
           _resumeServiceForProfileId = null;
           _ref.read(delayDataSourceProvider.notifier).clear();
+          appEventLog.record(
+            'profile-switch',
+            'switched to profile $requestedProfileId (full rebuild)',
+          );
         } catch (err) {
           commonPrint.error(
             '[Profile] Full-rebuild switch failed: ${err.formatErrorLog}',
+          );
+          appEventLog.record(
+            'profile-switch',
+            'switch to profile $requestedProfileId failed (full rebuild): '
+            '${err.formatErrorLog}',
           );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
@@ -1274,8 +1293,19 @@ class AppController {
               _ref.read(runTimeProvider.notifier).value = 0;
             }
           }
+          if (profileChanged) {
+            appEventLog.record(
+              'profile-switch',
+              'switched to profile $requestedProfileId (hot path)',
+            );
+          }
         } catch (err) {
           commonPrint.error('[Profile] Switch failed: ${err.formatErrorLog}');
+          appEventLog.record(
+            'profile-switch',
+            'switch to profile $requestedProfileId failed (hot path): '
+            '${err.formatErrorLog}',
+          );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
             requestedProfileId: requestedProfileId,
@@ -1325,6 +1355,7 @@ class AppController {
   void _reportCoreRestartFailure(Object error) {
     final message = error.formatError;
     commonPrint.error('[Core] Restart failed: ${error.formatErrorLog}');
+    appEventLog.record('core', 'core restart failed: ${error.formatErrorLog}');
     globalState.showNotifier('${appLocalizations.restartCoreTitle}: $message');
   }
 
@@ -1353,6 +1384,11 @@ class AppController {
         commonPrint.error(
           '[AutoUpdate] Failed to update ${profile.label ?? profile.id}: ${e.formatErrorLog}',
         );
+        appEventLog.record(
+          'profile-update',
+          'auto update failed for profile ${profile.label ?? profile.id}: '
+          '${e.formatErrorLog}',
+        );
       }
     }
   }
@@ -1372,6 +1408,11 @@ class AppController {
         } catch (e) {
           commonPrint.error(
             '[MissedUpdate] Failed to update ${profile.label ?? profile.id}: ${e.formatErrorLog}',
+          );
+          appEventLog.record(
+            'profile-update',
+            'missed update failed for profile ${profile.label ?? profile.id}: '
+            '${e.formatErrorLog}',
           );
         }
         if (profilesToUpdate.length > 1) {
@@ -2517,8 +2558,16 @@ class AppController {
         .logs
         .map((item) => item.line)
         .toList();
+    // T148: the persistent app event log (last three days) is part of
+    // every export, so switch failures and their reasons stay visible
+    // even after the in-memory log list has rolled over.
+    final eventLogRaw = await appEventLog.readAllRetained();
     final data = await Isolate.run<List<int>>(() async {
-      final logsRawString = logsRaw.join('\n');
+      var logsRawString = logsRaw.join('\n');
+      if (eventLogRaw.isNotEmpty) {
+        logsRawString =
+            '$logsRawString\n\n===== App event log (3 days) =====\n$eventLogRaw';
+      }
       return utf8.encode(logsRawString);
     });
     return await picker.saveFile(utils.logFile, Uint8List.fromList(data)) !=

@@ -123,10 +123,14 @@ func TestImportProfileKeepsUnchangedFile(t *testing.T) {
 	if info, _ := os.Stat(output); !info.ModTime().Equal(stamp) {
 		t.Fatalf("unchanged content rewrote the file: %v", info.ModTime())
 	}
-	if message := importProfileForTest(t, params, []byte("proxies: []\n\trules: []\n")); message != "" {
+	// T146: the changed-content step uses a valid document; the previous
+	// tab-indented variant is not valid YAML after tab patching and is now
+	// rejected by the unvalidated-update gate (see
+	// TestImportProfileUnvalidatedUpdateKeepsWorkingFile).
+	if message := importProfileForTest(t, params, []byte("proxies: []\nrules: []\n")); message != "" {
 		t.Fatal(message)
 	}
-	if data, _ := os.ReadFile(output); string(data) != "proxies: []\n  rules: []\n" {
+	if data, _ := os.ReadFile(output); string(data) != "proxies: []\nrules: []\n" {
 		t.Fatalf("content = %q", data)
 	}
 	if matches, _ := filepath.Glob(output + ".*.tmp"); len(matches) != 0 {
@@ -150,6 +154,33 @@ func TestImportProfileSkipsValidationForUnchangedFile(t *testing.T) {
 	}
 	if info, _ := os.Stat(output); !info.ModTime().Equal(stamp) {
 		t.Fatalf("unchanged content rewrote the file: %v", info.ModTime())
+	}
+}
+
+// T146: an unvalidated update (validate=false, the auto-update path) must
+// not replace a working profile file with content the core rejects; the
+// previous file stays and the update reports failure. Valid replacement
+// content still lands, and a first-time unvalidated import is unchanged.
+func TestImportProfileUnvalidatedUpdateKeepsWorkingFile(t *testing.T) {
+	output := filepath.Join(t.TempDir(), "profiles", "p.yaml")
+	good := []byte("proxies: []\nrules:\n  - MATCH,DIRECT\n")
+	if message := importProfileForTest(t, ImportProfileParams{Output: output}, good); message != "" {
+		t.Fatal(message)
+	}
+	broken := []byte("proxies:\n  - {name: A, type: ss, server: 127.0.0.1, port: 8388, cipher: aes-128-gcm, password: x}\n  - {name: A, type: ss, server: 127.0.0.1, port: 8389, cipher: aes-128-gcm, password: x}\nrules:\n  - MATCH,DIRECT\n")
+	message := importProfileForTest(t, ImportProfileParams{Output: output, Validate: false}, broken)
+	if message == "" {
+		t.Fatal("core-rejected replacement content was accepted")
+	}
+	if data, _ := os.ReadFile(output); string(data) != string(good) {
+		t.Fatalf("working profile was replaced: %q", data)
+	}
+	replacement := []byte("proxies: []\nrules:\n  - MATCH,REJECT\n")
+	if message := importProfileForTest(t, ImportProfileParams{Output: output, Validate: false}, replacement); message != "" {
+		t.Fatalf("valid replacement rejected: %s", message)
+	}
+	if data, _ := os.ReadFile(output); string(data) != string(replacement) {
+		t.Fatalf("replacement not stored: %q", data)
 	}
 }
 

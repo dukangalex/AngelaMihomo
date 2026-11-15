@@ -469,6 +469,10 @@ class GlobalState {
     if (includeVpnService && service != null) vpnTransitionUnconfirmed = true;
     if (system.isAndroid && isService) {
       if (await clashLibHandler?.startListener() != true) {
+        appEventLog.record(
+          'service',
+          'start failed: proxy listener failed to start',
+        );
         throw StateError(
           'Proxy listener failed to start; check the configured ports.',
         );
@@ -481,6 +485,7 @@ class GlobalState {
       if (await service!.startVpn() != true) {
         startTime = null;
         await clashCore.stopListener();
+        appEventLog.record('service', 'start failed: VPN not confirmed');
         throw StateError(
           'VPN start was not confirmed; no running state was recorded.',
         );
@@ -497,6 +502,7 @@ class GlobalState {
       );
     }
     await startUpdateTasks(tasks);
+    appEventLog.record('service', 'started');
   }
 
   Future updateStartTime() async {
@@ -534,6 +540,7 @@ class GlobalState {
     if (service != null) vpnTransitionUnconfirmed = true;
     if (service != null && await service!.stopVpn() != true) {
       stopUpdateTasks();
+      appEventLog.record('service', 'stop failed: VPN destruction unconfirmed');
       throw StateError(
         'VPN destruction was not confirmed; configuration changes are blocked.',
       );
@@ -545,6 +552,7 @@ class GlobalState {
       await prefs?.setBool('is_tun_running', false);
     }
     stopUpdateTasks();
+    appEventLog.record('service', 'stopped');
   }
 
   Future<bool?> showMessage({

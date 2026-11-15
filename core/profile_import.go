@@ -393,6 +393,23 @@ func handleImportProfile(params *ImportProfileParams) string {
 			}
 			data = patched
 		}
+	} else if _, err := os.Stat(params.Output); err == nil {
+		// T146: validate=false callers (auto-update, missed-update catch-up)
+		// replace a working profile file with whatever the subscription
+		// returns now. Without a gate, content the core will reject is
+		// stored silently and only surfaces at the next profile switch,
+		// which then fails and rolls back with no visible reason. Gate the
+		// replacement on the same content check the manual path uses:
+		// keep the existing file and report the update as failed instead
+		// of poisoning the profile. First-time imports (no existing file)
+		// keep the historical unvalidated behavior.
+		if message := validateProfileContent(data, params.AgeSecretKey); message != "" {
+			patched := patchGeodataMode(data)
+			if bytes.Equal(patched, data) || validateProfileContent(patched, params.AgeSecretKey) != "" {
+				return fmt.Sprintf("update rejected, previous profile kept: %s", message)
+			}
+			data = patched
+		}
 	}
 	return writeProfile(params.Output, data)
 }
