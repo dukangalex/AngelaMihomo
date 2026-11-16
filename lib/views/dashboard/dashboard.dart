@@ -347,17 +347,24 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     ];
 
     final title = customTitle ?? appLocalizations.dashboard;
-    return LayoutBuilder(
-      builder: (context, page) => _buildScaffold(
-        title: title,
-        inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
-        isMobileView: isMobileView,
-        showStartSwitch: showStartSwitch,
-        themeMode: themeMode,
-        watermark: watermark,
-        spacing: spacing,
-        children: children,
-      ),
+    // T159: the guardian layer lives only on the dashboard — above the
+    // app-root zodiac backdrop, below the dashboard cards.
+    return Stack(
+      children: [
+        const Positioned.fill(child: ZodiacGuardianLayer()),
+        LayoutBuilder(
+          builder: (context, page) => _buildScaffold(
+            title: title,
+            inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
+            isMobileView: isMobileView,
+            showStartSwitch: showStartSwitch,
+            themeMode: themeMode,
+            watermark: watermark,
+            spacing: spacing,
+            children: children,
+          ),
+        ),
+      ],
     );
   }
 
