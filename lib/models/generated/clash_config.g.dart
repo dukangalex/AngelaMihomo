@@ -17,7 +17,7 @@ _ProxyGroup _$ProxyGroupFromJson(Map<String, dynamic> json) => _ProxyGroup(
   timeout: _parseInt(json['timeout']),
   maxFailedTimes: _parseInt(json['max-failed-times']),
   filter: json['filter'] as String?,
-  excludeFilter: json['expected-filter'] as String?,
+  excludeFilter: json['exclude-filter'] as String?,
   excludeType: json['exclude-type'] as String?,
   expectedStatus: json['expected-status'],
   hidden: _parseBool(json['hidden']),
@@ -37,7 +37,7 @@ Map<String, dynamic> _$ProxyGroupToJson(_ProxyGroup instance) =>
       'timeout': instance.timeout,
       'max-failed-times': instance.maxFailedTimes,
       'filter': instance.filter,
-      'expected-filter': instance.excludeFilter,
+      'exclude-filter': instance.excludeFilter,
       'exclude-type': instance.excludeType,
       'expected-status': instance.expectedStatus,
       'hidden': instance.hidden,
@@ -170,12 +170,7 @@ _Tun _$TunFromJson(Map<String, dynamic> json) => _Tun(
   device: json['device'] as String? ?? tunDeviceName,
   autoRoute: json['auto-route'] as bool? ?? false,
   stack: $enumDecodeNullable(_$TunStackEnumMap, json['stack']) ?? TunStack.mips,
-  congestionController:
-      $enumDecodeNullable(
-        _$CongestionControllerEnumMap,
-        json['congestion-controller'],
-      ) ??
-      CongestionController.bbr3,
+  dnsMode: $enumDecodeNullable(_$TunDnsModeEnumMap, json['dns-mode']),
   dnsHijack:
       (json['dns-hijack'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -203,8 +198,7 @@ Map<String, dynamic> _$TunToJson(_Tun instance) => <String, dynamic>{
   'device': instance.device,
   'auto-route': instance.autoRoute,
   'stack': _$TunStackEnumMap[instance.stack]!,
-  'congestion-controller':
-      _$CongestionControllerEnumMap[instance.congestionController]!,
+  'dns-mode': _$TunDnsModeEnumMap[instance.dnsMode],
   'dns-hijack': instance.dnsHijack,
   'route-address': instance.routeAddress,
   'route-exclude-address': instance.routeExcludeAddress,
@@ -222,11 +216,10 @@ const _$TunStackEnumMap = {
   TunStack.mips: 'mips',
 };
 
-const _$CongestionControllerEnumMap = {
-  CongestionController.cubic: 'cubic',
-  CongestionController.reno: 'reno',
-  CongestionController.bbr: 'bbr',
-  CongestionController.bbr3: 'bbr3',
+const _$TunDnsModeEnumMap = {
+  TunDnsMode.disabled: 'disabled',
+  TunDnsMode.native: 'native',
+  TunDnsMode.hijack: 'hijack',
 };
 
 _FallbackFilter _$FallbackFilterFromJson(
@@ -260,7 +253,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
   useHosts: json['use-hosts'] as bool? ?? true,
   useSystemHosts: json['use-system-hosts'] as bool? ?? true,
   respectRules: json['respect-rules'] as bool? ?? false,
-  ipv6: json['ipv6'] as bool? ?? false,
+  ipv6: json['ipv6'] as bool? ?? true,
   defaultNameserver:
       (json['default-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -280,10 +273,11 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
           .toList() ??
       const [
         '*',
-        'geosite:private',
-        'geosite:category-ntp',
-        'geosite:geolocation-cn',
-        'geosite:connectivity-check',
+        'rule-set:private_bettbox',
+        'rule-set:fakeip-filter_bettbox',
+        'rule-set:category-ntp_bettbox',
+        'rule-set:cn_bettbox',
+        'rule-set:connectivity-check_bettbox',
       ],
   fakeIpTtl: (json['fake-ip-ttl'] as num?)?.toInt() ?? 1,
   nameserverPolicy:
@@ -291,9 +285,8 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
         (k, e) => MapEntry(k, e as String),
       ) ??
       const {
-        '+.internal.corp.com': '10.0.0.1',
-        'geosite:cn': '119.29.29.29',
-        'geosite:private': 'system',
+        'rule-set:cn_bettbox': '119.29.29.29',
+        'rule-set:private_bettbox': 'system',
         '*': 'system',
       },
   nameserver:
@@ -308,7 +301,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['proxy-server-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['https://120.53.53.53/dns-query#DIRECT'],
+      const ['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'],
   directNameserver:
       (json['direct-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -371,7 +364,7 @@ const _$FilterModeEnumMap = {
 _Ntp _$NtpFromJson(Map<String, dynamic> json) => _Ntp(
   enable: json['enable'] as bool? ?? true,
   writeToSystem: json['write-to-system'] as bool? ?? false,
-  server: json['server'] as String? ?? 'time.apple.com',
+  server: json['server'] as String? ?? defaultNtpServer,
   port: (json['port'] as num?)?.toInt() ?? 123,
   interval: (json['interval'] as num?)?.toInt() ?? 60,
 );
@@ -401,13 +394,13 @@ Map<String, dynamic> _$ExperimentalToJson(_Experimental instance) =>
 _GeoXUrl _$GeoXUrlFromJson(Map<String, dynamic> json) => _GeoXUrl(
   mmdb:
       json['mmdb'] as String? ??
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
   asn:
       json['asn'] as String? ??
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN.mmdb',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
   geosite:
       json['geosite'] as String? ??
-      'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
 );
 
 Map<String, dynamic> _$GeoXUrlToJson(_GeoXUrl instance) => <String, dynamic>{
@@ -476,19 +469,20 @@ _ClashConfig _$ClashConfigFromJson(Map<String, dynamic> json) => _ClashConfig(
   logLevel:
       $enumDecodeNullable(_$LogLevelEnumMap, json['log-level']) ??
       LogLevel.error,
-  ipv6: json['ipv6'] as bool? ?? false,
+  ipv6: json['ipv6'] as bool? ?? true,
   findProcessMode:
       $enumDecodeNullable(
         _$FindProcessModeEnumMap,
         json['find-process-mode'],
         unknownValue: FindProcessMode.always,
       ) ??
-      FindProcessMode.off,
+      FindProcessMode.always,
   keepAliveInterval:
       (json['keep-alive-interval'] as num?)?.toInt() ??
       defaultKeepAliveInterval,
   unifiedDelay: json['unified-delay'] as bool? ?? true,
   tcpConcurrent: json['tcp-concurrent'] as bool? ?? true,
+  interfaceName: json['interface-name'] as String? ?? '',
   tun: json['tun'] == null
       ? defaultTun
       : Tun.safeFormJson(json['tun'] as Map<String, Object?>?),
@@ -559,6 +553,7 @@ Map<String, dynamic> _$ClashConfigToJson(_ClashConfig instance) =>
       'keep-alive-interval': instance.keepAliveInterval,
       'unified-delay': instance.unifiedDelay,
       'tcp-concurrent': instance.tcpConcurrent,
+      'interface-name': instance.interfaceName,
       'tun': instance.tun,
       'dns': instance.dns,
       'ntp': instance.ntp,

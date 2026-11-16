@@ -1,26 +1,76 @@
-#ifdef LIBCLASH
 #include <jni.h>
+#include <malloc.h>
+
+#ifndef M_PURGE
+#define M_PURGE (-101)
+#endif
+#ifndef M_PURGE_ALL
+#define M_PURGE_ALL (-104)
+#endif
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_app_angelabettbox_core_Core_purgeMemory(JNIEnv *, jobject, jboolean all) {
+    if (all && mallopt(M_PURGE_ALL, 0) == 1) {
+        return;
+    }
+    mallopt(M_PURGE, 0);
+}
+
+#ifdef LIBCLASH
 #include <cstring>
 #include "jni_helper.h"
 #include "libmeta.h"
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_appshub_bettbox_core_Core_startTun(JNIEnv *env, jobject, const jint fd, jobject cb) {
+JNIEXPORT jboolean JNICALL
+Java_app_angelabettbox_core_Core_startTun(JNIEnv *env, jobject, const jint fd, jobject cb, const jlong epoch) {
     const auto interface = new_global(cb);
-    startTUN(fd, interface);
+    return startTUN(fd, interface, epoch) ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_app_angelabettbox_core_Core_beginTunTransition(JNIEnv *, jobject) {
+    return beginTunTransition();
+}
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_app_angelabettbox_core_Core_stopTunEpoch(JNIEnv *, jobject, jlong epoch) {
+    return stopTunEpoch(epoch) ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_appshub_bettbox_core_Core_stopTun(JNIEnv *) {
+Java_app_angelabettbox_core_Core_stopTun(JNIEnv *) {
     stopTun();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_appshub_bettbox_core_Core_suspend(JNIEnv *, jobject, jint suspended) {
+Java_app_angelabettbox_core_Core_suspend(JNIEnv *, jobject, jint suspended) {
     suspend(suspended);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_app_angelabettbox_core_Core_setScreenState(JNIEnv *, jobject, jint on) {
+    setScreenState(on);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_app_angelabettbox_core_Core_networkChanged(JNIEnv *, jobject) {
+    networkChanged();
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_app_angelabettbox_core_Core_getTraffic(JNIEnv *env, jobject) {
+    char *traffic = getTraffic();
+    const auto result = new_string(traffic != nullptr ? traffic : "");
+    freeCString(traffic);
+    return result;
 }
 
 
@@ -33,13 +83,13 @@ static void release_jni_object_impl(void *obj) {
     del_global(static_cast<jobject>(obj));
 }
 
-static void call_tun_interface_protect_impl(void *tun_interface, const int fd) {
-    if (tun_interface == nullptr) return;
+static int call_tun_interface_protect_impl(void *tun_interface, const int fd) {
+    if (tun_interface == nullptr || m_tun_interface_protect == nullptr) return 0;
     ATTACH_JNI();
-    env->CallVoidMethod(static_cast<jobject>(tun_interface),
-                        m_tun_interface_protect,
-                        fd);
-    jni_catch_exception(env);
+    const jboolean ok = env->CallBooleanMethod(static_cast<jobject>(tun_interface),
+                                               m_tun_interface_protect, fd);
+    if (jni_catch_exception(env)) return 0;
+    return ok == JNI_TRUE ? 1 : 0;
 }
 
 static const char *
@@ -76,9 +126,9 @@ JNI_OnLoad(JavaVM *vm, void *) {
 
     initialize_jni(vm, env);
 
-    const auto c_tun_interface = find_class("com/appshub/bettbox/core/TunInterface");
+    const auto c_tun_interface = find_class("app/angelabettbox/core/TunInterface");
 
-    m_tun_interface_protect = find_method(c_tun_interface, "protect", "(I)V");
+    m_tun_interface_protect = find_method(c_tun_interface, "protect", "(I)Z");
     m_tun_interface_resolve_process = find_method(c_tun_interface, "resolverProcess",
                                                   "(ILjava/lang/String;Ljava/lang/String;I)Ljava/lang/String;");
 

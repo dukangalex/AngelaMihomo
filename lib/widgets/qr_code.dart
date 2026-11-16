@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:zxing2/qrcode.dart';
 
 class QrCodeWidget extends StatelessWidget {
@@ -108,4 +108,3 @@ class _QrCodePainter extends CustomPainter {
       oldDelegate.color != color ||
       oldDelegate.backgroundColor != backgroundColor;
 }
-

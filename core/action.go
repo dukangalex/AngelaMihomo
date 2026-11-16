@@ -3,6 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"unicode/utf8"
+
+	"core/toolbox"
 
 	"github.com/metacubex/mihomo/component/age"
 )
@@ -21,9 +25,43 @@ type ActionResult struct {
 	Port   int64
 }
 
+type actionResultHeader struct {
+	Id     string `json:"id"`
+	Method Method `json:"method"`
+	Code   int    `json:"code"`
+	Raw    bool   `json:"raw,omitempty"`
+}
+
 func (result ActionResult) Json() ([]byte, error) {
-	data, err := json.Marshal(result)
-	return data, err
+	data := result.Data
+	if err, ok := data.(error); ok {
+		data = err.Error()
+	}
+	text, raw := data.(string)
+	raw = raw && utf8.ValidString(text) && strings.IndexByte(text, 0) < 0
+	var payload []byte
+	if !raw {
+		var err error
+		if payload, err = json.Marshal(data); err != nil {
+			return nil, err
+		}
+	}
+	header, err := json.Marshal(actionResultHeader{
+		Id:     result.Id,
+		Method: result.Method,
+		Code:   result.Code,
+		Raw:    raw,
+	})
+	if err != nil {
+		return nil, err
+	}
+	frame := make([]byte, 0, len(header)+1+len(text)+len(payload))
+	frame = append(frame, header...)
+	frame = append(frame, '\n')
+	if raw {
+		return append(frame, text...), nil
+	}
+	return append(frame, payload...), nil
 }
 
 func (result ActionResult) success(data interface{}) {
@@ -53,15 +91,17 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(handleGetIsInit())
 		return
 	case forceGcMethod:
-		var forceFreeOSMemory bool
+		var forceFreeOSMemory, purge bool
 		if action.Data != nil {
 			if strVal, ok := action.Data.(string); ok {
-				forceFreeOSMemory = (strVal == "true")
+				forceFreeOSMemory = strVal == "true" || strVal == "free"
+				purge = strVal == "true"
 			} else if boolVal, ok := action.Data.(bool); ok {
 				forceFreeOSMemory = boolVal
+				purge = boolVal
 			}
 		}
-		handleForceGc(forceFreeOSMemory)
+		handleForceGc(forceFreeOSMemory, purge)
 		result.success(true)
 		return
 	case shutdownMethod:
@@ -75,6 +115,14 @@ func handleAction(action *Action, result ActionResult) {
 			params.Data = paramsString
 		}
 		result.success(handleValidateConfig(&params))
+		return
+	case importProfileMethod:
+		var params ImportProfileParams
+		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+			result.success(err.Error())
+			return
+		}
+		result.success(handleImportProfile(&params))
 		return
 	case decryptAgeConfigMethod:
 		paramsString := action.Data.(string)
@@ -108,8 +156,8 @@ func handleAction(action *Action, result ActionResult) {
 	case getTrafficMethod:
 		result.success(handleGetTraffic())
 		return
-	case getTotalTrafficMethod:
-		result.success(handleGetTotalTraffic())
+	case getTrafficSnapshotMethod:
+		result.success(handleGetTrafficSnapshot())
 		return
 	case resetTrafficMethod:
 		handleResetTraffic()
@@ -121,8 +169,107 @@ func handleAction(action *Action, result ActionResult) {
 			result.success(value)
 		})
 		return
+	case asyncTestDelaysMethod:
+		handleAsyncTestDelays(action.Data.(string), func(value string) {
+			result.success(value)
+		})
+		return
+	case setForegroundMethod:
+		value, _ := action.Data.(string)
+		handleSetForeground(value == "true")
+		result.success(true)
+		return
+	case startSpeedTestMethod:
+		data := action.Data.(string)
+		result.success(toolbox.HandleStartSpeedTest(data))
+		return
+	case probeSpeedTestMethod:
+		data := action.Data.(string)
+		result.success(toolbox.HandleProbeSpeedTest(data))
+		return
+	case getSpeedTestServersMethod:
+		data := action.Data.(string)
+		result.success(toolbox.HandleSpeedTestServers(data))
+		return
+	case cancelSpeedTestMethod:
+		result.success(toolbox.HandleCancelSpeedTest())
+		return
+	case startStunTestMethod:
+		data := action.Data.(string)
+		result.success(toolbox.HandleStartStunTest(data))
+		return
+	case cancelStunTestMethod:
+		result.success(toolbox.HandleCancelStunTest())
+		return
+	case startIperfServerMethod:
+		result.success(toolbox.HandleStartIperfServer(action.Data.(string)))
+		return
+	case stopIperfServerMethod:
+		result.success(toolbox.HandleStopIperfServer())
+		return
+	case startIperfClientMethod:
+		result.success(toolbox.HandleStartIperfClient(action.Data.(string)))
+		return
+	case cancelIperfClientMethod:
+		result.success(toolbox.HandleCancelIperfClient())
+		return
+	case startLocalPingMethod:
+		result.success(toolbox.HandleStartLocalPing(action.Data.(string)))
+		return
+	case cancelLocalPingMethod:
+		result.success(toolbox.HandleCancelLocalPing())
+		return
+	case routeTraceMethod:
+		result.success(toolbox.HandleRouteTrace(action.Data.(string)))
+		return
+	case dnsQueryMethod:
+		result.success(toolbox.HandleDnsQuery(action.Data.(string)))
+		return
+	case mrsPrepareMethod:
+		result.success(toolbox.HandleMrsPrepare())
+		return
+	case mrsLookupMethod:
+		result.success(toolbox.HandleMrsLookup(action.Data.(string)))
+		return
+	case mrsDumpMethod:
+		result.success(toolbox.HandleMrsDump(action.Data.(string)))
+		return
+	case cancelMrsLookupMethod:
+		result.success(toolbox.HandleCancelMrsLookup())
+		return
+	case getTrafficStatsMethod:
+		result.success(toolbox.HandleGetTrafficStats(action.Data.(string)))
+		return
+	case clearTrafficStatsMethod:
+		result.success(toolbox.HandleClearTrafficStats())
+		return
+	case storeGetMethod:
+		result.success(toolbox.HandleStoreGet(action.Data.(string)))
+		return
+	case storeSetMethod:
+		result.success(toolbox.HandleStoreSet(action.Data.(string)))
+		return
+	case storeListMethod:
+		result.success(toolbox.HandleStoreList(action.Data.(string)))
+		return
+	case storeClearMethod:
+		result.success(toolbox.HandleStoreClear(action.Data.(string)))
+		return
+	case startToolProxyMethod:
+		result.success(toolbox.HandleStartToolProxy())
+		return
+	case stopToolProxyMethod:
+		toolbox.HandleStopToolProxy()
+		result.success("true")
+		return
+	case ageCryptMethod:
+		result.success(toolbox.HandleAgeCrypt(action.Data.(string)))
+		return
 	case getConnectionsMethod:
 		result.success(handleGetConnections())
+		return
+	case getConnectionsSummaryMethod:
+		result.success(handleGetConnectionsSummary())
 		return
 	case closeConnectionsMethod:
 		result.success(handleCloseConnections())
@@ -148,6 +295,44 @@ func handleAction(action *Action, result ActionResult) {
 	case clearLogsMethod:
 		result.success(handleClearLogs())
 		return
+	case exportConfigMethod:
+		var params ExportConfigParams
+		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+			result.error(err)
+			return
+		}
+		if err := handleExportConfig(&params); err != nil {
+			result.error(err)
+			return
+		}
+		result.success("")
+		return
+	case mergeProfilesMethod:
+		var params MergeProfilesParams
+		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+			result.error(err)
+			return
+		}
+		report, err := handleMergeProfiles(&params)
+		if err != nil {
+			result.error(err)
+			return
+		}
+		result.success(report)
+		return
+	case getRuntimeConfigMethod:
+		params := defaultSetupParams()
+		if err := UnmarshalJson([]byte(action.Data.(string)), params); err != nil {
+			result.error(err)
+			return
+		}
+		content, err := handleGetRuntimeConfig(params)
+		if err != nil {
+			result.error(err)
+			return
+		}
+		result.success(content)
+		return
 	case getConfigMethod:
 		paramsString := action.Data.(string)
 		var params GetConfigParams
@@ -165,6 +350,10 @@ func handleAction(action *Action, result ActionResult) {
 	case closeConnectionMethod:
 		id := action.Data.(string)
 		result.success(handleCloseConnection(id))
+		return
+	case closeGroupConnectionsMethod:
+		groupName := action.Data.(string)
+		result.success(handleCloseGroupConnections(groupName))
 		return
 	case getExternalProvidersMethod:
 		result.success(handleGetExternalProviders())
@@ -254,7 +443,11 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(true)
 		return
 	case generateAgeKeyPairMethod:
-		secretKey, publicKey, err := age.GenX25519KeyPair()
+		generate := age.GenX25519KeyPair
+		if kind, _ := action.Data.(string); kind == "mlkem768x25519" {
+			generate = age.GenHybridKeyPair
+		}
+		secretKey, publicKey, err := generate()
 		if err != nil {
 			result.error(err.Error())
 			return

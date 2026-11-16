@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,8 +9,9 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/pages/editor.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/profiles/managed_options.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 class EditProfileView extends StatefulWidget {
@@ -33,6 +35,7 @@ class EditProfileViewState extends State<EditProfileView> {
   late TextEditingController urlController;
   late TextEditingController autoUpdateDurationController;
   late bool autoUpdate;
+  late bool managed = widget.profile.managed;
   late TextEditingController ageSecretKeyController;
   FocusNode? urlFocusNode;
   bool _obscureAgeSecretKey = true;
@@ -56,17 +59,13 @@ class EditProfileViewState extends State<EditProfileView> {
       text: widget.profile.ageSecretKey,
     );
     if (widget.isNew) {
-      urlFocusNode = FocusNode();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            urlFocusNode?.requestFocus();
-          }
-        });
-      });
+      final focusNode = urlFocusNode = FocusNode();
+      unawaited(focusNode.requestFocusWhenIdle());
     }
     appPath.getProfilePath(widget.profile.id).then((path) async {
-      fileInfoNotifier.value = await _getFileInfo(path);
+      final fileInfo = await _getFileInfo(path);
+      if (!mounted) return;
+      fileInfoNotifier.value = fileInfo;
     });
   }
 
@@ -77,6 +76,7 @@ class EditProfileViewState extends State<EditProfileView> {
     autoUpdateDurationController.dispose();
     ageSecretKeyController.dispose();
     urlFocusNode?.dispose();
+    fileInfoNotifier.dispose();
     super.dispose();
   }
 
@@ -92,6 +92,7 @@ class EditProfileViewState extends State<EditProfileView> {
           ? null
           : ageSecretKeyController.text.trim(),
       autoUpdate: autoUpdate,
+      managed: managed,
       autoUpdateDuration: Duration(
         minutes: int.parse(autoUpdateDurationController.text),
       ),
@@ -247,6 +248,7 @@ class EditProfileViewState extends State<EditProfileView> {
     }
     rawText = data;
     fileData = Uint8List.fromList(utf8.encode(data));
+    if (!mounted) return;
     fileInfoNotifier.value = fileInfoNotifier.value?.copyWith(
       size: fileData?.length ?? 0,
       lastModified: DateTime.now(),
@@ -257,12 +259,37 @@ class EditProfileViewState extends State<EditProfileView> {
     final platformFile = await globalState.appController.safeRun(
       picker.pickerFile,
     );
-    if (platformFile?.bytes == null) return;
-    fileData = platformFile?.bytes;
+    if (platformFile == null) return;
+    final bytes = await platformFile.readAsBytes();
+    if (bytes.isEmpty) return;
+    fileData = bytes;
+    if (!mounted) return;
     fileInfoNotifier.value = fileInfoNotifier.value?.copyWith(
       size: fileData?.length ?? 0,
       lastModified: DateTime.now(),
     );
+  }
+
+  Future<void> _exportProfileFile() async {
+    final res = await globalState.appController.safeRun<bool>(
+      () async {
+        final bytes = fileData ?? await (await profile.getFile()).readAsBytes();
+        final rawName = (profile.label ?? profile.id).trim();
+        final fileName = (rawName.endsWith('.yaml') || rawName.endsWith('.yml'))
+            ? rawName
+            : '$rawName.yaml';
+        final value = await picker.saveFile(
+          fileName,
+          bytes,
+          allowedExtensions: ['yaml', 'yml'],
+        );
+        return value != null;
+      },
+      needLoading: true,
+      title: appLocalizations.tip,
+    );
+    if (res != true || !mounted) return;
+    context.showNotifier(appLocalizations.exportSuccess);
   }
 
   Future<void> _handleBack() async {
@@ -286,14 +313,12 @@ class EditProfileViewState extends State<EditProfileView> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      ListItem(
-        title: TextFormField(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: TextFormField(
           textInputAction: TextInputAction.next,
           controller: labelController,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: appLocalizations.name,
-          ),
+          decoration: InputDecoration(labelText: appLocalizations.name),
           validator: (String? value) {
             if (!widget.isNew && (value == null || value.isEmpty)) {
               return appLocalizations.profileNameNullValidationDesc;
@@ -303,18 +328,16 @@ class EditProfileViewState extends State<EditProfileView> {
         ),
       ),
       if (widget.profile.type == ProfileType.url || widget.isNew) ...[
-        ListItem(
-          title: TextFormField(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextFormField(
             focusNode: urlFocusNode,
             textInputAction: TextInputAction.next,
             keyboardType: TextInputType.url,
             controller: urlController,
             maxLines: 5,
             minLines: 1,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: appLocalizations.url,
-            ),
+            decoration: InputDecoration(labelText: appLocalizations.url),
             onEditingComplete: widget.isNew
                 ? () => FocusManager.instance.primaryFocus?.unfocus()
                 : null,
@@ -329,15 +352,15 @@ class EditProfileViewState extends State<EditProfileView> {
             },
           ),
         ),
-        ListItem(
-          title: TextFormField(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextFormField(
             textInputAction: TextInputAction.next,
             controller: ageSecretKeyController,
             obscureText: _obscureAgeSecretKey,
             maxLines: 1,
             minLines: 1,
             decoration: InputDecoration(
-              border: const OutlineInputBorder(),
               labelText: appLocalizations.ageSecretKeyOptional,
               hintText: 'AGE-SECRET-KEY-...',
               suffixIcon: IconButton(
@@ -363,20 +386,27 @@ class EditProfileViewState extends State<EditProfileView> {
             },
           ),
         ),
-        ListItem.switchItem(
-          title: Text(appLocalizations.autoUpdate),
-          delegate: SwitchDelegate<bool>(
-            value: autoUpdate,
-            onChanged: _setAutoUpdate,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: CommonCard(
+            type: CommonCardType.filled,
+            radius: 16,
+            child: ListItem.switchItem(
+              title: Text(appLocalizations.autoUpdate),
+              delegate: SwitchDelegate<bool>(
+                value: autoUpdate,
+                onChanged: _setAutoUpdate,
+              ),
+            ),
           ),
         ),
         if (autoUpdate)
-          ListItem(
-            title: TextFormField(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextFormField(
               textInputAction: TextInputAction.next,
               controller: autoUpdateDurationController,
               decoration: InputDecoration(
-                border: const OutlineInputBorder(),
                 labelText: appLocalizations.autoUpdateInterval,
               ),
               validator: (String? value) {
@@ -395,6 +425,41 @@ class EditProfileViewState extends State<EditProfileView> {
             ),
           ),
       ],
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: CommonCard(
+          type: CommonCardType.filled,
+          radius: 16,
+          child: ListItem.switchItem(
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(child: Text(appLocalizations.managedMode)),
+                const SizedBox(width: 2),
+                IconButton(
+                  onPressed: () => showManagedOptions(context),
+                  tooltip: appLocalizations.managedOptions,
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 30,
+                    height: 30,
+                  ),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: const Icon(Icons.settings_outlined),
+                ),
+              ],
+            ),
+            subtitle: Text(appLocalizations.managedModeDesc),
+            delegate: SwitchDelegate<bool>(
+              value: managed,
+              onChanged: (value) => setState(() => managed = value),
+            ),
+          ),
+        ),
+      ),
       if (!widget.isNew)
         ValueListenableBuilder<FileInfo?>(
           valueListenable: fileInfoNotifier,
@@ -402,31 +467,43 @@ class EditProfileViewState extends State<EditProfileView> {
             return FadeThroughBox(
               child: fileInfo == null
                   ? Container()
-                  : ListItem(
-                      title: Text(appLocalizations.profile),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Text(fileInfo.desc),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            runSpacing: 6,
-                            spacing: 12,
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: CommonCard(
+                        type: CommonCardType.filled,
+                        radius: 16,
+                        child: ListItem(
+                          title: Text(appLocalizations.profile),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CommonChip(
-                                avatar: const Icon(Icons.edit),
-                                label: appLocalizations.edit,
-                                onPressed: _editProfileFile,
-                              ),
-                              CommonChip(
-                                avatar: const Icon(Icons.upload),
-                                label: appLocalizations.upload,
-                                onPressed: _uploadProfileFile,
+                              const SizedBox(height: 4),
+                              Text(fileInfo.desc),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                runSpacing: 6,
+                                spacing: 12,
+                                children: [
+                                  CommonChip(
+                                    avatar: const Icon(Icons.edit),
+                                    label: appLocalizations.edit,
+                                    onPressed: _editProfileFile,
+                                  ),
+                                  CommonChip(
+                                    avatar: const Icon(Icons.upload),
+                                    label: appLocalizations.upload,
+                                    onPressed: _uploadProfileFile,
+                                  ),
+                                  CommonChip(
+                                    avatar: const Icon(Icons.download),
+                                    label: appLocalizations.exportFile,
+                                    onPressed: _exportProfileFile,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
             );
@@ -465,7 +542,7 @@ class EditProfileViewState extends State<EditProfileView> {
                 return items[index];
               },
               separatorBuilder: (_, _) {
-                return const SizedBox(height: 24);
+                return const SizedBox(height: 14);
               },
               itemCount: items.length,
             ),
@@ -527,6 +604,7 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
         final result = await clashCore.convertAgeSecretKeyToPublicKey(
           privateKey,
         );
+        if (!mounted) return;
         if (result.isSuccess &&
             result.data != null &&
             result.data!.isNotEmpty) {
@@ -540,13 +618,16 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
           });
         }
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           _helperText = appLocalizations.agePrivateKeyRequired;
         });
       } finally {
-        setState(() {
-          _isGenerating = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+        }
       }
     } else {
       setState(() {
@@ -555,6 +636,7 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
 
       try {
         final keyPair = await clashCore.generateAgeKeyPair();
+        if (!mounted) return;
         final secKey = keyPair['secret-key'] ?? '';
         final pubKey = keyPair['public-key'] ?? '';
 
@@ -566,13 +648,16 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
           });
         }
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           _helperText = e.toString();
         });
       } finally {
-        setState(() {
-          _isGenerating = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+        }
       }
     }
   }
@@ -607,7 +692,6 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
           TextField(
             controller: _privateKeyController,
             decoration: InputDecoration(
-              border: const OutlineInputBorder(),
               floatingLabelBehavior: FloatingLabelBehavior.always,
               labelText: appLocalizations.agePrivateKeyLabel,
               suffixIcon: IconButton(
@@ -628,7 +712,6 @@ class _AgeKeyGeneratorDialogState extends State<_AgeKeyGeneratorDialog> {
             controller: _publicKeyController,
             readOnly: true,
             decoration: InputDecoration(
-              border: const OutlineInputBorder(),
               floatingLabelBehavior: FloatingLabelBehavior.always,
               labelText: appLocalizations.agePublicKeyLabel,
               helperText: _helperText,

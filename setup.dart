@@ -97,7 +97,7 @@ class Build {
     BuildItem(target: Target.android, arch: Arch.amd64, archName: 'x86_64'),
   ];
 
-  static String get appName => 'Bettbox';
+  static String get appName => 'AngelaMihomo';
 
   static String get coreName => '${identityName}Core';
 
@@ -133,7 +133,10 @@ class Build {
     return 'gcc';
   }
 
-  static String getTags(BuildItem buildItem) {
+  static String getTags(BuildItem buildItem, {bool lite = false}) {
+    if (lite) {
+      return 'no_easytier,no_tailscale,no_zerotier,no_fake_tcp,with_low_memory';
+    }
     final baseTags = 'with_gvisor';
     if (buildItem.target == Target.android &&
         buildItem.archName == 'armeabi-v7a') {
@@ -141,6 +144,12 @@ class Build {
     }
     return baseTags;
   }
+
+  static String tagsMarkerPath(BuildItem buildItem) => join(
+    outDir,
+    '.tags',
+    '${buildItem.target.name}-${buildItem.archName ?? buildItem.arch?.name}',
+  );
 
   static Future<void> exec(
     List<String> executable, {
@@ -176,13 +185,65 @@ class Build {
     return digest.toString();
   }
 
+  static Future<String> resolveCoreVersion({String? explicitVersion}) async {
+    final explicit = explicitVersion?.trim();
+    if (explicit != null && explicit.isNotEmpty) {
+      return explicit;
+    }
+
+    final envVersion = Platform.environment['CORE_VERSION']?.trim();
+    if (envVersion != null && envVersion.isNotEmpty) {
+      return envVersion;
+    }
+
+    // AngelaMihomo: the vendored Mihomo tree carries no version of its
+    // own, so the snapshot identity is pinned in core/CORE_VERSION.
+    // The pinned file wins over the network probe below; update it
+    // whenever the vendored core is synced.
+    try {
+      final coreVersionFile = File(join(_coreDir, 'CORE_VERSION'));
+      if (coreVersionFile.existsSync()) {
+        final fileVersion = coreVersionFile.readAsStringSync().trim();
+        if (fileVersion.isNotEmpty) {
+          return fileVersion;
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 3);
+      final request = await client.getUrl(
+        Uri.parse('https://github.com/MetaCubeX/mihomo/releases/latest'),
+      );
+      request.followRedirects = false;
+      final response =
+          await request.close().timeout(const Duration(seconds: 3));
+      final location = response.headers.value(HttpHeaders.locationHeader);
+      client.close(force: true);
+      if (location != null) {
+        final tag = Uri.parse(location).pathSegments.last.trim();
+        if (tag.isNotEmpty) {
+          return tag;
+        }
+      }
+    } catch (_) {}
+
+    return 'alpha';
+  }
+
   static Future<List<String>> buildCore({
     required Mode mode,
     required Target target,
     Arch? arch,
     bool compatible = false,
+    bool lite = false,
+    String? coreVersion,
   }) async {
     final isLib = mode == Mode.lib;
+    final resolvedVersion = await resolveCoreVersion(
+      explicitVersion: coreVersion,
+    );
 
     final items = buildItems.where((element) {
       return element.target == target &&
@@ -210,10 +271,10 @@ class Build {
       if (item.arch != null) {
         env['GOARCH'] = item.arch!.name;
       }
-      if (item.arch == Arch.amd64 &&
-          (item.target == Target.windows ||
-              item.target == Target.linux ||
-              item.target == Target.macos)) {
+      if (item.arch == Arch.amd64 && item.target == Target.macos) {
+        env['GOAMD64'] = 'v1';
+      } else if (item.arch == Arch.amd64 &&
+          (item.target == Target.windows || item.target == Target.linux)) {
         env['GOAMD64'] = compatible ? 'v1' : 'v3';
       }
       if (isLib) {
@@ -224,7 +285,7 @@ class Build {
         env['CGO_ENABLED'] = '0';
       }
 
-      final buildTags = getTags(item);
+      final buildTags = getTags(item, lite: lite);
 
       await exec(
         ['go', 'mod', 'tidy'],
@@ -233,11 +294,20 @@ class Build {
         workingDirectory: _coreDir,
       );
 
+      final ldflags = [
+        '-w',
+        '-s',
+        '-X github.com/metacubex/mihomo/constant.Version=$resolvedVersion',
+        if (item.target == Target.android &&
+            (item.arch == Arch.arm64 || item.arch == Arch.amd64))
+          '-extldflags "-Wl,-z,max-page-size=16384"',
+      ].join(' ');
+
       final execLines = [
         'go',
         'build',
         '-trimpath',
-        '-ldflags=-w -s${item.target == Target.android && (item.arch == Arch.arm64 || item.arch == Arch.amd64) ? ' -extldflags "-Wl,-z,max-page-size=16384"' : ''}',
+        '-ldflags=$ldflags',
         '-tags=$buildTags',
         if (isLib) '-buildmode=c-shared',
         '-o',
@@ -249,6 +319,9 @@ class Build {
         environment: env,
         workingDirectory: _coreDir,
       );
+      final marker = File(tagsMarkerPath(item));
+      marker.parent.createSync(recursive: true);
+      marker.writeAsStringSync(buildTags);
     }
 
     return corePaths;
@@ -272,7 +345,38 @@ class Build {
       target.name,
       '${Build.helperName}${target.executableExtensionName}',
     );
-    await File(outPath).copy(targetPath);
+    await _replaceFile(File(outPath), targetPath);
+  }
+
+  static Future<void> _replaceFile(File source, String destinationPath) async {
+    final staleFile = File('$destinationPath.old');
+    if (staleFile.existsSync()) {
+      try {
+        staleFile.deleteSync();
+      } catch (_) {}
+    }
+
+    try {
+      await source.copy(destinationPath);
+    } on PathExistsException catch (e) {
+      if (!Platform.isWindows || !File(destinationPath).existsSync()) {
+        rethrow;
+      }
+      print(
+        'Cannot replace $destinationPath (${e.osError?.message ?? e.message}), '
+        'renaming the running binary aside and retrying.',
+      );
+      await File(destinationPath).rename(staleFile.path);
+      await source.copy(destinationPath);
+    }
+
+    File(destinationPath).setLastModifiedSync(DateTime.now());
+
+    if (staleFile.existsSync()) {
+      try {
+        staleFile.deleteSync();
+      } catch (_) {}
+    }
   }
 
   static List<String> getExecutable(String command) {
@@ -325,18 +429,23 @@ class Build {
   static const List<AssetDownloadItem> assetDownloadItems = [
     AssetDownloadItem(
       url:
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
       fileName: 'GeoSite.dat',
     ),
     AssetDownloadItem(
       url:
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
       fileName: 'geoip.metadb',
     ),
     AssetDownloadItem(
       url:
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN-lite.mmdb',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
       fileName: 'ASN.mmdb',
+    ),
+    AssetDownloadItem(
+      url:
+          'https://github.com/appshubcc/bett-rules/releases/download/latest/BundleMRS.7z',
+      fileName: 'BundleMRS.7z',
     ),
     AssetDownloadItem(
       url:
@@ -443,6 +552,29 @@ class AssetDownloadItem {
   const AssetDownloadItem({required this.url, required this.fileName});
 }
 
+final _managedVersionPattern = RegExp(
+  r'^//\s*@version\s+(\d+)\s*$',
+  multiLine: true,
+);
+
+Future<void> _bumpManagedScriptVersion() async {
+  const path = 'assets/scripts/managed.js';
+  final file = File(path);
+  final current = await file.readAsString();
+  final currentVersion = _managedVersionPattern.firstMatch(current)?.group(1);
+  if (currentVersion == null) return;
+  final now = DateTime.now().toUtc();
+  final day =
+      '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+  final today = int.parse('${day}01');
+  final next = int.parse(currentVersion) + 1;
+  final version = today > next ? today : next;
+  await file.writeAsString(
+    current.replaceFirst(_managedVersionPattern, '// @version $version'),
+  );
+  print('managed.js version $currentVersion -> $version');
+}
+
 class BuildCommand extends Command {
   Target target;
 
@@ -492,6 +624,15 @@ class BuildCommand extends Command {
       'ensure',
       help: 'Skip build if output artifact already exists',
     );
+    argParser.addFlag(
+      'lite',
+      help:
+          'Build the Lite variant without easytier, tailscale, zerotier, fake-tcp and gVisor',
+    );
+    argParser.addOption(
+      'core-version',
+      help: 'Version string injected into the core binary',
+    );
   }
 
   @override
@@ -536,49 +677,15 @@ class BuildCommand extends Command {
   }
 
   Future<void> _setLinuxCoreSetuid() async {
-    final coreFile = File('libclash/linux/BettboxCore');
+    final coreFile = File('libclash/linux/AngelaMihomoCore');
     if (!coreFile.existsSync()) return;
     try {
-      await Process.run('chmod', ['+sx', coreFile.path]);
+      await Process.run('chmod', ['0755', coreFile.path]);
     } catch (_) {}
   }
 
   Future<void> _getMacosDependencies() async {
     await Build.exec(Build.getExecutable('npm install -g appdmg'));
-  }
-
-  Future<void> _setMacOSImpeller(bool enable) async {
-    final infoPlistPath = 'macos/Runner/Info.plist';
-    final file = File(infoPlistPath);
-
-    if (!await file.exists()) {
-      print('Warning: Info.plist not found at $infoPlistPath');
-      return;
-    }
-
-    var content = await file.readAsString();
-
-    content = content.replaceAll(
-      RegExp(r'\s*<key>FLTDisableImpeller</key>\s*<(?:true|false)/>'),
-      '',
-    );
-    content = content.replaceAll(
-      RegExp(r'\s*<key>FLTEnableImpeller</key>\s*<(?:true|false)/>'),
-      '',
-    );
-
-    if (!enable) {
-      const impellerEntry = '\t<key>FLTEnableImpeller</key>\n\t<false/>\n';
-      content = content.replaceFirst(
-        '</dict>\n</plist>',
-        '$impellerEntry</dict>\n</plist>',
-      );
-    }
-
-    await file.writeAsString(content);
-    print(
-      'macOS ${enable ? "default" : "compatible"} build: Impeller ${enable ? "enabled" : "disabled"}',
-    );
   }
 
   Future<void> _buildDistributor({
@@ -587,7 +694,7 @@ class BuildCommand extends Command {
     String args = '',
     required String env,
     required String suffix,
-    bool compatible = false,
+    bool lite = false,
   }) async {
     final sentryDsn = Platform.environment['SENTRY_DSN'] ?? '';
     final sentryArg = sentryDsn.isNotEmpty
@@ -603,19 +710,14 @@ class BuildCommand extends Command {
         : '';
 
     final appDevArg = Build.isDev ? ' --build-dart-define=APP_DEV=true' : '';
-
-    final environment = Map<String, String>.from(Platform.environment);
-    if (compatible) {
-      environment['BETTBOX_COMPATIBLE_BUILD'] = '1';
-    }
+    final appLiteArg = lite ? ' --build-dart-define=APP_LITE=true' : '';
 
     await Build.getDistributor();
     await Build.exec(
       name: name,
       Build.getExecutable(
-        'flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args$sentryArg$suffixArg$ipinfoArg --build-dart-define=APP_ENV=$env$appDevArg',
+        'flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args$sentryArg$suffixArg$ipinfoArg --build-dart-define=APP_ENV=$env$appDevArg$appLiteArg',
       ),
-      environment: environment,
     );
   }
 
@@ -680,22 +782,43 @@ class BuildCommand extends Command {
   }
 
   DateTime _windowsSourcesLastModified() {
+    final sources = <FileSystemEntity>[File(join(current, 'setup.dart'))];
+
     final helperDir = Directory(Build._servicesDir);
-    if (!helperDir.existsSync()) {
-      return DateTime.fromMillisecondsSinceEpoch(0);
+    if (helperDir.existsSync()) {
+      sources.addAll(
+        helperDir.listSync(recursive: true).where((entity) {
+          return entity is File &&
+              !isWithin(join(Build._servicesDir, 'target'), entity.path);
+        }),
+      );
     }
-    return _latestModified([
-      File(join(current, 'setup.dart')),
-      ...helperDir.listSync(recursive: true).where((entity) {
-        return entity is File &&
-            !isWithin(join(Build._servicesDir, 'target'), entity.path);
-      }),
-    ]);
+
+    final coreDir = Directory(Build._coreDir);
+    if (coreDir.existsSync()) {
+      sources.addAll(coreDir.listSync(recursive: true).whereType<File>());
+    }
+
+    return _latestModified(sources);
   }
 
-  bool _outputsAreFresh(Arch? arch) {
+  bool _outputsAreFresh(Arch? arch, bool lite) {
     final outputs = _expectedOutputs(arch);
     if (outputs.isEmpty || !outputs.every((path) => File(path).existsSync())) {
+      return false;
+    }
+
+    final tagsMatch = Build.buildItems
+        .where((item) {
+          return item.target == target &&
+              (arch == null ? true : item.arch == arch);
+        })
+        .every((item) {
+          final marker = File(Build.tagsMarkerPath(item));
+          return marker.existsSync() &&
+              marker.readAsStringSync() == Build.getTags(item, lite: lite);
+        });
+    if (!tagsMatch) {
       return false;
     }
 
@@ -720,6 +843,8 @@ class BuildCommand extends Command {
       ensure: argResults?['ensure'] ?? false,
       compatible: argResults?['compatible'] ?? false,
       coreHash: argResults?['core-hash'] as String?,
+      lite: argResults?['lite'] ?? false,
+      coreVersion: argResults?['core-version'] as String?,
     );
   }
 
@@ -731,7 +856,12 @@ class BuildCommand extends Command {
     bool ensure = false,
     bool compatible = false,
     String? coreHash,
+    bool lite = false,
+    String? coreVersion,
   }) async {
+    if (compatible && target != Target.windows && target != Target.linux) {
+      throw '--compatible is only supported for windows and linux';
+    }
     final mode = target == Target.android ? Mode.lib : Mode.core;
     final String actualOut = out ?? (target.same ? 'app' : 'core');
     Build.isDev = dev;
@@ -761,7 +891,7 @@ class BuildCommand extends Command {
     }
 
     if (ensure && actualOut != 'app') {
-      if (_outputsAreFresh(arch)) {
+      if (_outputsAreFresh(arch, lite)) {
         print('${target.name} output already exists');
         return;
       }
@@ -772,6 +902,8 @@ class BuildCommand extends Command {
       arch: arch,
       mode: mode,
       compatible: compatible,
+      lite: lite,
+      coreVersion: coreVersion,
     );
 
     if (actualOut == 'core-only') {
@@ -797,7 +929,13 @@ class BuildCommand extends Command {
       return;
     }
 
-    final String desc = compatible ? '$archName-compatible' : (archName ?? '');
+    await _bumpManagedScriptVersion();
+
+    final String desc = [
+      if (archName != null && archName.isNotEmpty) archName,
+      if (compatible) 'compatible',
+      if (lite && target != Target.android) 'lite',
+    ].join('-');
 
     String appAssetSuffix = '';
     switch (target) {
@@ -810,14 +948,15 @@ class BuildCommand extends Command {
       case Target.linux:
         break;
       case Target.android:
+        final variant = lite ? 'android-lite' : 'android';
         if (archName == 'universal') {
-          appAssetSuffix = 'android-universal.apk';
+          appAssetSuffix = '$variant-universal.apk';
         } else if (arch == Arch.arm64) {
-          appAssetSuffix = 'android-arm64-v8a.apk';
+          appAssetSuffix = '$variant-arm64-v8a.apk';
         } else if (arch == Arch.arm) {
-          appAssetSuffix = 'android-armeabi-v7a.apk';
+          appAssetSuffix = '$variant-armeabi-v7a.apk';
         } else if (arch == Arch.amd64) {
-          appAssetSuffix = 'android-x86_64.apk';
+          appAssetSuffix = '$variant-x86_64.apk';
         }
         break;
     }
@@ -828,13 +967,13 @@ class BuildCommand extends Command {
             ? await Build.calcSha256(corePaths.first)
             : null;
         Build.buildHelper(target, token!);
-        _buildDistributor(
+        await _buildDistributor(
           target: target,
           targets: 'exe',
           args: ' --description $desc --build-dart-define=CORE_SHA256=$token',
           env: env,
           suffix: appAssetSuffix,
-          compatible: compatible,
+          lite: lite,
         );
         return;
       case Target.linux:
@@ -856,7 +995,7 @@ class BuildCommand extends Command {
             args: ' --description $desc --build-target-platform $defaultTarget',
             env: env,
             suffix: currentSuffix,
-            compatible: compatible,
+            lite: lite,
           );
         }
         return;
@@ -873,8 +1012,8 @@ class BuildCommand extends Command {
             .toList();
 
         final buildArgs = archName == 'universal'
-            ? ' --build-target-platform ${defaultTargets.join(",")} --description universal'
-            : ',split-per-abi --build-target-platform ${defaultTargets.join(",")}';
+            ? ' --build-target-platform ${defaultTargets.join(",")} --description ${lite ? 'lite-universal' : 'universal'}'
+            : ',split-per-abi --build-target-platform ${defaultTargets.join(",")}${lite ? ' --description lite' : ''}';
 
         _buildDistributor(
           target: target,
@@ -882,12 +1021,11 @@ class BuildCommand extends Command {
           args: buildArgs,
           env: env,
           suffix: appAssetSuffix,
-          compatible: compatible,
+          lite: lite,
         );
         return;
       case Target.macos:
         await _getMacosDependencies();
-        await _setMacOSImpeller(!compatible);
         await Build.exec(
           Build.getExecutable('rm -rf Pods Podfile.lock'),
           workingDirectory: 'macos',
@@ -897,13 +1035,13 @@ class BuildCommand extends Command {
           Build.getExecutable('pod install --repo-update'),
           workingDirectory: 'macos',
         );
-        _buildDistributor(
+        await _buildDistributor(
           target: target,
           targets: 'dmg',
           args: ' --description $desc',
           env: env,
           suffix: appAssetSuffix,
-          compatible: compatible,
+          lite: lite,
         );
         return;
     }
@@ -914,7 +1052,8 @@ class AutoBuildCommand extends Command {
   AutoBuildCommand() {
     argParser.addOption(
       'device-id',
-      help: 'Target Flutter device ID (e.g. from \${command:flutter.getSelectedDeviceId})',
+      help:
+          'Target Flutter device ID (e.g. from \${command:flutter.getSelectedDeviceId})',
     );
     argParser.addOption(
       'arch',
@@ -943,6 +1082,15 @@ class AutoBuildCommand extends Command {
     argParser.addFlag(
       'ensure',
       help: 'Skip build if output artifact already exists',
+    );
+    argParser.addFlag(
+      'lite',
+      help:
+          'Build the Lite variant without easytier, tailscale, zerotier, fake-tcp and gVisor',
+    );
+    argParser.addOption(
+      'core-version',
+      help: 'Version string injected into the core binary',
     );
   }
 
@@ -973,7 +1121,9 @@ class AutoBuildCommand extends Command {
     } else if (rawDeviceId == 'chrome' ||
         rawDeviceId == 'edge' ||
         rawDeviceId == 'web-server') {
-      print('Web device "$rawDeviceId" does not require core binary. Skipping.');
+      print(
+        'Web device "$rawDeviceId" does not require core binary. Skipping.',
+      );
       return;
     } else if (rawDeviceId.isEmpty) {
       if (Platform.isWindows) {
@@ -987,26 +1137,25 @@ class AutoBuildCommand extends Command {
       }
       archName ??= 'auto';
     } else {
-      final res = await Process.run(
-        'flutter',
-        ['devices', '--machine'],
-        runInShell: true,
-      );
+      final res = await Process.run('flutter', [
+        'devices',
+        '--machine',
+      ], runInShell: true);
       if (res.exitCode != 0) {
         throw 'Failed to execute "flutter devices --machine": ${res.stderr}';
       }
       final jsonList = jsonDecode(res.stdout.toString()) as List<dynamic>;
       final device = jsonList.cast<Map<String, dynamic>?>().firstWhere(
-            (d) => d?['id'] == rawDeviceId,
-            orElse: () => null,
-          );
+        (d) => d?['id'] == rawDeviceId,
+        orElse: () => null,
+      );
 
       if (device == null) {
         throw 'Device "$rawDeviceId" not found in flutter devices list.';
       }
 
-      final targetPlatform =
-          (device['targetPlatform'] as String? ?? '').toLowerCase();
+      final targetPlatform = (device['targetPlatform'] as String? ?? '')
+          .toLowerCase();
       if (targetPlatform.startsWith('android')) {
         target = Target.android;
         if (archName == null) {
@@ -1050,6 +1199,8 @@ class AutoBuildCommand extends Command {
       ensure: argResults?['ensure'] ?? false,
       compatible: argResults?['compatible'] ?? false,
       coreHash: argResults?['core-hash'] as String?,
+      lite: argResults?['lite'] ?? false,
+      coreVersion: argResults?['core-version'] as String?,
     );
   }
 }

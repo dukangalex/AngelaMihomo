@@ -6,17 +6,28 @@ import 'dart:ui';
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/models.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:bett_box/l10n/l10n.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:pub_semver/pub_semver.dart';
 
-enum IpCategory {
-  tun,
-  lan,
-  public,
-}
+enum IpCategory { tun, lan, public }
+
+typedef _DefaultRoute = ({String gateway, String interfaceName});
+
+final _virtualInterfaceRegExp = RegExp(
+  'tun|tap|vpn|ppp|meta|clash|${RegExp.escape(tunDeviceName)}',
+  caseSensitive: false,
+);
+
+final _bridgeInterfaceRegExp = RegExp(
+  r'^(docker|veth|br-|vmnet|vboxnet|virbr|awdl|llw|bridge|zt|tailscale|wg)',
+  caseSensitive: false,
+);
 
 class Utils {
   Color? getDelayColor(int? delay) {
@@ -28,7 +39,7 @@ class Utils {
 
   String countryCodeToEmoji(String countryCode) {
     final String code = countryCode.toUpperCase();
-    if (code.length != 2) {
+    if (!RegExp(r'^[A-Z]{2}$').hasMatch(code)) {
       return countryCode;
     }
     final int firstLetter = code.codeUnitAt(0) - 0x41 + 0x1F1E6;
@@ -54,6 +65,7 @@ class Utils {
     'TWD': 'TW',
     'TAIPEI': 'TW',
     'TAIWAN': 'TW',
+    'ROC': 'TW',
     'NRT': 'JP',
     'HND': 'JP',
     'KIX': 'JP',
@@ -508,40 +520,38 @@ class Utils {
     return region;
   }
 
-  bool isTunIp(String ip) {
-    final address = InternetAddress.tryParse(ip.trim());
+  bool isTunIp(String ip, [InternetAddress? parsedAddress]) {
+    final address = parsedAddress ?? InternetAddress.tryParse(ip.trim());
     if (address == null) return false;
     if (address.type == InternetAddressType.IPv4) {
-      final parts = ip.trim().split('.').map(int.tryParse).toList();
-      if (parts.length == 4 && parts.every((p) => p != null)) {
-        final p0 = parts[0]!;
-        final p1 = parts[1]!;
-        final p2 = parts[2]!;
-        // 198.51.100.0/24 (TEST-NET-2 / TUN Default)
-        if (p0 == 198 && p1 == 51 && p2 == 100) return true;
-        // 198.18.0.0/15 (Benchmarking / Fake-IP)
-        if (p0 == 198 && (p1 == 18 || p1 == 19)) return true;
-      }
+      final raw = address.rawAddress;
+      final p0 = raw[0];
+      final p1 = raw[1];
+      final p2 = raw[2];
+      if (p0 == 198 && p1 == 51 && p2 == 100) return true;
+      if (p0 == 198 && (p1 == 18 || p1 == 19)) return true;
     } else if (address.type == InternetAddressType.IPv6) {
       final clean = ip.trim().toLowerCase();
-      // fdfe:dcba:9876::/126 (Default TUN IPv6)
       if (clean.startsWith('fdfe:dcba:9876:')) return true;
     }
     return false;
   }
 
   IpCategory classifyIp(String ip) {
-    if (isTunIp(ip)) {
+    final clean = ip.trim();
+    final address = InternetAddress.tryParse(clean);
+    if (address == null) return IpCategory.public;
+    if (isTunIp(clean, address)) {
       return IpCategory.tun;
     }
-    if (isPrivateOrReservedIp(ip)) {
+    if (isPrivateOrReservedIp(clean, address)) {
       return IpCategory.lan;
     }
     return IpCategory.public;
   }
 
-  bool isPrivateOrReservedIp(String ip) {
-    final address = InternetAddress.tryParse(ip.trim());
+  bool isPrivateOrReservedIp(String ip, [InternetAddress? parsedAddress]) {
+    final address = parsedAddress ?? InternetAddress.tryParse(ip.trim());
     if (address == null) return false;
 
     if (address.isLoopback || address.isLinkLocal || address.isMulticast) {
@@ -549,77 +559,41 @@ class Utils {
     }
 
     if (address.type == InternetAddressType.IPv4) {
-      final parts = ip.trim().split('.').map(int.tryParse).toList();
-      if (parts.length == 4 && parts.every((p) => p != null)) {
-        final p0 = parts[0]!;
-        final p1 = parts[1]!;
-        final p2 = parts[2]!;
+      final raw = address.rawAddress;
+      final p0 = raw[0];
+      final p1 = raw[1];
+      final p2 = raw[2];
 
-        // 0.0.0.0/8 (Current network / RFC 1122)
-        if (p0 == 0) return true;
-
-        // 10.0.0.0/8 (Private / RFC 1918)
-        if (p0 == 10) return true;
-
-        // 100.64.0.0/10 (CGNAT / Shared / RFC 6598: 100.64.0.0 - 100.127.255.255)
-        if (p0 == 100 && (p1 >= 64 && p1 <= 127)) return true;
-
-        // 127.0.0.0/8 (Loopback / RFC 1122)
-        if (p0 == 127) return true;
-
-        // 169.254.0.0/16 (Link Local / RFC 3927)
-        if (p0 == 169 && p1 == 254) return true;
-
-        // 172.16.0.0/12 (Private / RFC 1918: 172.16.0.0 - 172.31.255.255)
-        if (p0 == 172 && (p1 >= 16 && p1 <= 31)) return true;
-
-        // 192.0.0.0/24 (IETF Protocol Assignments / RFC 6890)
-        if (p0 == 192 && p1 == 0 && p2 == 0) return true;
-
-        // 192.0.2.0/24 (TEST-NET-1 / RFC 5737)
-        if (p0 == 192 && p1 == 0 && p2 == 2) return true;
-
-        // 192.88.99.0/24 (6to4 Relay Anycast / RFC 7526)
-        if (p0 == 192 && p1 == 88 && p2 == 99) return true;
-
-        // 192.168.0.0/16 (Private / RFC 1918)
-        if (p0 == 192 && p1 == 168) return true;
-
-        // 198.18.0.0/15 (Benchmarking / Fake-IP / RFC 2544: 198.18.0.0 - 198.19.255.255)
-        if (p0 == 198 && (p1 == 18 || p1 == 19)) return true;
-
-        // 198.51.100.0/24 (TEST-NET-2 / TUN Default / RFC 5737)
-        if (p0 == 198 && p1 == 51 && p2 == 100) return true;
-
-        // 203.0.113.0/24 (TEST-NET-3 / RFC 5737)
-        if (p0 == 203 && p1 == 0 && p2 == 113) return true;
-
-        // 224.0.0.0/4 (Multicast / RFC 5771)
-        if (p0 >= 224 && p0 <= 239) return true;
-
-        // 240.0.0.0/4 (Reserved / RFC 1112)
-        if (p0 >= 240) return true;
-      }
+      if (p0 == 0) return true;
+      if (p0 == 10) return true;
+      if (p0 == 100 && (p1 >= 64 && p1 <= 127)) return true;
+      if (p0 == 127) return true;
+      if (p0 == 169 && p1 == 254) return true;
+      if (p0 == 172 && (p1 >= 16 && p1 <= 31)) return true;
+      if (p0 == 192 && p1 == 0 && p2 == 0) return true;
+      if (p0 == 192 && p1 == 0 && p2 == 2) return true;
+      if (p0 == 192 && p1 == 88 && p2 == 99) return true;
+      if (p0 == 192 && p1 == 168) return true;
+      if (p0 == 198 && (p1 == 18 || p1 == 19)) return true;
+      if (p0 == 198 && p1 == 51 && p2 == 100) return true;
+      if (p0 == 203 && p1 == 0 && p2 == 113) return true;
+      if (p0 >= 224 && p0 <= 239) return true;
+      if (p0 >= 240) return true;
     } else if (address.type == InternetAddressType.IPv6) {
       final clean = ip.trim().toLowerCase();
-      // ::1 (Loopback), :: (Unspecified)
       if (clean == '::1' || clean == '::') return true;
-      // fe80::/10 (Link-local)
       if (clean.startsWith('fe8') ||
           clean.startsWith('fe9') ||
           clean.startsWith('fea') ||
           clean.startsWith('feb')) {
         return true;
       }
-      // fc00::/7 (Unique Local Address ULA: fc00:: ~ fdff::)
       if (clean.startsWith('fc') || clean.startsWith('fd')) {
         return true;
       }
-      // ff00::/8 (Multicast)
       if (clean.startsWith('ff')) {
         return true;
       }
-      // 2001:db8::/32 (Documentation)
       if (clean.startsWith('2001:db8:')) {
         return true;
       }
@@ -705,22 +679,24 @@ class Utils {
   Locale getSystemLocale() {
     final platformLocale = WidgetsBinding.instance.platformDispatcher.locale;
     final supportedLocales = AppLocalizations.delegate.supportedLocales;
-    
+
     if (platformLocale.languageCode.toLowerCase() == 'zh') {
-      final isTraditional = 
-        (platformLocale.countryCode?.toUpperCase() == 'TW') ||
-        (platformLocale.countryCode?.toUpperCase() == 'HK') ||
-        (platformLocale.countryCode?.toUpperCase() == 'MO') ||
-        (platformLocale.scriptCode?.toLowerCase() == 'hant');
-      return isTraditional ? const Locale('zh', 'TC') : const Locale('zh', 'CN');
+      final isTraditional =
+          (platformLocale.countryCode?.toUpperCase() == 'TW') ||
+          (platformLocale.countryCode?.toUpperCase() == 'HK') ||
+          (platformLocale.countryCode?.toUpperCase() == 'MO') ||
+          (platformLocale.scriptCode?.toLowerCase() == 'hant');
+      return isTraditional
+          ? const Locale('zh', 'TC')
+          : const Locale('zh', 'CN');
     }
-    
+
     for (final locale in supportedLocales) {
       if (locale.languageCode == platformLocale.languageCode) {
         return locale;
       }
     }
-    
+
     return const Locale('zh', 'CN');
   }
 
@@ -744,23 +720,15 @@ class Utils {
   }
 
   int sortByChar(String a, String b) {
-    if (a.isEmpty && b.isEmpty) {
-      return 0;
+    final length = min(a.length, b.length);
+    for (var i = 0; i < length; i++) {
+      final charA = a[i];
+      final charB = b[i];
+      if (charA != charB) {
+        return charA.compareToLower(charB);
+      }
     }
-    if (a.isEmpty) {
-      return -1;
-    }
-    if (b.isEmpty) {
-      return 1;
-    }
-    final charA = a[0];
-    final charB = b[0];
-
-    if (charA == charB) {
-      return sortByChar(a.substring(1), b.substring(1));
-    } else {
-      return charA.compareToLower(charB);
-    }
+    return a.length.compareTo(b.length);
   }
 
   String getOverwriteLabel(String label) {
@@ -805,32 +773,47 @@ class Utils {
   }
 
   int compareVersions(String version1, String version2) {
-    List<String> v1 = version1.split('+')[0].split('.');
-    List<String> v2 = version2.split('+')[0].split('.');
-    int major1 = int.parse(v1[0]);
-    int major2 = int.parse(v2[0]);
-    if (major1 != major2) {
-      return major1.compareTo(major2);
+    Version parse(String value) {
+      final normalized = value.trim().replaceFirst(RegExp(r'^v'), '');
+      final core = normalized.split(RegExp(r'[-+]')).first;
+      final paddedCore = [...core.split('.'), '0', '0'].take(3).join('.');
+      return Version.parse(paddedCore + normalized.substring(core.length));
     }
-    int minor1 = v1.length > 1 ? int.parse(v1[1]) : 0;
-    int minor2 = v2.length > 1 ? int.parse(v2[1]) : 0;
-    if (minor1 != minor2) {
-      return minor1.compareTo(minor2);
+
+    // Fork revision numbers are release versions, not SemVer prerelease
+    // identifiers. Compare their optional prerelease separately so chain.2 is
+    // newer than chain.2-pre.1 (SemVer alone sees "2-pre" as a string > 2).
+    final forkPattern = RegExp(r'^v?(\d+\.\d+\.\d+)-chain\.(\d+)(.*)$');
+    final firstFork = forkPattern.firstMatch(version1.trim());
+    final secondFork = forkPattern.firstMatch(version2.trim());
+    if (firstFork != null && secondFork != null) {
+      final base = parse(firstFork[1]!).compareTo(parse(secondFork[1]!));
+      if (base != 0) return base;
+      final revision = int.parse(
+        firstFork[2]!,
+      ).compareTo(int.parse(secondFork[2]!));
+      if (revision != 0) return revision;
+      return compareVersions('0.0.0${firstFork[3]}', '0.0.0${secondFork[3]}');
     }
-    int patch1 = v1.length > 2 ? int.parse(v1[2]) : 0;
-    int patch2 = v2.length > 2 ? int.parse(v2[2]) : 0;
-    if (patch1 != patch2) {
-      return patch1.compareTo(patch2);
-    }
-    int build1 = version1.contains('+') ? int.parse(version1.split('+')[1]) : 0;
-    int build2 = version2.contains('+') ? int.parse(version2.split('+')[1]) : 0;
-    return build1.compareTo(build2);
+
+    final first = parse(version1);
+    final second = parse(version2);
+    final precedence = first.compareTo(second);
+    if (precedence != 0) return precedence;
+    // Preserve the application's numeric build-number ordering.
+    final firstBuild = int.tryParse(first.build.join('.')) ?? 0;
+    final secondBuild = int.tryParse(second.build.join('.')) ?? 0;
+    return firstBuild.compareTo(secondBuild);
   }
 
+  final Map<String, String> _pinyinCache = {};
+
   String getPinyin(String value) {
-    return value.isNotEmpty
-        ? PinyinHelper.getFirstWordPinyin(value.substring(0, 1))
-        : '';
+    if (value.isEmpty) return '';
+    return _pinyinCache.putIfAbsent(
+      value.substring(0, 1),
+      () => PinyinHelper.getFirstWordPinyin(value.substring(0, 1)),
+    );
   }
 
   String? getFileNameForDisposition(String? disposition) {
@@ -866,12 +849,14 @@ class Utils {
     return regex
         .allMatches(body)
         .map((match) => match.group(1)?.trim() ?? '')
-        .where((item) =>
-            item.isNotEmpty &&
-            !item.startsWith('---') &&
-            !item.startsWith(':') &&
-            !item.startsWith('|') &&
-            !item.startsWith('['))
+        .where(
+          (item) =>
+              item.isNotEmpty &&
+              !item.startsWith('---') &&
+              !item.startsWith(':') &&
+              !item.startsWith('|') &&
+              !item.startsWith('['),
+        )
         .toList();
   }
 
@@ -980,25 +965,217 @@ class Utils {
   }
 
   Future<List<String>> getLocalGateways() async {
-    if (Platform.isLinux) {
-      return _getLinuxGateways();
+    if (system.isAndroid) {
+      try {
+        final gateways = await const MethodChannel(
+          'service',
+        ).invokeListMethod<String>('getLocalGateways');
+        if (gateways != null && gateways.isNotEmpty) {
+          return gateways;
+        }
+      } catch (_) {
+        try {
+          final gateways = await const MethodChannel(
+            'vpn',
+          ).invokeListMethod<String>('getLocalGateways');
+          if (gateways != null && gateways.isNotEmpty) {
+            return gateways;
+          }
+        } catch (_) {}
+      }
     }
+    final routes = await _getDefaultRoutes();
+    return routes.map((route) => route.gateway).toList();
+  }
+
+  Future<List<String>> getLanAddresses() async {
+    final addresses = <String>[];
+    void add(String address) {
+      if (address.isNotEmpty && !addresses.contains(address)) {
+        addresses.add(address);
+      }
+    }
+
+    try {
+      final primary = (await getNetworkInfo()).ip;
+      if (primary.isNotEmpty && !primary.contains(':')) add(primary);
+      if (system.isAndroid) {
+        final list = await const MethodChannel(
+          'service',
+        ).invokeListMethod<String>('getLocalIpAddresses');
+        for (final address in list ?? const <String>[]) {
+          add(address);
+        }
+        return addresses;
+      }
+      for (final address in await getInterfaceIPv4Addresses()) {
+        add(address);
+      }
+    } catch (_) {}
+    return addresses;
+  }
+
+  Future<List<String>> getInterfaceIPv4Addresses() async {
+    final interfaces = await NetworkInterface.list(includeLoopback: false);
+    return [
+      for (final interface in interfaces)
+        if (!_virtualInterfaceRegExp.hasMatch(interface.name) &&
+            !_bridgeInterfaceRegExp.hasMatch(interface.name))
+          for (final address in interface.addresses)
+            if (address.isIPv4 && !address.isLinkLocal) address.address,
+    ];
+  }
+
+  Future<List<CoreInterface>> getNetworkInterfaces() async {
+    final interfaces = await NetworkInterface.list(includeLoopback: false);
+    final result = <CoreInterface>[
+      for (final interface in interfaces)
+        if (interface.addresses.isNotEmpty &&
+            !_virtualInterfaceRegExp.hasMatch(interface.name) &&
+            !_bridgeInterfaceRegExp.hasMatch(interface.name))
+          CoreInterface(
+            name: interface.name,
+            addresses: [
+              for (final address in interface.addresses) address.address,
+            ],
+          ),
+    ];
+    return result..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  Future<NetworkInfo> getNetworkInfo() async {
+    try {
+      if (system.isAndroid) {
+        final info = await const MethodChannel(
+          'service',
+        ).invokeMapMethod<String, Object?>('getNetworkInfo');
+        return info == null ? const NetworkInfo() : NetworkInfo.fromJson(info);
+      }
+      final routes = await _getDefaultRoutes();
+      final route = routes
+          .where(
+            (route) =>
+                route.gateway != '0.0.0.0' &&
+                !_virtualInterfaceRegExp.hasMatch(route.interfaceName),
+          )
+          .firstOrNull;
+      final interfaces = await NetworkInterface.list(includeLoopback: false);
+      final matchedInterface = interfaces
+          .where((interface) => interface.name == route?.interfaceName)
+          .firstOrNull;
+      final Iterable<InternetAddress> addresses =
+          matchedInterface?.addresses.where(
+            (address) => !address.isLinkLocal,
+          ) ??
+          const <InternetAddress>[];
+      final address =
+          addresses.where((address) => address.isIPv4).firstOrNull ??
+          addresses.firstOrNull;
+      return NetworkInfo(
+        type: await _getConnectivityType(),
+        interfaceName: route?.interfaceName ?? '',
+        ip: address?.address ?? await getLocalIpAddress() ?? '',
+        gateway: route?.gateway ?? '',
+        dns: await _getSystemDns(),
+      );
+    } catch (_) {
+      return const NetworkInfo();
+    }
+  }
+
+  Future<bool> isCellularNetwork() async {
+    return await _getConnectivityType() == 'Cellular';
+  }
+
+  Future<String> _getConnectivityType() async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.contains(ConnectivityResult.wifi)) return 'Wi-Fi';
+      if (results.contains(ConnectivityResult.ethernet)) return 'Ethernet';
+      if (results.contains(ConnectivityResult.mobile)) return 'Cellular';
+    } catch (_) {}
+    return '';
+  }
+
+  Future<List<String>> _getSystemDns() async {
     if (Platform.isMacOS) {
-      return _getMacOSGateways();
+      return await MacOS().systemDns ?? [];
     }
     if (Platform.isWindows) {
-      return _getWindowsGateways();
+      return _getWindowsDns();
+    }
+    if (Platform.isLinux) {
+      return _getLinuxDns();
     }
     return [];
   }
 
-  Future<List<String>> _getLinuxGateways() async {
+  Future<List<String>> _getWindowsDns() async {
+    try {
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        r'$route = Get-NetRoute -DestinationPrefix "0.0.0.0/0" | Where-Object { $_.InterfaceAlias -notmatch "(?i)(tun|tap|wintun|meta|clash|vpn)" -and $_.NextHop -ne "0.0.0.0" } | Sort-Object RouteMetric | Select-Object -First 1; if ($route) { (Get-DnsClientServerAddress -InterfaceIndex $route.InterfaceIndex -AddressFamily IPv4).ServerAddresses } else { (Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses }',
+      ]);
+      if (result.exitCode != 0) return [];
+      final lines = result.stdout.toString().split('\n');
+      final servers = <String>[];
+      for (final line in lines) {
+        final server = line.trim();
+        if (server.isEmpty) continue;
+        if (!RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(server)) continue;
+        if (server.startsWith('198.18.') || server == '127.0.0.1') continue;
+        servers.add(server);
+      }
+      return servers.toSet().toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<String>> _getLinuxDns() async {
+    try {
+      final file = File('/etc/resolv.conf');
+      if (!await file.exists()) return [];
+      final lines = await file.readAsLines();
+      final servers = <String>[];
+      for (final line in lines) {
+        final trimmed = line.trim();
+        if (trimmed.startsWith('nameserver ')) {
+          final server = trimmed.substring('nameserver '.length).trim();
+          if (server.isNotEmpty &&
+              !server.startsWith('198.18.') &&
+              server != '127.0.0.1') {
+            servers.add(server);
+          }
+        }
+      }
+      return servers.toSet().toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<_DefaultRoute>> _getDefaultRoutes() async {
+    if (Platform.isLinux) {
+      return _getLinuxDefaultRoutes();
+    }
+    if (Platform.isMacOS) {
+      return _getMacOSDefaultRoutes();
+    }
+    if (Platform.isWindows) {
+      return _getWindowsDefaultRoutes();
+    }
+    return [];
+  }
+
+  Future<List<_DefaultRoute>> _getLinuxDefaultRoutes() async {
     try {
       final routeFile = File('/proc/net/route');
       if (!await routeFile.exists()) return [];
 
       final lines = await routeFile.readAsLines();
-      final gateways = <String>[];
+      final routes = <({_DefaultRoute route, int metric})>[];
       // Header: Iface Destination Gateway Flags RefCnt Use Metric Mask ...
       for (final line in lines.skip(1)) {
         final parts = line.trim().split(RegExp(r'\s+'));
@@ -1013,60 +1190,65 @@ class Utils {
           int.parse(gwHex.substring(2, 4), radix: 16),
           int.parse(gwHex.substring(0, 2), radix: 16),
         ];
-        gateways.add(bytes.join('.'));
+        routes.add((
+          route: (gateway: bytes.join('.'), interfaceName: parts[0]),
+          metric: int.tryParse(parts.elementAtOrNull(6) ?? '') ?? 0,
+        ));
       }
-      return gateways;
+      routes.sort((a, b) => a.metric.compareTo(b.metric));
+      return routes.map((e) => e.route).toList();
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: Linux gateway error: $e');
+      commonPrint.warn('Smart Auto Stop: Linux gateway error: $e');
       return [];
     }
   }
 
-  Future<List<String>> _getMacOSGateways() async {
+  Future<List<_DefaultRoute>> _getMacOSDefaultRoutes() async {
     try {
       final result = await Process.run('route', ['-n', 'get', 'default']);
       if (result.exitCode != 0) return [];
 
-      final stdout = result.stdout.toString();
-      for (final line in stdout.split('\n')) {
+      var gateway = '';
+      var interfaceName = '';
+      for (final line in result.stdout.toString().split('\n')) {
         final trimmed = line.trim();
-        if (!trimmed.startsWith('gateway:')) continue;
-        final gateway = trimmed.substring('gateway:'.length).trim();
-        // Exclude IPv6/link-local gateways
-        if (gateway.isNotEmpty && !gateway.contains(':')) {
-          return [gateway];
+        if (trimmed.startsWith('gateway:')) {
+          gateway = trimmed.substring('gateway:'.length).trim();
+        } else if (trimmed.startsWith('interface:')) {
+          interfaceName = trimmed.substring('interface:'.length).trim();
         }
       }
-      return [];
+      // Exclude IPv6/link-local gateways
+      if (gateway.isEmpty || gateway.contains(':')) return [];
+      return [(gateway: gateway, interfaceName: interfaceName)];
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: macOS gateway error: $e');
+      commonPrint.warn('Smart Auto Stop: macOS gateway error: $e');
       return [];
     }
   }
 
-  Future<List<String>> _getWindowsGateways() async {
+  Future<List<_DefaultRoute>> _getWindowsDefaultRoutes() async {
     try {
-      final result = await Process.run(
-        'powershell',
-        [
-          '-NoProfile',
-          '-Command',
-          'Get-NetRoute -DestinationPrefix \'0.0.0.0/0\' '
-              '| Select-Object -ExpandProperty NextHop',
-        ],
-      );
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        r"Get-NetRoute -DestinationPrefix '0.0.0.0/0' "
+            r'| Sort-Object RouteMetric '
+            r'| ForEach-Object { "$($_.NextHop)|$($_.InterfaceAlias)" }',
+      ]);
       if (result.exitCode != 0) return [];
 
-      final gateways = <String>[];
+      final routes = <_DefaultRoute>[];
       for (final line in result.stdout.toString().split('\n')) {
-        final gateway = line.trim();
+        final parts = line.trim().split('|');
+        final gateway = parts.first;
         if (gateway.isEmpty) continue;
         if (!RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(gateway)) continue;
-        gateways.add(gateway);
+        routes.add((gateway: gateway, interfaceName: parts.skip(1).join('|')));
       }
-      return gateways;
+      return routes;
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: Windows gateway error: $e');
+      commonPrint.warn('Smart Auto Stop: Windows gateway error: $e');
       return [];
     }
   }
@@ -1076,37 +1258,40 @@ class Utils {
     return SingleActivator(trigger, control: control, meta: !control);
   }
 
-
   FutureOr<T> handleWatch<T>(Function function) async {
     if (kDebugMode) {
       final stopwatch = Stopwatch()..start();
       final res = await function();
       stopwatch.stop();
-      commonPrint.log('Time：${stopwatch.elapsedMilliseconds} ms');
+      commonPrint.debug('Time：${stopwatch.elapsedMilliseconds} ms');
       return res;
     }
     return await function();
   }
 
   String generateSecret() {
-    final random = Random();
-    // Generate an 8-digit number (10000000 to 99999999)
-    final secret = 10000000 + random.nextInt(90000000);
-    return secret.toString();
+    const groups = [
+      'ABCDEFGHJKLMNPQRSTUVWXYZ',
+      'abcdefghijkmnpqrstuvwxyz',
+      '23456789',
+      '!@*-_~',
+    ];
+    final random = Random.secure();
+    final all = groups.join();
+    String pick(String chars) => chars[random.nextInt(chars.length)];
+    final chars = [
+      for (final group in groups) pick(group),
+      for (var i = groups.length; i < 10; i++) pick(all),
+    ]..shuffle(random);
+    return chars.join();
   }
 
   String patchYamlConfig(String content) {
-    final sanitized = content.replaceAllMapped(
-      RegExp(r'^[ \t]+', multiLine: true),
+    if (!content.contains('\t')) return content;
+    return content.replaceAllMapped(
+      RegExp(r'^[ \t]*\t[ \t]*', multiLine: true),
       (match) => match.group(0)!.replaceAll('\t', '  '),
     );
-    final shortIdExp = RegExp(
-      r'(?<=\bshort-id\s*:\s*)(?!["\x27{\[\s])([0-9a-fA-F]+)(?=\s*(?:$|[,\s#\}]))',
-      multiLine: true,
-    );
-    return sanitized.replaceAllMapped(shortIdExp, (match) {
-      return '"${match.group(1)}"';
-    });
   }
 
   String patchValidateConfig(String content) {
@@ -1123,7 +1308,7 @@ class Utils {
 
   String encryptSecret(String raw) {
     if (raw.isEmpty) return raw;
-    const salt = 'Bettbox';
+    const salt = 'AngelaMihomo';
     final step1 = base64.encode(utf8.encode(raw));
     final step2 = base64.encode(utf8.encode('$salt:$step1'));
     return 'ENC~$step2';
@@ -1132,12 +1317,16 @@ class Utils {
   String decryptSecret(String text) {
     if (!text.startsWith('ENC~')) return text;
     try {
-      const salt = 'Bettbox';
+      // The legacy salt is still accepted so secrets stored by older
+      // builds keep decrypting; new writes use the current salt.
+      const salts = ['AngelaMihomo', 'Bettbox'];
       final cipher = text.substring(4);
       final salted = utf8.decode(base64.decode(cipher));
-      if (salted.startsWith('$salt:')) {
-        final step1 = salted.substring(salt.length + 1);
-        return utf8.decode(base64.decode(step1));
+      for (final salt in salts) {
+        if (salted.startsWith('$salt:')) {
+          final step1 = salted.substring(salt.length + 1);
+          return utf8.decode(base64.decode(step1));
+        }
       }
       return text;
     } catch (_) {

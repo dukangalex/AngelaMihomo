@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'rpm_version.dart';
+
 import 'package:flutter_app_packager/src/api/app_package_maker.dart';
+import 'package:path/path.dart' as path;
 
 class MakeRPMConfig extends MakeConfig {
   MakeRPMConfig({
     // Desktop file
     required this.displayName,
     this.startupNotify = true,
+    this.startupWMClass,
     this.actions,
     this.categories,
     this.genericName,
@@ -29,12 +33,15 @@ class MakeRPMConfig extends MakeConfig {
     this.prep,
     this.build,
     this.install,
+    this.post,
     this.postun,
+    this.posttrans,
     this.files,
     this.defattr,
     this.attr,
     this.changelog,
-  });
+    Map<String, String>? extraFiles,
+  }) : extraFiles = extraFiles ?? {};
 
   factory MakeRPMConfig.fromJson(Map<String, dynamic> json) {
     return MakeRPMConfig(
@@ -42,6 +49,7 @@ class MakeRPMConfig extends MakeConfig {
       icon: json['icon'] as String?,
       genericName: json['generic_name'] as String?,
       startupNotify: json['startup_notify'] as bool?,
+      startupWMClass: json['startup_wm_class'] as String?,
       keywords: (json['keywords'] as List<dynamic>?)?.cast<String>(),
       supportedMimeType: (json['supported_mime_type'] as List<dynamic>?)
           ?.cast<String>(),
@@ -61,11 +69,16 @@ class MakeRPMConfig extends MakeConfig {
       prep: json['prep'] as String?,
       build: json['build'] as String?,
       install: json['install'] as String?,
+      post: json['post'] as String?,
       postun: json['postun'] as String?,
+      posttrans: json['posttrans'] as String?,
       files: json['files'] as String?,
       defattr: json['defattr'] as String?,
       attr: json['attr'] as String?,
       changelog: json['changelog'] as String?,
+      extraFiles: (json['extra_files'] as Map?)?.map(
+        (key, value) => MapEntry('$key', '$value'),
+      ),
     );
   }
 
@@ -73,6 +86,7 @@ class MakeRPMConfig extends MakeConfig {
   String? icon;
   String? genericName;
   bool? startupNotify;
+  String? startupWMClass;
   List<String>? keywords;
   List<String>? supportedMimeType;
   List<String>? actions;
@@ -94,11 +108,15 @@ class MakeRPMConfig extends MakeConfig {
   String? prep;
   String? build;
   String? install;
+  String? post;
   String? postun;
+  String? posttrans;
   String? files;
   String? defattr;
   String? attr;
   String? changelog;
+
+  final Map<String, String> extraFiles;
 
   @override
   Map<String, dynamic> toJson() {
@@ -106,7 +124,7 @@ class MakeRPMConfig extends MakeConfig {
       'SPEC': {
         'preamble': {
           'Name': appName,
-          'Version': appVersion.toString(),
+          'Version': rpmVersion(appVersion),
           'Release':
               "${appVersion.build.isNotEmpty ? appVersion.build.first : "1"}%{?dist}",
           'Summary': summary ?? pubspec.description,
@@ -123,24 +141,32 @@ class MakeRPMConfig extends MakeConfig {
         }..removeWhere((key, value) => value == null),
         'body': {
           '%description': description ?? pubspec.description,
-          '%install':
-              install ??
-              [
-                'mkdir -p %{buildroot}%{_bindir}',
-                'mkdir -p %{buildroot}%{_datadir}/%{name}',
-                'mkdir -p %{buildroot}%{_datadir}/applications',
-                'mkdir -p %{buildroot}%{_datadir}/pixmaps',
-                'cp -r %{name}/* %{buildroot}%{_datadir}/%{name}',
-                'ln -s %{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name}',
-                'cp -r %{name}.desktop %{buildroot}%{_datadir}/applications',
-                'cp -r %{name}.png %{buildroot}%{_datadir}/pixmaps',
-                'update-mime-database %{_datadir}/mime &> /dev/null || :',
-              ].join('\n'),
+          '%install': [
+            install ??
+                [
+                  'mkdir -p %{buildroot}%{_bindir}',
+                  'mkdir -p %{buildroot}%{_datadir}/%{name}',
+                  'mkdir -p %{buildroot}%{_datadir}/applications',
+                  'mkdir -p %{buildroot}%{_datadir}/pixmaps',
+                  'cp -r %{name}/* %{buildroot}%{_datadir}/%{name}',
+                  'ln -s %{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name}',
+                  'cp -r %{name}.desktop %{buildroot}%{_datadir}/applications',
+                  'cp -r %{name}.png %{buildroot}%{_datadir}/pixmaps',
+                  'update-mime-database %{_datadir}/mime &> /dev/null || :',
+                ].join('\n'),
+            ...extraFiles.entries.map(
+              (entry) =>
+                  'install -Dm644 ${path.absolute(entry.key)} '
+                  '%{buildroot}/${entry.value}',
+            ),
+          ].join('\n'),
+          if (post != null) '%post': post,
           '%postun':
               postun ??
               [
                 'update-mime-database %{_datadir}/mime &> /dev/null || :',
               ].join('\n'),
+          if (posttrans != null) '%posttrans': posttrans,
           '%files':
               files ??
               [
@@ -150,6 +176,7 @@ class MakeRPMConfig extends MakeConfig {
                 '%{_datadir}/%{name}',
                 '%{_datadir}/applications/%{name}.desktop',
                 if (icon != null) '%{_datadir}/pixmaps/%{name}.png',
+                ...extraFiles.values.map((destination) => '/$destination'),
               ].join('\n'),
         }..removeWhere((key, value) => value == null),
       },
@@ -173,6 +200,7 @@ class MakeRPMConfig extends MakeConfig {
             ? '${keywords!.join(';')};'
             : null,
         'StartupNotify': startupNotify,
+        'StartupWMClass': startupWMClass,
       }..removeWhere((key, value) => value == null),
     };
   }

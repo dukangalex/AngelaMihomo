@@ -18,12 +18,36 @@
 namespace {
 
 #ifdef BETTBOX_DEV
-constexpr const wchar_t kAppUserModelId[] = L"Appshub.Bettbox.Dev";
+constexpr const wchar_t kAppUserModelId[] = L"Angela.AngelaMihomo.Dev";
 #else
-constexpr const wchar_t kAppUserModelId[] = L"Appshub.Bettbox";
+constexpr const wchar_t kAppUserModelId[] = L"Angela.AngelaMihomo";
 #endif
 
+static std::wstring GetPortableDirectory() {
+  wchar_t exe_path[MAX_PATH];
+  const DWORD exe_len = ::GetModuleFileNameW(nullptr, exe_path, MAX_PATH);
+  if (exe_len == 0 || exe_len >= MAX_PATH) {
+    return L"";
+  }
+  std::wstring dir(exe_path, exe_len);
+  const size_t separator = dir.find_last_of(L'\\');
+  if (separator == std::wstring::npos) {
+    return L"";
+  }
+  dir = dir.substr(0, separator + 1) + L"portable";
+  const DWORD attributes = ::GetFileAttributesW(dir.c_str());
+  if (attributes == INVALID_FILE_ATTRIBUTES ||
+      (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+    return L"";
+  }
+  return dir;
+}
+
 static std::wstring GetDumpDirectory() {
+  const std::wstring portable_dir = GetPortableDirectory();
+  if (!portable_dir.empty()) {
+    return portable_dir + L"\\crash_dumps";
+  }
   wchar_t path[MAX_PATH];
   DWORD len = ::GetEnvironmentVariableW(L"LOCALAPPDATA", path, MAX_PATH);
   if (len == 0 || len >= MAX_PATH) {
@@ -33,7 +57,7 @@ static std::wstring GetDumpDirectory() {
   if (!dir.empty() && dir.back() != L'\\') {
     dir += L'\\';
   }
-  dir += L"Bettbox\\crash_dumps";
+  dir += L"AngelaMihomo\\crash_dumps";
   return dir;
 }
 
@@ -48,7 +72,7 @@ static void EnsureDumpDirectory(const std::wstring &dir) {
   }
 }
 
-static LONG WINAPI BettboxUnhandledExceptionFilter(
+static LONG WINAPI AngelaMihomoUnhandledExceptionFilter(
     EXCEPTION_POINTERS *exception_info) {
   const std::wstring dir = GetDumpDirectory();
   if (dir.empty()) {
@@ -87,7 +111,7 @@ static LONG WINAPI BettboxUnhandledExceptionFilter(
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
   ::SetCurrentProcessExplicitAppUserModelID(kAppUserModelId);
-  ::SetUnhandledExceptionFilter(BettboxUnhandledExceptionFilter);
+  ::SetUnhandledExceptionFilter(AngelaMihomoUnhandledExceptionFilter);
 
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
@@ -100,6 +124,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
   flutter::DartProject project(L"data");
+  project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
 
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();
@@ -118,9 +143,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
 #ifdef BETTBOX_DEV
-  const wchar_t *window_title = L"Bettbox Dev";
+  const wchar_t *window_title = L"Angela Mihomo Dev";
 #else
-  const wchar_t *window_title = L"Bettbox";
+  const wchar_t *window_title = L"Angela Mihomo";
 #endif
   if (!window.Create(window_title, origin, size, !is_control_command)) {
     return EXIT_FAILURE;

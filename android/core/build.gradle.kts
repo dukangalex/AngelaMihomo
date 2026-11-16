@@ -1,10 +1,9 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace = "com.appshub.bettbox.core"
+    namespace = "app.angelabettbox.core"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -35,15 +34,18 @@ android {
         }
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 dependencies {
     implementation("androidx.annotation:annotation-jvm:1.9.1")
 }

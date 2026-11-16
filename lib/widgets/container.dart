@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class CommonSafeArea extends StatelessWidget {
   const CommonSafeArea({
@@ -33,7 +33,7 @@ class CommonSafeArea extends StatelessWidget {
   Widget build(BuildContext context) {
     assert(debugCheckHasMediaQuery(context));
     EdgeInsets padding = MediaQuery.paddingOf(context);
-    final height = MediaQuery.of(context).size.height;
+    final height = MediaQuery.sizeOf(context).height;
     if (maintainBottomViewPadding) {
       padding = padding.copyWith(
         bottom: MediaQuery.viewPaddingOf(context).bottom,

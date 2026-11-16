@@ -1,5 +1,7 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:bett_box/common/chain_health.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
@@ -8,10 +10,12 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/views/profile_chain.dart';
 import 'package:bett_box/views/profiles/edit_profile.dart';
+import 'package:bett_box/views/profiles/merge_profile.dart';
 import 'package:bett_box/views/profiles/override_profile.dart';
 import 'package:bett_box/views/profiles/scripts.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -24,8 +28,167 @@ class ProfilesView extends ConsumerStatefulWidget {
   ConsumerState<ProfilesView> createState() => _ProfilesViewState();
 }
 
-class _ProfilesViewState extends ConsumerState<ProfilesView> {
+class _ProfilesViewState extends ConsumerState<ProfilesView>
+    with SingleTickerProviderStateMixin {
+  static final _expandSlide = Tween<Offset>(
+    begin: const Offset(0, -0.16),
+    end: Offset.zero,
+  );
+  static final List<CurveTween> _rowFadeTweens = List<CurveTween>.generate(7, (
+    index,
+  ) {
+    final begin = index * 0.07;
+    return CurveTween(
+      curve: Interval(begin, begin + 0.58, curve: Curves.easeOutCubic),
+    );
+  }, growable: false);
+
   Function? applyConfigDebounce;
+  final Set<String> _expanded = {};
+  late final AnimationController _expandController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+    value: 1,
+  );
+  String? _expandingId;
+
+  void _toggleExpanded(String id) {
+    if (system.isAndroid &&
+        ref.read(
+          appSettingProvider.select((s) => s.enableNavBarHapticFeedback),
+        )) {
+      HapticFeedback.selectionClick();
+    }
+    setState(() {
+      if (_expanded.remove(id)) {
+        if (_expandingId == id) _expandingId = null;
+        return;
+      }
+      _expanded.add(id);
+      if (!TickerMode.valuesOf(context).enabled) return;
+      _expandingId = id;
+      _expandController.forward(from: 0);
+    });
+  }
+
+  Widget _buildRevealed(Widget child, int row) {
+    final animation = _expandController.drive(_rowFadeTweens[math.min(row, 6)]);
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: animation.drive(_expandSlide),
+        child: child,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildProfileItem(
+    Profile profile,
+    List<Profile> profiles,
+    String? currentProfileId, {
+    bool nested = false,
+    bool? expanded,
+    ChainCardHealth? chainHealth,
+  }) {
+    return ProfileItem(
+      key: Key(profile.id),
+      profile: profile,
+      nested: nested,
+      expanded: expanded,
+      chainHealth: chainHealth,
+      onToggleExpanded: expanded == null
+          ? null
+          : () => _toggleExpanded(profile.id),
+      mergedInto: switch (profiles.bundlesOf(profile.id).firstOrNull) {
+        final bundle? => bundle.label ?? bundle.id,
+        null => null,
+      },
+      groupValue: currentProfileId,
+      onChanged: (profileId) {
+        ref.read(currentProfileIdProvider.notifier).value = profileId;
+      },
+    );
+  }
+
+  List<GridItem> _buildGridItems(
+    List<Profile> profiles,
+    String? currentProfileId,
+    int columns,
+    Set<String> folded,
+    Map<String, ChainCardHealth> chainHealth,
+  ) {
+    final items = <GridItem>[];
+    for (final profile in profiles) {
+      if (folded.contains(profile.id)) continue;
+      final bundle = profile.bundle;
+      if (bundle == null || !bundle.collapsed || bundle.members.isEmpty) {
+        items.add(
+          GridItem(
+            key: ValueKey(profile.id),
+            child: _buildProfileItem(
+              profile,
+              profiles,
+              currentProfileId,
+              chainHealth: chainHealth[profile.id],
+            ),
+          ),
+        );
+        continue;
+      }
+      final expanded = _expanded.contains(profile.id);
+      items.add(
+        GridItem(
+          key: ValueKey(profile.id),
+          child: _buildProfileItem(
+            profile,
+            profiles,
+            currentProfileId,
+            expanded: expanded,
+            chainHealth: chainHealth[profile.id],
+          ),
+        ),
+      );
+      final members = [
+        for (final member in bundle.members)
+          if (profiles.getProfile(member.id) case final target?
+              when expanded || target.id == currentProfileId)
+            target,
+      ];
+      if (members.isEmpty) continue;
+      final revealing = expanded && _expandingId == profile.id;
+      var revealed = 0;
+      items.add(
+        GridItem(
+          key: ValueKey('${profile.id}/members'),
+          crossAxisCellCount: columns,
+          child: _ProfileFold(
+            columns: columns,
+            children: [
+              for (final member in members)
+                switch (_buildProfileItem(
+                  member,
+                  profiles,
+                  currentProfileId,
+                  nested: true,
+                  chainHealth: chainHealth[member.id],
+                )) {
+                  final child when revealing && member.id != currentProfileId =>
+                    _buildRevealed(child, revealed++ ~/ columns),
+                  final child => child,
+                },
+            ],
+          ),
+        ),
+      );
+    }
+    return items;
+  }
 
   void _handleShowAddExtendPage() {
     showExtend(
@@ -46,12 +209,14 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
     final profiles = globalState.config.profiles;
     final messages = <String>[];
     final updateProfiles = profiles.map<Future>((profile) async {
-      if (profile.type == ProfileType.file) return;
+      if (profile.type != ProfileType.url) return;
       globalState.appController.setProfile(profile.copyWith(isUpdating: true));
       try {
         await globalState.appController.updateProfile(profile);
       } on Object catch (e) {
-        messages.add('${profile.label ?? profile.id}: ${e.formatError}\n');
+        messages.add(
+          '${profileUpdateFailureNotice(profile.label ?? profile.id, e, automatic: false)}\n',
+        );
         globalState.appController.setProfile(
           profile.copyWith(isUpdating: false),
         );
@@ -90,11 +255,15 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
         tooltip: appLocalizations.script,
         icon: Consumer(
           builder: (_, ref, _) {
-            final isScriptMode = ref.watch(
-              scriptStateProvider.select((state) => state.realId != null),
-            );
+            final isScriptMode =
+                ref.watch(currentProfileScriptProvider) != null ||
+                ref.watch(
+                  currentProfileProvider.select(
+                    (profile) => profile?.isManaged ?? false,
+                  ),
+                );
             return Icon(
-              Icons.functions,
+              Icons.terminal_outlined,
               color: isScriptMode ? context.colorScheme.primary : null,
             );
           },
@@ -141,64 +310,103 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
       title: appLocalizations.profiles,
       floatingActionButton: _buildFAB(),
       actions: _buildActions(),
-      body: Consumer(
-        builder: (_, ref, _) {
+      body: ActiveConsumer(
+        builder: (_, ref) {
           final profilesSelectorState = ref.watch(
             profilesSelectorStateProvider,
           );
           final isMobileView = ref.watch(isMobileViewProvider);
-          if (profilesSelectorState.profiles.isEmpty) {
-            return NullStatus(label: appLocalizations.nullProfileDesc);
+          final profiles = profilesSelectorState.profiles;
+          if (profiles.isEmpty) {
+            return NullStatus(
+              label: appLocalizations.nullProfileDesc,
+              icon: Icons.description_outlined,
+            );
           }
+          final folded = profiles.collapsedMemberIds;
+          final topLevel = profiles
+              .where((profile) => !folded.contains(profile.id))
+              .length;
           final columns = system.isAndroid
               ? 1
-              : profilesSelectorState.profiles.length <
-                    profilesSelectorState.columns
-              ? profilesSelectorState.profiles.length
+              : topLevel < profilesSelectorState.columns
+              ? topLevel
               : profilesSelectorState.columns;
-          return Align(
-            alignment: Alignment.topCenter,
-            child: SingleChildScrollView(
-              key: profilesStoreKey,
-              padding: EdgeInsets.only(
+          final chainHealth =
+              ref.watch(chainCardHealthProvider).value ??
+              const <String, ChainCardHealth>{};
+          final items = _buildGridItems(
+            profiles,
+            profilesSelectorState.currentProfileId,
+            columns,
+            folded,
+            chainHealth,
+          );
+          return ScrollEdgeRise(
+            builder: (context, rise) {
+              final padding = EdgeInsets.only(
                 left: 16,
                 right: 16,
-                top: 16,
+                top: 16 + rise,
                 bottom:
-                    (profilesSelectorState.profiles.isNotEmpty &&
-                            profilesSelectorState.profiles.length % columns == 0
-                        ? 88
-                        : 16) +
+                    (topLevel % columns == 0 ? 88 : 16) +
                     (isMobileView
                         ? getFloatingBottomBarReserveHeight(context)
                         : 0),
-              ),
-              child: Grid(
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                crossAxisCount: columns,
-                children: [
-                  for (
-                    int i = 0;
-                    i < profilesSelectorState.profiles.length;
-                    i++
-                  )
-                    GridItem(
-                      child: ProfileItem(
-                        key: Key(profilesSelectorState.profiles[i].id),
-                        profile: profilesSelectorState.profiles[i],
-                        groupValue: profilesSelectorState.currentProfileId,
-                        onChanged: (profileId) {
-                          ref.read(currentProfileIdProvider.notifier).value =
-                              profileId;
-                        },
+              );
+              return Align(
+                alignment: Alignment.topCenter,
+                child: columns == 1
+                    ? ListView.separated(
+                        key: profilesStoreKey,
+                        padding: padding,
+                        itemCount: items.length,
+                        itemBuilder: (_, index) => KeyedSubtree(
+                          key: items[index].key,
+                          child: items[index].child,
+                        ),
+                        separatorBuilder: (_, _) => const SizedBox(height: 14),
+                      )
+                    : SingleChildScrollView(
+                        key: profilesStoreKey,
+                        padding: padding,
+                        child: Grid(
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 14,
+                          crossAxisCount: columns,
+                          children: items,
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ),
+              );
+            },
           );
         },
+      ),
+    );
+  }
+}
+
+class _ProfileFold extends StatelessWidget {
+  final int columns;
+  final List<Widget> children;
+
+  const _ProfileFold({required this.columns, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.only(left: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: context.colorScheme.outlineVariant, width: 2),
+        ),
+      ),
+      child: Grid(
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        crossAxisCount: columns,
+        children: [for (final child in children) GridItem(child: child)],
       ),
     );
   }
@@ -207,20 +415,38 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
 class ProfileItem extends StatelessWidget {
   final Profile profile;
   final String? groupValue;
+  final String? mergedInto;
+  final bool nested;
+  final bool? expanded;
+  final VoidCallback? onToggleExpanded;
   final void Function(String? value) onChanged;
+
+  /// T152: this profile's chain health projection for the card's chain
+  /// marker. Null while the projection has not computed (or failed
+  /// wholesale) — the card then shows no chain marker. A display
+  /// projection only; see common/chain_health.dart.
+  final ChainCardHealth? chainHealth;
 
   const ProfileItem({
     super.key,
     required this.profile,
     required this.groupValue,
     required this.onChanged,
+    this.mergedInto,
+    this.nested = false,
+    this.expanded,
+    this.onToggleExpanded,
+    this.chainHealth,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context) async {
+    final bundleLabel = mergedInto;
     final res = await globalState.showMessage(
       title: appLocalizations.tip,
       message: TextSpan(
-        text: appLocalizations.deleteTip(appLocalizations.profile),
+        text: bundleLabel != null
+            ? appLocalizations.deleteMemberTip(bundleLabel)
+            : appLocalizations.deleteTip(appLocalizations.profile),
       ),
     );
     if (res != true) {
@@ -233,11 +459,10 @@ class ProfileItem extends StatelessWidget {
     await globalState.appController.safeRun(
       () async {
         final patchConfig = globalState.config.patchClashConfig;
-        final runtimeConfig = await globalState.patchRawConfig(
+        final content = await globalState.getRuntimeConfigContent(
           patchConfig: patchConfig,
           profile: profile,
         );
-        final content = await encodeYamlTask(runtimeConfig);
         if (!context.mounted) {
           return;
         }
@@ -248,11 +473,7 @@ class ProfileItem extends StatelessWidget {
           content: content,
           readOnly: true,
         );
-        BaseNavigator.push<String>(
-          context,
-          previewPage,
-          maintainState: false,
-        );
+        BaseNavigator.push<String>(context, previewPage, maintainState: false);
       },
       needLoading: true,
       title: appLocalizations.tip,
@@ -262,6 +483,13 @@ class ProfileItem extends StatelessWidget {
   Future updateProfile() async {
     final appController = globalState.appController;
     if (profile.type == ProfileType.file) return;
+    if (profile.type == ProfileType.bundle) {
+      await appController.safeRun(
+        () => appController.generateBundle(profile.id, refresh: true),
+        silence: false,
+      );
+      return;
+    }
     try {
       appController.setProfile(profile.copyWith(isUpdating: true));
       await appController.updateProfile(profile);
@@ -270,7 +498,11 @@ class ProfileItem extends StatelessWidget {
       globalState.showMessage(
         title: appLocalizations.tip,
         message: TextSpan(
-          text: '${profile.label ?? profile.id}: ${e.formatError}',
+          text: profileUpdateFailureNotice(
+            profile.label ?? profile.id,
+            e,
+            automatic: false,
+          ),
         ),
         cancelable: false,
       );
@@ -278,6 +510,19 @@ class ProfileItem extends StatelessWidget {
   }
 
   void _handleShowEditExtendPage(BuildContext context) {
+    if (profile.bundle != null) {
+      showExtend(
+        context,
+        builder: (_, type) {
+          return AdaptiveSheetScaffold(
+            type: type,
+            body: MergeProfileView(profile: profile, context: context),
+            title: appLocalizations.edit,
+          );
+        },
+      );
+      return;
+    }
     final editKey = GlobalKey<EditProfileViewState>();
     showExtend(
       context,
@@ -305,9 +550,22 @@ class ProfileItem extends StatelessWidget {
   }
 
   Widget _buildTitleRow(BuildContext context) {
-    final subtitleText = profile.type == ProfileType.file
+    final usages = profile.subscriptionUsages;
+    final usage = usages.length > 1 ? ProfileUsage.of(profile) : null;
+    final subtitleText = usages.length > 1
+        ? profile.usageExpireText(usage)
+        : profile.type == ProfileType.file
         ? appLocalizations.localFile
-        : profile.subscriptionInfo?.expireDesc;
+        : (usages.firstOrNull?.value ?? profile.subscriptionInfo)?.expireDesc;
+    // T57 carryback (T141): an expire date within seven days (or one
+    // already past) is a warning, painted in the error color.
+    final singleInfo = usages.firstOrNull?.value ?? profile.subscriptionInfo;
+    final expireWarning = usages.length > 1
+        ? usage != null &&
+              (usage.isExpired ||
+                  (usage.daysLeft != null && usage.daysLeft! <= 7))
+        : singleInfo != null &&
+              (singleInfo.isExpired || singleInfo.isExpiringSoon);
 
     return Row(
       children: [
@@ -319,16 +577,34 @@ class ProfileItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        if (profile.id == groupValue) ...[
+          const SizedBox(width: 8),
+          const _CurrentProfileBadge(),
+        ],
+        // T152: status markers in the same pill language as the current
+        // badge — managed shows only when on (no color semantics), the
+        // chain marker only when a chain is enabled (green when both
+        // ends resolve, red when any end is stale).
+        if (profile.runsManagedScript) ...[
+          const SizedBox(width: 8),
+          const _ManagedProfileBadge(),
+        ],
+        if (chainHealth == ChainCardHealth.healthy ||
+            chainHealth == ChainCardHealth.stale) ...[
+          const SizedBox(width: 8),
+          _ChainProfileBadge(healthy: chainHealth == ChainCardHealth.healthy),
+        ],
         if (subtitleText != null && subtitleText.isNotEmpty) ...[
           const SizedBox(width: 6),
-          Text(
-            '·',
-            style: context.textTheme.labelMedium?.toLight,
-          ),
+          Text('·', style: context.textTheme.labelMedium?.toLight),
           const SizedBox(width: 6),
           Text(
             subtitleText,
-            style: context.textTheme.labelMedium?.toLight,
+            style: expireWarning
+                ? context.textTheme.labelMedium?.copyWith(
+                    color: context.colorScheme.error,
+                  )
+                : context.textTheme.labelMedium?.toLight,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -337,10 +613,376 @@ class ProfileItem extends StatelessWidget {
     );
   }
 
+  Widget _buildBottomText(
+    BuildContext context,
+    String text, {
+    bool warning = false,
+  }) {
+    // T57 carryback (T141): subscription warnings (expiring within
+    // seven days, under a tenth of traffic left) paint the summary
+    // line in the error color.
+    final style = warning
+        ? context.textTheme.labelMedium?.copyWith(
+            color: context.colorScheme.error,
+          )
+        : context.textTheme.labelMedium?.toLight;
+    final bundle = profile.bundle;
+    if (bundle == null) {
+      return Text(
+        [
+          text,
+          if (!nested)
+            if (mergedInto != null) appLocalizations.merged,
+        ].join(' · '),
+        style: style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    final failures = bundle.failures.length;
+    final summary = Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '${appLocalizations.bundleSummary(bundle.members.length)} · ',
+          ),
+          failures > 0
+              ? TextSpan(
+                  text: appLocalizations.bundleFailures(failures),
+                  style: TextStyle(color: context.colorScheme.error),
+                )
+              : TextSpan(
+                  text: appLocalizations.bundleProxies(bundle.report.proxies),
+                ),
+          if (profile.lastUpdateDate case final date?)
+            TextSpan(text: ' · ${date.lastUpdateTimeDesc}'),
+        ],
+      ),
+      style: style,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+    if (onToggleExpanded == null) return summary;
+    return Padding(padding: const EdgeInsets.only(right: 28), child: summary);
+  }
+
+  Widget _buildExpandButton({double size = 22}) {
+    final isExpanded = expanded ?? false;
+    return IconButton(
+      padding: EdgeInsets.zero,
+      onPressed: onToggleExpanded,
+      tooltip: isExpanded
+          ? appLocalizations.collapse
+          : appLocalizations.bundleExpand,
+      icon: Icon(
+        isExpanded ? Icons.expand_less : Icons.expand_more,
+        size: size,
+      ),
+    );
+  }
+
+  double? _usageRatio(SubscriptionInfo info) => info.total > 0
+      ? ((info.upload + info.download) / info.total).clamp(0.0, 1.0)
+      : null;
+
+  String _usagePercent(SubscriptionInfo info) => switch (_usageRatio(info)) {
+    final ratio? => '${(ratio * 100).round()}%',
+    null => '∞',
+  };
+
+  String _compactTrafficText(SubscriptionInfo info) {
+    final used = TrafficValue(value: info.upload + info.download);
+    if (info.total <= 0) return '${used.shortShow} / ∞';
+    final total = TrafficValue(value: info.total);
+    if (used.showUnit != total.showUnit) {
+      return '${used.shortShow} / ${total.shortShow}';
+    }
+    return '${used.trafficValueShow.value.fixed(decimals: 1)} / ${total.shortShow}';
+  }
+
+  TextStyle? _providerTrafficStyle(
+    BuildContext context,
+    SubscriptionInfo info,
+  ) {
+    // T57 carryback (T141): expired, expiring within seven days, or
+    // under a tenth of traffic left all read as warnings.
+    return info.hasWarning
+        ? context.textTheme.labelSmall?.copyWith(
+            color: context.colorScheme.error,
+          )
+        : context.textTheme.labelSmall?.toLight;
+  }
+
+  Widget _buildProviderName(BuildContext context, String name) {
+    return EmojiText(
+      name,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: context.textTheme.labelSmall?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  Widget _buildUsageBar(BuildContext context, double value) {
+    final primary = context.colorScheme.primary;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(2),
+      child: Container(
+        height: 4,
+        alignment: Alignment.centerLeft,
+        color: primary.withValues(alpha: 0.15),
+        child: FractionallySizedBox(
+          widthFactor: value,
+          heightFactor: 1,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  TableRow _buildBarRow(
+    BuildContext context,
+    MapEntry<String, SubscriptionInfo> usage,
+    double top,
+  ) {
+    final info = usage.value;
+    return TableRow(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: top, right: 10),
+          child: _buildProviderName(context, usage.key),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: top),
+          child: _buildUsageBar(context, _usageRatio(info) ?? 0),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: top, left: 10),
+          child: Text(
+            _compactTrafficText(info),
+            maxLines: 1,
+            textAlign: TextAlign.right,
+            style: _providerTrafficStyle(context, info),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBarUsages(
+    BuildContext context,
+    List<MapEntry<String, SubscriptionInfo>> usages,
+  ) {
+    final top = usages.length > 2 ? 2.5 : 6.0;
+    return Table(
+      columnWidths: const {
+        0: MinColumnWidth(IntrinsicColumnWidth(), FractionColumnWidth(0.3)),
+        1: FlexColumnWidth(),
+        2: IntrinsicColumnWidth(),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: [
+        for (final (index, usage) in usages.indexed)
+          _buildBarRow(context, usage, index > 0 ? top : 0),
+      ],
+    );
+  }
+
+  Widget _buildRingUsage(
+    BuildContext context,
+    MapEntry<String, SubscriptionInfo> usage,
+    bool compact,
+  ) {
+    final info = usage.value;
+    final primary = context.colorScheme.primary;
+    return Row(
+      children: [
+        RingChart(
+          size: 38,
+          strokeWidth: 4,
+          total: 1,
+          trackColor: primary.withValues(alpha: 0.15),
+          segments: [
+            RingSegment(value: _usageRatio(info) ?? 0, color: primary),
+          ],
+          centerChild: Text(
+            _usagePercent(info),
+            style: context.textTheme.labelSmall?.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              height: 1,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildProviderName(context, usage.key),
+              const SizedBox(height: 1),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  compact
+                      ? TrafficValue(
+                          value: info.upload + info.download,
+                        ).shortShow
+                      : _compactTrafficText(info),
+                  maxLines: 1,
+                  style: _providerTrafficStyle(context, info),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRingUsages(
+    BuildContext context,
+    List<MapEntry<String, SubscriptionInfo>> usages,
+  ) {
+    return Row(
+      children: [
+        for (final (index, usage) in usages.indexed) ...[
+          if (index > 0) const SizedBox(width: 10),
+          Expanded(child: _buildRingUsage(context, usage, usages.length > 2)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildConcentricUsages(
+    BuildContext context,
+    List<MapEntry<String, SubscriptionInfo>> usages,
+  ) {
+    final primary = context.colorScheme.primary;
+    final colors = [
+      for (final alpha in const [1.0, 0.7, 0.45])
+        primary.withValues(alpha: alpha),
+    ];
+    return Row(
+      children: [
+        SizedBox.square(
+          dimension: 52,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              for (final (index, usage) in usages.indexed)
+                RingChart(
+                  size: 52 - index * 14,
+                  strokeWidth: 5,
+                  total: 1,
+                  trackColor: primary.withValues(alpha: 0.12),
+                  segments: [
+                    RingSegment(
+                      value: _usageRatio(usage.value) ?? 0,
+                      color: colors[index],
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (index, usage) in usages.indexed) ...[
+                if (index > 0) const SizedBox(height: 2),
+                Row(
+                  children: [
+                    SizedBox.square(
+                      dimension: 6,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors[index],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(child: _buildProviderName(context, usage.key)),
+                    const SizedBox(width: 8),
+                    Text(
+                      [
+                        if (_usageRatio(usage.value) != null)
+                          _usagePercent(usage.value),
+                        _compactTrafficText(usage.value),
+                      ].join(' · '),
+                      maxLines: 1,
+                      style: _providerTrafficStyle(context, usage.value),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProviderUsages(
+    BuildContext context,
+    List<MapEntry<String, SubscriptionInfo>> usages,
+  ) {
+    final shown = usages.topByUsage(3);
+    final more = usages.length - shown.length;
+    final aggregate = ProfileUsage.of(profile);
+    final bottomText = [
+      ?aggregate?.usageText,
+      profile.lastUpdateDate?.lastUpdateTimeDesc ?? '',
+      if (more > 0) '+$more',
+    ].join(' · ');
+    final warning =
+        aggregate != null &&
+        (aggregate.isExpired ||
+            (aggregate.daysLeft != null && aggregate.daysLeft! <= 7) ||
+            (aggregate.ratio != null && aggregate.ratio! > 0.9));
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 52,
+          child: Center(
+            child: switch (profile.usageStyle) {
+              ProfileUsageStyle.bar => _buildBarUsages(context, shown),
+              ProfileUsageStyle.ring => _buildRingUsages(context, shown),
+              ProfileUsageStyle.concentric => _buildConcentricUsages(
+                context,
+                shown,
+              ),
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildBottomText(context, bottomText, warning: warning),
+      ],
+    );
+  }
+
   Widget _buildContentInfo(BuildContext context) {
-    final subscriptionInfo = profile.subscriptionInfo;
+    final usages = profile.subscriptionUsages;
+    if (usages.length > 1) return _buildProviderUsages(context, usages);
+    final subscriptionInfo =
+        usages.firstOrNull?.value ?? profile.subscriptionInfo;
     final updateTimeText = profile.lastUpdateDate?.lastUpdateTimeDesc ?? '';
-    final hasUsageBar = subscriptionInfo != null &&
+    final hasUsageBar =
+        subscriptionInfo != null &&
         ((subscriptionInfo.upload + subscriptionInfo.download > 0) ||
             subscriptionInfo.total > 0);
 
@@ -371,18 +1013,22 @@ class ProfileItem extends StatelessWidget {
                     child: Container(
                       height: 5,
                       alignment: Alignment.centerLeft,
-                      color:
-                          context.colorScheme.primary.withValues(alpha: 0.15),
+                      color: context.colorScheme.primary.withValues(
+                        alpha: 0.15,
+                      ),
                       child: FractionallySizedBox(
-                        widthFactor: (subscriptionInfo.total > 0
-                                ? (subscriptionInfo.upload +
-                                        subscriptionInfo.download) /
-                                    subscriptionInfo.total
-                                : 0.0)
-                            .clamp(0.0, 1.0),
+                        widthFactor:
+                            (subscriptionInfo.total > 0
+                                    ? (subscriptionInfo.upload +
+                                              subscriptionInfo.download) /
+                                          subscriptionInfo.total
+                                    : 0.0)
+                                .clamp(0.0, 1.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: context.colorScheme.primary,
+                            color: subscriptionInfo.isLowTraffic
+                                ? context.colorScheme.error
+                                : context.colorScheme.primary,
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
@@ -405,11 +1051,10 @@ class ProfileItem extends StatelessWidget {
                 ),
         ),
         const SizedBox(height: 6),
-        Text(
+        _buildBottomText(
+          context,
           bottomText,
-          style: context.textTheme.labelMedium?.toLight,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          warning: subscriptionInfo?.hasWarning ?? false,
         ),
       ],
     );
@@ -445,6 +1090,41 @@ class ProfileItem extends StatelessWidget {
   //     context.showNotifier(appLocalizations.copySuccess);
   //   }
   // }
+
+  Future<void> _handleChangeUsageStyle() async {
+    final value = await globalState.showAdaptiveSheet<ProfileUsageStyle>(
+      child: OptionsDialog<ProfileUsageStyle>(
+        title: appLocalizations.usageStyle,
+        options: ProfileUsageStyle.values,
+        textBuilder: (style) => style.localizedName,
+        value: profile.usageStyle,
+      ),
+    );
+    if (value == null) return;
+    final appController = globalState.appController;
+    final latest = appController.ref
+        .read(profilesProvider)
+        .getProfile(profile.id);
+    if (latest == null || latest.usageStyle == value) return;
+    appController.setProfile(latest.copyWith(usageStyle: value));
+  }
+
+  /// T139: per-profile managed-mode toggle, the profile card menu's
+  /// shortcut for the same single-choice binding the scripts page
+  /// picker writes (see [profileWithScriptChoice]). Off by default;
+  /// only a deliberate tap binds the bundled managed script. Applying
+  /// mirrors the edit page's managed switch: a running profile is
+  /// re-applied, any other profile just records the choice.
+  void _handleToggleManagedMode() {
+    final appController = globalState.appController;
+    final latest = appController.ref
+        .read(profilesProvider)
+        .getProfile(profile.id);
+    if (latest == null || latest.bundle != null) return;
+    appController.setProfileAndAutoApply(
+      profileWithScriptChoice(latest, latest.managed ? null : managedScriptId),
+    );
+  }
 
   Future<void> _handleExportFile(BuildContext context) async {
     final res = await globalState.appController.safeRun<bool>(
@@ -484,7 +1164,7 @@ class ProfileItem extends StatelessWidget {
           _handleShowEditExtendPage(context);
         },
       ),
-      if (profile.type == ProfileType.url) ...[
+      if (profile.type != ProfileType.file) ...[
         PopupMenuItemData(
           icon: Icons.sync_alt_sharp,
           label: appLocalizations.sync,
@@ -500,11 +1180,19 @@ class ProfileItem extends StatelessWidget {
           _handlePushGenProfilePage(context, profile.id);
         },
       ),
+      if (profile.bundle == null)
+        PopupMenuItemData(
+          icon: profile.managed
+              ? Icons.check_circle_rounded
+              : Icons.circle_outlined,
+          label: appLocalizations.managedMode,
+          onPressed: () {
+            _handleToggleManagedMode();
+          },
+        ),
       PopupMenuItemData(
         icon: Icons.alt_route,
-        label: Localizations.localeOf(context).languageCode == 'zh'
-            ? '链式代理'
-            : 'Chain',
+        label: appLocalizations.chainTitle,
         onPressed: () {
           BaseNavigator.push(context, ProfileChainPage(profile: profile));
         },
@@ -516,6 +1204,12 @@ class ProfileItem extends StatelessWidget {
           _handleExportFile(context);
         },
       ),
+      if (profile.subscriptionUsages.length > 1)
+        PopupMenuItemData(
+          icon: Icons.donut_large_outlined,
+          label: appLocalizations.usageStyle,
+          onPressed: _handleChangeUsageStyle,
+        ),
       PopupMenuItemData(
         icon: Icons.delete_outlined,
         label: appLocalizations.delete,
@@ -557,9 +1251,12 @@ class ProfileItem extends StatelessWidget {
         child: profile.isUpdating
             ? Padding(
                 padding: const EdgeInsets.all(6),
-                child: SpinKitFadingCircle(
-                  color: context.colorScheme.primary,
+                child: SyncedLoading(
                   size: 24,
+                  child: SpinKitFadingCircle(
+                    color: context.colorScheme.primary,
+                    size: 24,
+                  ),
                 ),
               )
             : CommonPopupBox(
@@ -594,6 +1291,12 @@ class ProfileItem extends StatelessWidget {
           ),
         ),
         Positioned(top: 6, right: 6, child: trailingWidget),
+        if (onToggleExpanded != null)
+          Positioned(
+            right: 6,
+            bottom: 4,
+            child: SizedBox.square(dimension: 36, child: _buildExpandButton()),
+          ),
       ],
     );
   }
@@ -609,14 +1312,12 @@ class ProfileItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildTitleRow(context),
-                  _buildContentInfo(context),
-                ],
+                children: [_buildTitleRow(context), _buildContentInfo(context)],
               ),
             ),
           ),
         ),
+        if (onToggleExpanded != null) _buildExpandButton(size: 24),
         IconButton(
           onPressed: () => _showTVMenu(context),
           icon: const Icon(Icons.more_vert),
@@ -628,11 +1329,194 @@ class ProfileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTV = globalState.isAndroidTV;
-    return CommonCard(
+    final card = CommonCard(
       isSelected: profile.id == groupValue,
+      selectWidget: profile.id == groupValue
+          ? const _CurrentProfileMarker()
+          : null,
       onPressed: isTV ? null : () => onChanged(profile.id),
       onLongPress: isTV ? null : () => _handlePreviewRuntimeConfig(context),
       child: isTV ? _buildTVLayout(context) : _buildNormalLayout(context),
+    );
+    if (isTV) return card;
+    return GestureDetector(
+      onSecondaryTapUp: profile.isUpdating
+          ? null
+          : (details) => showContextMenu(
+              context,
+              position: details.globalPosition,
+              items: _buildMenuItems(context),
+            ),
+      child: card,
+    );
+  }
+}
+
+/// The current profile's triple signal (T126), in the family's selected
+/// language: a gradient bar at the row start and a faint primary wash
+/// over the card, both sourced from the active variant's tokens. The
+/// third signal, the textual badge, lives in the title row.
+class _CurrentProfileMarker extends StatelessWidget {
+  const _CurrentProfileMarker();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final selected = context.zodiac?.variant.selected;
+    final Gradient barGradient;
+    if (selected != null && selected.isGradient) {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: selected.stops!,
+      );
+    } else if (selected != null && !selected.isNone) {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [selected.firstColor, colorScheme.secondary],
+      );
+    } else {
+      barGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [colorScheme.primary, colorScheme.secondary],
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(
+                alpha: isLight ? 0.07 : 0.12,
+              ),
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          start: 0,
+          top: 14,
+          bottom: 14,
+          child: IgnorePointer(
+            child: Container(
+              width: 5,
+              decoration: BoxDecoration(
+                gradient: barGradient,
+                borderRadius: BorderRadius.circular(2.5),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The current profile's badge (T126): a pill in the variant's selected
+/// face (gradient where the skeleton defines one) with onPrimary text.
+class _CurrentProfileBadge extends StatelessWidget {
+  const _CurrentProfileBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final selected = context.zodiac?.variant.selected;
+    final radius = BorderRadius.circular(999);
+    final decoration = selected != null && selected.isGradient
+        ? BoxDecoration(gradient: selected.selectedGradient, borderRadius: radius)
+        : BoxDecoration(
+            color: selected != null && !selected.isNone
+                ? selected.firstColor
+                : colorScheme.primary,
+            borderRadius: radius,
+          );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: decoration,
+      child: Text(
+        appLocalizations.profileCurrent,
+        style: TextStyle(
+          color: colorScheme.onPrimary,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+/// The managed-mode badge (T152): shown only while the profile runs the
+/// managed script (the T139 authority, [Profile.runsManagedScript]).
+/// Neutral face, no color semantics — presence alone is the signal. Same
+/// pill geometry as [_CurrentProfileBadge].
+class _ManagedProfileBadge extends StatelessWidget {
+  const _ManagedProfileBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        appLocalizations.managedMode,
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+/// The chain health badge (T152): shown only while the profile has a
+/// chain enabled. Green when the saved entry and exit references both
+/// resolve, red when any end is stale; the colors are the current
+/// zodiac variant's semantic tokens (the node status light's source),
+/// never hard-coded hues. Same pill geometry as [_CurrentProfileBadge].
+class _ChainProfileBadge extends StatelessWidget {
+  final bool healthy;
+
+  const _ChainProfileBadge({required this.healthy});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final variant = context.zodiac?.variant;
+    final color = healthy
+        ? (variant?.success ?? const Color(0xFF2E9E4F))
+        : (variant?.error ?? colorScheme.error);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.link_rounded, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            appLocalizations.chainBadge,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -697,42 +1581,44 @@ class _ReorderableProfilesSheetState extends State<ReorderableProfilesSheet> {
           icon: Icon(Icons.save),
         ),
       ],
-      body: Padding(
-        padding: EdgeInsets.only(bottom: 32, top: 16),
-        child: ReorderableListView.builder(
-          buildDefaultDragHandles: false,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          proxyDecorator: proxyDecorator,
-          // ignore: deprecated_member_use
-          onReorder: (oldIndex, newIndex) {
-            setState(() {
-              if (oldIndex < newIndex) {
-                newIndex -= 1;
-              }
-              final profile = profiles.removeAt(oldIndex);
-              profiles.insert(newIndex, profile);
-            });
-          },
-          itemBuilder: (_, index) {
-            final profile = profiles[index];
-            return Container(
-              key: Key(profile.id),
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: CommonCard(
-                type: CommonCardType.filled,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.only(right: 16, left: 16),
-                  title: EmojiText(profile.label ?? profile.id),
-                  trailing: ReorderableDragStartListener(
-                    index: index,
-                    child: const Icon(Icons.drag_handle),
-                  ),
+      body: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
+        padding: EdgeInsets.fromLTRB(
+          12,
+          16,
+          12,
+          32 + MediaQuery.paddingOf(context).bottom,
+        ),
+        proxyDecorator: proxyDecorator,
+        // ignore: deprecated_member_use
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+            final profile = profiles.removeAt(oldIndex);
+            profiles.insert(newIndex, profile);
+          });
+        },
+        itemBuilder: (_, index) {
+          final profile = profiles[index];
+          return Container(
+            key: Key(profile.id),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: CommonCard(
+              type: CommonCardType.filled,
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(right: 16, left: 16),
+                title: EmojiText(profile.label ?? profile.id),
+                trailing: ReorderableDragStartListener(
+                  index: index,
+                  child: const Icon(Icons.drag_handle),
                 ),
               ),
-            );
-          },
-          itemCount: profiles.length,
-        ),
+            ),
+          );
+        },
+        itemCount: profiles.length,
       ),
       title: appLocalizations.profilesSort,
     );

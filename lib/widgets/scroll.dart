@@ -4,13 +4,26 @@ import 'package:collection/collection.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
+class FloatingBottomBarScope extends InheritedWidget {
+  const FloatingBottomBarScope({super.key, required super.child});
+
+  static bool has(BuildContext context) {
+    return context.getInheritedWidgetOfExactType<FloatingBottomBarScope>() !=
+        null;
+  }
+
+  @override
+  bool updateShouldNotify(FloatingBottomBarScope oldWidget) => false;
+}
 
 class CommonScrollBar extends StatelessWidget {
   final ScrollController? controller;
   final Widget child;
   final bool trackVisibility;
   final bool thumbVisibility;
+  final Axis axis;
 
   const CommonScrollBar({
     super.key,
@@ -18,10 +31,10 @@ class CommonScrollBar extends StatelessWidget {
     required this.controller,
     this.trackVisibility = false,
     this.thumbVisibility = false,
+    this.axis = Axis.vertical,
   });
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildScrollbar(Widget child) {
     final hasController = controller != null;
     return Scrollbar(
       controller: controller,
@@ -31,6 +44,22 @@ class CommonScrollBar extends StatelessWidget {
       radius: const Radius.circular(8),
       interactive: hasController,
       child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (axis != Axis.vertical || !FloatingBottomBarScope.has(context)) {
+      return _buildScrollbar(child);
+    }
+    final mediaQuery = MediaQuery.of(context);
+    return MediaQuery(
+      data: mediaQuery.copyWith(
+        padding: mediaQuery.padding.copyWith(
+          bottom: getFloatingBottomBarReserveHeight(context),
+        ),
+      ),
+      child: _buildScrollbar(MediaQuery(data: mediaQuery, child: child)),
     );
   }
 }
@@ -80,6 +109,22 @@ class _ScrollToEndBoxState<T> extends State<ScrollToEndBox<T>> {
     return completer.future;
   }
 
+  bool _isDataChanged(List<T> oldList, List<T> newList) {
+    if (identical(oldList, newList)) return false;
+    final length = oldList.length;
+    if (length != newList.length) return true;
+    if (length == 0) return false;
+    if (!identical(oldList.last, newList.last) &&
+        oldList.last != newList.last) {
+      return true;
+    }
+    if (!identical(oldList.first, newList.first) &&
+        oldList.first != newList.first) {
+      return true;
+    }
+    return !_equals.equals(oldList, newList);
+  }
+
   @override
   void didUpdateWidget(ScrollToEndBox<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -89,7 +134,7 @@ class _ScrollToEndBoxState<T> extends State<ScrollToEndBox<T>> {
       return;
     }
     if (widget.enable &&
-        !_equals.equals(oldWidget.dataSource, widget.dataSource)) {
+        _isDataChanged(oldWidget.dataSource, widget.dataSource)) {
       _handleTryToEnd();
     }
   }

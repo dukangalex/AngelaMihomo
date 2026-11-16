@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:bett_box/common/color.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 
 typedef CloseContainerActionCallback<S> = void Function({S? returnValue});
@@ -416,8 +417,8 @@ class _OpenContainerRoute<T> extends ModalRoute<T> {
   ) {
     _colorTween = _getColorTween(
       transitionType: transitionType,
-      closedColor: Theme.of(context).colorScheme.surface,
-      openColor: Theme.of(context).colorScheme.surface,
+      closedColor: Theme.of(context).colorScheme.pageColor,
+      openColor: Theme.of(context).colorScheme.pageColor,
       middleColor: middleColor,
     );
     return Align(

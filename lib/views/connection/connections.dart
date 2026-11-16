@@ -7,11 +7,14 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'item.dart';
+
+enum _ConnectionsTab { active, closed, all }
 
 class ConnectionsView extends ConsumerStatefulWidget {
   final bool respectCurrentPage;
@@ -27,6 +30,13 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   late final ScrollController _scrollController;
   Timer? _timer;
   ProviderSubscription? _pageLabelSubscription;
+  var _isScrolling = false;
+  var _isTrackingRequests = false;
+  var _isUpdating = false;
+  var _needsUpdate = false;
+  var _autoScrollToEnd = false;
+  var _tab = _ConnectionsTab.active;
+  List<TrackerInfo>? _pendingConnections;
 
   bool get _isForeground {
     final lifecycleState = WidgetsBinding.instance.lifecycleState;
@@ -52,7 +62,8 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_syncUpdateTimer());
+      if (!mounted) return;
+      context.afterRouteTransition(() => unawaited(_syncUpdateTimer()));
     });
   }
 
@@ -65,6 +76,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     }
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
+    _stopTrackRequests();
     _scrollController.dispose();
     super.dispose();
   }
@@ -87,17 +99,23 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     return true;
   }
 
+  void _stopUpdate() {
+    _timer?.cancel();
+    _timer = null;
+    _stopTrackRequests();
+  }
+
   Future<void> _syncUpdateTimer() async {
     final shouldRun = await _shouldRunTimer();
     if (!mounted) return;
     if (!shouldRun) {
-      _timer?.cancel();
-      _timer = null;
+      _stopUpdate();
       return;
     }
     if (_timer != null) {
       return;
     }
+    unawaited(_startTrackRequests());
     await _updateConnections();
     if (!mounted || !await _shouldRunTimer()) {
       return;
@@ -108,38 +126,90 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     });
   }
 
+  bool _isSameRequests(List<TrackerInfo> a, List<TrackerInfo> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) return false;
+    }
+    return true;
+  }
+
+  Future<void> _startTrackRequests() async {
+    if (_isTrackingRequests) return;
+    _isTrackingRequests = true;
+    clashCore.startTrackRequests();
+    final history = await clashCore.getRequests();
+    if (!mounted || history.isEmpty) return;
+    final current = ref.read(requestsProvider).list;
+    if (_isSameRequests(current, history)) return;
+    ref.read(requestsProvider.notifier).setRequests(history);
+  }
+
+  void _stopTrackRequests() {
+    if (!_isTrackingRequests) return;
+    _isTrackingRequests = false;
+    clashCore.stopTrackRequests();
+  }
+
+  void _applyPendingConnections() {
+    if (_pendingConnections != null) {
+      ref.read(connectionsProvider.notifier).state = _pendingConnections!;
+      _pendingConnections = null;
+    }
+  }
+
   Future<void> _updateConnections() async {
+    if (_isUpdating) {
+      _needsUpdate = true;
+      return;
+    }
+    _isUpdating = true;
+    try {
+      do {
+        _needsUpdate = false;
+        await _refreshConnections();
+      } while (_needsUpdate && mounted);
+    } finally {
+      _isUpdating = false;
+    }
+  }
+
+  bool _isSameTraffic(TrackerInfo a, TrackerInfo b) =>
+      a.upload == b.upload &&
+      a.download == b.download &&
+      a.uploadSpeed == b.uploadSpeed &&
+      a.downloadSpeed == b.downloadSpeed;
+
+  Future<void> _refreshConnections() async {
     if (!mounted || !await _shouldRunTimer()) {
-      _timer?.cancel();
-      _timer = null;
+      _stopUpdate();
       return;
     }
     final connections = await clashCore.getConnections();
     if (!mounted || !await _shouldRunTimer()) {
-      _timer?.cancel();
-      _timer = null;
+      _stopUpdate();
       return;
     }
     final oldConnections = ref.read(connectionsProvider);
     final oldMap = {for (final e in oldConnections) e.id: e};
     var hasChanges = oldConnections.length != connections.length;
-    final newConnections = connections.map((item) {
+    final newConnections = <TrackerInfo>[];
+    for (final item in connections) {
       final oldItem = oldMap[item.id];
-      if (oldItem != null) {
-        final upSpeed = item.upload - oldItem.upload;
-        final downSpeed = item.download - oldItem.download;
-        final newItem = item.copyWith(
-          uploadSpeed: upSpeed > 0 ? upSpeed : 0,
-          downloadSpeed: downSpeed > 0 ? downSpeed : 0,
-        );
-        if (newItem != oldItem) hasChanges = true;
-        return newItem;
+      if (oldItem != null && _isSameTraffic(oldItem, item)) {
+        newConnections.add(oldItem);
+      } else {
+        hasChanges = true;
+        newConnections.add(item);
       }
-      hasChanges = true;
-      return item.copyWith(uploadSpeed: 0, downloadSpeed: 0);
-    }).toList();
+    }
     if (hasChanges) {
-      ref.read(connectionsProvider.notifier).state = newConnections;
+      if (_isScrolling) {
+        _pendingConnections = newConnections;
+      } else {
+        ref.read(connectionsProvider.notifier).state = newConnections;
+      }
     }
   }
 
@@ -164,12 +234,58 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
 
   Future<void> _handleBlockConnection(String id) async {
     clashCore.closeConnection(id);
+    _isScrolling = false;
+    _pendingConnections = null;
     await _updateConnections();
   }
 
   void _handleCloseAll() async {
-    clashCore.closeConnections();
+    unawaited(
+      clashCore.closeConnections().then<void>(
+        (_) {},
+        onError: (Object e) =>
+            commonPrint.debug('closeConnections ignored: $e'),
+      ),
+    );
+    _isScrolling = false;
+    _pendingConnections = null;
     await _updateConnections();
+  }
+
+  void _handleClearClosed() {
+    ref.read(requestsProvider.notifier).clearRequests();
+    clashCore.clearRequests();
+  }
+
+  Future<void> _handleSort() async {
+    final currentSortType = ref.read(connectionsSortProvider);
+    final selectedSortType = await globalState
+        .showAdaptiveSheet<ConnectionsSortType>(
+          child: OptionsDialog<ConnectionsSortType>(
+            title: appLocalizations.connectionsSort,
+            options: ConnectionsSortType.values
+                .where(
+                  (sortType) => sortType != ConnectionsSortType.creationTime,
+                )
+                .toList(),
+            value: currentSortType,
+            textBuilder: (sortType) {
+              return switch (sortType) {
+                ConnectionsSortType.defaultSort => appLocalizations.defaultSort,
+                ConnectionsSortType.realTimeSpeed =>
+                  appLocalizations.realTimeSpeed,
+                ConnectionsSortType.totalTraffic =>
+                  appLocalizations.totalTraffic,
+                ConnectionsSortType.creationTime =>
+                  appLocalizations.creationTime,
+              };
+            },
+          ),
+        );
+    if (selectedSortType == null || !mounted) return;
+    if (selectedSortType != currentSortType) {
+      ref.read(connectionsSortProvider.notifier).state = selectedSortType;
+    }
   }
 
   void _onSearch(String value) {
@@ -177,7 +293,326 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   }
 
   void _onKeywordsUpdate(List<String> keywords) {
-    ref.read(connectionsKeywordsProvider.notifier).state = keywords;
+    final notifier = ref.read(connectionsKeywordsProvider.notifier);
+    if (listEquals(notifier.state, keywords)) return;
+    notifier.state = keywords;
+  }
+
+  void _handleTabChanged(_ConnectionsTab tab) {
+    if (tab == _tab) return;
+    setState(() {
+      _tab = tab;
+      _autoScrollToEnd = false;
+    });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  void _toggleAutoScroll() {
+    setState(() {
+      _autoScrollToEnd = !_autoScrollToEnd;
+    });
+  }
+
+  void _cancelAutoScroll() {
+    if (_autoScrollToEnd) {
+      setState(() {
+        _autoScrollToEnd = false;
+      });
+    }
+  }
+
+  List<Widget> _buildActions() {
+    if (_tab == _ConnectionsTab.closed) {
+      return [
+        IconButton(
+          onPressed: _handleClearClosed,
+          tooltip: appLocalizations.clear,
+          icon: const Icon(Icons.delete_sweep_outlined),
+        ),
+        IconButton(
+          style: _autoScrollToEnd
+              ? ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
+                    context.colorScheme.secondaryContainer,
+                  ),
+                )
+              : null,
+          onPressed: _toggleAutoScroll,
+          tooltip: appLocalizations.autoScroll,
+          icon: const Icon(Icons.vertical_align_top_outlined),
+        ),
+      ];
+    }
+    return [
+      IconButton(
+        onPressed: _handleCloseAll,
+        tooltip: appLocalizations.closeAll,
+        icon: const Icon(Icons.delete_sweep_outlined),
+      ),
+      IconButton(
+        tooltip: appLocalizations.connectionsSort,
+        onPressed: _handleSort,
+        icon: const Icon(Icons.sort),
+      ),
+    ];
+  }
+
+  Widget _buildTabs() {
+    return Consumer(
+      builder: (_, ref, _) {
+        final activeCount = ref.watch(
+          filteredConnectionsProvider.select((state) => state.length),
+        );
+        final closedCount = ref.watch(
+          filteredRequestsProvider.select((state) => state.length),
+        );
+        final udpOnly = ref.watch(connectionsUdpOnlyProvider);
+        const tabs = _ConnectionsTab.values;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+          child: Row(
+            children: [
+              Row(
+                spacing: 2,
+                children: [
+                  for (final tab in tabs)
+                    SegmentButton(
+                      selected: tab == _tab,
+                      first: tab == tabs.first,
+                      last: tab == tabs.last,
+                      label: switch (tab) {
+                        _ConnectionsTab.active =>
+                          '${appLocalizations.connectionsActive} $activeCount',
+                        _ConnectionsTab.closed =>
+                          '${appLocalizations.connectionsClosed} $closedCount',
+                        _ConnectionsTab.all => appLocalizations.categoryAll,
+                      },
+                      onTap: () => _handleTabChanged(tab),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              SegmentButton(
+                selected: udpOnly,
+                leading: const Icon(Icons.stream_rounded),
+                label: 'UDP',
+                onTap: () =>
+                    ref.read(connectionsUdpOnlyProvider.notifier).toggle(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBlockButton(String id) {
+    return InkResponse(
+      radius: 12,
+      onTap: () => _handleBlockConnection(id),
+      child: SizedBox.square(
+        dimension: 40,
+        child: Icon(Icons.block, color: context.colorScheme.onSurfaceVariant),
+      ),
+    );
+  }
+
+  Widget _buildClosedMark() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Text(
+        appLocalizations.connectionsClosed,
+        style: context.textTheme.bodySmall?.copyWith(
+          color: context.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItem(
+    BuildContext itemContext, {
+    required TrackerInfo trackerInfo,
+    required int index,
+    required int count,
+    required bool closed,
+    required bool showSpeed,
+    required bool markClosed,
+  }) {
+    final item = TrackerInfoItem(
+      key: ValueKey(trackerInfo.id),
+      index: index,
+      count: count,
+      showSpeed: !closed && showSpeed,
+      trackerInfo: trackerInfo,
+      onClickKeyword: (value) {
+        itemContext.commonScaffoldState?.addKeyword(value);
+      },
+      trailing: closed
+          ? (markClosed ? _buildClosedMark() : null)
+          : _buildBlockButton(trackerInfo.id),
+      detailTitle: appLocalizations.details,
+    );
+    if (!markClosed || !closed) return item;
+    return Opacity(key: ValueKey(trackerInfo.id), opacity: 0.6, child: item);
+  }
+
+  Widget _buildList({
+    required int count,
+    required String Function(int index) idOf,
+    required Widget Function(BuildContext context, int index) itemOf,
+    bool autoScroll = false,
+    List<Object>? dataSource,
+  }) {
+    if (count == 0) {
+      final udpOnly = ref.watch(connectionsUdpOnlyProvider);
+      return NullStatus(
+        label: udpOnly
+            ? appLocalizations.nullUdpConnections
+            : appLocalizations.nullTip(appLocalizations.connections),
+        icon: Icons.swap_vert_rounded,
+      );
+    }
+    Map<String, int>? indexById;
+    final scrollView = RouteScrollCacheBuilder(
+      builder: (_, cacheExtent) => CustomScrollView(
+        controller: _scrollController,
+        physics: const NextClampingScrollPhysics(),
+        scrollCacheExtent: cacheExtent,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            sliver: SliverFixedExtentList(
+              itemExtent: TrackerInfoItem.height + 1,
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => itemOf(context, index),
+                childCount: count,
+                findChildIndexCallback: (key) {
+                  indexById ??= {for (var i = 0; i < count; i++) idOf(i): i};
+                  return indexById![(key as ValueKey<String>).value];
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return CommonScrollBar(
+      controller: _scrollController,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification) {
+            _isScrolling = true;
+          } else if (notification is ScrollEndNotification) {
+            _isScrolling = false;
+            _applyPendingConnections();
+          }
+          return false;
+        },
+        child: autoScroll && dataSource != null
+            ? ScrollToEndBox(
+                controller: _scrollController,
+                dataSource: dataSource,
+                enable: _autoScrollToEnd,
+                reverse: false,
+                onCancelToEnd: _cancelAutoScroll,
+                child: scrollView,
+              )
+            : scrollView,
+      ),
+    );
+  }
+
+  Widget _buildActiveList() {
+    return Consumer(
+      builder: (_, ref, _) {
+        final connections = ref.watch(filteredConnectionsProvider);
+        final showSpeed =
+            ref.watch(connectionsSortProvider) !=
+            ConnectionsSortType.totalTraffic;
+        return _buildList(
+          count: connections.length,
+          idOf: (index) => connections[index].id,
+          itemOf: (context, index) => _buildItem(
+            context,
+            trackerInfo: connections[index],
+            index: index,
+            count: connections.length,
+            closed: false,
+            showSpeed: showSpeed,
+            markClosed: false,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClosedList() {
+    return Consumer(
+      builder: (_, ref, _) {
+        final requests = ref.watch(filteredRequestsProvider);
+        ref.listen<List<TrackerInfo>>(filteredRequestsProvider, (prev, next) {
+          if (prev == null || prev.isEmpty || next.isEmpty) return;
+          if (_autoScrollToEnd ||
+              !_scrollController.hasClients ||
+              _scrollController.offset <= 0 ||
+              next.last.id == prev.last.id) {
+            return;
+          }
+          final prevLastId = prev.last.id;
+          final index = next.indexWhere((r) => r.id == prevLastId);
+          final addedCount = index == -1
+              ? next.length - prev.length
+              : next.length - 1 - index;
+          if (addedCount > 0) {
+            final delta = addedCount * (TrackerInfoItem.height + 1);
+            _scrollController.jumpTo(_scrollController.offset + delta);
+          }
+        });
+        final count = requests.length;
+        return _buildList(
+          count: count,
+          autoScroll: true,
+          dataSource: requests,
+          idOf: (index) => requests[count - 1 - index].id,
+          itemOf: (context, index) => _buildItem(
+            context,
+            trackerInfo: requests[count - 1 - index],
+            index: index,
+            count: count,
+            closed: true,
+            showSpeed: false,
+            markClosed: false,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAllList() {
+    return Consumer(
+      builder: (_, ref, _) {
+        final items = ref.watch(filteredAllConnectionsProvider);
+        final showSpeed =
+            ref.watch(connectionsSortProvider) !=
+            ConnectionsSortType.totalTraffic;
+        return _buildList(
+          count: items.length,
+          idOf: (index) => items[index].info.id,
+          itemOf: (context, index) => _buildItem(
+            context,
+            trackerInfo: items[index].info,
+            index: index,
+            count: items.length,
+            closed: items[index].closed,
+            showSpeed: showSpeed,
+            markClosed: true,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -186,95 +621,19 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       title: appLocalizations.connections,
       onKeywordsUpdate: _onKeywordsUpdate,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      actions: [
-        IconButton(
-          onPressed: _handleCloseAll,
-          tooltip: appLocalizations.closeAll,
-          icon: const Icon(Icons.delete_sweep_outlined),
-        ),
-        IconButton(
-          tooltip: appLocalizations.connectionsSort,
-          onPressed: () async {
-            final currentSortType = ref.read(connectionsSortProvider);
-            final selectedSortType = await globalState
-                .showCommonDialog<ConnectionsSortType>(
-                  child: OptionsDialog<ConnectionsSortType>(
-                    title: appLocalizations.connectionsSort,
-                    options: ConnectionsSortType.values
-                        .where(
-                          (sortType) =>
-                              sortType != ConnectionsSortType.creationTime,
-                        )
-                        .toList(),
-                    value: currentSortType,
-                    textBuilder: (sortType) {
-                      return switch (sortType) {
-                        ConnectionsSortType.defaultSort =>
-                          appLocalizations.defaultSort,
-                        ConnectionsSortType.realTimeSpeed =>
-                          appLocalizations.realTimeSpeed,
-                        ConnectionsSortType.totalTraffic =>
-                          appLocalizations.totalTraffic,
-                        ConnectionsSortType.creationTime =>
-                          appLocalizations.creationTime,
-                      };
-                    },
-                  ),
-                );
-            if (selectedSortType != null &&
-                selectedSortType != currentSortType) {
-              ref.read(connectionsSortProvider.notifier).state =
-                  selectedSortType;
-            }
-          },
-          icon: const Icon(Icons.sort),
-        ),
-      ],
-      body: Consumer(
-        builder: (_, ref, _) {
-          final connections = ref.watch(filteredConnectionsProvider);
-          final hasConnections = connections.isNotEmpty;
-
-          if (!hasConnections) {
-            return NullStatus(
-              label: appLocalizations.nullTip(appLocalizations.connections),
-            );
-          }
-
-          return CommonScrollBar(
-            controller: _scrollController,
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 16, top: 8),
-              itemBuilder: (context, index) {
-                final trackerInfo = connections[index];
-                return TrackerInfoItem(
-                  key: ValueKey(trackerInfo.id),
-                  index: index,
-                  count: connections.length,
-                  trackerInfo: trackerInfo,
-                  onClickKeyword: (value) {
-                    context.commonScaffoldState?.addKeyword(value);
-                  },
-                  trailing: IconButton(
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    style: const ButtonStyle(
-                      minimumSize: WidgetStatePropertyAll(Size.zero),
-                    ),
-                    icon: const Icon(Icons.block),
-                    onPressed: () => _handleBlockConnection(trackerInfo.id),
-                  ),
-                  detailTitle: appLocalizations.details,
-                );
-              },
-              itemExtentBuilder: (index, _) {
-                return TrackerInfoItem.height + 1;
-              },
-              itemCount: connections.length,
-            ),
-          );
-        },
+      actions: _buildActions(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTabs(),
+          Expanded(
+            child: switch (_tab) {
+              _ConnectionsTab.active => _buildActiveList(),
+              _ConnectionsTab.closed => _buildClosedList(),
+              _ConnectionsTab.all => _buildAllList(),
+            },
+          ),
+        ],
       ),
     );
   }

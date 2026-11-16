@@ -26,15 +26,17 @@ class AppDelegate: FlutterAppDelegate {
     }
     
     override func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag {
-            for window in NSApp.windows {
-                if !window.isVisible {
-                    window.setIsVisible(true)
-                }
-                window.makeKeyAndOrderFront(self)
-                NSApp.activate(ignoringOtherApps: true)
-            }
+        guard let window = mainFlutterWindow else {
+            return true
         }
-        return true
+        if UserDefaults.standard.object(forKey: "flutter.keepDockIcon") as? Bool == false {
+            NSApp.setActivationPolicy(.regular)
+        }
+        if window.isMiniaturized {
+            window.deminiaturize(self)
+        }
+        window.makeKeyAndOrderFront(self)
+        NSApp.activate(ignoringOtherApps: true)
+        return false
     }
 }

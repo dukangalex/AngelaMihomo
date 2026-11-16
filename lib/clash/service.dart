@@ -7,10 +7,10 @@ import 'package:bett_box/clash/interface.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/helper/helper.dart';
-import 'package:bett_box/models/core.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/utils/frame_codec.dart';
 import 'package:bett_box/utils/platform_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 class ClashService extends ClashHandlerInterface {
@@ -22,6 +22,9 @@ class ClashService extends ClashHandlerInterface {
 
   bool isStarting = false;
   bool _isDestroying = false;
+  bool _coreLost = false;
+  Socket? _socket;
+  DateTime? _lastAutoRestartAt;
 
   Process? process;
 
@@ -44,9 +47,7 @@ class ClashService extends ClashHandlerInterface {
     _transportType = await PlatformChecker.getRecommendedTransport();
 
     if (_transportType == TransportType.unixSocket) {
-      final random = Random().nextInt(10000);
-      final tempDir = Directory.systemTemp.path;
-      _socketPath = p.join(tempDir, 'Bettbox_$random.sock');
+      _socketPath = _newSocketPath();
       commonPrint.log('Using Unix Domain Socket: $_socketPath');
     } else {
       _tcpPort = PlatformChecker.getRandomPort();
@@ -55,6 +56,23 @@ class ClashService extends ClashHandlerInterface {
 
     _initServer();
     reStart();
+  }
+
+  String _newSocketPath() {
+    final token = Random.secure().nextInt(1 << 32).toRadixString(16);
+    return p.join(Directory.systemTemp.path, 'AngelaMihomo_$token.sock');
+  }
+
+  Future<void> _rebindTransport() async {
+    try {
+      await (await serverCompleter.future).close();
+    } catch (_) {}
+    serverCompleter = Completer();
+    if (_transportType == TransportType.unixSocket) {
+      _socketPath = _newSocketPath();
+      await _deleteSocketFile();
+    }
+    _initServer();
   }
 
   Future<void> _initServer() async {
@@ -77,28 +95,36 @@ class ClashService extends ClashHandlerInterface {
 
         serverCompleter.complete(server);
         await for (final socket in server) {
+          if (_socket != null && !isStarting) {
+            socket.destroy();
+            continue;
+          }
           await _destroySocket();
+          _socket = socket;
+          _coreLost = false;
           socketCompleter.complete(socket);
 
           socket
               .transform(FrameDecoderTransformer())
               .listen(
                 (data) {
-                  handleResult(ActionResult.fromJson(json.decode(data)));
+                  handleResultMessage(data);
                 },
                 onError: (error) {
                   if (_isDestroying || globalState.isExiting) return;
-                  commonPrint.log('Frame decode error: $error');
+                  commonPrint.error('Frame decode error: $error');
                 },
                 onDone: () {
                   commonPrint.log('Socket connection closed');
+                  abortRequests(socket);
+                  _handleSocketClosed(socket);
                 },
               );
         }
       },
       (error, stack) {
         if (_isDestroying || globalState.isExiting) return;
-        commonPrint.log(error.toString());
+        commonPrint.error(error.toString());
         if (error is SocketException &&
             !_isDestroying &&
             !globalState.isExiting) {
@@ -123,6 +149,7 @@ class ClashService extends ClashHandlerInterface {
       // core after this call returns. Queued calls will run sequentially.
       await _doRestart();
     } finally {
+      isStarting = false;
       if (_restartCompleter == completer) {
         _restartCompleter = null;
       }
@@ -135,10 +162,11 @@ class ClashService extends ClashHandlerInterface {
   Future<void> _doRestart() async {
     isStarting = true;
     _isDestroying = false;
+    _coreLost = false;
 
     await _destroySocket();
 
-    if (system.isWindows) {
+    if (_usesHelper) {
       await helperClient.stopCore().catchError((_) => false);
     }
 
@@ -154,7 +182,7 @@ class ClashService extends ClashHandlerInterface {
     }
     process = null;
 
-    socketCompleter = Completer();
+    await _destroySocket();
 
     final serverSocket = await serverCompleter.future;
 
@@ -169,8 +197,10 @@ class ClashService extends ClashHandlerInterface {
     final environment = Map<String, String>.from(Platform.environment);
     environment['SAFE_PATHS'] = homeDirPath;
 
-    if (system.isWindows) {
-      final serviceOk = await windows?.registerService() ?? false;
+    if (_usesHelper) {
+      final serviceOk = AppIdentity.isDev
+          ? (await windows?.isHelperHealthy() ?? false)
+          : (await windows?.registerService() ?? false);
       if (serviceOk) {
         final started = await helperClient.startCore(
           corePath: appPath.corePath,
@@ -178,9 +208,12 @@ class ClashService extends ClashHandlerInterface {
           homeDir: homeDirPath,
         );
         if (started) {
-          await _waitForCoreReady();
+          if (!await _waitForCoreReady()) {
+            throw const CoreDisconnectedException();
+          }
           isStarting = false;
-          if (system.isWindows && globalState.config.appSetting.enableHighPriority) {
+          if (system.isWindows &&
+              globalState.config.appSetting.enableHighPriority) {
             unawaited(
               helperClient
                   .setProcessPriority(
@@ -188,46 +221,107 @@ class ClashService extends ClashHandlerInterface {
                     true,
                   )
                   .catchError((e) {
-                    commonPrint.log('Failed to set core process priority: $e');
+                    commonPrint.warn('Failed to set core process priority: $e');
                     return false;
                   }),
             );
           }
           return;
         }
-        commonPrint.log(
+        commonPrint.warn(
           'Helper start core failed, falling back to normal mode',
         );
       }
     }
 
-    process = await Process.start(appPath.corePath, [
-      arg,
-    ], environment: environment);
-    process?.stdout.listen((_) {});
-    process?.stderr.listen((e) {
-      final error = utf8.decode(e);
-      if (error.isNotEmpty) commonPrint.log(error);
-    });
-    await _waitForCoreReady();
+    if (system.isWindows && AppIdentity.isDev) {
+      try {
+        await Process.run('taskkill', [
+          '/F',
+          '/IM',
+          '${AppIdentity.coreExecutableName}.exe',
+        ]);
+      } catch (_) {}
+    }
+
+    var connected = await _startCoreDirectly(arg, environment);
+    if (!connected) {
+      commonPrint.warn('core did not connect, retrying with a fresh transport');
+      process?.kill();
+      process = null;
+      await _rebindTransport();
+      final retryArg = _transportType == TransportType.unixSocket
+          ? _socketPath!
+          : '${(await serverCompleter.future).port}';
+      connected = await _startCoreDirectly(retryArg, environment);
+    }
+    if (!connected) throw const CoreDisconnectedException();
     isStarting = false;
-    if (system.isWindows && globalState.config.appSetting.enableHighPriority) {
+    if (_usesHelper && globalState.config.appSetting.enableHighPriority) {
       unawaited(
         helperClient
             .setProcessPriority('${AppIdentity.coreExecutableName}.exe', true)
             .catchError((e) {
-              commonPrint.log('Failed to set core process priority: $e');
+              commonPrint.warn('Failed to set core process priority: $e');
               return false;
             }),
       );
     }
   }
 
-  Future<void> _waitForCoreReady() async {
+  bool get _usesHelper => windows?.usesHelper ?? false;
+
+  Duration get _coreReadyTimeout {
+    if (kDebugMode || AppIdentity.isDev) {
+      return const Duration(seconds: 15);
+    }
+    return const Duration(seconds: 6);
+  }
+
+  Future<bool> _startCoreDirectly(
+    String arg,
+    Map<String, String> environment,
+  ) async {
+    if (system.isLinux && appPath.isAppImage) {
+      await appPath.ensureAppImageCoreSynced();
+    }
+    process = await Process.start(appPath.corePath, [
+      arg,
+    ], environment: environment);
+    process?.stdout.listen((_) {});
+    process?.stderr.listen((e) {
+      final error = utf8.decode(e);
+      if (error.isNotEmpty) commonPrint.error(error);
+    });
+    final ready = await _waitForCoreReady(process);
+    final pid = process?.pid;
+    if (ready && system.isLinux && pid != null) {
+      unawaited(system.verifyCoreProcessPrivileges(pid));
+    }
+    return ready;
+  }
+
+  Future<bool> _waitForCoreReady([Process? targetProcess]) async {
+    final timeout = _coreReadyTimeout;
     try {
-      await socketCompleter.future.timeout(const Duration(seconds: 5));
-    } catch (_) {
-      commonPrint.log('Core ready timeout after 5s');
+      if (targetProcess != null) {
+        final result = await Future.any<bool>([
+          socketCompleter.future.then((_) => true),
+          targetProcess.exitCode.then((code) {
+            commonPrint.error(
+              'Core process exited prematurely with code: $code',
+            );
+            return false;
+          }),
+        ]).timeout(timeout);
+        return result && _socket != null && !_coreLost;
+      }
+
+      await socketCompleter.future.timeout(timeout);
+      return _socket != null && !_coreLost;
+    } on TimeoutException {
+      commonPrint.error('Core ready timeout after ${timeout.inSeconds}s');
+      return false;
     }
   }
 
@@ -241,9 +335,9 @@ class ClashService extends ClashHandlerInterface {
   }
 
   @override
-  sendMessage(String message) async {
-    if (_isDestroying || globalState.isExiting) {
-      return;
+  Future<Socket> sendMessage(String message) async {
+    if (_isDestroying || globalState.isExiting || _coreLost) {
+      throw const CoreDisconnectedException();
     }
     final socket = await socketCompleter.future.timeout(
       const Duration(seconds: 5),
@@ -251,23 +345,30 @@ class ClashService extends ClashHandlerInterface {
         throw TimeoutException('Core socket connection timed out');
       },
     );
+    if (!identical(_socket, socket) ||
+        _coreLost ||
+        _isDestroying ||
+        globalState.isExiting) {
+      throw const CoreDisconnectedException();
+    }
     try {
       final frame = FrameCodec.encode(message);
       socket.add(frame);
+      return socket;
     } on SocketException catch (e) {
       if (_isDestroying || globalState.isExiting || isStarting) {
-        commonPrint.log(
+        commonPrint.debug(
           'Ignored message send on closed socket during transition: $e',
         );
-        return;
+        throw const CoreDisconnectedException();
       }
       rethrow;
     } on StateError catch (e) {
       if (_isDestroying || globalState.isExiting || isStarting) {
-        commonPrint.log(
+        commonPrint.debug(
           'Ignored message send on closed socket during transition: $e',
         );
-        return;
+        throw const CoreDisconnectedException();
       }
       rethrow;
     }
@@ -285,15 +386,52 @@ class ClashService extends ClashHandlerInterface {
   Future<void> _destroySocket() async {
     if (socketCompleter.isCompleted) {
       final lastSocket = await socketCompleter.future;
-      await lastSocket.close();
+      // Detach before awaiting close: its delayed onDone must not invalidate
+      // a replacement connection or a replacement completer.
+      _socket = null;
       socketCompleter = Completer();
+      await lastSocket.close();
     }
+  }
+
+  void _handleSocketClosed(Socket socket) {
+    if (!identical(_socket, socket)) return;
+    _socket = null;
+    socketCompleter = Completer();
+    socket.destroy();
+    _coreLost = true;
+    if (_isDestroying || isStarting || globalState.isExiting) return;
+    commonPrint.error('Core disconnected unexpectedly');
+    final now = DateTime.now();
+    final last = _lastAutoRestartAt;
+    if (!globalState.isInit ||
+        (last != null && now.difference(last) < const Duration(minutes: 1))) {
+      return;
+    }
+    _lastAutoRestartAt = now;
+    unawaited(_autoRestart());
+  }
+
+  bool get _canAutoRestart =>
+      _coreLost && !_isDestroying && !isStarting && !globalState.isExiting;
+
+  Future<void> _autoRestart() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!_canAutoRestart) return;
+    if (system.isWindows &&
+        !kDebugMode &&
+        !(await windows?.isHelperHealthy() ?? false)) {
+      return;
+    }
+    if (!_canAutoRestart) return;
+    commonPrint.warn('Restarting core after unexpected disconnect');
+    await globalState.appController.restartCore().catchError((_) {});
   }
 
   @override
   shutdown() async {
     _isDestroying = true;
-    if (system.isWindows) {
+    if (_usesHelper) {
       await helperClient.stopCore();
     }
     await _destroySocket();
@@ -305,7 +443,9 @@ class ClashService extends ClashHandlerInterface {
   Future<bool> checkCoreHealth({
     Duration timeout = const Duration(seconds: 2),
   }) async {
-    if (_isDestroying || globalState.isExiting || isStarting) return false;
+    if (_isDestroying || globalState.isExiting || isStarting || _coreLost) {
+      return false;
+    }
     if (!socketCompleter.isCompleted) return false;
     try {
       final result = await invoke<bool>(

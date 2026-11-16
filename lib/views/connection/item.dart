@@ -4,34 +4,30 @@ import 'dart:typed_data';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/pages/pages.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bett_box/providers/providers.dart';
 
 final _iconCache = <String, Uint8List?>{};
-final _iconCacheKeys = <String>[];
-const _maxIconCacheSize = 50;
+final _iconPending = <String, Future<Uint8List?>>{};
+const _maxIconCacheSize = 100;
 Uint8List? _defaultIconCache;
 Future<Uint8List?>? _defaultIconFuture;
 
 void _addToIconCache(String key, Uint8List? value) {
-  if (_iconCache.containsKey(key)) {
-    _iconCacheKeys.remove(key);
-    _iconCacheKeys.add(key);
-    _iconCache[key] = value;
-    return;
+  _iconCache.remove(key);
+  while (_iconCache.length >= _maxIconCacheSize) {
+    final evicted = _iconCache.remove(_iconCache.keys.first);
+    if (evicted != null) {
+      imageCache.evict(MemoryImage(evicted), includeLive: false);
+    }
   }
-
-  while (_iconCacheKeys.length >= _maxIconCacheSize) {
-    final oldestKey = _iconCacheKeys.removeAt(0);
-    _iconCache.remove(oldestKey);
-  }
-
-  _iconCacheKeys.add(key);
   _iconCache[key] = value;
 }
 
@@ -43,6 +39,7 @@ class TrackerInfoItem extends ConsumerWidget {
   final int index;
   final int count;
   final bool reversed;
+  final bool showSpeed;
 
   const TrackerInfoItem({
     super.key,
@@ -53,26 +50,57 @@ class TrackerInfoItem extends ConsumerWidget {
     required this.index,
     required this.count,
     this.reversed = false,
+    this.showSpeed = false,
   });
 
   static double get subTitleHeight {
-    return globalState.measure.bodySmallHeight + 20;
+    return globalState.measure.bodySmallHeight + 12;
   }
 
   static double get height {
     final measure = globalState.measure;
     return measure.bodyMediumHeight +
-        8 +
+        4 +
         8 +
         measure.bodyLargeHeight +
         subTitleHeight +
-        16 * 2;
+        12 * 2;
+  }
+
+  static ThemeData? _cachedBaseTheme;
+  static ThemeData? _cachedItemTheme;
+
+  static ThemeData _getItemTheme(ThemeData baseTheme) {
+    if (identical(_cachedBaseTheme, baseTheme) && _cachedItemTheme != null) {
+      return _cachedItemTheme!;
+    }
+    _cachedBaseTheme = baseTheme;
+    _cachedItemTheme = baseTheme.copyWith(
+      visualDensity: VisualDensity.compact,
+      canvasColor: baseTheme.colorScheme.onSurfaceVariant.withValues(
+        alpha: 0.08,
+      ),
+      chipTheme: baseTheme.chipTheme.copyWith(
+        side: BorderSide.none,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+      ),
+    );
+    return _cachedItemTheme!;
   }
 
   String _getSourceText(TrackerInfo trackerInfo) {
     final progress = trackerInfo.progressText.isNotEmpty
         ? '${trackerInfo.progressText} · '
         : '';
+    if (showSpeed) {
+      final upSpeed = TrafficValue(value: trackerInfo.uploadSpeed).toString();
+      final downSpeed = TrafficValue(
+        value: trackerInfo.downloadSpeed,
+      ).toString();
+      return '$progress$upSpeed/s↑ $downSpeed/s↓';
+    }
     final up = TrafficValue(value: trackerInfo.upload).toString();
     final down = TrafficValue(value: trackerInfo.download).toString();
     return '$progress$up↑ $down↓';
@@ -82,8 +110,7 @@ class TrackerInfoItem extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     final value = ref.watch(
       patchClashConfigProvider.select(
-        (state) =>
-            state.findProcessMode == FindProcessMode.always && system.isAndroid,
+        (state) => state.findProcessMode == FindProcessMode.always,
       ),
     );
     final title = Column(
@@ -99,7 +126,10 @@ class TrackerInfoItem extends ConsumerWidget {
                 trackerInfo.desc,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyLarge,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Text(
@@ -110,13 +140,14 @@ class TrackerInfoItem extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           _getSourceText(trackerInfo),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: context.textTheme.bodyMedium?.copyWith(
-            color: context.colorScheme.onSurfaceVariant,
+            fontSize: 12.5,
+            color: context.colorScheme.onSurfaceVariant.opacity80,
           ),
         ),
       ],
@@ -136,19 +167,22 @@ class TrackerInfoItem extends ConsumerWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const ClampingScrollPhysics(),
-              child: Row(
-                spacing: 6,
-                children: [
-                  for (final chain in chains)
-                    CommonChip(
-                      label: chain,
-                      labelStyle: labelStyle,
-                      onPressed: () {
-                        if (onClickKeyword == null) return;
-                        onClickKeyword!(chain);
-                      },
-                    ),
-                ],
+              child: Theme(
+                data: _getItemTheme(Theme.of(context)),
+                child: Row(
+                  spacing: 6,
+                  children: [
+                    for (final chain in chains)
+                      CommonChip(
+                        label: chain,
+                        labelStyle: labelStyle,
+                        onPressed: () {
+                          if (onClickKeyword == null) return;
+                          onClickKeyword!(chain);
+                        },
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -157,13 +191,15 @@ class TrackerInfoItem extends ConsumerWidget {
       ),
     );
     final icon = value
-        ? _ProcessIcon(
+        ? ConnectionProcessIcon(
             process: trackerInfo.metadata.process,
+            path: trackerInfo.metadata.processPath,
+            port: trackerInfo.metadata.destinationPort,
             onClick: onClickKeyword,
           )
         : null;
-    final listItem = ListItem(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    final listItem = InkWell(
+      focusColor: context.colorScheme.primary.withValues(alpha: 0.18),
       onTap: () {
         showExtend(
           context,
@@ -179,49 +215,62 @@ class TrackerInfoItem extends ConsumerWidget {
           },
         );
       },
-      title: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 12,
-            children: [
-              ?icon,
-              Flexible(child: title),
-            ],
-          ),
-          const SizedBox(height: 8),
-          subTitle,
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 12,
+              children: [
+                ?icon,
+                Flexible(child: title),
+              ],
+            ),
+            const SizedBox(height: 8),
+            subTitle,
+          ],
+        ),
       ),
     );
-    return RepaintBoundary(
-      child: ContinuousListItem(
-        index: index,
-        count: count,
-        reversed: reversed,
-        child: listItem,
-      ),
+    return ContinuousListItem(
+      index: index,
+      count: count,
+      reversed: reversed,
+      child: listItem,
     );
   }
 }
 
-Future<Uint8List?> _getPackageIcon(String process) async {
-  if (process.isEmpty) {
-    return _getDefaultPackageIcon();
+Future<Uint8List?> _loadIcon(String key) async {
+  if (system.isDesktop) {
+    return processIcon.get(key);
   }
-  final cachedIcon = _iconCache[process];
-  if (cachedIcon != null) {
-    return cachedIcon;
+  return await app.getPackageIcon(key) ?? await _getDefaultPackageIcon();
+}
+
+Future<Uint8List?> _getIcon(String key) {
+  if (key.isEmpty) {
+    return system.isDesktop ? Future.value() : _getDefaultPackageIcon();
   }
-  final icon = await app.getPackageIcon(process);
-  if (icon != null) {
-    _addToIconCache(process, icon);
-    return icon;
+  if (_iconCache.containsKey(key)) {
+    final icon = _iconCache[key];
+    _addToIconCache(key, icon);
+    return Future.value(icon);
   }
-  return _getDefaultPackageIcon();
+  return _iconPending[key] ??= _loadIcon(key)
+      .then((icon) {
+        if (icon != null || system.isDesktop) {
+          _addToIconCache(key, icon);
+        }
+        return icon;
+      })
+      .whenComplete(() {
+        _iconPending.remove(key);
+      });
 }
 
 Future<Uint8List?> _getDefaultPackageIcon() {
@@ -238,37 +287,54 @@ Future<Uint8List?> _getDefaultPackageIcon() {
   });
 }
 
-class _ProcessIcon extends StatefulWidget {
+class ConnectionProcessIcon extends StatefulWidget {
   final String process;
+  final String path;
+  final String port;
   final Function(String)? onClick;
 
-  const _ProcessIcon({required this.process, this.onClick});
+  const ConnectionProcessIcon({
+    super.key,
+    required this.process,
+    required this.path,
+    required this.port,
+    this.onClick,
+  });
 
   @override
-  State<_ProcessIcon> createState() => _ProcessIconState();
+  State<ConnectionProcessIcon> createState() => _ConnectionProcessIconState();
 }
 
-class _ProcessIconState extends State<_ProcessIcon> {
+class _ConnectionProcessIconState extends State<ConnectionProcessIcon> {
   late Future<Uint8List?> _iconFuture;
+
+  String get _cacheKey =>
+      system.isDesktop ? processIcon.keyOf(widget.path) : widget.process;
 
   @override
   void initState() {
     super.initState();
-    _iconFuture = _getPackageIcon(widget.process);
+    _iconFuture = _getIcon(_cacheKey);
+  }
+
+  IconData get _fallbackIcon {
+    if (widget.port == '53') return Icons.dns_outlined;
+    if (widget.path.isNotEmpty) return Icons.settings_suggest_outlined;
+    return Icons.terminal;
   }
 
   @override
-  void didUpdateWidget(_ProcessIcon oldWidget) {
+  void didUpdateWidget(ConnectionProcessIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.process != widget.process) {
-      _iconFuture = _getPackageIcon(widget.process);
+    if (oldWidget.process != widget.process || oldWidget.path != widget.path) {
+      _iconFuture = _getIcon(_cacheKey);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
-    final cacheSize = (42 * devicePixelRatio).ceil();
+    final cacheSize = (38 * devicePixelRatio).ceil();
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -277,16 +343,43 @@ class _ProcessIconState extends State<_ProcessIcon> {
           widget.onClick?.call(widget.process);
         },
         child: Container(
-          margin: const EdgeInsets.only(top: 4),
-          width: 42,
-          height: 42,
+          width: 38,
+          height: 38,
           alignment: Alignment.center,
           child: FutureBuilder<Uint8List?>(
+            initialData: _iconCache[_cacheKey],
             future: _iconFuture,
             builder: (context, snapshot) {
               final iconBytes = snapshot.data;
               if (iconBytes == null) {
-                return const SizedBox(width: 42, height: 42);
+                if (system.isDesktop &&
+                    snapshot.connectionState == ConnectionState.done) {
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.onSurfaceVariant.opacity10,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SizedBox(
+                      width: 38,
+                      height: 38,
+                      child: Icon(
+                        _fallbackIcon,
+                        size: 22,
+                        color: context.colorScheme.onSurfaceVariant.opacity80,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox(width: 38, height: 38);
+              }
+              if (system.isDesktop) {
+                return Image.memory(
+                  iconBytes,
+                  width: 38,
+                  height: 38,
+                  filterQuality: FilterQuality.medium,
+                  gaplessPlayback: true,
+                );
               }
               return Image(
                 image: ResizeImage(
@@ -295,8 +388,8 @@ class _ProcessIconState extends State<_ProcessIcon> {
                   height: cacheSize,
                   allowUpscaling: false,
                 ),
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 gaplessPlayback: true,
               );
             },
@@ -335,6 +428,39 @@ class TrackerInfoDetailView extends ConsumerWidget {
     return process;
   }
 
+  String? _getInboundText(Metadata metadata) {
+    switch (metadata.type) {
+      case '':
+        return null;
+      case 'Tun':
+        return 'TUN';
+      case 'Inner':
+        return appLocalizations.internalTraffic;
+    }
+    final type = metadata.type == 'HTTPS' ? 'HTTP' : metadata.type;
+    final inboundName = metadata.inboundName;
+    final name = inboundName.startsWith('DEFAULT-') && inboundName.length > 8
+        ? inboundName[8] + inboundName.substring(9).toLowerCase()
+        : inboundName;
+    final port = metadata.inboundPort;
+    final text = [
+      if (name.isNotEmpty && !type.toLowerCase().startsWith(name.toLowerCase()))
+        name,
+      type,
+      if (port.isNotEmpty && port != '0') port,
+    ].join(' · ');
+    final user = metadata.inboundUser;
+    if (user.isEmpty) return text;
+    return appLocalizations.inboundWithUser(text, user);
+  }
+
+  String _getDnsModeText(DnsMode mode) => switch (mode) {
+    DnsMode.normal => 'normal',
+    DnsMode.fakeIp => 'fake-ip',
+    DnsMode.redirHost => 'redir-host',
+    DnsMode.hosts => 'hosts',
+  };
+
   bool _isIpAddress(String str) {
     return InternetAddress.tryParse(str) != null;
   }
@@ -360,22 +486,69 @@ class TrackerInfoDetailView extends ConsumerWidget {
   }
 
   Widget _buildChains(TrackerInfo info) {
-    final chains = Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.end,
-      children: [
-        for (final chain in info.chains)
-          CommonChip(label: chain, onPressed: () {}),
-      ],
-    );
     return ListItem(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      title: _LeadingWrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
-          Text(appLocalizations.proxyChains),
-          Flexible(child: chains),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(appLocalizations.proxyChains),
+          ),
+          for (final chain in info.chains)
+            CommonChip(label: chain, onPressed: () {}),
+        ],
+      ),
+    );
+  }
+
+  Widget? _buildToolbox(BuildContext context, TrackerInfo info) {
+    final metadata = info.metadata;
+    final host = metadata.host.trim();
+    final target = host.isNotEmpty ? host : metadata.destinationIP.trim();
+    if (target.isEmpty) return null;
+    final isDomain = !_isIpAddress(target);
+    void open(Widget page) => BaseNavigator.push(context, page);
+    Widget chip(IconData icon, String label, Widget Function() page) =>
+        CommonChip(
+          avatar: Icon(icon, size: 16, color: context.colorScheme.primary),
+          label: label,
+          onPressed: () => open(page()),
+        );
+    return ListItem(
+      title: _LeadingWrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(appLocalizations.toolbox),
+          ),
+          chip(
+            Icons.route_rounded,
+            appLocalizations.routeTrace,
+            () => RouteTracePage(
+              initialTarget: target,
+              initialNetwork: metadata.network,
+              initialPort: int.tryParse(metadata.destinationPort),
+            ),
+          ),
+          if (isDomain)
+            chip(
+              Icons.dns_rounded,
+              appLocalizations.dnsQuery,
+              () => DnsQueryPage(initialDomain: target),
+            ),
+          chip(
+            Icons.manage_search_rounded,
+            appLocalizations.mrsLookup,
+            () => MrsLookupPage(initialQuery: target),
+          ),
+          chip(
+            Icons.travel_explore_rounded,
+            appLocalizations.ipLookup,
+            () => IpLookupPage(initialQuery: target),
+          ),
         ],
       ),
     );
@@ -411,11 +584,13 @@ class TrackerInfoDetailView extends ConsumerWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(6),
                     onTap: () {
-                      showIpDetailDialog(context, ip);
+                      showIpDetailDialog(context, ip, followRiskSetting: false);
                     },
                     child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -442,10 +617,7 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 ),
                 if (port != null && port.isNotEmpty) ...[
                   const SizedBox(width: 4),
-                  Text(
-                    ':$port',
-                    style: context.textTheme.bodyMedium,
-                  ),
+                  Text(':$port', style: context.textTheme.bodyMedium),
                 ],
               ],
             ),
@@ -493,6 +665,19 @@ class TrackerInfoDetailView extends ConsumerWidget {
     final info = trackerInfo;
 
     final remoteDestParsed = _parseIpAndPort(info.metadata.remoteDestination);
+    final inboundText = _getInboundText(info.metadata);
+    final dnsMode = info.metadata.dnsMode;
+
+    final isLight = context.colorScheme.brightness == Brightness.light;
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      color: context.colorScheme.outlineVariant.withValues(
+        alpha: isLight ? 0.45 : 0.25,
+      ),
+      indent: 16,
+      endIndent: 16,
+    );
 
     final items = [
       _buildItem(
@@ -504,10 +689,17 @@ class TrackerInfoDetailView extends ConsumerWidget {
           title: appLocalizations.progress,
           desc: _getProgressText(info),
         ),
+      if (system.isDesktop && info.metadata.processPath.isNotEmpty)
+        _buildItem(
+          title: appLocalizations.processPath,
+          desc: info.metadata.processPath,
+        ),
       _buildItem(
         title: appLocalizations.networkType,
         desc: info.metadata.network,
       ),
+      if (inboundText != null)
+        _buildItem(title: appLocalizations.inbound, desc: inboundText),
       _buildItem(title: appLocalizations.rule, desc: _getRuleText(info)),
       if (info.metadata.host.isNotEmpty)
         _isIpAddress(info.metadata.host)
@@ -516,7 +708,15 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 title: appLocalizations.host,
                 ip: info.metadata.host,
               )
-            : _buildItem(title: appLocalizations.host, desc: info.metadata.host),
+            : _buildItem(
+                title: appLocalizations.host,
+                desc: info.metadata.host,
+              ),
+      if (info.metadata.sniffHost.isNotEmpty)
+        _buildItem(
+          title: appLocalizations.sniffHost,
+          desc: info.metadata.sniffHost,
+        ),
       if (info.metadata.sourceIP.isNotEmpty)
         _buildIpItem(
           context,
@@ -553,11 +753,13 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 title: appLocalizations.upload,
                 desc: TrafficValue(value: upload).show,
               ),
+              divider,
               _buildItem(
                 title: appLocalizations.download,
                 desc: TrafficValue(value: download).show,
               ),
-              if (isAlive)
+              if (isAlive) ...[
+                divider,
                 _buildItem(
                   title: appLocalizations.realTimeSpeed,
                   desc: Traffic(
@@ -565,6 +767,7 @@ class TrackerInfoDetailView extends ConsumerWidget {
                     down: liveInfo.downloadSpeed,
                   ).toString(),
                 ),
+              ],
             ],
           );
         },
@@ -579,10 +782,10 @@ class TrackerInfoDetailView extends ConsumerWidget {
           title: appLocalizations.destinationIPASN,
           desc: info.metadata.destinationIPASN,
         ),
-      if (info.metadata.dnsMode != null)
+      if (dnsMode != null)
         _buildItem(
           title: appLocalizations.dnsMode,
-          desc: info.metadata.dnsMode!.name,
+          desc: _getDnsModeText(dnsMode),
         ),
       if (info.metadata.specialProxy.isNotEmpty)
         _buildItem(
@@ -606,16 +809,161 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 title: appLocalizations.remoteDestination,
                 desc: info.metadata.remoteDestination,
               ),
-      _buildChains(info),
+      if (info.chains.isNotEmpty) _buildChains(info),
+      ?_buildToolbox(context, info),
     ];
     return SelectionArea(
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        itemCount: items.length,
-        itemBuilder: (_, index) {
-          return items[index];
-        },
+      child: ScrollEdgeRise(
+        builder: (_, rise) => ListView(
+          padding: EdgeInsets.fromLTRB(16, 12 + rise, 16, 12),
+          children: [
+            CommonCard(
+              type: CommonCardType.filled,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    items[i],
+                    if (i != items.length - 1) divider,
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _LeadingWrap extends MultiChildRenderObjectWidget {
+  final double spacing;
+  final double runSpacing;
+
+  const _LeadingWrap({
+    required this.spacing,
+    required this.runSpacing,
+    required super.children,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderLeadingWrap(spacing: spacing, runSpacing: runSpacing);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderLeadingWrap renderObject,
+  ) {
+    renderObject
+      ..spacing = spacing
+      ..runSpacing = runSpacing;
+  }
+}
+
+class _LeadingWrapParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderLeadingWrap extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _LeadingWrapParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _LeadingWrapParentData> {
+  _RenderLeadingWrap({required double spacing, required double runSpacing})
+    : _spacing = spacing,
+      _runSpacing = runSpacing;
+
+  double _spacing;
+  double _runSpacing;
+
+  set spacing(double value) {
+    if (value == _spacing) return;
+    _spacing = value;
+    markNeedsLayout();
+  }
+
+  set runSpacing(double value) {
+    if (value == _runSpacing) return;
+    _runSpacing = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _LeadingWrapParentData) {
+      child.parentData = _LeadingWrapParentData();
+    }
+  }
+
+  Size _layout(BoxConstraints constraints, ChildLayouter layoutChild) {
+    final leading = firstChild;
+    if (leading == null) return constraints.smallest;
+    final maxWidth = constraints.maxWidth;
+    final childConstraints = BoxConstraints(maxWidth: maxWidth);
+    final leadingSize = layoutChild(leading, childConstraints);
+    final runs = <List<(RenderBox, Size)>>[[]];
+    var runWidth = leadingSize.width;
+    var child = childAfter(leading);
+    while (child != null) {
+      final childSize = layoutChild(child, childConstraints);
+      final run = runs.last;
+      final isFirstRun = runs.length == 1;
+      final hasContent = run.isNotEmpty || isFirstRun;
+      final nextWidth = hasContent
+          ? runWidth + _spacing + childSize.width
+          : childSize.width;
+      if (hasContent && nextWidth > maxWidth) {
+        runs.add([(child, childSize)]);
+        runWidth = childSize.width;
+      } else {
+        run.add((child, childSize));
+        runWidth = nextWidth;
+      }
+      child = childAfter(child);
+    }
+    var y = 0.0;
+    for (var i = 0; i < runs.length; i++) {
+      final run = runs[i];
+      var runHeight = i == 0 ? leadingSize.height : 0.0;
+      var itemsWidth = 0.0;
+      for (final (_, size) in run) {
+        runHeight = runHeight > size.height ? runHeight : size.height;
+        itemsWidth += size.width;
+      }
+      if (run.isNotEmpty) itemsWidth += _spacing * (run.length - 1);
+      if (layoutChild == ChildLayoutHelper.layoutChild) {
+        if (i == 0) {
+          (leading.parentData as _LeadingWrapParentData).offset = Offset(
+            0,
+            (runHeight - leadingSize.height) / 2,
+          );
+        }
+        var x = maxWidth - itemsWidth;
+        for (final (box, size) in run) {
+          (box.parentData as _LeadingWrapParentData).offset = Offset(
+            x,
+            y + (runHeight - size.height) / 2,
+          );
+          x += size.width + _spacing;
+        }
+      }
+      y += runHeight + (i == runs.length - 1 ? 0 : _runSpacing);
+    }
+    return constraints.constrain(Size(maxWidth, y));
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      _layout(constraints, ChildLayoutHelper.dryLayoutChild);
+
+  @override
+  void performLayout() {
+    size = _layout(constraints, ChildLayoutHelper.layoutChild);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }

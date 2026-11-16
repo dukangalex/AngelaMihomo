@@ -8,9 +8,52 @@ import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+
+final _packageNameRegex = RegExp(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+$');
+final _packageSplitRegex = RegExp(r'[\n,\s]+');
+
+final _packageIconCache = <String, Uint8List?>{};
+final _packageIconPending = <String, Future<Uint8List?>>{};
+const _maxPackageIconCacheSize = 256;
+
+void _cachePackageIcon(String packageName, Uint8List? bytes) {
+  _packageIconCache.remove(packageName);
+  while (_packageIconCache.length >= _maxPackageIconCacheSize) {
+    _packageIconCache.remove(_packageIconCache.keys.first);
+  }
+  _packageIconCache[packageName] = bytes;
+}
+
+Future<Uint8List?> _getPackageIcon(
+  String packageName, {
+  bool forceRefresh = false,
+}) {
+  if (forceRefresh) {
+    _packageIconCache.remove(packageName);
+    _packageIconPending.remove(packageName);
+  }
+  if (_packageIconCache.containsKey(packageName)) {
+    final bytes = _packageIconCache[packageName];
+    _cachePackageIcon(packageName, bytes);
+    return Future.value(bytes);
+  }
+  return _packageIconPending.putIfAbsent(packageName, () async {
+    try {
+      final bytes = await app.getPackageIcon(
+        packageName,
+        forceRefresh: forceRefresh,
+      );
+      _cachePackageIcon(packageName, bytes);
+      return bytes;
+    } finally {
+      _packageIconPending.remove(packageName);
+    }
+  });
+}
 
 // Force refresh icon flag
 final forceRefreshIconProvider = StateProvider<bool>((ref) => false);
@@ -39,7 +82,22 @@ class _AccessViewState extends ConsumerState<AccessView>
     _updateInitList();
     _controller = ScrollController();
     WidgetsBinding.instance.addObserver(this);
-    _checkPermissionAndLoadPackages(interactive: true);
+    _prefetchPackages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.afterRouteTransition(() {
+        if (!mounted) return;
+        _checkPermissionAndLoadPackages(interactive: true);
+      });
+    });
+  }
+
+  Future<void> _prefetchPackages() async {
+    if (ref.read(packagesProvider).isNotEmpty) return;
+    try {
+      if (!await app.hasPackageListPermission()) return;
+      await app.getPackages();
+    } catch (_) {}
   }
 
   @override
@@ -284,6 +342,8 @@ class _AccessViewState extends ConsumerState<AccessView>
         // Reload app list (auto-checks and requests permissions)
         await globalState.appController.safeRun(() async {
           // Clear cache, force reload
+          _packageIconCache.clear();
+          _packageIconPending.clear();
           // Mark as force refresh mode
           ref.read(forceRefreshIconProvider.notifier).state = true;
           await _checkPermissionAndLoadPackages(
@@ -339,33 +399,35 @@ class _AccessViewState extends ConsumerState<AccessView>
   }
 
   Future<void> _intelligentSelected() async {
-    final packageNames = ref.read(
-      packageListSelectorStateProvider.select(
-        (state) => state.list.map((item) => item.packageName),
-      ),
-    );
     final commonScaffoldState = context.commonScaffoldState;
     if (commonScaffoldState?.mounted != true) return;
-    final selectedPackageNames =
-        (await globalState.appController.safeRun<List<String>>(
-          needLoading: true,
-          () async {
-            return await app.getChinaPackageNames();
-          },
-        ))?.toSet() ??
-        {};
-    final acceptList = packageNames
-        .where((item) => !selectedPackageNames.contains(item))
-        .toList();
-    final rejectList = packageNames
-        .where((item) => selectedPackageNames.contains(item))
-        .toList();
+    final chinaPackageNames = await globalState.appController
+        .safeRun<List<String>>(needLoading: true, () async {
+          return await app.getChinaPackageNames();
+        });
+    if (chinaPackageNames == null || !mounted) return;
+    final china = chinaPackageNames.toSet();
+    final visible = ref
+        .read(packageListSelectorStateProvider)
+        .list
+        .map((item) => item.packageName)
+        .toSet();
+    List<String> withVisible(List<String> list, bool Function(String) test) => [
+      ...list.where((item) => !visible.contains(item)),
+      ...visible.where(test),
+    ];
     ref
         .read(vpnSettingProvider.notifier)
         .updateState(
           (state) => state.copyWith.accessControl(
-            acceptList: acceptList,
-            rejectList: rejectList,
+            acceptList: withVisible(
+              state.accessControl.acceptList,
+              (item) => !china.contains(item),
+            ),
+            rejectList: withVisible(
+              state.accessControl.rejectList,
+              china.contains,
+            ),
           ),
         );
   }
@@ -392,28 +454,30 @@ class _AccessViewState extends ConsumerState<AccessView>
     );
   }
 
-  void _handleSelected(List<String> valueList, Package package, bool? value) {
+  void _handleSelected(Set<String> selectedSet, Package package, bool? value) {
+    final newSelectedSet = Set<String>.of(selectedSet);
     if (value == true) {
-      valueList.add(package.packageName);
+      newSelectedSet.add(package.packageName);
     } else {
-      valueList.remove(package.packageName);
+      newSelectedSet.remove(package.packageName);
     }
+    final valueList = newSelectedSet.toList();
     ref.read(vpnSettingProvider.notifier).updateState((state) {
       final currentManualList = state.accessControl.manualList;
-      final newManualList = value == false &&
-              currentManualList.contains(package.packageName)
+      final newManualList =
+          value == false && currentManualList.contains(package.packageName)
           ? currentManualList.where((e) => e != package.packageName).toList()
           : currentManualList;
       return switch (state.accessControl.mode ==
           AccessControlMode.acceptSelected) {
         true => state.copyWith.accessControl(
-            acceptList: valueList,
-            manualList: newManualList,
-          ),
+          acceptList: valueList,
+          manualList: newManualList,
+        ),
         false => state.copyWith.accessControl(
-            rejectList: valueList,
-            manualList: newManualList,
-          ),
+          rejectList: valueList,
+          manualList: newManualList,
+        ),
       };
     });
   }
@@ -429,8 +493,13 @@ class _AccessViewState extends ConsumerState<AccessView>
           : rejectList,
     );
     final currentList = accessControl.currentList;
-    final packageNameList = packages.map((e) => e.packageName).toList();
-    final valueList = currentList.intersection(packageNameList);
+    final currentSet = currentList.toSet();
+    final selectedSet = <String>{};
+    for (final package in packages) {
+      if (currentSet.contains(package.packageName)) {
+        selectedSet.add(package.packageName);
+      }
+    }
     final describe = accessControlMode == AccessControlMode.acceptSelected
         ? '${appLocalizations.accessControlAllowDesc} (${appLocalizations.whitelistMode})'
         : '${appLocalizations.accessControlNotAllowDesc} (${appLocalizations.blacklistMode})';
@@ -515,7 +584,7 @@ class _AccessViewState extends ConsumerState<AccessView>
                                           ),
                                           Flexible(
                                             child: Text(
-                                              '${valueList.length}',
+                                              '${selectedSet.length}',
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelLarge
@@ -542,9 +611,10 @@ class _AccessViewState extends ConsumerState<AccessView>
                                 Flexible(
                                   child: _buildSelectedAllButton(
                                     isSelectedAll:
-                                        valueList.length ==
-                                        packageNameList.length,
-                                    allValueList: packageNameList,
+                                        selectedSet.length == packages.length,
+                                    allValueList: packages
+                                        .map((e) => e.packageName)
+                                        .toList(),
                                   ),
                                 ),
                                 Flexible(child: _buildSettingButton()),
@@ -562,7 +632,12 @@ class _AccessViewState extends ConsumerState<AccessView>
                     future: _completer.future,
                     builder: (_, snapshot) {
                       if (snapshot.connectionState != ConnectionState.done) {
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(
+                          child: SyncedLoading(
+                            size: 40,
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
                       }
                       if (_packageListPermissionDenied) {
                         return _buildPackageListPermissionDeniedView();
@@ -587,13 +662,13 @@ class _AccessViewState extends ConsumerState<AccessView>
                                     child: PackageListItem(
                                       key: Key(package.packageName),
                                       package: package,
-                                      value: valueList.contains(
+                                      value: selectedSet.contains(
                                         package.packageName,
                                       ),
                                       isActive: accessControl.enable,
                                       onChanged: (value) {
                                         _handleSelected(
-                                          valueList,
+                                          selectedSet,
                                           package,
                                           value,
                                         );
@@ -632,7 +707,7 @@ class _AccessViewState extends ConsumerState<AccessView>
   }
 }
 
-class PackageListItem extends ConsumerWidget {
+class PackageListItem extends StatelessWidget {
   final Package package;
   final bool value;
   final bool isActive;
@@ -647,60 +722,56 @@ class PackageListItem extends ConsumerWidget {
   });
 
   @override
+  Widget build(BuildContext context) {
+    return ActivateBox(
+      active: isActive,
+      child: ListItem.checkbox(
+        leading: PackageIcon(packageName: package.packageName),
+        title: EmojiText(
+          package.label,
+          style: const TextStyle(overflow: TextOverflow.ellipsis),
+          maxLines: 1,
+        ),
+        subtitle: Text(
+          package.packageName,
+          style: const TextStyle(overflow: TextOverflow.ellipsis),
+          maxLines: 1,
+        ),
+        delegate: CheckboxDelegate(value: value, onChanged: onChanged),
+      ),
+    );
+  }
+}
+
+class PackageIcon extends ConsumerWidget {
+  final String packageName;
+
+  const PackageIcon({super.key, required this.packageName});
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final forceRefresh = ref.watch(forceRefreshIconProvider);
-
-    return GestureDetector(
-      onLongPress: () {
-        Clipboard.setData(ClipboardData(text: package.packageName));
-        globalState.showNotifier(
-          '${appLocalizations.copiedPackageName}: ${package.packageName}',
-        );
-      },
-      child: ActivateBox(
-        active: isActive,
-        child: ListItem.checkbox(
-          leading: SizedBox(
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: FutureBuilder<Uint8List?>(
+        initialData: _packageIconCache[packageName],
+        future: _getPackageIcon(packageName, forceRefresh: forceRefresh),
+        builder: (context, snapshot) {
+          final data = snapshot.data;
+          if (data == null) return _buildDefaultIcon(context);
+          final cacheSize = (48 * MediaQuery.devicePixelRatioOf(context))
+              .ceil();
+          return Image.memory(
+            data,
+            gaplessPlayback: true,
             width: 48,
             height: 48,
-            child: FutureBuilder<Uint8List?>(
-              future: app.getPackageIcon(
-                package.packageName,
-                forceRefresh: forceRefresh,
-              ),
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data != null) {
-                  final devicePixelRatio = MediaQuery.of(
-                    context,
-                  ).devicePixelRatio;
-                  final cacheSize = (48 * devicePixelRatio).ceil();
-
-                  return Image.memory(
-                    snapshot.data!,
-                    gaplessPlayback: true,
-                    width: 48,
-                    height: 48,
-                    cacheWidth: cacheSize,
-                    cacheHeight: cacheSize,
-                    errorBuilder: (_, _, _) => _buildDefaultIcon(context),
-                  );
-                }
-                return _buildDefaultIcon(context);
-              },
-            ),
-          ),
-          title: EmojiText(
-            package.label,
-            style: const TextStyle(overflow: TextOverflow.ellipsis),
-            maxLines: 1,
-          ),
-          subtitle: Text(
-            package.packageName,
-            style: const TextStyle(overflow: TextOverflow.ellipsis),
-            maxLines: 1,
-          ),
-          delegate: CheckboxDelegate(value: value, onChanged: onChanged),
-        ),
+            cacheWidth: cacheSize,
+            cacheHeight: cacheSize,
+            errorBuilder: (_, _, _) => _buildDefaultIcon(context),
+          );
+        },
       ),
     );
   }
@@ -708,13 +779,231 @@ class PackageListItem extends ConsumerWidget {
   Widget _buildDefaultIcon(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: context.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(
         Icons.apps,
         size: 24,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        color: context.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+Future<String?> showPackagePicker(BuildContext context) async {
+  await context.dismissKeyboard();
+  if (!context.mounted) return null;
+  return showSheet<String>(
+    context: context,
+    props: const SheetProps(isScrollControlled: true),
+    builder: (_, type) => AdaptiveSheetScaffold(
+      type: type,
+      title: appLocalizations.appAccessControl,
+      body: const PackagePickerPanel(),
+    ),
+  );
+}
+
+class PackagePickerPanel extends ConsumerStatefulWidget {
+  const PackagePickerPanel({super.key});
+
+  @override
+  ConsumerState<PackagePickerPanel> createState() => _PackagePickerPanelState();
+}
+
+class _PackagePickerPanelState extends ConsumerState<PackagePickerPanel> {
+  bool _ready = false;
+  bool _denied = false;
+  String _query = '';
+  final _queryController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.afterRouteTransition(_load);
+    });
+  }
+
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    var denied = false;
+    try {
+      if (await app.hasPackageListPermission()) {
+        await globalState.appController.getPackages();
+      } else {
+        denied = true;
+      }
+    } catch (_) {
+      denied = true;
+    }
+    if (!mounted) return;
+    setState(() {
+      _denied = denied || ref.read(packagesProvider).isEmpty;
+      _ready = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) {
+      return const SizedBox(
+        height: 240,
+        child: Center(
+          child: SyncedLoading(size: 40, child: CircularProgressIndicator()),
+        ),
+      );
+    }
+    if (_denied) {
+      return SizedBox(
+        height: 240,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                Text(
+                  appLocalizations.packageListPermissionRequired,
+                  textAlign: TextAlign.center,
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: app.requestPackageListPermission,
+                  icon: const Icon(Icons.settings),
+                  label: Text(appLocalizations.openSettings),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    final state = ref.watch(packageListSelectorStateProvider);
+    final accessControl = state.accessControl;
+    final isAccept = accessControl.mode == AccessControlMode.acceptSelected;
+    final active = accessControl.enable;
+    final currentList = accessControl.currentList;
+    final currentSet = currentList.toSet();
+    final all = state.getSortList(active ? currentList : const []);
+    final query = _query.trim().toLowerCase();
+    final packages = query.isEmpty
+        ? all
+        : all
+              .where(
+                (item) =>
+                    item.label.toLowerCase().contains(query) ||
+                    item.packageName.toLowerCase().contains(query),
+              )
+              .toList();
+    final colorScheme = context.colorScheme;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await context.dismissKeyboard();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: TextField(
+              controller: _queryController,
+              onChanged: (value) => setState(() => _query = value),
+              decoration: InputDecoration(
+                hintText: appLocalizations.search,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _queryController.clear();
+                          setState(() => _query = '');
+                        },
+                      ),
+              ),
+            ),
+          ),
+          if (active)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  Icon(
+                    isAccept ? Icons.adjust_outlined : Icons.block_outlined,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${isAccept ? appLocalizations.whitelistMode : appLocalizations.blacklistMode} · ${appLocalizations.selected} ${currentSet.length}',
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: packages.isEmpty
+                ? NullStatus(label: appLocalizations.noData)
+                : ListView.builder(
+                    itemCount: packages.length,
+                    itemExtent: 72,
+                    padding: const EdgeInsets.only(bottom: 24),
+                    itemBuilder: (context, index) {
+                      final package = packages[index];
+                      final inList =
+                          active && currentSet.contains(package.packageName);
+                      return RepaintBoundary(
+                        key: Key(package.packageName),
+                        child: ListItem(
+                          leading: PackageIcon(packageName: package.packageName),
+                          title: EmojiText(
+                            package.label,
+                            style: const TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
+                          ),
+                          subtitle: Text(
+                            package.packageName,
+                            style: const TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
+                          ),
+                          trailing: inList
+                              ? Icon(
+                                  isAccept
+                                      ? Icons.adjust_outlined
+                                      : Icons.block_outlined,
+                                  color: colorScheme.primary,
+                                )
+                              : null,
+                          onTap: () async {
+                            await context.dismissKeyboard();
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop(package.packageName);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -758,31 +1047,33 @@ class AccessControlSearchDelegate extends SearchDelegate {
 
   void _handleSelected(
     WidgetRef ref,
-    List<String> valueList,
+    Set<String> selectedSet,
     Package package,
     bool? value,
   ) {
+    final newSelectedSet = Set<String>.of(selectedSet);
     if (value == true) {
-      valueList.add(package.packageName);
+      newSelectedSet.add(package.packageName);
     } else {
-      valueList.remove(package.packageName);
+      newSelectedSet.remove(package.packageName);
     }
+    final valueList = newSelectedSet.toList();
     ref.read(vpnSettingProvider.notifier).updateState((state) {
       final currentManualList = state.accessControl.manualList;
-      final newManualList = value == false &&
-              currentManualList.contains(package.packageName)
+      final newManualList =
+          value == false && currentManualList.contains(package.packageName)
           ? currentManualList.where((e) => e != package.packageName).toList()
           : currentManualList;
       return switch (state.accessControl.mode ==
           AccessControlMode.acceptSelected) {
         true => state.copyWith.accessControl(
-            acceptList: valueList,
-            manualList: newManualList,
-          ),
+          acceptList: valueList,
+          manualList: newManualList,
+        ),
         false => state.copyWith.accessControl(
-            rejectList: valueList,
-            manualList: newManualList,
-          ),
+          rejectList: valueList,
+          manualList: newManualList,
+        ),
       };
     });
   }
@@ -791,20 +1082,19 @@ class AccessControlSearchDelegate extends SearchDelegate {
     final lowQuery = query.toLowerCase();
     return Consumer(
       builder: (context, ref, _) {
-        final vm3 = ref.watch(
+        final (packages, isAccessControl, currentList) = ref.watch(
           packageListSelectorStateProvider.select(
-            (state) => VM3(
-              a: state.getSortList(
+            (state) => (
+              state.getSortList(
                 state.accessControl.mode == AccessControlMode.acceptSelected
                     ? acceptList
                     : rejectList,
               ),
-              b: state.accessControl.enable,
-              c: state.accessControl.currentList,
+              state.accessControl.enable,
+              state.accessControl.currentList,
             ),
           ),
         );
-        final packages = vm3.a;
 
         // Search filter (inside Consumer, auto-responds to query changes)
         final queryPackages = query.isEmpty
@@ -817,10 +1107,13 @@ class AccessControlSearchDelegate extends SearchDelegate {
                   )
                   .toList();
 
-        final isAccessControl = vm3.b;
-        final currentList = vm3.c;
-        final packageNameList = packages.map((e) => e.packageName).toList();
-        final valueList = currentList.intersection(packageNameList);
+        final currentSet = currentList.toSet();
+        final selectedSet = <String>{};
+        for (final package in packages) {
+          if (currentSet.contains(package.packageName)) {
+            selectedSet.add(package.packageName);
+          }
+        }
 
         return DisabledMask(
           status: !isAccessControl,
@@ -832,10 +1125,10 @@ class AccessControlSearchDelegate extends SearchDelegate {
               return PackageListItem(
                 key: Key(package.packageName),
                 package: package,
-                value: valueList.contains(package.packageName),
+                value: selectedSet.contains(package.packageName),
                 isActive: isAccessControl,
                 onChanged: (value) {
-                  _handleSelected(ref, valueList, package, value);
+                  _handleSelected(ref, selectedSet, package, value);
                 },
               );
             },
@@ -897,6 +1190,7 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
   List<Widget> _buildModeSetting() {
     return generateSection(
       plain: true,
+      isFirst: true,
       title: appLocalizations.mode,
       items: [
         SingleChildScrollView(
@@ -986,11 +1280,11 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
           scrollDirection: Axis.horizontal,
           child: Consumer(
             builder: (_, ref, _) {
-              final vm2 = ref.watch(
+              final (isFilterSystemApp, isFilterNonInternetApp) = ref.watch(
                 vpnSettingProvider.select(
-                  (state) => VM2(
-                    a: state.accessControl.isFilterSystemApp,
-                    b: state.accessControl.isFilterNonInternetApp,
+                  (state) => (
+                    state.accessControl.isFilterSystemApp,
+                    state.accessControl.isFilterNonInternetApp,
                   ),
                 ),
               );
@@ -999,26 +1293,26 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
                 children: [
                   SettingTextCard(
                     appLocalizations.systemApp,
-                    isSelected: vm2.a == false,
+                    isSelected: isFilterSystemApp == false,
                     onPressed: () {
                       ref
                           .read(vpnSettingProvider.notifier)
                           .updateState(
                             (state) => state.copyWith.accessControl(
-                              isFilterSystemApp: !vm2.a,
+                              isFilterSystemApp: !isFilterSystemApp,
                             ),
                           );
                     },
                   ),
                   SettingTextCard(
                     appLocalizations.noNetworkApp,
-                    isSelected: vm2.b == false,
+                    isSelected: isFilterNonInternetApp == false,
                     onPressed: () {
                       ref
                           .read(vpnSettingProvider.notifier)
                           .updateState(
                             (state) => state.copyWith.accessControl(
-                              isFilterNonInternetApp: !vm2.b,
+                              isFilterNonInternetApp: !isFilterNonInternetApp,
                             ),
                           );
                     },
@@ -1051,19 +1345,22 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
       try {
         newAccessControl = AccessControl.fromJson(json.decode(text));
       } catch (_) {
-        final packageNameRegex = RegExp(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+$');
         final packages = text
-            .split(RegExp(r'[\n,\s]+'))
+            .split(_packageSplitRegex)
             .map((e) => e.trim())
-            .where((e) => packageNameRegex.hasMatch(e))
+            .where((e) => _packageNameRegex.hasMatch(e))
             .toList();
 
         final currentState = ref.read(vpnSettingProvider).accessControl;
         final isAccept = currentState.mode == AccessControlMode.acceptSelected;
-        final currentList =
-            isAccept ? currentState.acceptList : currentState.rejectList;
+        final currentList = isAccept
+            ? currentState.acceptList
+            : currentState.rejectList;
         final newList = {...currentList, ...packages}.toList();
-        final newManualList = {...currentState.manualList, ...packages}.toList();
+        final newManualList = {
+          ...currentState.manualList,
+          ...packages,
+        }.toList();
 
         newAccessControl = currentState.copyWith(
           acceptList: isAccept ? newList : currentState.acceptList,
@@ -1072,7 +1369,9 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
         );
       }
 
-      ref.read(vpnSettingProvider.notifier).updateState(
+      ref
+          .read(vpnSettingProvider.notifier)
+          .updateState(
             (state) => state.copyWith(accessControl: newAccessControl),
           );
     });
@@ -1117,18 +1416,23 @@ class _AccessControlPanelState extends ConsumerState<AccessControlPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ..._buildModeSetting(),
-            ..._buildSortSetting(),
-            ..._buildSourceSetting(),
-            ..._buildActionSetting(),
-          ],
+    return ScrollEdgeRise(
+      builder: (_, rise) => SingleChildScrollView(
+        padding: EdgeInsets.only(top: 8 + rise),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: 32 + MediaQuery.paddingOf(context).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ..._buildModeSetting(),
+              ..._buildSortSetting(),
+              ..._buildSourceSetting(),
+              ..._buildActionSetting(),
+            ],
+          ),
         ),
       ),
     );

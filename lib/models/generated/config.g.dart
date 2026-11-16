@@ -6,61 +6,116 @@ part of '../config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_AppSettingProps _$AppSettingPropsFromJson(
-  Map<String, dynamic> json,
-) => _AppSettingProps(
-  locale: json['locale'] as String?,
-  dashboardWidgets: json['dashboardWidgets'] == null
-      ? defaultDashboardWidgets
-      : dashboardWidgetsSafeFromJson(json['dashboardWidgets'] as List?),
-  mobileDashboardWidgets: json['mobileDashboardWidgets'] == null
-      ? defaultAndroidDashboardWidgets
-      : mobileDashboardWidgetsSafeFromJson(
-          json['mobileDashboardWidgets'] as List?,
-        ),
-  desktopDashboardWidgets: json['desktopDashboardWidgets'] == null
-      ? defaultDashboardWidgets
-      : desktopDashboardWidgetsSafeFromJson(
-          json['desktopDashboardWidgets'] as List?,
-        ),
-  pinnedMediaPlatforms: json['pinnedMediaPlatforms'] == null
-      ? defaultPinnedMediaPlatforms
-      : pinnedMediaPlatformsSafeFromJson(json['pinnedMediaPlatforms'] as List?),
-  mediaUnlockMoreStreamingPlatforms:
-      json['mediaUnlockMoreStreamingPlatforms'] as bool? ?? false,
-  mediaUnlockExtraDetails: json['mediaUnlockExtraDetails'] as bool? ?? false,
-  mediaUnlockRefreshOnNodeChange:
-      json['mediaUnlockRefreshOnNodeChange'] as bool? ?? true,
-  mediaUnlockColorfulIcons: json['mediaUnlockColorfulIcons'] as bool? ?? true,
-  mediaUnlockRefreshByCategory:
-      json['mediaUnlockRefreshByCategory'] as bool? ?? true,
-  onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? true,
-  autoLaunch: json['autoLaunch'] as bool? ?? false,
-  silentLaunch: json['silentLaunch'] as bool? ?? false,
-  smartDelayLaunch: json['smartDelayLaunch'] as bool? ?? false,
-  autoRun: json['autoRun'] as bool? ?? false,
-  openLogs: json['openLogs'] as bool? ?? true,
-  closeConnections: json['closeConnections'] as bool? ?? true,
-  testUrl: json['testUrl'] as String? ?? defaultTestUrl,
-  showStartSwitch: json['showStartSwitch'] as bool? ?? false,
-  enableNavBarHapticFeedback:
-      json['enableNavBarHapticFeedback'] as bool? ?? true,
-  autoCheckUpdate: json['autoCheckUpdate'] as bool? ?? true,
-  showLabel: json['showLabel'] as bool? ?? false,
-  disclaimerAccepted: json['disclaimerAccepted'] as bool? ?? false,
-  minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
-  hidden: json['hidden'] as bool? ?? false,
-  keepDockIcon: json['keepDockIcon'] as bool? ?? true,
-  developerMode: json['developerMode'] as bool? ?? false,
-  enableHighRefreshRate: json['enableHighRefreshRate'] as bool? ?? false,
-  recoveryStrategy:
-      $enumDecodeNullable(
-        _$RecoveryStrategyEnumMap,
-        json['recoveryStrategy'],
-      ) ??
-      RecoveryStrategy.compatible,
-  enableHighPriority: json['enableHighPriority'] as bool? ?? false,
-);
+_AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
+    _AppSettingProps(
+      locale: json['locale'] as String?,
+      dashboardWidgets: json['dashboardWidgets'] == null
+          ? defaultDashboardWidgets
+          : dashboardWidgetsSafeFromJson(json['dashboardWidgets'] as List?),
+      mobileDashboardWidgets: json['mobileDashboardWidgets'] == null
+          ? defaultAndroidDashboardWidgets
+          : mobileDashboardWidgetsSafeFromJson(
+              json['mobileDashboardWidgets'] as List?,
+            ),
+      desktopDashboardWidgets: json['desktopDashboardWidgets'] == null
+          ? defaultDashboardWidgets
+          : desktopDashboardWidgetsSafeFromJson(
+              json['desktopDashboardWidgets'] as List?,
+            ),
+      onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? true,
+      autoLaunch: json['autoLaunch'] as bool? ?? false,
+      silentLaunch: json['silentLaunch'] as bool? ?? false,
+      smartDelayLaunch: json['smartDelayLaunch'] as bool? ?? false,
+      autoRun: json['autoRun'] as bool? ?? false,
+      openLogs: json['openLogs'] as bool? ?? true,
+      closeConnections: json['closeConnections'] as bool? ?? true,
+      logAiSearch: json['logAiSearch'] as bool? ?? true,
+      testUrl: json['testUrl'] as String? ?? defaultTestUrl,
+      showStartSwitch: json['showStartSwitch'] as bool? ?? true,
+      startSwitchStyle:
+          $enumDecodeNullable(
+            _$StartSwitchStyleEnumMap,
+            json['startSwitchStyle'],
+          ) ??
+          StartSwitchStyle.outlined,
+      startSwitchOnLabel: json['startSwitchOnLabel'] as String?,
+      startSwitchOffLabel: json['startSwitchOffLabel'] as String?,
+      enableNavBarHapticFeedback:
+          json['enableNavBarHapticFeedback'] as bool? ?? true,
+      autoCheckUpdate: json['autoCheckUpdate'] as bool? ?? true,
+      showLabel: json['showLabel'] as bool? ?? false,
+      disclaimerAccepted: json['disclaimerAccepted'] as bool? ?? false,
+      minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
+      hidden: json['hidden'] as bool? ?? false,
+      keepDockIcon: json['keepDockIcon'] as bool? ?? true,
+      developerMode: json['developerMode'] as bool? ?? false,
+      recoveryStrategy:
+          $enumDecodeNullable(
+            _$RecoveryStrategyEnumMap,
+            json['recoveryStrategy'],
+          ) ??
+          RecoveryStrategy.compatible,
+      backupPassword: json['backupPassword'] as String? ?? '',
+      enableHighPriority: json['enableHighPriority'] as bool? ?? false,
+      sidebarCollapsed: json['sidebarCollapsed'] as bool? ?? true,
+      sidebarFlyout: json['sidebarFlyout'] as bool? ?? false,
+      sidebarFlyoutOutsideTools:
+          json['sidebarFlyoutOutsideTools'] as bool? ?? false,
+      sidebarFlyoutDelay:
+          $enumDecodeNullable(
+            _$SidebarFlyoutDelayEnumMap,
+            json['sidebarFlyoutDelay'],
+          ) ??
+          SidebarFlyoutDelay.standard,
+      sidebarFlyoutEntries: json['sidebarFlyoutEntries'] == null
+          ? defaultSidebarFlyoutEntries
+          : sidebarFlyoutEntriesSafeFromJson(
+              json['sidebarFlyoutEntries'] as List?,
+            ),
+      dashboardTitle: json['dashboardTitle'] as String?,
+      dashboardWatermark: json['dashboardWatermark'] as bool? ?? false,
+      toolboxTiles:
+          (json['toolboxTiles'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const <String>[],
+      mrsCopyRawLink: json['mrsCopyRawLink'] as bool? ?? false,
+      mrsRawSource:
+          $enumDecodeNullable(
+            _$MrsRawSourceEnumMap,
+            json['mrsRawSource'],
+            unknownValue: MrsRawSource.metaRulesDat,
+          ) ??
+          MrsRawSource.metaRulesDat,
+      mrsTapAction:
+          $enumDecodeNullable(
+            _$MrsTapActionEnumMap,
+            json['mrsTapAction'],
+            unknownValue: MrsTapAction.viewRules,
+          ) ??
+          MrsTapAction.viewRules,
+      mrsResolveDns: json['mrsResolveDns'] as bool? ?? true,
+      ipRiskDetail: json['ipRiskDetail'] as bool? ?? false,
+      ipRiskAlert: json['ipRiskAlert'] as bool? ?? true,
+      iperfOptions: json['iperfOptions'] == null
+          ? const IperfOptions()
+          : IperfOptions.fromJson(json['iperfOptions'] as Map<String, dynamic>),
+      localPingOptions: json['localPingOptions'] == null
+          ? const LocalPingOptions()
+          : LocalPingOptions.fromJson(
+              json['localPingOptions'] as Map<String, dynamic>,
+            ),
+      mobileDashboardSizes:
+          (json['mobileDashboardSizes'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const <String, String>{},
+      desktopDashboardSizes:
+          (json['desktopDashboardSizes'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const <String, String>{},
+    );
 
 Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
     <String, dynamic>{
@@ -74,15 +129,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'desktopDashboardWidgets': instance.desktopDashboardWidgets
           .map((e) => _$DashboardWidgetEnumMap[e]!)
           .toList(),
-      'pinnedMediaPlatforms': instance.pinnedMediaPlatforms
-          .map((e) => _$MediaPlatformEnumMap[e]!)
-          .toList(),
-      'mediaUnlockMoreStreamingPlatforms':
-          instance.mediaUnlockMoreStreamingPlatforms,
-      'mediaUnlockExtraDetails': instance.mediaUnlockExtraDetails,
-      'mediaUnlockRefreshOnNodeChange': instance.mediaUnlockRefreshOnNodeChange,
-      'mediaUnlockColorfulIcons': instance.mediaUnlockColorfulIcons,
-      'mediaUnlockRefreshByCategory': instance.mediaUnlockRefreshByCategory,
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
       'autoLaunch': instance.autoLaunch,
       'silentLaunch': instance.silentLaunch,
@@ -90,8 +136,12 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'autoRun': instance.autoRun,
       'openLogs': instance.openLogs,
       'closeConnections': instance.closeConnections,
+      'logAiSearch': instance.logAiSearch,
       'testUrl': instance.testUrl,
       'showStartSwitch': instance.showStartSwitch,
+      'startSwitchStyle': _$StartSwitchStyleEnumMap[instance.startSwitchStyle]!,
+      'startSwitchOnLabel': instance.startSwitchOnLabel,
+      'startSwitchOffLabel': instance.startSwitchOffLabel,
       'enableNavBarHapticFeedback': instance.enableNavBarHapticFeedback,
       'autoCheckUpdate': instance.autoCheckUpdate,
       'showLabel': instance.showLabel,
@@ -100,21 +150,59 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'hidden': instance.hidden,
       'keepDockIcon': instance.keepDockIcon,
       'developerMode': instance.developerMode,
-      'enableHighRefreshRate': instance.enableHighRefreshRate,
       'recoveryStrategy': _$RecoveryStrategyEnumMap[instance.recoveryStrategy]!,
+      'backupPassword': instance.backupPassword,
       'enableHighPriority': instance.enableHighPriority,
+      'sidebarCollapsed': instance.sidebarCollapsed,
+      'sidebarFlyout': instance.sidebarFlyout,
+      'sidebarFlyoutOutsideTools': instance.sidebarFlyoutOutsideTools,
+      'sidebarFlyoutDelay':
+          _$SidebarFlyoutDelayEnumMap[instance.sidebarFlyoutDelay]!,
+      'sidebarFlyoutEntries': instance.sidebarFlyoutEntries
+          .map((e) => _$SidebarFlyoutEntryEnumMap[e]!)
+          .toList(),
+      'dashboardTitle': instance.dashboardTitle,
+      'dashboardWatermark': instance.dashboardWatermark,
+      'toolboxTiles': instance.toolboxTiles,
+      'mrsCopyRawLink': instance.mrsCopyRawLink,
+      'mrsRawSource': _$MrsRawSourceEnumMap[instance.mrsRawSource]!,
+      'mrsTapAction': _$MrsTapActionEnumMap[instance.mrsTapAction]!,
+      'mrsResolveDns': instance.mrsResolveDns,
+      'ipRiskDetail': instance.ipRiskDetail,
+      'ipRiskAlert': instance.ipRiskAlert,
+      'iperfOptions': instance.iperfOptions,
+      'localPingOptions': instance.localPingOptions,
+      'mobileDashboardSizes': instance.mobileDashboardSizes,
+      'desktopDashboardSizes': instance.desktopDashboardSizes,
     };
+
+const _$StartSwitchStyleEnumMap = {
+  StartSwitchStyle.tonal: 'tonal',
+  StartSwitchStyle.outlined: 'outlined',
+};
 
 const _$RecoveryStrategyEnumMap = {
   RecoveryStrategy.compatible: 'compatible',
   RecoveryStrategy.override: 'override',
 };
 
+const _$SidebarFlyoutDelayEnumMap = {
+  SidebarFlyoutDelay.fast: 'fast',
+  SidebarFlyoutDelay.standard: 'standard',
+  SidebarFlyoutDelay.slow: 'slow',
+};
+
+const _$MrsRawSourceEnumMap = {MrsRawSource.metaRulesDat: 'metaRulesDat'};
+
+const _$MrsTapActionEnumMap = {
+  MrsTapAction.viewRules: 'viewRules',
+  MrsTapAction.copyUrl: 'copyUrl',
+};
+
 const _$DashboardWidgetEnumMap = {
   DashboardWidget.networkSpeed: 'networkSpeed',
   DashboardWidget.networkSpeedSmall: 'networkSpeedSmall',
-  DashboardWidget.outboundModeV2: 'outboundModeV2',
-  DashboardWidget.outboundMode: 'outboundMode',
+  DashboardWidget.profileMode: 'profileMode',
   DashboardWidget.trafficUsage: 'trafficUsage',
   DashboardWidget.networkDetection: 'networkDetection',
   DashboardWidget.tunButton: 'tunButton',
@@ -125,74 +213,27 @@ const _$DashboardWidgetEnumMap = {
   DashboardWidget.connectionsCount: 'connectionsCount',
   DashboardWidget.ipv6Switch: 'ipv6Switch',
   DashboardWidget.wakelockSwitch: 'wakelockSwitch',
-  DashboardWidget.dnsOverride: 'dnsOverride',
   DashboardWidget.snifferOverride: 'snifferOverride',
   DashboardWidget.ntpOverride: 'ntpOverride',
   DashboardWidget.providersInfo: 'providersInfo',
   DashboardWidget.fcmStatus: 'fcmStatus',
   DashboardWidget.onlinePanel: 'onlinePanel',
-  DashboardWidget.mediaUnlock: 'mediaUnlock',
-  DashboardWidget.mediaUnlockSmall: 'mediaUnlockSmall',
+  DashboardWidget.toolboxShortcut: 'toolboxShortcut',
   DashboardWidget.startButton: 'startButton',
 };
 
-const _$MediaPlatformEnumMap = {
-  MediaPlatform.openai: 'openai',
-  MediaPlatform.claude: 'claude',
-  MediaPlatform.gemini: 'gemini',
-  MediaPlatform.grok: 'grok',
-  MediaPlatform.openrouter: 'openrouter',
-  MediaPlatform.poe: 'poe',
-  MediaPlatform.suno: 'suno',
-  MediaPlatform.cloudflare: 'cloudflare',
-  MediaPlatform.perplexity: 'perplexity',
-  MediaPlatform.netflix: 'netflix',
-  MediaPlatform.disney: 'disney',
-  MediaPlatform.youtube: 'youtube',
-  MediaPlatform.youtubemusic: 'youtubemusic',
-  MediaPlatform.spotify: 'spotify',
-  MediaPlatform.tiktok: 'tiktok',
-  MediaPlatform.iqiyi: 'iqiyi',
-  MediaPlatform.crunchyroll: 'crunchyroll',
-  MediaPlatform.missav: 'missav',
-  MediaPlatform.ehentai: 'ehentai',
-  MediaPlatform.tencent: 'tencent',
-  MediaPlatform.alibaba: 'alibaba',
-  MediaPlatform.netease: 'netease',
-  MediaPlatform.douyin: 'douyin',
-  MediaPlatform.bilibili: 'bilibili',
-  MediaPlatform.cloudflarecn: 'cloudflarecn',
-  MediaPlatform.reddit: 'reddit',
-  MediaPlatform.x: 'x',
-  MediaPlatform.discord: 'discord',
-  MediaPlatform.v2ex: 'v2ex',
-  MediaPlatform.medium: 'medium',
-  MediaPlatform.stackoverflow: 'stackoverflow',
-  MediaPlatform.quora: 'quora',
-  MediaPlatform.telegram: 'telegram',
-  MediaPlatform.github: 'github',
-  MediaPlatform.wikipedia: 'wikipedia',
-  MediaPlatform.apple: 'apple',
-  MediaPlatform.onetrust: 'onetrust',
-  MediaPlatform.gitlab: 'gitlab',
-  MediaPlatform.npm: 'npm',
-  MediaPlatform.cdnjs: 'cdnjs',
-  MediaPlatform.unpkg: 'unpkg',
-  MediaPlatform.nodejs: 'nodejs',
-  MediaPlatform.steam: 'steam',
-  MediaPlatform.epic: 'epic',
-  MediaPlatform.ubisoft: 'ubisoft',
-  MediaPlatform.humblebundle: 'humblebundle',
-  MediaPlatform.coinbase: 'coinbase',
-  MediaPlatform.okx: 'okx',
-  MediaPlatform.kraken: 'kraken',
-  MediaPlatform.cryptocom: 'cryptocom',
-  MediaPlatform.phantom: 'phantom',
-  MediaPlatform.paypal: 'paypal',
-  MediaPlatform.mytvsuper: 'mytvsuper',
-  MediaPlatform.viutv: 'viutv',
-  MediaPlatform.hoytv: 'hoytv',
-  MediaPlatform.rthk: 'rthk',
+const _$SidebarFlyoutEntryEnumMap = {
+  SidebarFlyoutEntry.resources: 'resources',
+  SidebarFlyoutEntry.script: 'script',
+  SidebarFlyoutEntry.toolbox: 'toolbox',
+  SidebarFlyoutEntry.theme: 'theme',
+  SidebarFlyoutEntry.backupAndRecovery: 'backupAndRecovery',
+  SidebarFlyoutEntry.hotkeyManagement: 'hotkeyManagement',
+  SidebarFlyoutEntry.loopback: 'loopback',
+  SidebarFlyoutEntry.basicConfig: 'basicConfig',
+  SidebarFlyoutEntry.otherSettings: 'otherSettings',
+  SidebarFlyoutEntry.application: 'application',
+  SidebarFlyoutEntry.about: 'about',
 };
 
 _AccessControl _$AccessControlFromJson(Map<String, dynamic> json) =>
@@ -279,10 +320,10 @@ _VpnProps _$VpnPropsFromJson(Map<String, dynamic> json) => _VpnProps(
   smartAutoStopNetworks: json['smartAutoStopNetworks'] as String? ?? '',
   storeFix: json['storeFix'] as bool? ?? false,
   networkFix: json['networkFix'] as bool? ?? false,
+  loopbackProtection: json['loopbackProtection'] as bool? ?? false,
   disableQuic: json['disableQuic'] as bool? ?? false,
   highPriorityNotification: json['highPriorityNotification'] as bool? ?? false,
   networkSpeedNotification: json['networkSpeedNotification'] as bool? ?? false,
-  excludeChina: json['excludeChina'] as bool? ?? false,
   trayEnhancement: json['trayEnhancement'] as bool? ?? false,
   trayLeftClickBehavior:
       $enumDecodeNullable(
@@ -314,10 +355,10 @@ Map<String, dynamic> _$VpnPropsToJson(_VpnProps instance) => <String, dynamic>{
   'smartAutoStopNetworks': instance.smartAutoStopNetworks,
   'storeFix': instance.storeFix,
   'networkFix': instance.networkFix,
+  'loopbackProtection': instance.loopbackProtection,
   'disableQuic': instance.disableQuic,
   'highPriorityNotification': instance.highPriorityNotification,
   'networkSpeedNotification': instance.networkSpeedNotification,
-  'excludeChina': instance.excludeChina,
   'trayEnhancement': instance.trayEnhancement,
   'trayLeftClickBehavior':
       _$TrayClickBehaviorEnumMap[instance.trayLeftClickBehavior]!,
@@ -337,28 +378,37 @@ const _$TrayClickBehaviorEnumMap = {
 _NetworkProps _$NetworkPropsFromJson(Map<String, dynamic> json) =>
     _NetworkProps(
       systemProxy: json['systemProxy'] as bool? ?? true,
-      bypassDomain:
-          (json['bypassDomain'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          defaultBypassDomain,
+      bypassDomain: json['bypassDomain'] == null
+          ? defaultBypassDomain
+          : bypassDomainSafeFromJson(json['bypassDomain'] as List?),
       bypassPrivateRoute: json['bypassPrivateRoute'] as bool? ?? true,
       bypassPrivateRouteAddress:
           (json['bypassPrivateRouteAddress'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      autoSetSystemDns: json['autoSetSystemDns'] as bool? ?? true,
+      profileSwitchMode:
+          $enumDecodeNullable(
+            _$ProfileSwitchModeEnumMap,
+            json['profileSwitchMode'],
+          ) ??
+          ProfileSwitchMode.hotReload,
     );
 
-Map<String, dynamic> _$NetworkPropsToJson(_NetworkProps instance) =>
-    <String, dynamic>{
-      'systemProxy': instance.systemProxy,
-      'bypassDomain': instance.bypassDomain,
-      'bypassPrivateRoute': instance.bypassPrivateRoute,
-      'bypassPrivateRouteAddress': instance.bypassPrivateRouteAddress,
-      'autoSetSystemDns': instance.autoSetSystemDns,
-    };
+Map<String, dynamic> _$NetworkPropsToJson(
+  _NetworkProps instance,
+) => <String, dynamic>{
+  'systemProxy': instance.systemProxy,
+  'bypassDomain': instance.bypassDomain,
+  'bypassPrivateRoute': instance.bypassPrivateRoute,
+  'bypassPrivateRouteAddress': instance.bypassPrivateRouteAddress,
+  'profileSwitchMode': _$ProfileSwitchModeEnumMap[instance.profileSwitchMode]!,
+};
+
+const _$ProfileSwitchModeEnumMap = {
+  ProfileSwitchMode.hotReload: 'hotReload',
+  ProfileSwitchMode.fullRestart: 'fullRestart',
+};
 
 _ProxiesStyle _$ProxiesStyleFromJson(Map<String, dynamic> json) =>
     _ProxiesStyle(
@@ -376,21 +426,25 @@ _ProxiesStyle _$ProxiesStyleFromJson(Map<String, dynamic> json) =>
           ProxiesIconStyle.none,
       cardType:
           $enumDecodeNullable(_$ProxyCardTypeEnumMap, json['cardType']) ??
-          ProxyCardType.shrink,
+          ProxyCardType.expand,
       delayAnimation:
           $enumDecodeNullable(
             _$DelayAnimationTypeEnumMap,
             json['delayAnimation'],
           ) ??
-          DelayAnimationType.none,
+          DelayAnimationType.pulse,
+      syncDelayAnimation: json['syncDelayAnimation'] as bool? ?? true,
       iconMap:
           (json['iconMap'] as Map<String, dynamic>?)?.map(
             (k, e) => MapEntry(k, e as String),
           ) ??
           const {},
-      concurrencyLimit: (json['concurrencyLimit'] as num?)?.toInt() ?? 250,
-      autoStickyHeader: json['autoStickyHeader'] as bool? ?? true,
+      concurrencyLimit: json['concurrencyLimit'] == null
+          ? maxDelayTestConcurrency
+          : concurrencyLimitFromJson(json['concurrencyLimit']),
+      autoStickyHeader: json['autoStickyHeader'] as bool? ?? false,
       showHiddenItems: json['showHiddenItems'] as bool? ?? false,
+      hideTimeoutProxies: json['hideTimeoutProxies'] as bool? ?? false,
       hasCustomizedStyle: json['hasCustomizedStyle'] as bool? ?? false,
     );
 
@@ -402,10 +456,12 @@ Map<String, dynamic> _$ProxiesStyleToJson(_ProxiesStyle instance) =>
       'iconStyle': _$ProxiesIconStyleEnumMap[instance.iconStyle]!,
       'cardType': _$ProxyCardTypeEnumMap[instance.cardType]!,
       'delayAnimation': _$DelayAnimationTypeEnumMap[instance.delayAnimation]!,
+      'syncDelayAnimation': instance.syncDelayAnimation,
       'iconMap': instance.iconMap,
       'concurrencyLimit': instance.concurrencyLimit,
       'autoStickyHeader': instance.autoStickyHeader,
       'showHiddenItems': instance.showHiddenItems,
+      'hideTimeoutProxies': instance.hideTimeoutProxies,
       'hasCustomizedStyle': instance.hasCustomizedStyle,
     };
 
@@ -493,13 +549,13 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
         json['schemeVariant'],
       ) ??
       DynamicSchemeVariant.content,
-  pureBlack: json['pureBlack'] as bool? ?? false,
   textScale: json['textScale'] == null
       ? const TextScale()
       : TextScale.fromJson(json['textScale'] as Map<String, dynamic>),
   useDarkIcon: json['useDarkIcon'] as bool? ?? false,
   useHarmonyFont: json['useHarmonyFont'] as bool? ?? false,
   invertTrayIcon: json['invertTrayIcon'] as bool? ?? false,
+  zodiacTheme: json['zodiacTheme'] as String? ?? zodiacDefaultThemeId,
 );
 
 Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
@@ -508,11 +564,11 @@ Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
       'primaryColors': instance.primaryColors,
       'themeMode': _$ThemeModeEnumMap[instance.themeMode]!,
       'schemeVariant': _$DynamicSchemeVariantEnumMap[instance.schemeVariant]!,
-      'pureBlack': instance.pureBlack,
       'textScale': instance.textScale,
       'useDarkIcon': instance.useDarkIcon,
       'useHarmonyFont': instance.useHarmonyFont,
       'invertTrayIcon': instance.invertTrayIcon,
+      'zodiacTheme': instance.zodiacTheme,
     };
 
 const _$ThemeModeEnumMap = {
@@ -534,7 +590,6 @@ const _$DynamicSchemeVariantEnumMap = {
 };
 
 _ScriptProps _$ScriptPropsFromJson(Map<String, dynamic> json) => _ScriptProps(
-  currentId: json['currentId'] as String?,
   scripts:
       (json['scripts'] as List<dynamic>?)
           ?.map((e) => Script.fromJson(e as Map<String, dynamic>))
@@ -543,9 +598,75 @@ _ScriptProps _$ScriptPropsFromJson(Map<String, dynamic> json) => _ScriptProps(
 );
 
 Map<String, dynamic> _$ScriptPropsToJson(_ScriptProps instance) =>
+    <String, dynamic>{'scripts': instance.scripts};
+
+_CustomRoute _$CustomRouteFromJson(Map<String, dynamic> json) => _CustomRoute(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  icon: json['icon'] as String?,
+  sets:
+      (json['sets'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  target: json['target'] as String?,
+  enabled: json['enabled'] as bool? ?? true,
+);
+
+Map<String, dynamic> _$CustomRouteToJson(_CustomRoute instance) =>
     <String, dynamic>{
-      'currentId': instance.currentId,
-      'scripts': instance.scripts,
+      'id': instance.id,
+      'name': instance.name,
+      'icon': instance.icon,
+      'sets': instance.sets,
+      'target': instance.target,
+      'enabled': instance.enabled,
+    };
+
+_CustomRegion _$CustomRegionFromJson(Map<String, dynamic> json) =>
+    _CustomRegion(name: json['name'] as String, regex: json['regex'] as String);
+
+Map<String, dynamic> _$CustomRegionToJson(_CustomRegion instance) =>
+    <String, dynamic>{'name': instance.name, 'regex': instance.regex};
+
+_ManagedProps _$ManagedPropsFromJson(Map<String, dynamic> json) =>
+    _ManagedProps(
+      options:
+          (json['options'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as bool),
+          ) ??
+          const {},
+      syncedVersion: json['syncedVersion'] as String?,
+      routes:
+          (json['routes'] as List<dynamic>?)
+              ?.map((e) => CustomRoute.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      order:
+          (json['order'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          const [],
+      removed:
+          (json['removed'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      regions: (json['regions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      customRegions:
+          (json['customRegions'] as List<dynamic>?)
+              ?.map((e) => CustomRegion.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+
+Map<String, dynamic> _$ManagedPropsToJson(_ManagedProps instance) =>
+    <String, dynamic>{
+      'options': instance.options,
+      'syncedVersion': instance.syncedVersion,
+      'routes': instance.routes,
+      'order': instance.order,
+      'removed': instance.removed,
+      'regions': instance.regions,
+      'customRegions': instance.customRegions,
     };
 
 _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
@@ -570,7 +691,6 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
   overrideSniffer: json['overrideSniffer'] as bool? ?? false,
   overrideTunnel: json['overrideTunnel'] as bool? ?? false,
   overrideExperimental: json['overrideExperimental'] as bool? ?? false,
-  overrideTestUrl: json['overrideTestUrl'] as bool? ?? true,
   dav: json['dav'] == null
       ? null
       : DAV.fromJson(json['dav'] as Map<String, dynamic>),
@@ -586,6 +706,11 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
   proxiesStyle: json['proxiesStyle'] == null
       ? defaultProxiesStyle
       : ProxiesStyle.fromJson(json['proxiesStyle'] as Map<String, dynamic>?),
+  trafficStatsProps: json['trafficStatsProps'] == null
+      ? defaultTrafficStatsProps
+      : TrafficStatsProps.fromJson(
+          json['trafficStatsProps'] as Map<String, dynamic>,
+        ),
   windowProps: json['windowProps'] == null
       ? defaultWindowProps
       : WindowProps.fromJson(json['windowProps'] as Map<String, dynamic>?),
@@ -597,6 +722,9 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
   scriptProps: json['scriptProps'] == null
       ? const ScriptProps()
       : ScriptProps.fromJson(json['scriptProps'] as Map<String, dynamic>),
+  managedProps: json['managedProps'] == null
+      ? const ManagedProps()
+      : ManagedProps.fromJson(json['managedProps'] as Map<String, dynamic>),
   nodeExcludeFilter: json['nodeExcludeFilter'] as String? ?? '',
   healthCheckTimeout: (json['healthCheckTimeout'] as num?)?.toInt() ?? 5000,
 );
@@ -611,15 +739,16 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'overrideSniffer': instance.overrideSniffer,
   'overrideTunnel': instance.overrideTunnel,
   'overrideExperimental': instance.overrideExperimental,
-  'overrideTestUrl': instance.overrideTestUrl,
   'dav': instance.dav,
   'networkProps': instance.networkProps,
   'vpnProps': instance.vpnProps,
   'themeProps': instance.themeProps,
   'proxiesStyle': instance.proxiesStyle,
+  'trafficStatsProps': instance.trafficStatsProps,
   'windowProps': instance.windowProps,
   'patchClashConfig': instance.patchClashConfig,
   'scriptProps': instance.scriptProps,
+  'managedProps': instance.managedProps,
   'nodeExcludeFilter': instance.nodeExcludeFilter,
   'healthCheckTimeout': instance.healthCheckTimeout,
 };

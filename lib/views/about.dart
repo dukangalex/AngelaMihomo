@@ -1,19 +1,12 @@
 import 'dart:async';
 
+import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/list.dart';
-import 'package:flutter/material.dart';
+import 'package:bett_box/widgets/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-@immutable
-class Contributor {
-  final String avatar;
-  final String name;
-
-  const Contributor({required this.avatar, required this.name});
-}
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
@@ -33,135 +26,39 @@ class AboutView extends StatelessWidget {
   }
 
   List<Widget> _buildMoreSection(BuildContext context) {
+    final links = [
+      _LinkTile(
+        title: 'Github Releases',
+        icon: Icons.star,
+        onTap: () => globalState.openUrl(
+          'https://github.com/dukangalex/AngelaMihomo/releases',
+        ),
+      ),
+      _LinkTile(
+        title: appLocalizations.checkUpdate,
+        icon: Icons.refresh,
+        external: false,
+        onTap: () => _checkUpdate(context),
+      ),
+      _LinkTile(
+        title: '官方频道',
+        icon: Icons.campaign_outlined,
+        onTap: () => globalState.openUrl('https://t.me/AngelaNexus'),
+      ),
+      _LinkTile(
+        title: '交流群',
+        icon: Icons.groups_outlined,
+        onTap: () => globalState.openUrl('https://t.me/AngelaMihomoGroup'),
+      ),
+    ];
     return generateSection(
-      title: appLocalizations.more,
+      title: appLocalizations.projectLinks,
       items: [
-        _LinkGridRow(
-          left: _LinkGridTile(
-            title: 'Github Releases',
-            icon: Icons.star,
-            onTap: () =>
-                globalState.openUrl('https://github.com/appshubcc/Bettbox'),
+        for (var i = 0; i < links.length; i += 2)
+          _LinkGridRow(
+            left: links[i],
+            right: i + 1 < links.length ? links[i + 1] : null,
           ),
-          right: _LinkGridTile(
-            title: appLocalizations.checkUpdate,
-            icon: Icons.refresh,
-            onTap: () => _checkUpdate(context),
-          ),
-        ),
-        _LinkGridRow(
-          left: _LinkGridTile(
-            title: 'Telegram Group',
-            icon: Icons.launch,
-            onTap: () =>
-                globalState.openUrl('https://telegram.me/appshub_chat'),
-          ),
-          right: _LinkGridTile(
-            title: 'Channel',
-            icon: Icons.launch,
-            onTap: () =>
-                globalState.openUrl('https://telegram.me/appshub_channel'),
-          ),
-        ),
-        _LinkGridRow(
-          left: _LinkGridTile(
-            title: 'FlClash',
-            icon: Icons.launch,
-            onTap: () =>
-                globalState.openUrl('https://github.com/chen08209/FlClash'),
-          ),
-          right: _LinkGridTile(
-            title: 'Mihomo',
-            icon: Icons.launch,
-            onTap: () =>
-                globalState.openUrl('https://github.com/MetaCubeX/mihomo'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _buildContributorsSection() {
-    final contributors = [
-      const Contributor(
-        avatar: 'assets/images/avatars/june2.jpg',
-        name: 'June2',
-      ),
-      const Contributor(avatar: 'assets/images/avatars/arue.jpg', name: 'Arue'),
-      const Contributor(
-        avatar: 'assets/images/avatars/dabaozi.jpg',
-        name: '大包子',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/xiaolou.png',
-        name: '小楼',
-      ),
-      const Contributor(avatar: 'assets/images/avatars/www.jpg', name: 'Www'),
-      const Contributor(
-        avatar: 'assets/images/avatars/AIsouler.jpg',
-        name: 'AIsouler',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/songchenwen.jpg',
-        name: 'songchenwen',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/EriDeLee.jpg',
-        name: 'EriDeLee',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/AdySnowflake.png',
-        name: 'AdySnowflake',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/CyberVacation.jpg',
-        name: 'CyberVacation',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/VillagerTom.png',
-        name: 'VillagerTom',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/ZeonX.jpg',
-        name: 'ZeonX',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/feitianmoo.png',
-        name: 'feitianmoo',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/kouhe3.jpg',
-        name: 'kouhe3',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/soffchen.png',
-        name: 'soffchen',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/utafrali.jpg',
-        name: 'utafrali',
-      ),
-      const Contributor(
-        avatar: 'assets/images/avatars/wfion.png',
-        name: 'wfion',
-      ),
-    ]..shuffle();
-    return generateSection(
-      separated: false,
-      title: appLocalizations.otherContributors,
-      items: [
-        ListItem(
-          title: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Wrap(
-              spacing: 24,
-              children: [
-                for (final contributor in contributors)
-                  Avatar(contributor: contributor),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -199,6 +96,7 @@ class AboutView extends StatelessWidget {
                             '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
+                          const _CoreVersionText(),
                         ],
                       ),
                     ],
@@ -225,30 +123,54 @@ class AboutView extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 12),
-      ..._buildContributorsSection(),
       ..._buildMoreSection(context),
     ];
     return generateListView(items);
   }
 }
 
-class Avatar extends StatelessWidget {
-  final Contributor contributor;
+/// 内核信息行：版本取核心运行时自报值（getCoreStatus 的 version 字段，
+/// 由核心构建时注入的 constant.Version 而来），不写死版本号；
+/// 核心未就绪、取不到值时整行不渲染。
+class _CoreVersionText extends StatefulWidget {
+  const _CoreVersionText();
 
-  const Avatar({super.key, required this.contributor});
+  @override
+  State<_CoreVersionText> createState() => _CoreVersionTextState();
+}
+
+class _CoreVersionTextState extends State<_CoreVersionText> {
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final status = await clashCore.getCoreStatus();
+      final version = status?.version.trim() ?? '';
+      if (mounted && version.isNotEmpty) {
+        setState(() => _version = version);
+      }
+    } catch (_) {
+      // 核心未就绪时保持空缺，不渲染本行。
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: 36,
-          height: 36,
-          child: CircleAvatar(foregroundImage: AssetImage(contributor.avatar)),
-        ),
-        const SizedBox(height: 4),
-        Text(contributor.name, style: context.textTheme.bodySmall),
-      ],
+    if (_version.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final display = _version.startsWith('v') ? _version : 'v$_version';
+    return Text(
+      '${appLocalizations.core}: Mihomo $display',
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }
@@ -300,16 +222,14 @@ class _DeveloperModeDetectorState extends State<_DeveloperModeDetector> {
 }
 
 class _LinkGridRow extends StatelessWidget {
-  final _LinkGridTile left;
-  final _LinkGridTile right;
+  final _LinkTile left;
+  final _LinkTile? right;
 
   const _LinkGridRow({required this.left, required this.right});
 
   @override
   Widget build(BuildContext context) {
-    final dividerColor = context.colorScheme.outlineVariant.withValues(
-      alpha: context.colorScheme.brightness == Brightness.light ? 0.6 : 0.45,
-    );
+    final colorScheme = context.colorScheme;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -318,48 +238,74 @@ class _LinkGridRow extends StatelessWidget {
           VerticalDivider(
             width: 1,
             thickness: 1,
-            indent: 8,
-            endIndent: 8,
-            color: dividerColor,
+            indent: 10,
+            endIndent: 10,
+            color: colorScheme.outlineVariant.withValues(
+              alpha: colorScheme.brightness == Brightness.light ? 0.6 : 0.45,
+            ),
           ),
-          Expanded(child: right),
+          Expanded(child: right ?? const SizedBox.shrink()),
         ],
       ),
     );
   }
 }
 
-class _LinkGridTile extends StatelessWidget {
+class _LinkTile extends StatelessWidget {
   final String title;
-  final IconData? icon;
+  final IconData icon;
+  final bool external;
   final VoidCallback onTap;
 
-  const _LinkGridTile({required this.title, this.icon, required this.onTap});
+  const _LinkTile({
+    required this.title,
+    required this.icon,
+    this.external = true,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.opacity12,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 19, color: colorScheme.primary),
+                ),
+                const Spacer(),
+                Icon(
+                  external ? Icons.arrow_outward : Icons.arrow_forward,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant.opacity50,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-            if (icon != null) ...[
-              const SizedBox(width: 4),
-              Icon(
-                icon,
-                size: 16,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
           ],
         ),
       ),

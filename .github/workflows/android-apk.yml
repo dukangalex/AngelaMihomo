@@ -2,6 +2,11 @@ name: android-apk
 
 on:
   workflow_dispatch:
+    inputs:
+      debug_preview:
+        description: 'Allow a debug-signed preview if release signing is not configured (never a stable release)'
+        type: boolean
+        default: false
 
 jobs:
   apk:
@@ -46,7 +51,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.44.9'
+          flutter-version: '3.47.7'
           cache: true
 
       - name: Setup Keystore
@@ -56,17 +61,21 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          ALLOW_DEBUG_PREVIEW: ${{ inputs.debug_preview }}
         run: |
+          set -euo pipefail
           if [ -z "${KEYSTORE}" ] || [ -z "${KEY_ALIAS}" ] || [ -z "${STORE_PASSWORD}" ] || [ -z "${KEY_PASSWORD}" ]; then
-            echo "No release keystore. The APK will use the debug signature."
+            if [ "${ALLOW_DEBUG_PREVIEW}" != "true" ]; then
+              echo "::error::Release signing is not configured. Refusing debug-signature fallback."
+              exit 1
+            fi
+            echo "::warning::Explicit debug preview: this APK is not signed with a production key."
+            echo "BETTBOX_ALLOW_DEBUG_PREVIEW=true" >> "$GITHUB_ENV"
             exit 0
           fi
           echo "${KEYSTORE}" | base64 --decode > android/app/keystore.jks
-          {
-            echo "keyAlias=${KEY_ALIAS}"
-            echo "storePassword=${STORE_PASSWORD}"
-            echo "keyPassword=${KEY_PASSWORD}"
-          } >> android/local.properties
+          keytool -list -keystore android/app/keystore.jks -alias "${KEY_ALIAS}" -storepass:env STORE_PASSWORD >/dev/null
+          python3 tools/write-signing-properties.py
 
       - name: Build universal APK
         shell: bash
@@ -77,6 +86,18 @@ jobs:
           dart setup.dart android --arch universal --env stable
           ls -lh dist || true
           find dist -name '*.apk' -print
+
+      - name: Verify production APK signatures
+        if: env.BETTBOX_ALLOW_DEBUG_PREVIEW != 'true'
+        shell: bash
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -n "$apksigner"
+          python3 tools/verify-android-release.py --apksigner "$apksigner" dist/*.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

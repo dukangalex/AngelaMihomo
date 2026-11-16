@@ -11,7 +11,7 @@ import 'package:bett_box/views/config/sniffer.dart';
 import 'package:bett_box/views/config/tunnel.dart';
 import 'package:bett_box/views/config/experimental.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConfigView extends StatefulWidget {
@@ -28,7 +28,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: Text(appLocalizations.general),
         subtitle: Text(appLocalizations.generalDesc),
-        leading: const Icon(Icons.build),
+        leading: const Icon(Icons.build_outlined),
         delegate: NextDelegate(
           title: appLocalizations.general,
           builder: (_) => const GeneralListView(),
@@ -38,7 +38,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: Text(appLocalizations.network),
         subtitle: Text(appLocalizations.networkDesc),
-        leading: const Icon(Icons.vpn_key),
+        leading: const Icon(Icons.vpn_key_outlined),
         delegate: NextDelegate(
           title: appLocalizations.network,
           blur: false,
@@ -57,10 +57,8 @@ class _ConfigViewState extends State<ConfigView> {
                     ref
                         .read(vpnSettingProvider.notifier)
                         .updateState(
-                          (state) => defaultVpnProps.copyWith(
-                            accessControl: state.accessControl,
-                            enable: state.enable,
-                            systemProxy: state.systemProxy,
+                          (state) => state.copyWith(
+                            allowBypass: defaultVpnProps.allowBypass,
                           ),
                         );
                     ref
@@ -83,7 +81,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: const Text('DNS'),
         subtitle: Text(appLocalizations.dnsDesc),
-        leading: const Icon(Icons.dns),
+        leading: const Icon(Icons.dns_outlined),
         delegate: NextDelegate(
           title: 'DNS',
           actions: [
@@ -117,7 +115,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: const Text('NTP'),
         subtitle: Text(appLocalizations.ntpDesc),
-        leading: const Icon(Icons.access_time),
+        leading: const Icon(Icons.access_time_outlined),
         delegate: NextDelegate(
           title: 'NTP',
           actions: [
@@ -175,7 +173,9 @@ class _ConfigViewState extends State<ConfigView> {
                     !(system.isAndroid &&
                         storeFix &&
                         item.key == 'services.googleapis.cn') &&
-                    !(networkFix && item.key == 'dns.msftncsi.com'),
+                    !(system.isWindows &&
+                        networkFix &&
+                        item.key == 'dns.msftncsi.com'),
                 onChange: (value) {
                   ref
                       .read(patchClashConfigProvider.notifier)
@@ -189,7 +189,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: Text(appLocalizations.sniffer),
         subtitle: Text(appLocalizations.snifferDesc),
-        leading: const Icon(Icons.radar),
+        leading: const Icon(Icons.radar_outlined),
         delegate: NextDelegate(
           title: appLocalizations.sniffer,
           actions: [
@@ -223,7 +223,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: Text(appLocalizations.tunnel),
         subtitle: Text(appLocalizations.tunnelDesc),
-        leading: const Icon(Icons.swap_horiz),
+        leading: const Icon(Icons.swap_horiz_outlined),
         delegate: NextDelegate(
           title: appLocalizations.tunnel,
           actions: [
@@ -257,7 +257,7 @@ class _ConfigViewState extends State<ConfigView> {
       ListItem.next(
         title: Text(appLocalizations.experimental),
         subtitle: Text(appLocalizations.experimentalDesc),
-        leading: const Icon(Icons.science),
+        leading: const Icon(Icons.science_outlined),
         delegate: NextDelegate(
           title: appLocalizations.experimental,
           actions: [
