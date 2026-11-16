@@ -193,6 +193,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · ${sign}の守護神";
 
   static String m86(name) => "読み込みに失敗しました：プロファイルがルールセット「${name}」を参照していますが、最終設定にそのルールセットがないため、カーネルが読み込めません。対処法：① この参照がサブスクリプション自体に含まれている場合は、提供元に rule-providers セクションを完全に含む設定を求めるか、別の完全なプロファイルをインポートしてください。② DNS 設定に残った参照の可能性もあります——「詳細 → カーネル設定 → DNS」で fake-ip-filter と nameserver-policy を確認し、「${name}」を含む項目を削除して再試行してください。";
+  static String m87(reason) => "アップデートのダウンロードに失敗しました。理由：\${reason}。対処：ネットワークを確認し、「アップデートを確認」から再試行してください。繰り返し失敗する場合は、GitHub のリリースページからパッケージをダウンロードしてください。";
+  static String m88(reason) => "インストーラーを起動できませんでした。理由：\${reason}。対処：アプリのキャッシュフォルダーからダウンロードしたファイルを自分で開くか、GitHub のリリースページからパッケージをダウンロードして手動でインストールしてください。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -350,6 +352,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("バックアップのパスワードが正しくありません。パスワードを確認して再試行してください。作成時に設定したパスワードがないと、このバックアップは復元できません。"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("このバックアップの WebDAV ユーザー名とパスワードは復号できませんでした（別の端末または別のインストールで作成された可能性があります）。空欄にしました。バックアップ設定で再入力してください。"),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("アップデートをダウンロード中"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("ダウンロードしたファイルを検証中"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("ダウンロードしたファイルが検証に失敗したため削除しました。もう一度ダウンロードしてください。繰り返し失敗する場合は、GitHub のリリースページからパッケージを取得してください。"),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("バックアップ成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("カーネル設定"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage("カーネル設定をグローバル変更"),

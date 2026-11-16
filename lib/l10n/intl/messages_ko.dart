@@ -194,6 +194,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · ${sign}의 수호신";
 
   static String m86(name) => "불러오기에 실패했습니다: 프로필이 규칙 집합 '${name}'을(를) 참조하지만 최종 설정에 그 규칙 집합이 없어 커널이 불러올 수 없습니다. 해결 방법: ① 구독 자체에 이 참조가 포함되어 있으면 제공업체에 rule-providers 구간이 완전히 포함된 설정을 요청하거나 다른 완전한 프로필을 가져오세요. ② DNS 설정에 남은 참조일 수도 있습니다. '더보기 → 코어 설정 → DNS'에서 fake-ip-filter와 nameserver-policy를 확인하고 '${name}'이(가) 포함된 항목을 삭제한 뒤 다시 시도하세요.";
+  static String m87(reason) => "업데이트 다운로드에 실패했습니다. 이유: \${reason}. 해결 방법: 네트워크를 확인한 뒤 업데이트 확인에서 다시 시도하세요. 계속 실패하면 GitHub 릴리스 페이지에서 패키지를 다운로드하세요.";
+  static String m88(reason) => "설치 프로그램을 시작할 수 없습니다. 이유: \${reason}. 해결 방법: 앱 캐시 폴더에서 다운로드한 파일을 직접 열거나, GitHub 릴리스 페이지에서 패키지를 다운로드해 수동으로 설치하세요.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -359,6 +361,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("백업 비밀번호가 올바르지 않습니다. 비밀번호를 확인한 뒤 다시 시도하세요. 백업을 만들 때 설정한 비밀번호가 없으면 복원할 수 없습니다."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("이 백업의 WebDAV 사용자 이름과 비밀번호를 해독할 수 없습니다(다른 기기나 설치에서 만든 백업일 수 있음). 비워 두었으니 백업 설정에서 다시 입력하세요."),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("업데이트 다운로드 중"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("다운로드한 파일 검증 중"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("다운로드한 파일이 검증에 실패하여 삭제했습니다. 다시 다운로드하세요. 계속 실패하면 GitHub 릴리스 페이지에서 패키지를 받으세요."),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("백업 성공"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("코어 설정"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage("글로벌 코어 설정 변경"),

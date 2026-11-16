@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
+import 'package:dio/dio.dart';
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/helper/helper.dart';
@@ -37,6 +38,7 @@ import 'common/archive.dart'
 import 'common/common.dart';
 import 'common/dav_client.dart';
 import 'common/release_updates.dart';
+import 'common/update_installer.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
 import 'views/proxies/common.dart' show cancelDelayTests;
@@ -1832,9 +1834,15 @@ class AppController {
       if (assetSuffix.isNotEmpty && appPath.isPortable && system.isWindows) {
         finalSuffix = 'windows-amd64-compatible-portable.zip';
       }
-      final downloadUrl = ReleaseUpdates(
-        repository: repository,
-      ).downloadUrl(data, assetSuffix: finalSuffix);
+      final updates = ReleaseUpdates(repository: repository);
+      final asset = updates.assetFor(data, assetSuffix: finalSuffix);
+      // T179: when the exact asset and its GitHub digest are known,
+      // download and install in-app; otherwise keep the browser path.
+      if (asset != null && asset.sha256 != null) {
+        await _downloadAndInstallUpdate(asset);
+        return;
+      }
+      final downloadUrl = updates.downloadUrl(data, assetSuffix: finalSuffix);
 
       globalState.openUrl(downloadUrl);
     } else if (handleError) {
@@ -1842,6 +1850,110 @@ class AppController {
         title: appLocalizations.checkUpdate,
         message: TextSpan(text: appLocalizations.checkUpdateError),
         cancelable: false,
+      );
+    }
+  }
+
+  /// T179: in-app update — download the validated asset with a
+  /// cancellable progress dialog, verify its SHA-256 against the
+  /// digest GitHub reports, then hand it to the platform installer.
+  /// Every failure says what happened and what to do instead.
+  Future<void> _downloadAndInstallUpdate(ReleaseAsset asset) async {
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    if (dialogContext == null || !dialogContext.mounted) {
+      globalState.openUrl(asset.url);
+      return;
+    }
+    final installer = UpdateInstaller();
+    final cancelToken = CancelToken();
+    final progress = ValueNotifier<double?>(null);
+    final verifying = ValueNotifier<bool>(false);
+    var dialogOpen = true;
+    void closeDialog() {
+      if (dialogOpen && dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+      dialogOpen = false;
+    }
+
+    unawaited(
+      showDialog<void>(
+        context: dialogContext,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(appLocalizations.discoverNewVersion),
+          content: ValueListenableBuilder<bool>(
+            valueListenable: verifying,
+            builder: (context, isVerifying, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isVerifying
+                      ? appLocalizations.updateVerifying
+                      : appLocalizations.updateDownloading,
+                ),
+                const SizedBox(height: 16),
+                ValueListenableBuilder<double?>(
+                  valueListenable: progress,
+                  builder: (context, value, _) =>
+                      LinearProgressIndicator(value: isVerifying ? null : value),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                cancelToken.cancel('user');
+                closeDialog();
+              },
+              child: Text(appLocalizations.cancel),
+            ),
+          ],
+        ),
+      ).whenComplete(() => dialogOpen = false),
+    );
+
+    File? file;
+    try {
+      file = await installer.download(
+        asset,
+        cancelToken: cancelToken,
+        onProgress: (received, total) {
+          if (total > 0) progress.value = received / total;
+        },
+      );
+    } on DioException catch (e) {
+      closeDialog();
+      if (e.type == DioExceptionType.cancel) return;
+      globalState.showNotifier(
+        appLocalizations.updateDownloadFailedReason(e.message ?? e.type.name),
+      );
+      return;
+    } catch (e) {
+      closeDialog();
+      globalState.showNotifier(
+        appLocalizations.updateDownloadFailedReason(e.toString()),
+      );
+      return;
+    }
+
+    verifying.value = true;
+    final verified = await installer.verify(file, asset.sha256!);
+    if (!verified) {
+      try {
+        await file.delete();
+      } catch (_) {}
+      closeDialog();
+      globalState.showNotifier(appLocalizations.updateVerifyFailed);
+      return;
+    }
+    closeDialog();
+    final launchError = await installer.launchInstaller(file);
+    if (launchError != null) {
+      globalState.showNotifier(
+        appLocalizations.updateInstallLaunchFailed(launchError),
       );
     }
   }

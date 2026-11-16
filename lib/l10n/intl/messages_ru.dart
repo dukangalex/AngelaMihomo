@@ -207,6 +207,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · Хранитель ${sign}";
 
   static String m86(name) => "Ошибка загрузки: профиль ссылается на набор правил «${name}», но в итоговой конфигурации такого набора нет, и ядро не может её загрузить. Что делать: ① если эта ссылка есть в самой подписке, запросите у поставщика полную конфигурацию с полным разделом rule-providers или импортируйте другой полный профиль; ② ссылка могла остаться в настройках DNS — откройте «Подробности → Конфигурация ядра → DNS», проверьте fake-ip-filter и nameserver-policy, удалите записи, содержащие «${name}», и повторите.";
+  static String m87(reason) => "Не удалось загрузить обновление. Причина: \${reason}. Что делать: проверьте сеть и повторите из раздела проверки обновлений; если снова не получится, скачайте пакет со страницы релизов GitHub.";
+  static String m88(reason) => "Не удалось запустить установщик. Причина: \${reason}. Что делать: откройте загруженный файл сами из папки кэша приложения или скачайте пакет со страницы релизов GitHub и установите вручную.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -426,6 +428,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Неверный пароль резервной копии. Проверьте пароль и повторите; без пароля, заданного при создании копии, восстановить её нельзя."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("Не удалось расшифровать имя пользователя и пароль WebDAV из этой резервной копии (возможно, она создана на другом устройстве или в другой установке). Поля оставлены пустыми; введите их снова в настройках резервного копирования."),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("Загрузка обновления"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("Проверка загруженного файла"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("Загруженный файл не прошёл проверку и был удалён. Скачайте его снова; если ошибка повторяется, возьмите пакет со страницы релизов GitHub."),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование успешно",
     ),

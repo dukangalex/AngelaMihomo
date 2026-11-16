@@ -188,6 +188,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · ${sign}守護神";
 
   static String m86(name) => "載入失敗：配置引用了規則集「${name}」，但最終配置裡沒有這個規則集，內核無法載入。怎麼辦：① 若是這份訂閱自帶的引用，請向提供方索取包含完整 rule-providers 段的配置，或換一份完整配置匯入；② 也可能是 DNS 設定裡殘留的引用——到「更多 → 內核配置 → DNS」，檢查 fake-ip-filter 和 nameserver-policy，刪掉含「${name}」的條目後重試。";
+  static String m87(reason) => "更新下載失敗。原因：\${reason}。怎麼辦：檢查網路後，在檢查更新裡重試；若一直失敗，改從 GitHub 發布頁下載安裝包。";
+  static String m88(reason) => "安裝程式未能啟動。原因：\${reason}。怎麼辦：到應用程式快取目錄裡手動打開已下載的檔案，或從 GitHub 發布頁下載安裝包手動安裝。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -331,6 +333,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage("僅支援英文字母、數字和符號"),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("備份密碼不正確。請核對密碼後重試；沒有建立備份時設定的密碼，這份備份無法還原。"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("備份中的 WebDAV 帳號密碼無法解密（該備份可能來自另一台裝置或另一次安裝），已留空，請在備份設定中重新填寫。"),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("正在下載更新"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("正在校驗下載檔案"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("下載檔案校驗未通過，已刪除。請重新下載；若一直失敗，改從 GitHub 發布頁取得安裝包。"),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("備份成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("內核配置"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage("全域修改內核配置"),

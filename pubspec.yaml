@@ -72,6 +72,7 @@ dependencies:
   cupertino_ui: ^1.1.4
   flutter_secure_storage: ^11.2.0
   cryptography: ^2.9.0
+  open_filex: ^5.0.0
 dependency_overrides:
   flutter_rust_bridge: 2.13.0
   hotkey_manager_linux:

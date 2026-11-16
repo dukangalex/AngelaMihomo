@@ -201,6 +201,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · نگهبان ${sign}";
 
   static String m86(name) => "بارگذاری انجام نشد: نمایه به مجموعه‌قواعد «${name}» ارجاع می‌دهد، اما پیکربندی نهایی این مجموعه‌قواعد را ندارد و هسته نمی‌تواند آن را بارگذاری کند. راه‌حل: ① اگر این ارجاع در خود اشتراک است، از ارائه‌دهنده پیکربندی کاملی بخواهید که بخش rule-providers را کامل داشته باشد، یا نمایهٔ کامل دیگری وارد کنید؛ ② ممکن است ارجاعی باقی‌مانده در تنظیمات DNS باشد — به «بیشتر → تنظیمات هسته → DNS» بروید، fake-ip-filter و nameserver-policy را بررسی کنید، 항목‌های دارای «${name}» را حذف کنید و دوباره تلاش کنید.";
+  static String m87(reason) => "دانلود به‌روزرسانی ناموفق بود. دلیل: \${reason}. چه باید کرد: شبکه را بررسی کنید و از بخش بررسی به‌روزرسانی دوباره تلاش کنید؛ اگر باز هم نشد، بسته را از صفحه انتشار GitHub دانلود کنید.";
+  static String m88(reason) => "نصب‌کننده اجرا نشد. دلیل: \${reason}. چه باید کرد: فایل دانلودشده را خودتان از پوشه حافظه پنهان برنامه باز کنید، یا بسته را از صفحه انتشار GitHub دانلود و دستی نصب کنید.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -406,6 +408,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("رمز عبور نسخه پشتیبان نادرست است. رمز را بررسی و دوباره تلاش کنید؛ بدون رمزی که هنگام ساخت نسخه پشتیبان تعیین شده، بازیابی آن ممکن نیست."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("نام کاربری و رمز عبور WebDAV در این نسخه پشتیبان قابل رمزگشایی نبود (ممکن است نسخه پشتیبان از دستگاه یا نصب دیگری باشد). خالی گذاشته شد؛ آن‌ها را در تنظیمات پشتیبان‌گیری دوباره وارد کنید."),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("در حال دانلود به‌روزرسانی"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("در حال بررسی فایل دانلودشده"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("فایل دانلودشده در بررسی رد شد و حذف شد. دوباره دانلود کنید؛ اگر باز هم نشد، بسته را از صفحه انتشار GitHub بگیرید."),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "پشتیبان‌گیری با موفقیت انجام شد",
     ),

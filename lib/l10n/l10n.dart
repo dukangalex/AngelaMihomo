@@ -2054,6 +2054,51 @@ class AppLocalizations {
     );
   }
 
+  String get updateDownloading {
+    return Intl.message(
+      'Downloading the update',
+      name: 'updateDownloading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get updateVerifying {
+    return Intl.message(
+      'Verifying the downloaded file',
+      name: 'updateVerifying',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get updateVerifyFailed {
+    return Intl.message(
+      'The downloaded file failed verification and was deleted. Download it again; if it keeps failing, get the package from the GitHub release page.',
+      name: 'updateVerifyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String updateDownloadFailedReason(Object reason) {
+    return Intl.message(
+      'The update download failed. Reason: $reason. What to do: check the network, then try again from Check for updates; if it keeps failing, download the package from the GitHub release page instead.',
+      name: 'updateDownloadFailedReason',
+      desc: '',
+      args: [reason],
+    );
+  }
+
+  String updateInstallLaunchFailed(Object reason) {
+    return Intl.message(
+      'The installer could not be started. Reason: $reason. What to do: open the downloaded file yourself from the app cache folder, or download the package from the GitHub release page and install it manually.',
+      name: 'updateInstallLaunchFailed',
+      desc: '',
+      args: [reason],
+    );
+  }
+
   /// `Only English letters, digits and symbols are supported`
   String get backupPasswordTip {
     return Intl.message(

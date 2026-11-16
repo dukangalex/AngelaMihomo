@@ -214,4 +214,34 @@ void main() {
       expect(updates.downloadUrl(data, assetSuffix: suffix), page);
     });
   }
+  group('assetFor (T179 in-app update)', () {
+    test('returns validated metadata including the API digest', () {
+      final data = release();
+      final asset = Map<String, dynamic>.from(
+        (data['assets'] as List).single as Map,
+      );
+      asset['size'] = 12345;
+      asset['digest'] = 'sha256:abcdef0123';
+      data['assets'] = [asset];
+      final found = updates.assetFor(data, assetSuffix: suffix);
+      expect(found, isNotNull);
+      expect(found!.name, 'AngelaBettbox-1.19.6-chain.2-$suffix');
+      expect(found.size, 12345);
+      expect(found.sha256, 'abcdef0123');
+      expect(
+        found.url,
+        'https://github.com/$repo/releases/download/$tag/AngelaBettbox-1.19.6-chain.2-$suffix',
+      );
+    });
+    test('digest absent or malformed yields null sha256', () {
+      final data = release();
+      expect(updates.assetFor(data, assetSuffix: suffix)!.sha256, isNull);
+      ((data['assets'] as List).single as Map)['digest'] = 'md5:xyz';
+      expect(updates.assetFor(data, assetSuffix: suffix)!.sha256, isNull);
+    });
+    test('no unique match yields null', () {
+      expect(updates.assetFor(release(), assetSuffix: 'nope.zip'), isNull);
+      expect(updates.assetFor(release()), isNull);
+    });
+  });
 }

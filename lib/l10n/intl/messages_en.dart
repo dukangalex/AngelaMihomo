@@ -206,6 +206,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · Guardian of ${sign}";
 
   static String m86(name) => "Load failed: the profile references the rule set \"${name}\", but the final config does not contain it, so the kernel cannot load it. What to do: (1) if the subscription itself carries this reference, ask your provider for a complete config including the full rule-providers section, or import a different complete profile; (2) it may also be a leftover reference in DNS settings — go to More → Core Configuration → DNS, check fake-ip-filter and nameserver-policy, delete any entry containing \"${name}\", then try again.";
+  static String m87(reason) => "The update download failed. Reason: \${reason}. What to do: check the network, then try again from Check for updates; if it keeps failing, download the package from the GitHub release page instead.";
+  static String m88(reason) => "The installer could not be started. Reason: \${reason}. What to do: open the downloaded file yourself from the app cache folder, or download the package from the GitHub release page and install it manually.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -411,6 +413,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Incorrect backup password. Check the password and try again; without the password set when the backup was created, it cannot be restored."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings."),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("Downloading the update"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("Verifying the downloaded file"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("The downloaded file failed verification and was deleted. Download it again; if it keeps failing, get the package from the GitHub release page."),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("Backup Successful"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("Core Configuration"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage(
