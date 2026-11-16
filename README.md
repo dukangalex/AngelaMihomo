@@ -1,5 +1,9 @@
+<p align="center">
+  <img src="snapshots/banner.png" alt="Angela Mihomo" width="100%" />
+</p>
+
 <h4 align="right">
-  <strong>简体中文</strong> | <a href="readme/README_en.md">English</a> | <a href="readme/README_ru.md">Русский</a> | <a href="readme/README_fa.md">فارسی</a> | <a href="readme/README_ja.md">日本語</a> | <a href="readme/README_ko.md">한국어</a>
+  <strong>简⁠体⁠中⁠文</strong> | <a href="readme/README_en.md">English</a> | <a href="readme/README_ru.md">Русский</a> | <a href="readme/README_fa.md">فارسی</a> | <a href="readme/README_ja.md">日⁠本⁠語</a> | <a href="readme/README_ko.md">한⁠국⁠어</a>
 </h4>
 
 <h1 align="center">♐ Angela Mihomo</h1>
@@ -24,6 +28,7 @@
 <p align="center">
   <img src="snapshots/home.png" alt="Angela Mihomo" />
 </p>
+<p align="center"><sub>界面概念图 · 实拍图随后更新</sub></p>
 
 ### 📣 发布频道
 
