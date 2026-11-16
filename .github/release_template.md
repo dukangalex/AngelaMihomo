@@ -2,6 +2,10 @@
 
 ### ✨ 本版亮点 / What's new in this build
 
+- **热修 / Hotfix：部分订阅 VPN 启动不了**：内置 DNS 默认值引用了不存在的规则集（报错 not found rule-set: cn_bettbox），内核整份配置被拒——现改用内核原生 geosite 条目，存量设置自动迁移，组装层另加兜底校验
+  (Fixed: some profiles could not start the VPN — the built-in DNS defaults referenced rule-sets that do not exist, so the kernel rejected the whole config; defaults now use native geosite entries, stored settings migrate automatically, and assembly strips any dangling reference)
+- **失败提示说人话 / Clearer failure notices**：切换、启动、重启、更新失败时，提示逐条写明要检查什么、怎么做；规则集缺失会直接点名缺的规则集并给出处理路径，不再有「请检查目标配置」这类空话
+  (Failure notices for switching, starting, restarting and updating now spell out exactly what to check and what to do; a missing rule-set is named, with the concrete fix for each source)
 - **十二星座之星辰大海 / Zodiac Guardians**：十二位守护神融入十二套星座主题的每一页背景，仰望顶部本星座星图；每页造型不同、人物始终同一位；形象与名牌同为背景层，不遮挡内容
   (A guardian for each of the twelve zodiac themes lives in every page's backdrop, gazing up at the sign's own star chart; the pose varies by page, the character never changes)
 - **十二星座主题 / Twelve zodiac themes**：一套设计走到底，默认射手座·靛夜飞箭；十二套主题的卡片全是半透玻璃，星图透卡可见
@@ -22,7 +26,7 @@
 
 - Windows 安装包暂未签名，安装时 Windows SmartScreen 会提示，请点击"更多信息" → "仍要运行"。
   (Windows installer is currently unsigned. Click "More info" → "Run anyway" on SmartScreen.)
-- 安装包附带 SHA-256 校验文件，请核对后安装。
+- 每个安装包都在本页附有 SHA-256 校验值，请核对后安装。
 
 ---
 ### ⬇️ Download / 下载链接

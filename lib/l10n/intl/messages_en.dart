@@ -197,14 +197,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
   static String m78(count) => "${count} nodes";
-  static String m79(reason) => "Couldn't switch to the new profile, so the previous profile was restored. Reason: ${reason}. Check the target profile, or re-import it and try again.";
-  static String m80(reason) => "Couldn't switch profiles; the current profile is unchanged. Reason: ${reason}. Check the target profile, or re-import it and try again.";
-  static String m81(name, reason) => "Failed to update profile ${name}. Reason: ${reason}. Check your network, or make sure the subscription link is still valid, then try again.";
-  static String m82(name, reason) => "Profile ${name} failed to update automatically. Reason: ${reason}. Check your network, or make sure the subscription link is still valid.";
+  static String m79(reason) => "Couldn't switch to the new profile, so the previous profile was restored. Reason: ${reason}. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.";
+  static String m80(reason) => "Couldn't switch profiles; the current profile is unchanged. Reason: ${reason}. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.";
+  static String m81(name, reason) => "Failed to update profile ${name}. Reason: ${reason}. What to do: make sure the phone's network can open web pages and the subscription link has not expired (check with your provider), then tap the profile's update button to retry.";
+  static String m82(name, reason) => "Profile ${name} failed to update automatically. Reason: ${reason}. What to do: make sure the phone's network can open web pages and the subscription link has not expired (check with your provider); if you need it now, tap the profile's update button to update manually.";
   static String m83(count) => "And ${count} more also failed to update.";
-  static String m84(reason) => "Couldn't start or stop the service. Reason: ${reason}. Check the current profile and the port settings, then try again.";
+  static String m84(reason) => "Couldn't start or stop the service. Reason: ${reason}. What to do: if the reason says a port is already in use, close the other proxy app using that port, or pick a different port in More → Core Configuration → General; if the reason points at the profile, switch to a profile that imports cleanly; if it still fails, fully quit the app, reopen it, and try again.";
 
   static String m85(latin, sign) => "${latin} · Guardian of ${sign}";
+
+  static String m86(name) => "Load failed: the profile references the rule set \"${name}\", but the final config does not contain it, so the kernel cannot load it. What to do: (1) if the subscription itself carries this reference, ask your provider for a complete config including the full rule-providers section, or import a different complete profile; (2) it may also be a leftover reference in DNS settings — go to More → Core Configuration → DNS, check fake-ip-filter and nameserver-policy, delete any entry containing \"${name}\", then try again.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2717,8 +2719,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileSwitchFailedRollbackReason": m79,
     "profileUpdateFailed": m81,
     "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
-      "Please try again later; if it keeps failing, restart the app.",
+      "What to do: wait a few seconds and try again; if it keeps failing, fully quit the app and reopen it; if it still fails, send us a screenshot of this message.",
     ),
     "serviceStartStopFailed": m84,
+    "ruleSetMissing": m86,
   };
 }

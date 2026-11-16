@@ -179,14 +179,16 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
   static String m78(count) => "${count} 个节点";
-  static String m79(reason) => "新配置切换失败，已切回原来的配置。原因：${reason}。请检查目标配置，或重新导入后再试。";
-  static String m80(reason) => "配置切换失败，当前配置未更改。原因：${reason}。请检查目标配置，或重新导入后再试。";
-  static String m81(name, reason) => "配置${name}更新失败。原因：${reason}。请检查网络，或确认订阅链接仍有效后重试。";
-  static String m82(name, reason) => "配置${name}自动更新失败。原因：${reason}。请检查网络，或确认订阅链接仍有效。";
+  static String m79(reason) => "新配置切换失败，已切回原来的配置。原因：${reason}。怎么办：先重新导入这份配置再切换；订阅配置请先更新到最新内容再切换；仍失败，请把这条提示截图发给我们排查。";
+  static String m80(reason) => "配置切换失败，当前配置未更改。原因：${reason}。怎么办：先重新导入这份配置再切换；订阅配置请先更新到最新内容再切换；仍失败，请把这条提示截图发给我们排查。";
+  static String m81(name, reason) => "配置${name}更新失败。原因：${reason}。怎么办：确认手机网络能正常打开网页、订阅链接未过期（向提供方确认），再点该配置的更新按钮重试。";
+  static String m82(name, reason) => "配置${name}自动更新失败。原因：${reason}。怎么办：确认手机网络能正常打开网页、订阅链接未过期（向提供方确认）；急用时可手动点该配置的更新按钮。";
   static String m83(count) => "另有${count}个配置也更新失败。";
-  static String m84(reason) => "服务启动或停止失败。原因：${reason}。请检查当前配置与端口设置后重试。";
+  static String m84(reason) => "服务启动或停止失败。原因：${reason}。怎么办：若原因提到端口被占用，关掉占用该端口的其他代理软件，或到「更多 → 内核配置 → 常规」换一个端口再试；若原因提到配置，换一份能正常导入的配置；仍失败，请完全退出应用后重新打开再试。";
 
   static String m85(latin, sign) => "${latin} · ${sign}守护神";
+
+  static String m86(name) => "加载失败：配置引用了规则集「${name}」，但最终配置里没有这个规则集，内核无法加载。怎么办：① 若是这份订阅自带的引用，请向提供方索取包含完整 rule-providers 段的配置，或换一份完整配置导入；② 也可能是 DNS 设置里残留的引用——到「更多 → 内核配置 → DNS」，检查 fake-ip-filter 和 nameserver-policy，删掉含「${name}」的条目后重试。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2030,8 +2032,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileSwitchFailedRollbackReason": m79,
     "profileUpdateFailed": m81,
     "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
-      "请稍后重试；如反复失败，请重启应用。",
+      "怎么办：等几秒再试一次；反复失败请完全退出应用后重新打开；仍不行，请把本提示截图发给我们排查。",
     ),
     "serviceStartStopFailed": m84,
+    "ruleSetMissing": m86,
   };
 }
