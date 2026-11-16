@@ -2,6 +2,8 @@
 
 ### ✨ 本版亮点 / What's new in this build
 
+- **十二星座之星辰大海 / Zodiac Guardians**：十二位守护神融入十二套星座主题的每一页背景，仰望顶部本星座星图；每页造型不同、人物始终同一位；形象与名牌同为背景层，不遮挡内容
+  (A guardian for each of the twelve zodiac themes lives in every page's backdrop, gazing up at the sign's own star chart; the pose varies by page, the character never changes)
 - **十二星座主题 / Twelve zodiac themes**：一套设计走到底，默认射手座·靛夜飞箭；十二套主题的卡片全是半透玻璃，星图透卡可见
   (One design throughout, Sagittarius · Indigo Night Arrow by default; translucent glass cards over a visible star chart in all twelve themes)
 - **首页合并卡与提示灯 / Merged home card and status light**：当前配置、运行模式与节点状态一卡集中、固定置顶；提示灯实时显示当前节点可用状态，点灯即测速
