@@ -114,7 +114,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "${total}개 중 ${enabled}개 사용";
 
-  static String m43(version) => "업스트림 ${version}";
 
   static String m45(size) => "${size} 확보됨";
 
@@ -1202,11 +1201,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "내장 스크립트로 복원하고 모든 병합 구독을 다시 생성할까요?",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "업스트림에서 최신 스크립트를 내려받고 모든 병합 구독을 다시 생성할까요?",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage("이미 최신 버전입니다"),
     "managedVersion": MessageLookupByLibrary.simpleMessage("버전 정보"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IP 다시 가져오기"),
     "maximize": MessageLookupByLibrary.simpleMessage("최대화"),
@@ -1953,7 +1947,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "다른 페이지에 애니메이션 동기화",
     ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("동기화 실패"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage("업스트림에서 동기화"),
     "system": MessageLookupByLibrary.simpleMessage("시스템"),
     "systemApp": MessageLookupByLibrary.simpleMessage("시스템 앱"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

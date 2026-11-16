@@ -121,7 +121,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "Включено ${enabled} из ${total}";
 
-  static String m43(version) => "Из источника ${version}";
 
   static String m45(size) => "Освобождено ${size}";
 
@@ -1479,13 +1478,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "Вернуть встроенный скрипт и пересоздать все объединённые подписки?",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "Загрузить последнюю версию скрипта и пересоздать все объединённые подписки?",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage(
-      "Уже последняя версия",
-    ),
     "managedVersion": MessageLookupByLibrary.simpleMessage("Версия"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Обновить IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Развернуть"),
@@ -2452,9 +2444,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Синхронизировать анимацию с другими страницами",
     ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("Ошибка синхронизации"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage(
-      "Синхронизировать с источником",
-    ),
     "system": MessageLookupByLibrary.simpleMessage("Система"),
     "systemApp": MessageLookupByLibrary.simpleMessage("Системные приложения"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

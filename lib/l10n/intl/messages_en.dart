@@ -119,7 +119,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "${enabled} of ${total} enabled";
 
-  static String m43(version) => "Upstream ${version}";
 
   static String m45(size) => "Freed ${size}";
 
@@ -955,9 +954,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Clear the DNS cache when the network changes",
     ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("Folding Cube"),
-    "followGlobalScript": MessageLookupByLibrary.simpleMessage(
-      "Follow Global Script",
-    ),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Font"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
       "Force DNS Mapping",
@@ -1419,13 +1415,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "Restore the built-in script and regenerate all merged subscriptions?",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "Download the latest script from upstream and regenerate all merged subscriptions?",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage(
-      "Already up to date",
-    ),
     "managedVersion": MessageLookupByLibrary.simpleMessage("Version"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Refresh IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Maximize"),
@@ -1839,12 +1828,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
       "Profile parse error",
     ),
-    "profileSwitchFailed": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t switch profiles. The current profile is unchanged; check it and try again",
-    ),
-    "profileSwitchFailedRollback": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t switch to the new profile, so the previous profile was restored",
-    ),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage(
       "Profile Switching",
     ),
@@ -1970,7 +1953,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "replace": MessageLookupByLibrary.simpleMessage("Replace"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("Replace All"),
     "request": MessageLookupByLibrary.simpleMessage("Request"),
-    "requests": MessageLookupByLibrary.simpleMessage("Recent"),
     "reset": MessageLookupByLibrary.simpleMessage("Reset"),
     "resetIconCache": MessageLookupByLibrary.simpleMessage("Reset Icon Cache"),
     "resetIconCacheDesc": MessageLookupByLibrary.simpleMessage(
@@ -2097,9 +2079,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "script": MessageLookupByLibrary.simpleMessage("Override Script"),
     "scriptDesc": MessageLookupByLibrary.simpleMessage(
       "Configure JavaScript override scripts",
-    ),
-    "scriptNotUsed": MessageLookupByLibrary.simpleMessage(
-      "Do Not Use a Script",
     ),
     "scriptOtherOptions": MessageLookupByLibrary.simpleMessage(
       "Other Settings",
@@ -2362,9 +2341,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Sync animation to other pages",
     ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("Sync Failed"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage(
-      "Sync from upstream",
-    ),
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System App"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

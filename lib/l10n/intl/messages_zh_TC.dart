@@ -111,7 +111,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "已開啟 ${enabled} / ${total} 項";
 
-  static String m43(version) => "上游 ${version}";
 
   static String m45(size) => "已釋放 ${size}";
 
@@ -735,7 +734,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "網路發生變化時主動清理 DNS 快取",
     ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("魔方翻折"),
-    "followGlobalScript": MessageLookupByLibrary.simpleMessage("跟隨全域指令碼"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("字體"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("強制 DNS 映射"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
@@ -1077,11 +1075,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "恢復內建版本，並重新生成所有合併訂閱",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "將從上游下載最新腳本，並重新生成所有合併訂閱",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage("已是最新版本"),
     "managedVersion": MessageLookupByLibrary.simpleMessage("版本資訊"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("重新取得 IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
@@ -1569,7 +1562,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveTip": MessageLookupByLibrary.simpleMessage("確定要儲存嗎？"),
     "script": MessageLookupByLibrary.simpleMessage("覆寫腳本"),
     "scriptDesc": MessageLookupByLibrary.simpleMessage("配置 JavaScript 覆寫腳本"),
-    "scriptNotUsed": MessageLookupByLibrary.simpleMessage("不使用指令碼"),
     "scriptOtherOptions": MessageLookupByLibrary.simpleMessage("其他設定"),
     "search": MessageLookupByLibrary.simpleMessage("搜尋"),
     "searchIcons": MessageLookupByLibrary.simpleMessage("搜尋圖示"),
@@ -1755,7 +1747,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncAll": MessageLookupByLibrary.simpleMessage("全部同步"),
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage("同步動畫到其他頁面"),
     "syncFailed": MessageLookupByLibrary.simpleMessage("同步失敗"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage("從上游同步"),
     "system": MessageLookupByLibrary.simpleMessage("系統"),
     "systemApp": MessageLookupByLibrary.simpleMessage("系統應用程式"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

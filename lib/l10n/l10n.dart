@@ -10014,41 +10014,11 @@ class AppLocalizations {
     );
   }
 
-  /// `Upstream {version}`
-  String managedSynced(Object version) {
-    return Intl.message(
-      'Upstream $version',
-      name: 'managedSynced',
-      desc: '',
-      args: [version],
-    );
-  }
-
-  /// `Sync from upstream`
-  String get syncFromUpstream {
-    return Intl.message(
-      'Sync from upstream',
-      name: 'syncFromUpstream',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Restore built-in version`
   String get restoreBundled {
     return Intl.message(
       'Restore built-in version',
       name: 'restoreBundled',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Download the latest script from upstream and regenerate all merged subscriptions?`
-  String get managedSyncTip {
-    return Intl.message(
-      'Download the latest script from upstream and regenerate all merged subscriptions?',
-      name: 'managedSyncTip',
       desc: '',
       args: [],
     );
@@ -10166,16 +10136,6 @@ class AppLocalizations {
       name: 'mergedSubscriptionName',
       desc: '',
       args: [index],
-    );
-  }
-
-  /// `Already up to date`
-  String get managedUpToDate {
-    return Intl.message(
-      'Already up to date',
-      name: 'managedUpToDate',
-      desc: '',
-      args: [],
     );
   }
 
@@ -11063,26 +11023,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Do Not Use a Script`
-  String get scriptNotUsed {
-    return Intl.message(
-      'Do Not Use a Script',
-      name: 'scriptNotUsed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Follow Global Script`
-  String get followGlobalScript {
-    return Intl.message(
-      'Follow Global Script',
-      name: 'followGlobalScript',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Copy as GitHub Raw link`
   String get mrsCopyRawLink {
     return Intl.message(
@@ -11091,11 +11031,6 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
-  }
-
-  /// `Recent`
-  String get requests {
-    return Intl.message('Recent', name: 'requests', desc: '', args: []);
   }
 
   /// `Chain settings need attention`
@@ -11698,26 +11633,6 @@ class AppLocalizations {
     return Intl.message(
       'Turn on recommended',
       name: 'systemExplicitTurnOnRecommended',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Couldn't switch to the new profile, so the previous profile was restored`
-  String get profileSwitchFailedRollback {
-    return Intl.message(
-      'Couldn\'t switch to the new profile, so the previous profile was restored',
-      name: 'profileSwitchFailedRollback',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Couldn't switch profiles. The current profile is unchanged; check it and try again`
-  String get profileSwitchFailed {
-    return Intl.message(
-      'Couldn\'t switch profiles. The current profile is unchanged; check it and try again',
-      name: 'profileSwitchFailed',
       desc: '',
       args: [],
     );

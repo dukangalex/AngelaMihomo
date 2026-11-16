@@ -113,7 +113,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "${total} 件中 ${enabled} 件が有効";
 
-  static String m43(version) => "アップストリーム ${version}";
 
   static String m45(size) => "${size} を解放しました";
 
@@ -1195,11 +1194,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "内蔵のスクリプトに戻し、すべての統合サブスクリプションを再生成しますか？",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "アップストリームから最新のスクリプトをダウンロードし、すべての統合サブスクリプションを再生成しますか？",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage("最新バージョンです"),
     "managedVersion": MessageLookupByLibrary.simpleMessage("バージョン情報"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IPを再取得"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
@@ -1960,7 +1954,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "アニメーションを他のページに同期",
     ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("同期失敗"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage("アップストリームから同期"),
     "system": MessageLookupByLibrary.simpleMessage("システム"),
     "systemApp": MessageLookupByLibrary.simpleMessage("システムアプリ"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

@@ -118,7 +118,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "${enabled} از ${total} فعال";
 
-  static String m43(version) => "بالادستی ${version}";
 
   static String m45(size) => "${size} آزاد شد";
 
@@ -1427,13 +1426,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "اسکریپت داخلی بازگردانی و همه اشتراک‌های ادغام‌شده دوباره ساخته شوند؟",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "آخرین اسکریپت از بالادست دانلود و همه اشتراک‌های ادغام‌شده دوباره ساخته شوند؟",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage(
-      "در حال حاضر به‌روز است",
-    ),
     "managedVersion": MessageLookupByLibrary.simpleMessage("اطلاعات نسخه"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("دریافت مجدد IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("بزرگ کردن"),
@@ -2376,9 +2368,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "همگام‌سازی انیمیشن با صفحات دیگر",
     ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("همگام‌سازی ناموفق بود"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage(
-      "همگام‌سازی از بالادست",
-    ),
     "system": MessageLookupByLibrary.simpleMessage("سیستم"),
     "systemApp": MessageLookupByLibrary.simpleMessage("برنامه‌های سیستم"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),

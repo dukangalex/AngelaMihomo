@@ -111,7 +111,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "已开启 ${enabled} / ${total} 项";
 
-  static String m43(version) => "上游 ${version}";
 
   static String m45(size) => "已释放 ${size}";
 
@@ -731,7 +730,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "网络发生变化时主动清理 DNS 缓存",
     ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("魔方翻折"),
-    "followGlobalScript": MessageLookupByLibrary.simpleMessage("跟随全局脚本"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("字体"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("强制 DNS 映射"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
@@ -1069,11 +1067,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "恢复内置版本，并重新生成所有合并订阅",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "将从上游下载最新脚本，并重新生成所有合并订阅",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage("已是最新版本"),
     "managedVersion": MessageLookupByLibrary.simpleMessage("版本信息"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("重新获取 IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
@@ -1381,12 +1374,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "请输入配置名称",
     ),
     "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("配置文件解析错误"),
-    "profileSwitchFailed": MessageLookupByLibrary.simpleMessage(
-      "配置切换失败，当前配置未变更，请检查后重试",
-    ),
-    "profileSwitchFailedRollback": MessageLookupByLibrary.simpleMessage(
-      "新配置切换失败，已切回原来的配置",
-    ),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage("网络配置切换"),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入有效配置 URL",
@@ -1563,7 +1550,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveTip": MessageLookupByLibrary.simpleMessage("确定要保存吗？"),
     "script": MessageLookupByLibrary.simpleMessage("覆写脚本"),
     "scriptDesc": MessageLookupByLibrary.simpleMessage("配置 JavaScript 覆写脚本"),
-    "scriptNotUsed": MessageLookupByLibrary.simpleMessage("不使用脚本"),
     "scriptOtherOptions": MessageLookupByLibrary.simpleMessage("其他设置"),
     "search": MessageLookupByLibrary.simpleMessage("搜索"),
     "searchIcons": MessageLookupByLibrary.simpleMessage("搜索图标"),
@@ -1749,7 +1735,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncAll": MessageLookupByLibrary.simpleMessage("全部同步"),
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage("同步动画到其他页面"),
     "syncFailed": MessageLookupByLibrary.simpleMessage("同步失败"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage("从上游同步"),
     "system": MessageLookupByLibrary.simpleMessage("系统"),
     "systemApp": MessageLookupByLibrary.simpleMessage("系统应用"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
