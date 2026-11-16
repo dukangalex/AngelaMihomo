@@ -199,6 +199,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "${count} نمایه دیگر نیز به‌روزرسانی نشدند.";
   static String m84(reason) => "شروع یا توقف سرویس انجام نشد. دلیل: ${reason}. نمایه فعلی و تنظیمات درگاه را بررسی کنید و دوباره تلاش کنید.";
 
+  static String m85(latin, sign) => "${latin} · نگهبان ${sign}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("درباره"),
@@ -444,6 +446,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("باز کردن"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("زئوس"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("آرس"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("آفرودیته"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("هرمس"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("آرتمیس"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("آپولون"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("آسترایا"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("تمیس"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("هادس"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("کرونوس"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("اورانوس"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("پوزئیدون"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("اعضا"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(

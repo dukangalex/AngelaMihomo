@@ -1,13 +1,28 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/models/models.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T125: pushed pages carry their own zodiac backdrop, and on desktop
 /// the phased content fades never show two pages' contents at once.
+class _FixedPageLabel extends CurrentPageLabel {
+  @override
+  PageLabel build() => PageLabel.dashboard;
+}
+
 void main() {
+  // The backdrop's name plate (T159) reads the global localizations,
+  // which the app loads before any page builds.
+  setUp(() async {
+    await AppLocalizations.load(const Locale('en'));
+  });
+
   ThemeData theme() {
     return ThemeData(
       extensions: [ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'))],
@@ -15,13 +30,20 @@ void main() {
   }
 
   Widget app({required Widget home}) {
-    return MaterialApp(
-      theme: theme(),
-      builder: (_, child) => Stack(
-        fit: StackFit.expand,
-        children: [const ZodiacBackdrop(), child!],
+    // The backdrop's guardian layers (T159) read the current page
+    // label, so the harness runs under a ProviderScope like the app.
+    return ProviderScope(
+      overrides: [
+        currentPageLabelProvider.overrideWith(() => _FixedPageLabel()),
+      ],
+      child: MaterialApp(
+        theme: theme(),
+        builder: (_, child) => Stack(
+          fit: StackFit.expand,
+          children: [const ZodiacBackdrop(), child!],
+        ),
+        home: home,
       ),
-      home: home,
     );
   }
 

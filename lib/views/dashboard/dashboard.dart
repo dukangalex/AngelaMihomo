@@ -347,6 +347,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     ];
 
     final title = customTitle ?? appLocalizations.dashboard;
+    // T159: the guardian figure and name plate are app-wide since the
+    // 2026-11-16 scope widening — they are composed inside
+    // ZodiacBackdrop itself, not in the dashboard.
     return LayoutBuilder(
       builder: (context, page) => _buildScaffold(
         title: title,

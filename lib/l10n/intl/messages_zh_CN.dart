@@ -186,6 +186,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "另有${count}个配置也更新失败。";
   static String m84(reason) => "服务启动或停止失败。原因：${reason}。请检查当前配置与端口设置后重试。";
 
+  static String m85(latin, sign) => "${latin} · ${sign}守护神";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("关于"),
@@ -351,6 +353,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("展开"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("宙斯"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("阿瑞斯"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("阿佛洛狄忒"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("赫尔墨斯"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("阿尔忒弥斯"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("阿波罗"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("阿斯翠亚"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("忒弥斯"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("哈迪斯"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("克洛诺斯"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("乌拉诺斯"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("波塞冬"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("成员配置"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(

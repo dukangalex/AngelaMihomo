@@ -192,6 +192,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "그 외 ${count}개 프로필도 업데이트에 실패했습니다.";
   static String m84(reason) => "서비스를 시작하거나 중지하지 못했습니다. 이유: ${reason}. 현재 프로필과 포트 설정을 확인한 후 다시 시도하세요.";
 
+  static String m85(latin, sign) => "${latin} · ${sign}의 수호신";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("정보"),
@@ -385,6 +387,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("펼치기"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("제우스"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("아레스"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("아프로디테"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("헤르메스"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("아르테미스"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("아폴론"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("아스트라이아"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("테미스"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("하데스"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("크로노스"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("우라노스"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("포세이돈"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("구성원"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(

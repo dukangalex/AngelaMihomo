@@ -24,6 +24,7 @@ export 'launch.dart';
 export 'link.dart';
 export 'managed_script.dart';
 export 'zodiac_themes.dart';
+export 'zodiac_guardians.dart';
 export 'lock.dart';
 export 'measure.dart';
 export 'mixin.dart';

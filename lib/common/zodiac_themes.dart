@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'color.dart';
+import 'zodiac_guardians.dart';
 
 part 'zodiac_themes_data.dart';
 
@@ -405,8 +406,25 @@ Color? zodiacDelayColor(ZodiacVariant? variant, int? delay) {
 /// the theme's constellation element layer — its asterism and a faint
 /// sign-glyph watermark — so every theme, not only the immersive
 /// family, sits in its own light field with its own sign in it.
+///
+/// The backdrop also composes the theme's guardian (T159) as its two
+/// top layers — the figure above the light field, the name plate
+/// above the figure — so "wherever the zodiac backdrop is painted,
+/// the guardian is there" is a property of this component itself:
+/// the app root, every pushed page and every desktop route all carry
+/// it without threading anything through. Both layers stay below all
+/// page content: sheets, dialogs and cards cover them naturally.
+/// [showGuardian] exists for surfaces that paint this backdrop at a
+/// small size or in a transient context where a figure would be
+/// noise (mini previews, chooser tiles); every current call site is
+/// a full page background and leaves it on.
 class ZodiacBackdrop extends StatelessWidget {
-  const ZodiacBackdrop({super.key});
+  /// Whether the guardian figure and name plate ride in this
+  /// backdrop (T159). Defaults to on; turn it off only for small or
+  /// transient backdrop surfaces, never for page backgrounds.
+  final bool showGuardian;
+
+  const ZodiacBackdrop({super.key, this.showGuardian = true});
 
   @override
   Widget build(BuildContext context) {
@@ -448,6 +466,12 @@ class ZodiacBackdrop extends StatelessWidget {
             ),
           ),
         ),
+        // T159: the guardian figure and its name plate are the
+        // backdrop's own top layers — part of the background, below
+        // whatever page content is stacked over this backdrop.
+        if (showGuardian)
+          const Positioned.fill(child: ZodiacGuardianBackdropFigure()),
+        if (showGuardian) const Positioned.fill(child: ZodiacGuardianPlate()),
       ],
     );
   }

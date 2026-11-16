@@ -398,6 +398,11 @@ class ApplicationState extends ConsumerState<Application>
                 return Stack(
                   fit: StackFit.expand,
                   children: [
+                    // T159: the guardian figure and name plate are
+                    // composed inside ZodiacBackdrop itself (its two
+                    // top layers), so this root backdrop and every
+                    // page-carried backdrop alike include them — as
+                    // background, below all page content.
                     const ZodiacBackdrop(),
                     Directionality(
                       textDirection: TextDirection.ltr,

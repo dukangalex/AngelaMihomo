@@ -191,6 +191,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "さらに${count}件のプロファイルも更新に失敗しました。";
   static String m84(reason) => "サービスの開始または停止に失敗しました。理由：${reason}。現在のプロファイルとポート設定を確認してから再試行してください。";
 
+  static String m85(latin, sign) => "${latin} · ${sign}の守護神";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("アプリについて"),
@@ -378,6 +380,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("展開"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("ゼウス"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("アレス"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("アフロディーテ"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("ヘルメス"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("アルテミス"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("アポロン"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("アストライア"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("テミス"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("ハデス"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("クロノス"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("ウラノス"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("ポセイドン"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("メンバー"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(

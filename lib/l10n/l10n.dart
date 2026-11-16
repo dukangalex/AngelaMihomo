@@ -9890,6 +9890,76 @@ class AppLocalizations {
     );
   }
 
+  /// `Zeus`
+  String get guardianZeus {
+    return Intl.message('Zeus', name: 'guardianZeus', desc: '', args: []);
+  }
+
+  /// `Ares`
+  String get guardianAres {
+    return Intl.message('Ares', name: 'guardianAres', desc: '', args: []);
+  }
+
+  /// `Aphrodite`
+  String get guardianAphrodite {
+    return Intl.message('Aphrodite', name: 'guardianAphrodite', desc: '', args: []);
+  }
+
+  /// `Hermes`
+  String get guardianHermes {
+    return Intl.message('Hermes', name: 'guardianHermes', desc: '', args: []);
+  }
+
+  /// `Artemis`
+  String get guardianArtemis {
+    return Intl.message('Artemis', name: 'guardianArtemis', desc: '', args: []);
+  }
+
+  /// `Apollo`
+  String get guardianApollo {
+    return Intl.message('Apollo', name: 'guardianApollo', desc: '', args: []);
+  }
+
+  /// `Astraea`
+  String get guardianAstraea {
+    return Intl.message('Astraea', name: 'guardianAstraea', desc: '', args: []);
+  }
+
+  /// `Themis`
+  String get guardianThemis {
+    return Intl.message('Themis', name: 'guardianThemis', desc: '', args: []);
+  }
+
+  /// `Hades`
+  String get guardianHades {
+    return Intl.message('Hades', name: 'guardianHades', desc: '', args: []);
+  }
+
+  /// `Kronos`
+  String get guardianKronos {
+    return Intl.message('Kronos', name: 'guardianKronos', desc: '', args: []);
+  }
+
+  /// `Uranus`
+  String get guardianUranus {
+    return Intl.message('Uranus', name: 'guardianUranus', desc: '', args: []);
+  }
+
+  /// `Poseidon`
+  String get guardianPoseidon {
+    return Intl.message('Poseidon', name: 'guardianPoseidon', desc: '', args: []);
+  }
+
+  /// `{latin} · Guardian of {sign}`
+  String guardianLine(Object latin, Object sign) {
+    return Intl.message(
+      '$latin · Guardian of $sign',
+      name: 'guardianLine',
+      desc: '',
+      args: [latin, sign],
+    );
+  }
+
   /// `Managed mode`
   String get managedMode {
     return Intl.message(
