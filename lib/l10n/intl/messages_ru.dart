@@ -249,9 +249,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "address": MessageLookupByLibrary.simpleMessage("Адрес"),
     "addressHelp": MessageLookupByLibrary.simpleMessage("Адрес сервера WebDAV"),
-    "addressTip": MessageLookupByLibrary.simpleMessage(
-      "Введите корректный адрес WebDAV",
-    ),
+    "addressTip": MessageLookupByLibrary.simpleMessage("Введите полный адрес WebDAV, начинающийся с http:// или https://."),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage(
       "Автозапуск от администратора",
     ),
@@ -264,12 +262,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "Шифртекст (-----BEGIN AGE ENCRYPTED FILE-----)",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Ошибка расшифровки",
-    ),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Ошибка шифрования",
-    ),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("Расшифровка не удалась. Проверьте, что секретный ключ соответствует этим данным и полный, затем повторите."),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("Шифрование не удалось. Проверьте, что публичный ключ каждого получателя полный и действительный, затем повторите."),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "Файл слишком большой (макс. 8 МБ)",
     ),
@@ -430,9 +424,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "Поддерживаются только латинские буквы, цифры и символы",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "Неверный пароль резервной копии",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Неверный пароль резервной копии. Проверьте пароль и повторите; без пароля, заданного при создании копии, восстановить её нельзя."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("Не удалось расшифровать имя пользователя и пароль WebDAV из этой резервной копии (возможно, она создана на другом устройстве или в другой установке). Поля оставлены пустыми; введите их снова в настройках резервного копирования."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование успешно",
@@ -517,9 +509,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "Кэш повреждён. Очистить?",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Доступ к камере запрещён",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("Доступ к камере отключён. Разрешите приложению доступ к камере в настройках системы и отсканируйте снова."),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Для сканирования QR-кода требуется доступ к камере. Пожалуйста, предоставьте разрешение в настройках.",
     ),
@@ -588,7 +578,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("Догоняющие точки"),
     "checkError": MessageLookupByLibrary.simpleMessage("Ошибка проверки"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("Проверку завершить не удалось. Сеть или текущий исходящий узел могут быть недоступны; подождите немного и повторите."),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "Добавьте профиль",
     ),
@@ -1002,7 +992,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Выполнить сброс мусора ядра? Экспериментально, используйте с осторожностью",
     ),
     "forceGCTitle": MessageLookupByLibrary.simpleMessage("Очистка кеша ядра"),
-    "formatError": MessageLookupByLibrary.simpleMessage("Проверьте формат"),
+    "formatError": MessageLookupByLibrary.simpleMessage("Неверный формат. Сверьтесь с подсказкой поля, исправьте и повторите."),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4 колонки"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Фруктовый микс"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("Холодный перезапуск"),
@@ -1105,7 +1095,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("Стиль иконок"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("URL значка"),
     "import": MessageLookupByLibrary.simpleMessage("Импорт"),
-    "importFailed": MessageLookupByLibrary.simpleMessage("Ошибка импорта"),
+    "importFailed": MessageLookupByLibrary.simpleMessage("Импорт не удался. Проверьте, что содержимое полное и в поддерживаемом формате, затем повторите."),
     "importFile": MessageLookupByLibrary.simpleMessage("Импорт из файла"),
     "importFromCode": MessageLookupByLibrary.simpleMessage("Импорт из кода"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("Импорт из URL"),
@@ -1130,9 +1120,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidIconSet": MessageLookupByLibrary.simpleMessage(
       "Недопустимый набор значков",
     ),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
-      "Неверный формат IP или CIDR",
-    ),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("Неверный формат IP или CIDR. Введите адрес вида 192.168.1.1 или диапазон вида 192.168.1.0/24."),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP-адрес"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage(
       "Режим отображения",
@@ -1269,9 +1257,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "Тест прерван",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage(
-      "Не удалось запустить сервер",
-    ),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("Не удалось запустить сервер. Убедитесь, что другое приложение не занимает этот порт, или выберите другой порт и повторите."),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "Неожиданный ответ. Возможно, это не сервер iPerf3",
@@ -1406,7 +1392,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "Не удалось разрешить домен",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("Ошибка отправки"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("Не удалось отправить ping. Проверьте подключение к сети и повторите."),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("Шлюз"),
     "localPingListLimit": m36,
@@ -1544,9 +1530,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Встроенный BundleMRS не найден",
     ),
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage("Совпадений нет"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "Не удалось загрузить наборы правил",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("Не удалось загрузить встроенные наборы правил. Перезапустите приложение и повторите."),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("Используется"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage(
       "Разрешать домен по правилам DNS",
@@ -1907,15 +1891,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите имя профиля",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "Ошибка чтения профиля",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("Не удалось разобрать профиль. Его содержимое может быть повреждено или иметь неподдерживаемый формат; импортируйте его заново или запросите новый у провайдера."),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage(
       "Переключение конфигурации",
     ),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "Введите корректный URL профиля",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("Введите полный URL, начинающийся с http:// или https://."),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите URL профиля",
     ),
@@ -2444,7 +2424,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "Синхронизировать анимацию с другими страницами",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("Ошибка синхронизации"),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("Синхронизация не удалась. Проверьте сеть, а также адрес WebDAV, имя пользователя и пароль, затем повторите."),
     "system": MessageLookupByLibrary.simpleMessage("Система"),
     "systemApp": MessageLookupByLibrary.simpleMessage("Системные приложения"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2724,9 +2704,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Ожидание отправки профиля с телефона...",
     ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2 колонки"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "Невозможно обновить текущий профиль",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("Не удалось обновить текущий профиль. Проверьте сеть и срок действия ссылки подписки, затем нажмите обновление ещё раз."),
     "unauthorized": MessageLookupByLibrary.simpleMessage("Не авторизован"),
     "undo": MessageLookupByLibrary.simpleMessage("Отменить"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage(

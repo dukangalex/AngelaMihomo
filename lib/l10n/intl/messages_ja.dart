@@ -225,9 +225,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addedOriginRules": MessageLookupByLibrary.simpleMessage("元のルールに追加"),
     "address": MessageLookupByLibrary.simpleMessage("アドレス"),
     "addressHelp": MessageLookupByLibrary.simpleMessage("WebDAVサーバーアドレス"),
-    "addressTip": MessageLookupByLibrary.simpleMessage(
-      "有効なWebDAVアドレスを入力してください",
-    ),
+    "addressTip": MessageLookupByLibrary.simpleMessage("http:// または https:// で始まる完全な WebDAV アドレスを入力してください。"),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage("管理者権限で自動起動"),
     "adminAutoLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "管理者モードでOS起動時に自動開始",
@@ -236,8 +234,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "暗号文（-----BEGIN AGE ENCRYPTED FILE-----）",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("復号に失敗しました"),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("暗号化に失敗しました"),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("復号に失敗しました。秘密鍵がこのデータに対応し、完全であることを確認してから再試行してください。"),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("暗号化に失敗しました。各受信者の公開鍵が完全で有効であることを確認してから再試行してください。"),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "ファイルが大きすぎます（最大 8 MB）",
     ),
@@ -350,9 +348,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "英字、数字、記号のみ使用できます",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "バックアップパスワードが正しくありません",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("バックアップのパスワードが正しくありません。パスワードを確認して再試行してください。作成時に設定したパスワードがないと、このバックアップは復元できません。"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("このバックアップの WebDAV ユーザー名とパスワードは復号できませんでした（別の端末または別のインストールで作成された可能性があります）。空欄にしました。バックアップ設定で再入力してください。"),
     "backupSuccess": MessageLookupByLibrary.simpleMessage("バックアップ成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("カーネル設定"),
@@ -419,9 +415,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "キャッシュが破損しています。クリアしますか？",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "カメラ権限が拒否されました",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("カメラの権限がオフです。システム設定でこのアプリのカメラ使用を許可してから、もう一度スキャンしてください。"),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "QRスキャンにはカメラ権限が必要です。設定から許可してください。",
     ),
@@ -490,7 +484,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("チェイシングドット"),
     "checkError": MessageLookupByLibrary.simpleMessage("確認失敗"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("チェックを完了できませんでした。ネットワークまたは現在の出口が使えない可能性があります。少し待ってから再試行してください。"),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "最初にプロファイルを追加してください",
     ),
@@ -820,7 +814,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "カーネルのメモリGCを強制実行しますか？（実験的機能）",
     ),
     "forceGCTitle": MessageLookupByLibrary.simpleMessage("強制ガベージコレクション"),
-    "formatError": MessageLookupByLibrary.simpleMessage("フォーマットが正しいか確認してください"),
+    "formatError": MessageLookupByLibrary.simpleMessage("形式が正しくありません。入力欄のヒントと照らし合わせて修正し、再試行してください。"),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4列"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("フルーツサラダ"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("コールド再起動"),
@@ -895,7 +889,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("アイコンスタイル"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("アイコン URL"),
     "import": MessageLookupByLibrary.simpleMessage("インポート"),
-    "importFailed": MessageLookupByLibrary.simpleMessage("インポート失敗"),
+    "importFailed": MessageLookupByLibrary.simpleMessage("インポートに失敗しました。内容が完全で、対応している形式であることを確認してから再試行してください。"),
     "importFile": MessageLookupByLibrary.simpleMessage("ファイルからインポート"),
     "importFromCode": MessageLookupByLibrary.simpleMessage("コードからインポート"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("URLからインポート"),
@@ -916,7 +910,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "intranetAndGateway": MessageLookupByLibrary.simpleMessage("LANとゲートウェイ"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("ローカル IP"),
     "invalidIconSet": MessageLookupByLibrary.simpleMessage("有効なアイコンセットではありません"),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("無効なIPまたはCIDR形式"),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("IP または CIDR の形式が正しくありません。192.168.1.1 のようなアドレス、または 192.168.1.0/24 のような範囲を入力してください。"),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP アドレス"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("表示切替"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP 検索"),
@@ -1017,7 +1011,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "テストが中断されました",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("サーバーを起動できません"),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("サーバーを起動できませんでした。他のアプリがこのポートを使っていないか確認するか、別のポートを選んで再試行してください。"),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "応答が不正です。相手が iPerf3 サーバーではない可能性があります",
@@ -1138,7 +1132,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "ドメインを解決できません",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("送信失敗"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("Ping を送信できませんでした。ネットワーク接続を確認してから再試行してください。"),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("ゲートウェイ"),
     "localPingListLimit": m36,
@@ -1246,9 +1240,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("ドメインまたは IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage("内蔵 BundleMRS が見つかりません"),
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage("一致するルールセットはありません"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "ルールセットの読み込みに失敗しました",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("内蔵ルールセットを読み込めませんでした。アプリを再起動してから再試行してください。"),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("使用中"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage("DNS ルールでドメインを解決"),
     "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1537,13 +1529,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "設定名を入力してください",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "プロファイルの解析エラー",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("プロファイルを解析できませんでした。内容が破損しているか、対応していない形式の可能性があります。再インポートするか、プロバイダーから新しいものを取得してください。"),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage("ネットワーク設定の切り替え"),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "有効なURLを入力してください",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("http:// または https:// で始まる完全な URL を入力してください。"),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "設定URLを入力してください",
     ),
@@ -1954,7 +1942,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "アニメーションを他のページに同期",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("同期失敗"),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("同期に失敗しました。ネットワークと WebDAV のアドレス、ユーザー名、パスワードを確認してから再試行してください。"),
     "system": MessageLookupByLibrary.simpleMessage("システム"),
     "systemApp": MessageLookupByLibrary.simpleMessage("システムアプリ"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2192,9 +2180,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "tvScanWaiting": MessageLookupByLibrary.simpleMessage("スマホからのプッシュを待機中..."),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2列"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "現在のプロファイルを更新できません",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("現在のプロファイルを更新できません。ネットワークと、サブスクリプションリンクの有効期限を確認してから、もう一度更新してください。"),
     "unauthorized": MessageLookupByLibrary.simpleMessage("未認証"),
     "undo": MessageLookupByLibrary.simpleMessage("元に戻す"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage("レイテンシの統一"),

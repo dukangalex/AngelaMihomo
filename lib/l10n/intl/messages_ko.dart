@@ -226,7 +226,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addedOriginRules": MessageLookupByLibrary.simpleMessage("원래 규칙에 추가"),
     "address": MessageLookupByLibrary.simpleMessage("주소"),
     "addressHelp": MessageLookupByLibrary.simpleMessage("WebDAV 서버 주소"),
-    "addressTip": MessageLookupByLibrary.simpleMessage("유효한 WebDAV 주소를 입력하세요"),
+    "addressTip": MessageLookupByLibrary.simpleMessage("http:// 또는 https://로 시작하는 완전한 WebDAV 주소를 입력하세요."),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage("관리자 권한 자동 시작"),
     "adminAutoLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "관리자 모드로 부팅 시 자동 실행",
@@ -235,8 +235,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "암호문 (-----BEGIN AGE ENCRYPTED FILE-----)",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("복호화 실패"),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("암호화 실패"),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("복호화에 실패했습니다. 비밀 키가 이 데이터와 맞고 완전한지 확인한 뒤 다시 시도하세요."),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("암호화에 실패했습니다. 각 수신자 공개 키가 완전하고 유효한지 확인한 뒤 다시 시도하세요."),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "파일이 너무 큽니다 (최대 8MB)",
     ),
@@ -357,9 +357,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "영문자, 숫자, 기호만 지원됩니다",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "백업 비밀번호가 올바르지 않습니다",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("백업 비밀번호가 올바르지 않습니다. 비밀번호를 확인한 뒤 다시 시도하세요. 백업을 만들 때 설정한 비밀번호가 없으면 복원할 수 없습니다."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("이 백업의 WebDAV 사용자 이름과 비밀번호를 해독할 수 없습니다(다른 기기나 설치에서 만든 백업일 수 있음). 비워 두었으니 백업 설정에서 다시 입력하세요."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage("백업 성공"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("코어 설정"),
@@ -424,9 +422,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "캐시가 손상되었습니다. 초기화하시겠습니까?",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "카메라 권한 거부됨",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("카메라 권한이 꺼져 있습니다. 시스템 설정에서 이 앱의 카메라 사용을 허용한 뒤 다시 스캔하세요."),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "QR 코드 스캔을 위해 카메라 권한이 필요합니다. 설정에서 권한을 허용해 주세요.",
     ),
@@ -495,7 +491,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("체이싱 도트"),
     "checkError": MessageLookupByLibrary.simpleMessage("확인 실패"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("검사를 완료할 수 없습니다. 네트워크나 현재 아웃바운드를 사용할 수 없을 수 있습니다. 잠시 후 다시 시도하세요."),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "먼저 프로필을 추가해 주세요",
     ),
@@ -831,7 +827,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "코어 메모리 가비지 컬렉션을 강제 실행하시겠습니까? (실험적 기능)",
     ),
     "forceGCTitle": MessageLookupByLibrary.simpleMessage("강제 가비지 컬렉션"),
-    "formatError": MessageLookupByLibrary.simpleMessage("형식이 올바른지 확인해 주세요"),
+    "formatError": MessageLookupByLibrary.simpleMessage("형식이 올바르지 않습니다. 입력란의 안내에 맞게 수정한 뒤 다시 시도하세요."),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4열"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("프루트 샐러드"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("콜드 재시작"),
@@ -906,7 +902,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("아이콘 스타일"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("아이콘 URL"),
     "import": MessageLookupByLibrary.simpleMessage("가져오기"),
-    "importFailed": MessageLookupByLibrary.simpleMessage("가져오기 실패"),
+    "importFailed": MessageLookupByLibrary.simpleMessage("가져오기에 실패했습니다. 내용이 완전하고 지원하는 형식인지 확인한 뒤 다시 시도하세요."),
     "importFile": MessageLookupByLibrary.simpleMessage("파일에서 가져오기"),
     "importFromCode": MessageLookupByLibrary.simpleMessage("코드로 가져오기"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("URL에서 가져오기"),
@@ -927,9 +923,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "intranetAndGateway": MessageLookupByLibrary.simpleMessage("LAN 및 게이트웨이"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("내부 IP"),
     "invalidIconSet": MessageLookupByLibrary.simpleMessage("올바른 아이콘 세트가 아닙니다"),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
-      "유효하지 않은 IP 또는 CIDR 형식입니다",
-    ),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("IP 또는 CIDR 형식이 올바르지 않습니다. 192.168.1.1 같은 주소나 192.168.1.0/24 같은 범위를 입력하세요."),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP 주소"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("표시 전환"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP 조회"),
@@ -1026,7 +1020,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "테스트가 중단되었습니다",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("서버를 시작할 수 없습니다"),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("서버를 시작할 수 없습니다. 다른 앱이 이 포트를 사용 중이지 않은지 확인하거나 다른 포트를 선택한 뒤 다시 시도하세요."),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "응답이 올바르지 않습니다. 상대가 iPerf3 서버가 아닐 수 있습니다",
@@ -1145,7 +1139,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "도메인을 확인할 수 없습니다",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("전송 실패"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("Ping을 보낼 수 없습니다. 네트워크 연결을 확인한 뒤 다시 시도하세요."),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("게이트웨이"),
     "localPingListLimit": m36,
@@ -1253,9 +1247,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "내장 BundleMRS를 찾을 수 없습니다",
     ),
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage("일치하는 규칙 집합이 없습니다"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "규칙 집합을 불러오지 못했습니다",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("내장 규칙 세트를 불러오지 못했습니다. 앱을 다시 시작한 뒤 시도하세요."),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("사용 중"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage("DNS 규칙으로 도메인 확인"),
     "mrsResolveDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1540,13 +1532,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "프로필 이름을 입력하세요",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "프로필 구문 분석 오류",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("프로필을 해석할 수 없습니다. 내용이 손상되었거나 지원하지 않는 형식일 수 있습니다. 다시 가져오거나 제공업체에서 새 프로필을 받으세요."),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage("네트워크 구성 전환"),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "유효한 URL을 입력하세요",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("http:// 또는 https://로 시작하는 완전한 URL을 입력하세요."),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "프로필 URL을 입력하세요",
     ),
@@ -1947,7 +1935,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "다른 페이지에 애니메이션 동기화",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("동기화 실패"),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("동기화에 실패했습니다. 네트워크와 WebDAV 주소, 사용자 이름, 비밀번호를 확인한 뒤 다시 시도하세요."),
     "system": MessageLookupByLibrary.simpleMessage("시스템"),
     "systemApp": MessageLookupByLibrary.simpleMessage("시스템 앱"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2187,9 +2175,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "스마트폰에서 프로필 푸시 대기 중...",
     ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2열"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "현재 프로필을 업데이트할 수 없습니다",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("현재 프로필을 업데이트할 수 없습니다. 네트워크와 구독 링크가 만료되지 않았는지 확인한 뒤 다시 업데이트하세요."),
     "unauthorized": MessageLookupByLibrary.simpleMessage("인증 안 됨"),
     "undo": MessageLookupByLibrary.simpleMessage("실행 취소"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage("통합 지연 시간"),

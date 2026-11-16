@@ -237,9 +237,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "address": MessageLookupByLibrary.simpleMessage("آدرس"),
     "addressHelp": MessageLookupByLibrary.simpleMessage("آدرس سرور WebDAV"),
-    "addressTip": MessageLookupByLibrary.simpleMessage(
-      "لطفاً آدرس WebDAV معتبری وارد کنید",
-    ),
+    "addressTip": MessageLookupByLibrary.simpleMessage("یک نشانی کامل WebDAV که با http:// یا https:// شروع شود وارد کنید."),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage(
       "شروع خودکار با دسترسی Admin",
     ),
@@ -250,12 +248,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "متن رمز (-----BEGIN AGE ENCRYPTED FILE-----)",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage(
-      "رمزگشایی ناموفق بود",
-    ),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage(
-      "رمزنگاری ناموفق بود",
-    ),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("رمزگشایی ناموفق بود. مطابق بودن کلید محرمانه با این داده و کامل بودن آن را بررسی کنید و دوباره تلاش کنید."),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("رمزنگاری ناموفق بود. کامل و معتبر بودن کلید عمومی هر گیرنده را بررسی کنید و دوباره تلاش کنید."),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "فایل بیش از حد بزرگ است (حداکثر ۸ مگابایت)",
     ),
@@ -410,9 +404,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "فقط حروف انگلیسی، اعداد و نمادها پشتیبانی می‌شوند",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "رمز عبور پشتیبان نادرست است",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("رمز عبور نسخه پشتیبان نادرست است. رمز را بررسی و دوباره تلاش کنید؛ بدون رمزی که هنگام ساخت نسخه پشتیبان تعیین شده، بازیابی آن ممکن نیست."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("نام کاربری و رمز عبور WebDAV در این نسخه پشتیبان قابل رمزگشایی نبود (ممکن است نسخه پشتیبان از دستگاه یا نصب دیگری باشد). خالی گذاشته شد؛ آن‌ها را در تنظیمات پشتیبان‌گیری دوباره وارد کنید."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "پشتیبان‌گیری با موفقیت انجام شد",
@@ -491,9 +483,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "حافظه پنهان آسیب دیده است. آیا پاکسازی شود؟",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "مجوز دوربین رد شد",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("دسترسی به دوربین خاموش است. در تنظیمات سیستم به این برنامه اجازه استفاده از دوربین بدهید و دوباره اسکن کنید."),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "برای اسکن کد QR دسترسی دوربین لازم است. لطفاً از تنظیمات مجوز دهید.",
     ),
@@ -562,7 +552,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("نقاط تعقیب‌کننده"),
     "checkError": MessageLookupByLibrary.simpleMessage("بررسی ناموفق بود"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("بررسی کامل نشد. ممکن است شبکه یا خروجی فعلی در دسترس نباشد؛ کمی صبر کنید و دوباره تلاش کنید."),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "لطفاً ابتدا یک پروفایل اضافه کنید",
     ),
@@ -964,9 +954,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "forceGCTitle": MessageLookupByLibrary.simpleMessage(
       "پاکسازی اجباری حافظه",
     ),
-    "formatError": MessageLookupByLibrary.simpleMessage(
-      "لطفاً صحت فرمت را بررسی کنید",
-    ),
+    "formatError": MessageLookupByLibrary.simpleMessage("قالب درست نیست. فیلد را با راهنمای آن مقایسه و اصلاح کنید و دوباره تلاش کنید."),
     "fourColumns": MessageLookupByLibrary.simpleMessage("۴ ستون"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("سالاد میوه"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("راه‌اندازی مجدد سرد"),
@@ -1059,9 +1047,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("سبک آیکون"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("نشانی نماد"),
     "import": MessageLookupByLibrary.simpleMessage("وارد کردن"),
-    "importFailed": MessageLookupByLibrary.simpleMessage(
-      "وارد کردن ناموفق بود",
-    ),
+    "importFailed": MessageLookupByLibrary.simpleMessage("وارد کردن ناموفق بود. کامل بودن محتوا و پشتیبانی از قالب آن را بررسی کنید و دوباره تلاش کنید."),
     "importFile": MessageLookupByLibrary.simpleMessage("وارد کردن از فایل"),
     "importFromCode": MessageLookupByLibrary.simpleMessage(
       "وارد کردن از طریق کد",
@@ -1090,9 +1076,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidIconSet": MessageLookupByLibrary.simpleMessage(
       "مجموعه آیکون معتبر نیست",
     ),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
-      "فرمت IP یا CIDR نامعتبر است",
-    ),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("قالب IP یا CIDR درست نیست. نشانی‌ای مانند 192.168.1.1 یا بازه‌ای مانند 192.168.1.0/24 وارد کنید."),
     "ipAddress": MessageLookupByLibrary.simpleMessage("آدرس IP"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("تغییر نمایش"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("جستجوی IP"),
@@ -1217,9 +1201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "آزمون قطع شد",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage(
-      "راه‌اندازی سرور ممکن نشد",
-    ),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("سرور شروع به کار نکرد. بررسی کنید برنامه دیگری از این درگاه استفاده نمی‌کند، یا درگاه دیگری انتخاب کنید و دوباره تلاش کنید."),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "پاسخ نامعتبر است؛ ممکن است طرف مقابل سرور iPerf3 نباشد",
@@ -1350,7 +1332,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "دامنه پیدا نشد",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("ارسال ناموفق"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("ارسال پینگ ممکن نشد. اتصال شبکه را بررسی کنید و دوباره تلاش کنید."),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("دروازه"),
     "localPingListLimit": m36,
@@ -1492,9 +1474,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage(
       "هیچ مجموعه‌ای تطبیق نیافت",
     ),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "بارگذاری مجموعه قوانین ناموفق بود",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("بارگذاری مجموعه‌قوانین داخلی ناموفق بود. برنامه را دوباره اجرا کنید و تلاش کنید."),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("در حال استفاده"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage(
       "تفکیک دامنه با قوانین DNS",
@@ -1845,15 +1825,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "لطفاً نام پروفایل را وارد کنید",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "خطا در پردازش فایل پروفایل",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("پروفایل قابل خواندن نیست. ممکن است محتوای آن آسیب دیده یا قالبش پشتیبانی نشود؛ آن را دوباره وارد کنید یا نسخه تازه‌ای از ارائه‌دهنده بگیرید."),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage(
       "تغییر پیکربندی شبکه",
     ),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "لطفاً یک آدرس URL معتبر وارد کنید",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("یک URL کامل که با http:// یا https:// شروع شود وارد کنید."),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "لطفاً آدرس URL را وارد کنید",
     ),
@@ -2368,7 +2344,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "همگام‌سازی انیمیشن با صفحات دیگر",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("همگام‌سازی ناموفق بود"),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("همگام‌سازی ناموفق بود. شبکه و نشانی WebDAV، نام کاربری و رمز عبور را بررسی کنید و دوباره تلاش کنید."),
     "system": MessageLookupByLibrary.simpleMessage("سیستم"),
     "systemApp": MessageLookupByLibrary.simpleMessage("برنامه‌های سیستم"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2638,9 +2614,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "در انتظار ارسال پروفایل از گوشی...",
     ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("۲ ستون"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "امکان بروزرسانی پروفایل فعلی وجود ندارد",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("به‌روزرسانی پروفایل فعلی ممکن نیست. شبکه و منقضی‌نشدن پیوند اشتراک را بررسی کنید و دوباره روی به‌روزرسانی بزنید."),
     "unauthorized": MessageLookupByLibrary.simpleMessage("احراز هویت نشده"),
     "undo": MessageLookupByLibrary.simpleMessage("واکشی"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage("تاخیر یکپارچه"),

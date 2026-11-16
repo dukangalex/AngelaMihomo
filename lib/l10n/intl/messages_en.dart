@@ -244,9 +244,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addressHelp": MessageLookupByLibrary.simpleMessage(
       "WebDAV server address",
     ),
-    "addressTip": MessageLookupByLibrary.simpleMessage(
-      "Please enter a valid WebDAV address",
-    ),
+    "addressTip": MessageLookupByLibrary.simpleMessage("Enter a complete WebDAV address starting with http:// or https://."),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage(
       "Admin Auto-Launch",
     ),
@@ -259,12 +257,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "Cipher Text (-----BEGIN AGE ENCRYPTED FILE-----)",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Decryption failed",
-    ),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Encryption failed",
-    ),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("Decryption failed. Check that the secret key matches this data and is complete, then try again."),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("Encryption failed. Check that each recipient public key is complete and valid, then try again."),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "File too large (8 MB max)",
     ),
@@ -415,9 +409,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "Only English letters, digits and symbols are supported",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "Incorrect backup password",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Incorrect backup password. Check the password and try again; without the password set when the backup was created, it cannot be restored."),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage("Backup Successful"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("Core Configuration"),
@@ -492,9 +484,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "Cache corrupted. Clear it?",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Camera Permission Denied",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("Camera permission is off. Allow camera access for this app in system settings, then try scanning again."),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Camera permission is required to scan QR codes. Please grant it in settings.",
     ),
@@ -563,7 +553,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("Chasing Dots"),
     "checkError": MessageLookupByLibrary.simpleMessage("Check Failed"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("The check could not be completed. The network or the current outbound may be unavailable; wait a moment and try again."),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "Please add a profile first",
     ),
@@ -969,9 +959,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "forceGCTitle": MessageLookupByLibrary.simpleMessage(
       "Force Garbage Collection",
     ),
-    "formatError": MessageLookupByLibrary.simpleMessage(
-      "Please check the format",
-    ),
+    "formatError": MessageLookupByLibrary.simpleMessage("Invalid format. Check the field against its hint, fix it, and try again."),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4 Columns"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Fruit Salad"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("Cold Restart"),
@@ -1064,7 +1052,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("Icon Style"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("Icon URL"),
     "import": MessageLookupByLibrary.simpleMessage("Import"),
-    "importFailed": MessageLookupByLibrary.simpleMessage("Import failed"),
+    "importFailed": MessageLookupByLibrary.simpleMessage("Import failed. Check that the content is complete and in a supported format, then try again."),
     "importFile": MessageLookupByLibrary.simpleMessage("Import from File"),
     "importFromCode": MessageLookupByLibrary.simpleMessage("Import from Code"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("Import from URL"),
@@ -1087,9 +1075,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidIconSet": MessageLookupByLibrary.simpleMessage(
       "Not a valid icon set",
     ),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
-      "Invalid IP or CIDR format",
-    ),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("Invalid IP or CIDR format. Enter an address like 192.168.1.1 or a range like 192.168.1.0/24."),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP Address"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("Toggle Display"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP Lookup"),
@@ -1212,9 +1198,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "The test was interrupted",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t start the server",
-    ),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("Couldn't start the server. Check that no other app is using this port, or pick another port, then try again."),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "Unexpected response. The other side may not be an iPerf3 server",
@@ -1345,7 +1329,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "Could not resolve the domain",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("Send failed"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("Could not send the ping. Check the network connection, then try again."),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("Gateway"),
     "localPingListLimit": m36,
@@ -1477,9 +1461,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Bundled BundleMRS not found",
     ),
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage("No rule set matched"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "Failed to load rule sets",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("Failed to load the bundled rule sets. Restart the app and try again."),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("In use"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage(
       "Resolve domains with DNS rules",
@@ -1826,15 +1808,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "Profile parse error",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("The profile could not be parsed. Its content may be damaged or in an unsupported format; re-import it, or get a fresh copy from your provider."),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage(
       "Profile Switching",
     ),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "Please enter a valid URL",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("Enter a complete URL starting with http:// or https://."),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile URL",
     ),
@@ -2341,7 +2319,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "Sync animation to other pages",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("Sync Failed"),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("Sync failed. Check the network and the WebDAV address, user name and password, then try again."),
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System App"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2603,9 +2581,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Waiting for profile from phone...",
     ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2 Columns"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "Unable to update current profile",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("Unable to update the current profile. Check the network and that the subscription link has not expired, then tap update again."),
     "unauthorized": MessageLookupByLibrary.simpleMessage("Unauthorized"),
     "undo": MessageLookupByLibrary.simpleMessage("Undo"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage("Unified Delay"),

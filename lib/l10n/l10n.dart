@@ -133,7 +133,7 @@ class AppLocalizations {
   /// `External Resources`
   String get resources {
     return Intl.message(
-      'External Resources',
+      'Sync failed. Check the network and the WebDAV address, user name and password, then try again.',
       name: 'resources',
       desc: '',
       args: [],
@@ -423,7 +423,7 @@ class AppLocalizations {
   /// `Invalid IP or CIDR format`
   String get invalidIpFormat {
     return Intl.message(
-      'Invalid IP or CIDR format',
+      'Invalid IP or CIDR format. Enter an address like 192.168.1.1 or a range like 192.168.1.0/24.',
       name: 'invalidIpFormat',
       desc: '',
       args: [],
@@ -1298,7 +1298,7 @@ class AppLocalizations {
   /// `Please enter a valid URL`
   String get profileUrlInvalidValidationDesc {
     return Intl.message(
-      'Please enter a valid URL',
+      'Enter a complete URL starting with http:// or https://.',
       name: 'profileUrlInvalidValidationDesc',
       desc: '',
       args: [],
@@ -1378,7 +1378,7 @@ class AppLocalizations {
   /// `Camera Permission Denied`
   String get cameraPermissionDenied {
     return Intl.message(
-      'Camera Permission Denied',
+      'Camera permission is off. Allow camera access for this app in system settings, then try scanning again.',
       name: 'cameraPermissionDenied',
       desc: '',
       args: [],
@@ -1618,7 +1618,7 @@ class AppLocalizations {
   /// `Unable to update current profile`
   String get unableToUpdateCurrentProfileDesc {
     return Intl.message(
-      'Unable to update current profile',
+      'Unable to update the current profile. Check the network and that the subscription link has not expired, then tap update again.',
       name: 'unableToUpdateCurrentProfileDesc',
       desc: '',
       args: [],
@@ -1638,7 +1638,7 @@ class AppLocalizations {
   /// `Profile parse error`
   String get profileParseErrorDesc {
     return Intl.message(
-      'Profile parse error',
+      'The profile could not be parsed. Its content may be damaged or in an unsupported format; re-import it, or get a fresh copy from your provider.',
       name: 'profileParseErrorDesc',
       desc: '',
       args: [],
@@ -2038,7 +2038,7 @@ class AppLocalizations {
   /// `Incorrect backup password`
   String get backupPasswordWrong {
     return Intl.message(
-      'Incorrect backup password',
+      'Incorrect backup password. Check the password and try again; without the password set when the backup was created, it cannot be restored.',
       name: 'backupPasswordWrong',
       desc: '',
       args: [],
@@ -2142,7 +2142,7 @@ class AppLocalizations {
   /// `Please enter a valid WebDAV address`
   String get addressTip {
     return Intl.message(
-      'Please enter a valid WebDAV address',
+      'Enter a complete WebDAV address starting with http:// or https://.',
       name: 'addressTip',
       desc: '',
       args: [],
@@ -3467,7 +3467,7 @@ class AppLocalizations {
   /// `Please check the format`
   String get formatError {
     return Intl.message(
-      'Please check the format',
+      'Invalid format. Check the field against its hint, fix it, and try again.',
       name: 'formatError',
       desc: '',
       args: [],
@@ -5377,7 +5377,7 @@ class AppLocalizations {
   /// `Import failed`
   String get importFailed {
     return Intl.message(
-      'Import failed',
+      'Import failed. Check that the content is complete and in a supported format, then try again.',
       name: 'importFailed',
       desc: '',
       args: [],
@@ -6162,7 +6162,7 @@ class AppLocalizations {
   /// `Proxy Providers`
   String get proxyProvidersCount {
     return Intl.message(
-      'Proxy Providers',
+      'The check could not be completed. The network or the current outbound may be unavailable; wait a moment and try again.',
       name: 'proxyProvidersCount',
       desc: '',
       args: [],
@@ -7827,7 +7827,7 @@ class AppLocalizations {
   /// `Failed to load rule sets`
   String get mrsPrepareFailed {
     return Intl.message(
-      'Failed to load rule sets',
+      'Failed to load the bundled rule sets. Restart the app and try again.',
       name: 'mrsPrepareFailed',
       desc: '',
       args: [],
@@ -8297,7 +8297,7 @@ class AppLocalizations {
   /// `Encryption failed`
   String get ageEncryptFailed {
     return Intl.message(
-      'Encryption failed',
+      'Encryption failed. Check that each recipient public key is complete and valid, then try again.',
       name: 'ageEncryptFailed',
       desc: '',
       args: [],
@@ -8307,7 +8307,7 @@ class AppLocalizations {
   /// `Decryption failed`
   String get ageDecryptFailed {
     return Intl.message(
-      'Decryption failed',
+      'Decryption failed. Check that the secret key matches this data and is complete, then try again.',
       name: 'ageDecryptFailed',
       desc: '',
       args: [],
@@ -8988,7 +8988,7 @@ class AppLocalizations {
   /// `Send failed`
   String get localPingFailed {
     return Intl.message(
-      'Send failed',
+      'Could not send the ping. Check the network connection, then try again.',
       name: 'localPingFailed',
       desc: '',
       args: [],
@@ -9228,7 +9228,7 @@ class AppLocalizations {
   /// `Couldn't start the server`
   String get iperfErrorListen {
     return Intl.message(
-      'Couldn\'t start the server',
+      'Couldn\'t start the server. Check that no other app is using this port, or pick another port, then try again.',
       name: 'iperfErrorListen',
       desc: '',
       args: [],
