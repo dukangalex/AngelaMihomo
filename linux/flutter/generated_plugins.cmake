@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links_linux
   dynamic_color
   file_selector_linux
+  flutter_secure_storage_linux
   hotkey_manager_linux
   restart_app
   screen_retriever_linux
