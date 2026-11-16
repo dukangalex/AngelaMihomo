@@ -6,8 +6,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T159: every zodiac theme carries exactly one guardian, the artwork
-/// file is really on disk, and the dashboard guardian layer renders the
-/// figure and its name plate for the active theme.
+/// file is really on disk, and the root guardian layers (figure in the
+/// background stack, name plate as root overlay) render for the active
+/// theme on every page — and render nothing without a zodiac theme.
 void main() {
   group('guardian data audit', () {
     test('all twelve themes have a guardian with an existing asset', () {
@@ -65,7 +66,7 @@ void main() {
     });
   });
 
-  testWidgets('guardian layer shows figure and name plate on dashboard', (
+  testWidgets('root guardian layers show figure and name plate', (
     tester,
   ) async {
     await AppLocalizations.load(
@@ -88,14 +89,48 @@ void main() {
           AppLocalizations.delegate,
           ...GlobalMaterialLocalizations.delegates,
         ],
-        home: const Scaffold(body: ZodiacGuardianLayer()),
+        // Mirrors the application.dart root stack: backdrop, figure
+        // layer, page content, then the plate as the root overlay.
+        home: const Scaffold(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              ZodiacBackdrop(),
+              Positioned.fill(child: ZodiacGuardianFigureLayer()),
+              SizedBox.expand(),
+              Positioned.fill(child: ZodiacGuardianPlate()),
+            ],
+          ),
+        ),
       ),
     );
     await tester.pump();
-    expect(find.byType(ZodiacGuardianLayer), findsOneWidget);
+    expect(find.byType(ZodiacGuardianFigureLayer), findsOneWidget);
+    expect(find.byType(ZodiacGuardianPlate), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
     expect(find.byType(IgnorePointer), findsWidgets);
     expect(find.text('宙斯'), findsOneWidget);
     expect(find.text('ZEUS · 射手座守护神'), findsOneWidget);
+  });
+
+  testWidgets('guardian layers render nothing without a zodiac theme', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(child: ZodiacGuardianFigureLayer()),
+              Positioned.fill(child: ZodiacGuardianPlate()),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(Image), findsNothing);
+    expect(find.byType(Text), findsNothing);
   });
 }
