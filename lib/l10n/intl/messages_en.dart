@@ -418,6 +418,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
       "Incorrect backup password",
     ),
+    "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage("Backup Successful"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("Core Configuration"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage(

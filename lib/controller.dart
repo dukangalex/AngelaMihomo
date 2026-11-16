@@ -2610,10 +2610,12 @@ class AppController {
     if (configJson['dav'] is Map) {
       final davMap = Map<String, dynamic>.from(configJson['dav'] as Map);
       if (davMap['user'] is String) {
-        davMap['user'] = utils.encryptSecret(davMap['user'] as String);
+        davMap['user'] = await utils.encryptSecret(davMap['user'] as String);
       }
       if (davMap['password'] is String) {
-        davMap['password'] = utils.encryptSecret(davMap['password'] as String);
+        davMap['password'] = await utils.encryptSecret(
+          davMap['password'] as String,
+        );
       }
       configJson['dav'] = davMap;
     }
@@ -3017,11 +3019,15 @@ class AppController {
     var tempConfig = Config.compatibleFromJson(
       json.decode(utf8.decode(configContent)),
     );
+    var davCredentialsLost = false;
     if (tempConfig.dav != null) {
+      final davUser = await utils.decryptSecret(tempConfig.dav!.user);
+      final davPassword = await utils.decryptSecret(tempConfig.dav!.password);
+      davCredentialsLost = davUser == null || davPassword == null;
       tempConfig = tempConfig.copyWith(
         dav: tempConfig.dav!.copyWith(
-          user: utils.decryptSecret(tempConfig.dav!.user),
-          password: utils.decryptSecret(tempConfig.dav!.password),
+          user: davUser ?? '',
+          password: davPassword ?? '',
         ),
       );
     }
@@ -3042,6 +3048,12 @@ class AppController {
 
     _recovery(tempConfig, recoveryOption);
     await savePreferences();
+    if (davCredentialsLost) {
+      // The backup's DAV section was encrypted with another install's
+      // key (T168): say so plainly instead of storing ciphertext or
+      // failing the whole restore.
+      globalState.showNotifier(appLocalizations.davCredentialsNotRestored);
+    }
     if (globalState.isStart) {
       await applyProfile(silence: true);
     }

@@ -238,6 +238,7 @@
   "backupPasswordDesc": "AES-256 encrypted, leave blank for none",
   "backupPasswordRequired": "This backup is encrypted, please enter the password",
   "backupPasswordWrong": "Incorrect backup password",
+  "davCredentialsNotRestored": "The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings.",
   "backupPasswordTip": "Only English letters, digits and symbols are supported",
   "backupEncryptedTip": "Backup encrypted with AES-256",
   "recoveryDecryptedTip": "Decrypted and restored with the current password",

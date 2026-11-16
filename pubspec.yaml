@@ -70,6 +70,8 @@ dependencies:
     path: plugins/code_forge
   material_ui: ^1.8.0
   cupertino_ui: ^1.1.4
+  flutter_secure_storage: ^11.2.0
+  cryptography: ^2.9.0
 dependency_overrides:
   flutter_rust_bridge: 2.13.0
   hotkey_manager_linux:

@@ -433,6 +433,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
       "Неверный пароль резервной копии",
     ),
+    "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("Не удалось расшифровать имя пользователя и пароль WebDAV из этой резервной копии (возможно, она создана на другом устройстве или в другой установке). Поля оставлены пустыми; введите их снова в настройках резервного копирования."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование успешно",
     ),

@@ -238,6 +238,7 @@
   "backupPasswordDesc": "AES-256 암호화 (비워두면 미적용)",
   "backupPasswordRequired": "이 백업은 암호화되어 있습니다. 비밀번호를 입력하세요",
   "backupPasswordWrong": "백업 비밀번호가 올바르지 않습니다",
+  "davCredentialsNotRestored": "이 백업의 WebDAV 사용자 이름과 비밀번호를 해독할 수 없습니다(다른 기기나 설치에서 만든 백업일 수 있음). 비워 두었으니 백업 설정에서 다시 입력하세요.",
   "backupPasswordTip": "영문자, 숫자, 기호만 지원됩니다",
   "backupEncryptedTip": "AES-256으로 백업을 암호화했습니다",
   "recoveryDecryptedTip": "현재 비밀번호로 복호화하여 복구했습니다",

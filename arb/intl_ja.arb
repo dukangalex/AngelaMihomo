@@ -238,6 +238,7 @@
   "backupPasswordDesc": "AES-256で暗号化（空欄で暗号化なし）",
   "backupPasswordRequired": "このバックアップは暗号化されています。パスワードを入力してください",
   "backupPasswordWrong": "バックアップパスワードが正しくありません",
+  "davCredentialsNotRestored": "このバックアップの WebDAV ユーザー名とパスワードは復号できませんでした（別の端末または別のインストールで作成された可能性があります）。空欄にしました。バックアップ設定で再入力してください。",
   "backupPasswordTip": "英字、数字、記号のみ使用できます",
   "backupEncryptedTip": "AES-256 でバックアップを暗号化しました",
   "recoveryDecryptedTip": "現在のパスワードで復号して復元しました",

@@ -8,7 +8,9 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -1306,19 +1308,71 @@ class Utils {
     });
   }
 
-  String encryptSecret(String raw) {
-    if (raw.isEmpty) return raw;
-    const salt = 'AngelaMihomo';
-    final step1 = base64.encode(utf8.encode(raw));
-    final step2 = base64.encode(utf8.encode('$salt:$step1'));
-    return 'ENC~$step2';
+  // AngelaMihomo (chain.26, T168): backup copies of the WebDAV
+  // credentials are encrypted with AES-256-GCM. The key is generated
+  // once per install and kept in the platform secure storage (Android
+  // Keystore, iOS/macOS Keychain, Windows DPAPI, libsecret on Linux);
+  // it never enters the backup file, so a leaked backup cannot be
+  // decoded. Restoring on a different install cannot decrypt the DAV
+  // section and reports it instead of guessing.
+  static const _secretStorageKey = 'dav_backup_secret_key_v1';
+  static const _secureStorage = FlutterSecureStorage();
+  Future<SecretKey>? _secretKeyFuture;
+
+  Future<SecretKey> _secretKey() {
+    return _secretKeyFuture ??= () async {
+      final stored = await _secureStorage.read(key: _secretStorageKey);
+      if (stored != null) {
+        return SecretKey(base64.decode(stored));
+      }
+      final key = await AesGcm.with256bits().newSecretKey();
+      await _secureStorage.write(
+        key: _secretStorageKey,
+        value: base64.encode(await key.extractBytes()),
+      );
+      return key;
+    }();
   }
 
-  String decryptSecret(String text) {
+  /// Test seam: forget the cached key so the next call re-reads the
+  /// platform storage.
+  void resetSecretKeyCache() => _secretKeyFuture = null;
+
+  Future<String> encryptSecret(String raw) async {
+    if (raw.isEmpty) return raw;
+    final algorithm = AesGcm.with256bits();
+    final box = await algorithm.encrypt(
+      utf8.encode(raw),
+      secretKey: await _secretKey(),
+    );
+    return 'ENC2~${base64.encode(box.concatenation())}';
+  }
+
+  /// Returns null when an ENC2~ value cannot be decrypted on this
+  /// install (foreign backup or lost key); legacy ENC~ values and
+  /// plaintext pass through the historical paths.
+  Future<String?> decryptSecret(String text) async {
+    if (text.startsWith('ENC2~')) {
+      try {
+        final box = SecretBox.fromConcatenation(
+          base64.decode(text.substring(5)),
+          nonceLength: AesGcm.defaultNonceLength,
+          macLength: AesGcm.aesGcmMac.macLength,
+        );
+        final clear = await AesGcm.with256bits().decrypt(
+          box,
+          secretKey: await _secretKey(),
+        );
+        return utf8.decode(clear);
+      } catch (_) {
+        return null;
+      }
+    }
     if (!text.startsWith('ENC~')) return text;
     try {
-      // The legacy salt is still accepted so secrets stored by older
-      // builds keep decrypting; new writes use the current salt.
+      // Legacy format (base64 layers with a static salt). Kept only so
+      // backups written by older builds still restore; new writes use
+      // ENC2~ above.
       const salts = ['AngelaMihomo', 'Bettbox'];
       final cipher = text.substring(4);
       final salted = utf8.decode(base64.decode(cipher));

@@ -238,6 +238,7 @@
   "backupPasswordDesc": "使用 AES-256 加密备份，留空则不加密",
   "backupPasswordRequired": "该备份已加密，请输入密码",
   "backupPasswordWrong": "备份密码错误",
+  "davCredentialsNotRestored": "备份中的 WebDAV 账号密码无法解密（该备份可能来自另一台设备或另一次安装），已留空，请在备份设置中重新填写。",
   "backupPasswordTip": "仅支持英文字母、数字和符号",
   "backupEncryptedTip": "已使用 AES-256 加密备份",
   "recoveryDecryptedTip": "已使用当前密码解密恢复",

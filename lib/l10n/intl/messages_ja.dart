@@ -353,6 +353,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
       "バックアップパスワードが正しくありません",
     ),
+    "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("このバックアップの WebDAV ユーザー名とパスワードは復号できませんでした（別の端末または別のインストールで作成された可能性があります）。空欄にしました。バックアップ設定で再入力してください。"),
     "backupSuccess": MessageLookupByLibrary.simpleMessage("バックアップ成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("カーネル設定"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage("カーネル設定をグローバル変更"),

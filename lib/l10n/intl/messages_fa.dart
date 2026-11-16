@@ -413,6 +413,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
       "رمز عبور پشتیبان نادرست است",
     ),
+    "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("نام کاربری و رمز عبور WebDAV در این نسخه پشتیبان قابل رمزگشایی نبود (ممکن است نسخه پشتیبان از دستگاه یا نصب دیگری باشد). خالی گذاشته شد؛ آن‌ها را در تنظیمات پشتیبان‌گیری دوباره وارد کنید."),
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "پشتیبان‌گیری با موفقیت انجام شد",
     ),

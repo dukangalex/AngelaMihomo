@@ -2045,6 +2045,15 @@ class AppLocalizations {
     );
   }
 
+  String get davCredentialsNotRestored {
+    return Intl.message(
+      'The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings.',
+      name: 'davCredentialsNotRestored',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Only English letters, digits and symbols are supported`
   String get backupPasswordTip {
     return Intl.message(
