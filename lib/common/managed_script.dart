@@ -6,9 +6,7 @@ import 'package:bett_box/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
-import 'constant.dart';
 import 'path.dart';
-import 'request.dart';
 import 'route_icon.dart';
 import 'string.dart';
 
@@ -80,10 +78,6 @@ Profile profileWithScriptChoice(Profile profile, String? choice) {
 }
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
-const _managedScriptUrl =
-    'https://raw.githubusercontent.com/$repository/main/$_managedScriptAsset';
-const _routeCatalogUrl =
-    'https://raw.githubusercontent.com/$repository/main/$_routeCatalogAsset';
 const _routeIconBaseUrl =
     'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
 const _routeIconCommonDir = 'common/';
@@ -496,10 +490,11 @@ class ManagedScript {
     final version = props.syncedVersion;
     if (version == null) return null;
     if (version.startsWith(_customVersionPrefix)) return version;
-    if (compareVersions(version, bundledVersion) < 0) {
-      return null;
-    }
-    return version;
+    // AngelaMihomo (chain.26, T166): remote sync is gone — the bundled
+    // script and route catalog are the only built-in source and they
+    // update with the app. A stored sync version from an older install
+    // is ignored, so its files fall back to the bundled copies.
+    return null;
   }
 
   static String version(ManagedProps props) =>
@@ -560,57 +555,6 @@ class ManagedScript {
     await temp.parent.create(recursive: true);
     await temp.writeAsString(content, flush: true);
     await temp.rename(file.path);
-  }
-
-  static Future<String> _fetchCatalog() async {
-    final res = await request.getTextResponseForUrl(
-      mirrorUrl(_routeCatalogUrl),
-    );
-    final content = res.data;
-    if (content is! String) {
-      throw 'Invalid route catalog';
-    }
-    final index = await _parseCatalog(content);
-    if (index.catalog.sets.isEmpty) {
-      throw 'Invalid route catalog';
-    }
-    return content;
-  }
-
-  static Future<({bool updated, String? syncedVersion})> sync(
-    ManagedProps props,
-  ) async {
-    final (res, catalog) = await (
-      request.getTextResponseForUrl(mirrorUrl(_managedScriptUrl)),
-      _fetchCatalog(),
-    ).wait;
-    final content = res.data;
-    final next = content is String ? parseVersion(content) : null;
-    if (content is! String ||
-        next == null ||
-        !content.contains('function main')) {
-      throw 'Invalid script';
-    }
-    final scriptChanged = content != await read(props);
-    final catalogChanged = catalog != await _readCatalog(props);
-    if (!scriptChanged && !catalogChanged && !isCustom(props)) {
-      return (updated: false, syncedVersion: syncedVersion(props));
-    }
-    final (bundledScript, bundledCatalog) = await (
-      readBundled(),
-      rootBundle.loadString(_routeCatalogAsset, cache: false),
-    ).wait;
-    if (content == bundledScript && catalog == bundledCatalog) {
-      await restore();
-      return (updated: true, syncedVersion: null);
-    }
-    if (scriptChanged) {
-      await _write(File(await appPath.getScriptPath(managedScriptId)), content);
-    }
-    if (catalogChanged) {
-      await _write(await _catalogFile(), catalog);
-    }
-    return (updated: true, syncedVersion: next);
   }
 
   static Future<void> restore() async {

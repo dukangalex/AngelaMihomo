@@ -21,30 +21,6 @@ Future<void> showManagedOptions(BuildContext context) async {
   );
 }
 
-Future<void> syncManagedScript(BuildContext context, WidgetRef ref) async {
-  final res = await globalState.showMessage(
-    title: appLocalizations.syncFromUpstream,
-    message: TextSpan(text: appLocalizations.managedSyncTip),
-  );
-  if (res != true || !context.mounted) return;
-  final props = ref.read(managedSettingProvider);
-  final result = await globalState.appController.safeRun(
-    () => ManagedScript.sync(props),
-    needLoading: true,
-    silence: false,
-  );
-  if (result == null || !context.mounted) return;
-  if (!result.updated) {
-    context.showNotifier(appLocalizations.managedUpToDate);
-    return;
-  }
-  globalState.appController.updateManagedSetting(
-    (state) => state.copyWith(syncedVersion: result.syncedVersion),
-  );
-  ref.invalidate(builtInIconSetProvider);
-  context.showNotifier(appLocalizations.success);
-}
-
 String _targetLabel(String target) =>
     target == _rejectTarget ? appLocalizations.reject : target;
 

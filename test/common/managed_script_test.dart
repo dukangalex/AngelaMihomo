@@ -428,4 +428,18 @@ void main() {
     const olderProps = ManagedProps(syncedVersion: '99');
     expect(ManagedScript.syncedVersion(olderProps), isNull);
   });
+
+  test('stored remote-sync versions are ignored after T166', () async {
+    await ManagedScript.loadBundledVersion();
+    // A version left over from the removed remote-sync path, even one
+    // newer than the bundled script, no longer resolves: the bundled
+    // copy is the only built-in source.
+    const syncedProps = ManagedProps(syncedVersion: '999999999999');
+    expect(ManagedScript.isCustom(syncedProps), isFalse);
+    expect(ManagedScript.syncedVersion(syncedProps), isNull);
+    expect(
+      ManagedScript.version(syncedProps),
+      ManagedScript.bundledVersion,
+    );
+  });
 }
