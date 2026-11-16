@@ -1,6 +1,17 @@
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/l10n/l10n.dart';
+import 'package:bett_box/providers/providers.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// The backdrop's guardian layers (T159) read the current page label,
+/// so backdrop pumps run under a ProviderScope like the app itself.
+class _FixedPageLabel extends CurrentPageLabel {
+  @override
+  PageLabel build() => PageLabel.dashboard;
+}
 
 /// T123 (DESIGN doc section 7): the light field is family-wide — every
 /// theme's single variant carries glow spots and a glow tone, every
@@ -8,6 +19,12 @@ import 'package:flutter_test/flutter_test.dart';
 /// gradients except Gemini's documented solid exception (doc 7.4).
 /// (Single-set family since 2026-11-15: one variant per theme.)
 void main() {
+  // The backdrop's name plate (T159) reads the global localizations,
+  // which the app loads before any page builds.
+  setUp(() async {
+    await AppLocalizations.load(const Locale('en'));
+  });
+
   group('light field data audit', () {
     test('every variant has a glow tone and both glow spots', () {
       for (final def in zodiacThemes) {
@@ -80,12 +97,17 @@ void main() {
     for (final def in zodiacThemes) {
       testWidgets('${def.id} paints without error', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              colorScheme: def.variant.toColorScheme(),
-              extensions: [ZodiacThemeExtension.of(def)],
+          ProviderScope(
+            overrides: [
+              currentPageLabelProvider.overrideWith(() => _FixedPageLabel()),
+            ],
+            child: MaterialApp(
+              theme: ThemeData(
+                colorScheme: def.variant.toColorScheme(),
+                extensions: [ZodiacThemeExtension.of(def)],
+              ),
+              home: const ZodiacBackdrop(),
             ),
-            home: const ZodiacBackdrop(),
           ),
         );
         await tester.pump();
