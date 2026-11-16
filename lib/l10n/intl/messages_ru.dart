@@ -205,6 +205,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "Ещё ${count} профилей также не удалось обновить.";
   static String m84(reason) => "Не удалось запустить или остановить службу. Причина: ${reason}. Проверьте текущий профиль и настройки портов, затем повторите попытку.";
 
+  static String m85(latin, sign) => "${latin} · Хранитель ${sign}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("О программе"),
@@ -470,6 +472,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("Развернуть"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("Зевс"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("Арес"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("Афродита"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("Гермес"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("Артемида"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("Аполлон"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("Астрея"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("Фемида"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("Аид"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("Кронос"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("Уран"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("Посейдон"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("Участники"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(

@@ -204,6 +204,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m83(count) => "And ${count} more also failed to update.";
   static String m84(reason) => "Couldn't start or stop the service. Reason: ${reason}. Check the current profile and the port settings, then try again.";
 
+  static String m85(latin, sign) => "${latin} · Guardian of ${sign}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -447,6 +449,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "bundleExpand": MessageLookupByLibrary.simpleMessage("Expand"),
     "bundleFailures": m2,
     "bundleMemberFailed": m3,
+    "guardianZeus": MessageLookupByLibrary.simpleMessage("Zeus"),
+    "guardianAres": MessageLookupByLibrary.simpleMessage("Ares"),
+    "guardianAphrodite": MessageLookupByLibrary.simpleMessage("Aphrodite"),
+    "guardianHermes": MessageLookupByLibrary.simpleMessage("Hermes"),
+    "guardianArtemis": MessageLookupByLibrary.simpleMessage("Artemis"),
+    "guardianApollo": MessageLookupByLibrary.simpleMessage("Apollo"),
+    "guardianAstraea": MessageLookupByLibrary.simpleMessage("Astraea"),
+    "guardianThemis": MessageLookupByLibrary.simpleMessage("Themis"),
+    "guardianHades": MessageLookupByLibrary.simpleMessage("Hades"),
+    "guardianKronos": MessageLookupByLibrary.simpleMessage("Kronos"),
+    "guardianUranus": MessageLookupByLibrary.simpleMessage("Uranus"),
+    "guardianPoseidon": MessageLookupByLibrary.simpleMessage("Poseidon"),
+    "guardianLine": m85,
     "bundleMemberLimit": m4,
     "bundleMembers": MessageLookupByLibrary.simpleMessage("Members"),
     "bundleMembersDesc": MessageLookupByLibrary.simpleMessage(
