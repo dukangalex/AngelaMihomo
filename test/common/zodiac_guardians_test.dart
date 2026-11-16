@@ -96,6 +96,6 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
     expect(find.byType(IgnorePointer), findsWidgets);
     expect(find.text('宙斯'), findsOneWidget);
-    expect(find.text('Zeus · 射手座守护神'), findsOneWidget);
+    expect(find.text('ZEUS · 射手座守护神'), findsOneWidget);
   });
 }

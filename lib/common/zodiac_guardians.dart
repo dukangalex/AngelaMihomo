@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -235,7 +237,7 @@ class ZodiacGuardianLayer extends StatelessWidget {
           Positioned(
             left: -2,
             top: size.height * 0.4,
-            width: size.width * 0.55,
+            width: math.min(size.width * 0.55, 360),
             child: Opacity(
               opacity: 0.55,
               child: Image.asset(guardian.assetPath, fit: BoxFit.fitWidth),
@@ -270,7 +272,7 @@ class ZodiacGuardianLayer extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  l10n.guardianLine(guardian.latinName, sign),
+                  l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
                   style: TextStyle(
                     color: variant.textSecondary,
                     fontSize: 9.5,
