@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -96,7 +97,11 @@ void main() {
             fit: StackFit.expand,
             children: [
               ZodiacBackdrop(),
-              Positioned.fill(child: ZodiacGuardianFigureLayer()),
+              Positioned.fill(
+                child: ZodiacGuardianFigureLayer(
+                  pageLabel: PageLabel.dashboard,
+                ),
+              ),
               SizedBox.expand(),
               Positioned.fill(child: ZodiacGuardianPlate()),
             ],
@@ -113,6 +118,31 @@ void main() {
     expect(find.text('ZEUS · 射手座守护神'), findsOneWidget);
   });
 
+  test('page variants pose the same guardian differently per page', () {
+    // Every main page resolves a variant, and the acceptance pages do
+    // not all share one transform signature — same artwork, different
+    // presentation (the character itself never changes).
+    for (final label in PageLabel.values) {
+      expect(zodiacGuardianVariantFor(label), isNotNull, reason: '$label');
+    }
+    final signatures = {
+      for (final label in [
+        PageLabel.dashboard,
+        PageLabel.proxies,
+        PageLabel.profiles,
+        PageLabel.tools,
+      ])
+        label: zodiacGuardianVariantFor(label).signature,
+    };
+    expect(signatures.values.toSet(), hasLength(signatures.length));
+    expect(zodiacGuardianVariantFor(PageLabel.proxies).flipX, isTrue);
+    expect(
+      zodiacGuardianVariantFor(PageLabel.profiles).zoom,
+      greaterThan(1),
+      reason: 'profiles poses an upper-body close-up',
+    );
+  });
+
   testWidgets('guardian layers render nothing without a zodiac theme', (
     tester,
   ) async {
@@ -122,7 +152,11 @@ void main() {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              Positioned.fill(child: ZodiacGuardianFigureLayer()),
+              Positioned.fill(
+                child: ZodiacGuardianFigureLayer(
+                  pageLabel: PageLabel.dashboard,
+                ),
+              ),
               Positioned.fill(child: ZodiacGuardianPlate()),
             ],
           ),

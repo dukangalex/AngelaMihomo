@@ -369,6 +369,7 @@ class ApplicationState extends ConsumerState<Application>
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
+            final pageLabel = ref.watch(currentPageLabelProvider);
             final fontFamily = themeProps.useHarmonyFont
                 ? 'HarmonyOS_Sans'
                 : null;
@@ -404,8 +405,8 @@ class ApplicationState extends ConsumerState<Application>
                     // layers, below every page — so all pages that sit
                     // on the zodiac backdrop carry it, not just the
                     // dashboard.
-                    const Positioned.fill(
-                      child: ZodiacGuardianFigureLayer(),
+                    Positioned.fill(
+                      child: ZodiacGuardianFigureLayer(pageLabel: pageLabel),
                     ),
                     Directionality(
                       textDirection: TextDirection.ltr,
