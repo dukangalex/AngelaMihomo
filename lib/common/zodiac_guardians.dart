@@ -244,9 +244,13 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
           Positioned(
             left: -2,
             top: size.height * 0.36,
-            width: math.min(size.width * 0.66, 400),
+            width: math.min(size.width * 0.6, 400),
             child: Opacity(
-              opacity: 0.85,
+              // The figure is a background presence, never the scene's
+              // subject (user correction 2026-11-16): 0.6 keeps it
+              // clearly discernible behind sparse sub-page content
+              // without outshining the cards above it.
+              opacity: 0.6,
               child: Image.asset(
                 active.guardian.assetPath,
                 fit: BoxFit.fitWidth,
