@@ -441,17 +441,6 @@ class ZodiacGuardianPlate extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 34,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(1.5),
-                    gradient: LinearGradient(
-                      colors: [variant.primary, variant.secondary],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 7),
                 Text(
                   guardian.localizedName(l10n),
                   style: TextStyle(
