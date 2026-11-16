@@ -17,7 +17,7 @@ on:
         description: 'Build all platforms instead of Android only (for pre-release trial builds)'
         type: boolean
         default: false
-        
+
 env:
   # AngelaMihomo fork: '-chain.' tags are stable fork releases
   IS_STABLE: ${{ startsWith(github.ref, 'refs/tags/v') && (!contains(github.ref, '-') || contains(github.ref_name, '-chain.')) }}
