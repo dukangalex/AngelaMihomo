@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/log"
@@ -125,5 +126,18 @@ rules:
 	}
 	if residentRawConfig(nil) != nil {
 		t.Fatal("nil config should stay nil")
+	}
+}
+
+func TestHandleGetIpGeoInvalidIP(t *testing.T) {
+	done := make(chan string, 1)
+	handleGetIpGeo("not-an-ip", func(v string) { done <- v })
+	select {
+	case v := <-done:
+		if v != "" {
+			t.Fatalf("expected empty result for invalid IP, got %q", v)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("handleGetIpGeo did not answer")
 	}
 }

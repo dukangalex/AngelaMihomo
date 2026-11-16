@@ -779,6 +779,46 @@ func handleGetCountryCode(ip string, fn func(value string)) {
 	}()
 }
 
+type ipGeoResult struct {
+	CountryCode string `json:"countryCode"`
+	ASN         string `json:"asn"`
+	Org         string `json:"org"`
+}
+
+// AngelaMihomo (chain.26, T100): all IP geolocation enrichment is
+// resolved locally against the kernel's bundled GeoIP/ASN databases.
+// Nothing about the queried IP leaves the device; when a database is
+// absent the corresponding fields simply stay empty.
+func handleGetIpGeo(ip string, fn func(value string)) {
+	go func() {
+		runLock.Lock()
+		defer runLock.Unlock()
+		parsed := net.ParseIP(ip)
+		if parsed == nil {
+			fn("")
+			return
+		}
+		result := ipGeoResult{}
+		if codes := mmdb.IPInstance().LookupCode(parsed); len(codes) > 0 {
+			result.CountryCode = strings.ToUpper(codes[0])
+		}
+		// ASNInstance aborts the process when its database file is
+		// missing, so only touch it when the file is actually there.
+		if _, err := os.Stat(constant.Path.ASN()); err == nil {
+			if asn, org := mmdb.ASNInstance().LookupASN(parsed); asn != "" && asn != "0" {
+				result.ASN = asn
+				result.Org = org
+			}
+		}
+		data, err := json.Marshal(result)
+		if err != nil {
+			fn("")
+			return
+		}
+		fn(string(data))
+	}()
+}
+
 func handleGetMemory(fn func(value string)) {
 	go func() {
 		var m runtime.MemStats

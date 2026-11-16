@@ -273,6 +273,7 @@ enum ActionMethod {
   startListener,
   stopListener,
   getCountryCode,
+  getIpGeo,
   getMemory,
   crash,
   setupConfig,

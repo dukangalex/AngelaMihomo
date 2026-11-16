@@ -982,7 +982,7 @@ class IpInfo {
         json['status'] != null) {
       if (json['status'] != null && json['status'] != 'success') {
         throw FormatException(
-          'ip-api.com status not success: ${json['message']}',
+          'geo lookup status not success: ${json['message']}',
         );
       }
       final ip = (json['query'] ?? json['ip'])?.toString() ?? '';

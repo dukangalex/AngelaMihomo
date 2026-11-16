@@ -499,6 +499,31 @@ class ClashCore {
     return IpInfo(ip: ip, countryCode: countryCode);
   }
 
+  // AngelaMihomo (chain.26, T100): local GeoIP/ASN enrichment served
+  // by the core from its bundled databases. Returns null when the core
+  // has nothing for this IP; never performs a network request.
+  Future<IpInfo?> getIpGeo(String ip) async {
+    final raw = await clashInterface.getIpGeo(ip);
+    if (raw.isEmpty) return null;
+    try {
+      final decoded = json.decode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final countryCode = decoded['countryCode']?.toString() ?? '';
+      if (countryCode.isEmpty) return null;
+      final asnNumber = decoded['asn']?.toString() ?? '';
+      final org = decoded['org']?.toString() ?? '';
+      return IpInfo(
+        ip: ip,
+        countryCode: countryCode,
+        asn: asnNumber.isEmpty ? null : 'AS$asnNumber',
+        asName: org.isEmpty ? null : org,
+        isp: org.isEmpty ? null : org,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<({Traffic now, Traffic total})> getTrafficSnapshot() async {
     final value = await clashInterface.getTrafficSnapshot();
     if (value.isNotEmpty) {

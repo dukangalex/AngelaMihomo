@@ -90,6 +90,8 @@ mixin ClashInterface {
 
   FutureOr<String> getCountryCode(String ip);
 
+  FutureOr<String> getIpGeo(String ip);
+
   FutureOr<String> getMemory();
 
   FutureOr<String> getCoreStatus();
@@ -715,6 +717,11 @@ abstract class ClashHandlerInterface with ClashInterface {
   @override
   FutureOr<String> getCountryCode(String ip) {
     return invoke<String>(method: ActionMethod.getCountryCode, data: ip);
+  }
+
+  @override
+  FutureOr<String> getIpGeo(String ip) {
+    return invoke<String>(method: ActionMethod.getIpGeo, data: ip);
   }
 
   @override
