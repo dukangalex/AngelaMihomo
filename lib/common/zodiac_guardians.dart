@@ -444,6 +444,7 @@ class ZodiacGuardianPlate extends StatelessWidget {
                 Text(
                   guardian.localizedName(l10n),
                   style: TextStyle(
+                    decoration: TextDecoration.none,
                     color: variant.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -454,6 +455,7 @@ class ZodiacGuardianPlate extends StatelessWidget {
                 Text(
                   l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
                   style: TextStyle(
+                    decoration: TextDecoration.none,
                     color: variant.textSecondary,
                     fontSize: 9.5,
                     letterSpacing: 2.4,
