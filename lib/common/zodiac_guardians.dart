@@ -369,19 +369,32 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
             width: math.min(size.width * variant.widthFactor, 400),
             child: Opacity(
               // The figure is a background presence, never the scene's
-              // subject (user correction 2026-11-16): 0.6 keeps it
-              // clearly discernible behind sparse sub-page content
-              // without outshining the cards above it.
-              opacity: 0.6,
-              child: ClipRect(
-                child: Transform.scale(
-                  scale: variant.zoom,
-                  alignment: variant.focal,
-                  child: Transform.flip(
-                    flipX: variant.flipX,
-                    child: Image.asset(
-                      active.guardian.assetPath,
-                      fit: BoxFit.fitWidth,
+              // subject (user correction 2026-11-16): chain.26 weakens
+              // it further (T160) — 0.45 plus the edge-dissolve mask
+              // below sinks it into the backdrop's light field.
+              opacity: 0.45,
+              child: ShaderMask(
+                // T160: dissolve the artwork's rectangular edges into
+                // the background so the figure reads as grown into the
+                // backdrop rather than pasted on it. The mask keeps
+                // the figure's core fully visible and fades the rim.
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (rect) => const RadialGradient(
+                  center: Alignment(-0.05, -0.15),
+                  radius: 0.92,
+                  colors: [Colors.white, Colors.white, Colors.transparent],
+                  stops: [0, 0.52, 1],
+                ).createShader(rect),
+                child: ClipRect(
+                  child: Transform.scale(
+                    scale: variant.zoom,
+                    alignment: variant.focal,
+                    child: Transform.flip(
+                      flipX: variant.flipX,
+                      child: Image.asset(
+                        active.guardian.assetPath,
+                        fit: BoxFit.fitWidth,
+                      ),
                     ),
                   ),
                 ),
@@ -410,13 +423,15 @@ class ZodiacGuardianBackdropFigure extends ConsumerWidget {
   }
 }
 
-/// The guardian name plate (T159): part of the background, not a
-/// fixed overlay. [ZodiacBackdrop] embeds it as its topmost layer —
-/// still below all page content, so bottom sheets, dialogs and cards
-/// cover it naturally (user correction 2026-11-16: the name must not
-/// be pinned above everything). Lower-left, above the bottom
-/// navigation bar's reserve, in the page background of every page
-/// that paints the zodiac backdrop.
+/// The guardian name plate (T159): part of the background painting,
+/// not a fixed overlay. [ZodiacBackdrop] embeds it as its topmost
+/// layer — still below all page content, so bottom sheets, dialogs
+/// and cards cover it naturally (user correction 2026-11-16: the name
+/// must not be pinned above everything). Chain.26 (T161/T176): the
+/// plate moves to the lower-right corner (the user found the right
+/// side emptier) and is dimmed to background level — smaller, lighter
+/// and translucent like the backdrop's watermark — so scrolling lists
+/// no longer show a bright label shining through the glass cards.
 class ZodiacGuardianPlate extends StatelessWidget {
   const ZodiacGuardianPlate({super.key});
 
@@ -435,30 +450,32 @@ class ZodiacGuardianPlate extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            left: 15,
+            right: 15,
             bottom: getFloatingBottomBarReserveHeight(context) + 22,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   guardian.localizedName(l10n),
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
-                    color: variant.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 6,
+                    color: variant.textPrimary.withValues(alpha: 0.55),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3.5,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
-                    color: variant.textSecondary,
-                    fontSize: 9.5,
-                    letterSpacing: 2.4,
+                    color: variant.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 8.5,
+                    letterSpacing: 1.8,
                   ),
                 ),
               ],

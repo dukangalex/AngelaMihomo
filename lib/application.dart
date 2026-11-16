@@ -89,7 +89,7 @@ class ApplicationState extends ConsumerState<Application>
     ZodiacThemeExtension zodiac,
   ) {
     final isLight = colorScheme.brightness == Brightness.light;
-    return ThemeData(
+    final base = ThemeData(
       useMaterial3: true,
       extensions: [zodiac],
       pageTransitionsTheme: _pageTransitionsTheme,
@@ -163,6 +163,18 @@ class ApplicationState extends ConsumerState<Application>
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         textStyle: TextStyle(color: colorScheme.onInverseSurface, fontSize: 13),
+      ),
+    );
+    // T177 (chain.26): small text steps up one notch app-wide — the
+    // smallest styles grow by 1sp so captions, sub-lines and status
+    // rows stay legible on the zodiac glass surfaces; body and title
+    // sizes are unchanged. Colors and weights come from the base
+    // theme untouched.
+    return base.copyWith(
+      textTheme: base.textTheme.copyWith(
+        bodySmall: base.textTheme.bodySmall?.copyWith(fontSize: 13),
+        labelMedium: base.textTheme.labelMedium?.copyWith(fontSize: 13),
+        labelSmall: base.textTheme.labelSmall?.copyWith(fontSize: 12),
       ),
     );
   }
