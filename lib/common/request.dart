@@ -380,6 +380,13 @@ class Request {
     'https://api.ip.sb/cdn-cgi/trace',
   ];
 
+  /// Test seam: the network-detection tests drive [checkIp] against a
+  /// loopback fake instead of the real trace endpoints (which are all
+  /// HTTPS and cannot be served by the fake proxy). Production code
+  /// never sets this.
+  @visibleForTesting
+  List<String>? exitIpSourcesOverride;
+
   final List<String> _domesticIpSources = [
     'https://www.qualcomm.cn/cdn-cgi/trace',
     'https://www.teamviewer.cn/cdn-cgi/trace',
@@ -515,9 +522,18 @@ class Request {
   Future<Result<IpInfo?>> _enrichLocally(Result<IpInfo?> res) async {
     final info = res.data;
     if (res.isError || info == null || info.ip.isEmpty) return res;
-    final geo = await clashCore.getIpGeo(info.ip);
-    if (geo == null) return res;
-    return Result.success(info.merge(geo));
+    // Enrichment is best-effort: a slow or unavailable core bridge
+    // must never stall the detection itself, so bound the wait and
+    // keep the trace-only result on any failure.
+    try {
+      final geo = await clashCore
+          .getIpGeo(info.ip)
+          .timeout(const Duration(seconds: 2), onTimeout: () => null);
+      if (geo == null) return res;
+      return Result.success(info.merge(geo));
+    } catch (_) {
+      return res;
+    }
   }
 
   Future<Result<IpInfo?>> checkIp({
@@ -527,7 +543,7 @@ class Request {
     String? proxy,
   }) async {
     final res = await _checkIpFromSources(
-      _exitIpSources,
+      exitIpSourcesOverride ?? _exitIpSources,
       cancelToken,
       timeout,
       onUpdate: onUpdate,
