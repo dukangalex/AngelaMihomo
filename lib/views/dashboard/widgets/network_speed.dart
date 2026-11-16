@@ -169,7 +169,7 @@ class NetworkSpeed extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final size = this.size;
     if (size != null) return _buildTile(context, ref, size);
-    final color = context.colorScheme.onSurfaceVariant.opacity80;
+    final color = context.colorScheme.onSurfaceVariant;
     final primaryColor = Theme.of(context).colorScheme.primary;
     return SizedBox(
       height: getWidgetHeight(context, 2),

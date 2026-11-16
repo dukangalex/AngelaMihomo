@@ -524,6 +524,7 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 		}
 	}
 	raw.DNS.FallbackFilter.GeoSite = []string{}
+	sanitizeDnsRuleSetRefs(raw)
 
 	if !patchForAndroid {
 		return nil
@@ -544,6 +545,49 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 		raw.DNS.Listen = "127.0.0.1" + strings.TrimPrefix(listen, "0.0.0.0")
 	}
 	return nil
+}
+
+// T162: DNS fields must never reference a rule-set the final config does
+// not define — mihomo rejects the whole config ("not found rule-set: ...")
+// and the VPN cannot start. The app defaults no longer do this, but stored
+// settings and profile DNS can still carry dangling references (upstream's
+// *_bettbox names are the known case), so strip them here as the last line
+// of defense and log what was dropped.
+func sanitizeDnsRuleSetRefs(raw *config.RawConfig) {
+	dangling := func(matcher string) bool {
+		for _, part := range strings.Split(matcher, ",") {
+			name, ok := strings.CutPrefix(strings.TrimSpace(part), "rule-set:")
+			if !ok {
+				continue
+			}
+			if _, defined := raw.RuleProvider[name]; !defined {
+				return true
+			}
+		}
+		return false
+	}
+	kept := make([]string, 0, len(raw.DNS.FakeIPFilter))
+	for _, pattern := range raw.DNS.FakeIPFilter {
+		if dangling(pattern) {
+			log.Infoln("[APP] dns sanitize: dropped fake-ip-filter entry referencing undefined rule-set: %s", pattern)
+			continue
+		}
+		kept = append(kept, pattern)
+	}
+	raw.DNS.FakeIPFilter = kept
+	for _, policy := range []*orderedmap.OrderedMap[string, any]{raw.DNS.NameServerPolicy, raw.DNS.ProxyServerNameserverPolicy} {
+		if policy == nil {
+			continue
+		}
+		for pair := policy.Oldest(); pair != nil; {
+			next := pair.Next()
+			if dangling(pair.Key) {
+				log.Infoln("[APP] dns sanitize: dropped nameserver-policy entry referencing undefined rule-set: %s", pair.Key)
+				policy.Delete(pair.Key)
+			}
+			pair = next
+		}
+	}
 }
 
 func applyDnsNodeOverride(raw *config.RawConfig, original *config.RawDNS, hostOrder []string) {

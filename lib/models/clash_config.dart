@@ -404,18 +404,17 @@ abstract class Dns with _$Dns {
     FilterMode fakeIpFilterMode,
     @Default([
       '*',
-      'rule-set:private_bettbox',
-      'rule-set:fakeip-filter_bettbox',
-      'rule-set:category-ntp_bettbox',
-      'rule-set:cn_bettbox',
-      'rule-set:connectivity-check_bettbox',
+      'geosite:private',
+      'geosite:category-ntp',
+      'geosite:geolocation-cn',
+      'geosite:connectivity-check',
     ])
     @JsonKey(name: 'fake-ip-filter')
     List<String> fakeIpFilter,
     @Default(1) @JsonKey(name: 'fake-ip-ttl') int fakeIpTtl,
     @Default({
-      'rule-set:cn_bettbox': '119.29.29.29',
-      'rule-set:private_bettbox': 'system',
+      'geosite:cn': '119.29.29.29',
+      'geosite:private': 'system',
       '*': 'system',
     })
     @JsonKey(name: 'nameserver-policy')
@@ -443,46 +442,53 @@ abstract class Dns with _$Dns {
 
   factory Dns.safeDnsFromJson(Map<String, Object?> json) {
     try {
-      return Dns.fromJson(_migrateLegacyGeoSite(json));
+      return Dns.fromJson(_migrateBettboxRuleSets(json));
     } catch (_) {
       return const Dns();
     }
   }
 }
 
-const _legacyFakeIpFilter = {
-  'geosite:private': [
-    'rule-set:private_bettbox',
-    'rule-set:fakeip-filter_bettbox',
-  ],
-  'geosite:category-ntp': ['rule-set:category-ntp_bettbox'],
-  'geosite:geolocation-cn': ['rule-set:cn_bettbox'],
-  'geosite:connectivity-check': ['rule-set:connectivity-check_bettbox'],
+// T162: upstream Bettbox pointed its built-in DNS defaults at rule-sets
+// named *_bettbox that only its own subscription converter defines. This
+// fork never defines them, so a profile without those providers made
+// mihomo reject the whole config ("not found rule-set: cn_bettbox") and
+// the VPN could not start. The defaults now use the kernel's native
+// geosite entries — the exact equivalents upstream's own legacy mapping
+// used in reverse — and stored settings that still carry the *_bettbox
+// names are migrated back to the geosite equivalents on load.
+const _bettboxFakeIpFilterToGeoSite = {
+  'rule-set:private_bettbox': 'geosite:private',
+  'rule-set:fakeip-filter_bettbox': 'geosite:private',
+  'rule-set:category-ntp_bettbox': 'geosite:category-ntp',
+  'rule-set:cn_bettbox': 'geosite:geolocation-cn',
+  'rule-set:connectivity-check_bettbox': 'geosite:connectivity-check',
 };
 
-const _legacyNameserverPolicy = {
-  'geosite:cn': 'rule-set:cn_bettbox',
-  'geosite:private': 'rule-set:private_bettbox',
+const _bettboxPolicyToGeoSite = {
+  'rule-set:cn_bettbox': 'geosite:cn',
+  'rule-set:private_bettbox': 'geosite:private',
 };
 
-Map<String, Object?> _migrateLegacyGeoSite(Map<String, Object?> json) {
+Map<String, Object?> _migrateBettboxRuleSets(Map<String, Object?> json) {
   final filter = json['fake-ip-filter'];
   final policy = json['nameserver-policy'];
   final migrateFilter =
-      filter is List && filter.any(_legacyFakeIpFilter.containsKey);
+      filter is List && filter.any(_bettboxFakeIpFilterToGeoSite.containsKey);
   final migratePolicy =
-      policy is Map && policy.keys.any(_legacyNameserverPolicy.containsKey);
+      policy is Map && policy.keys.any(_bettboxPolicyToGeoSite.containsKey);
   if (!migrateFilter && !migratePolicy) return json;
   return {
     ...json,
     if (migrateFilter)
       'fake-ip-filter': {
-        for (final item in filter) ...(_legacyFakeIpFilter[item] ?? [item]),
+        for (final item in filter)
+          _bettboxFakeIpFilterToGeoSite[item] ?? item,
       }.toList(),
     if (migratePolicy)
       'nameserver-policy': <String, Object?>{
         for (final MapEntry(:key, :value) in policy.entries)
-          _legacyNameserverPolicy[key] ?? '$key': value,
+          _bettboxPolicyToGeoSite[key] ?? '$key': value,
       },
   };
 }

@@ -184,14 +184,16 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m77(count) => "${Intl.plural(count, other: '年')}";
 
   static String m78(count) => "${count} ノード";
-  static String m79(reason) => "新しいプロファイルに切り替えられなかったため、前のプロファイルに戻しました。理由：${reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。";
-  static String m80(reason) => "プロファイルを切り替えられませんでした。現在のプロファイルは変更されていません。理由：${reason}。対象のプロファイルを確認するか、再インポートしてからお試しください。";
-  static String m81(name, reason) => "プロファイル${name}の更新に失敗しました。理由：${reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してから再試行してください。";
-  static String m82(name, reason) => "プロファイル${name}の自動更新に失敗しました。理由：${reason}。ネットワークを確認するか、サブスクリプションリンクが有効であることを確認してください。";
+  static String m79(reason) => "新しいプロファイルに切り替えできず、前のプロファイルに戻しました。理由：${reason}。対処法：このプロファイルを再インポートしてから切り替えてください。サブスクリプションの場合は先に最新内容へ更新してください。それでも失敗する場合は、この表示のスクリーンショットを送ってください。";
+  static String m80(reason) => "プロファイルを切り替えできず、現在のプロファイルは変更されていません。理由：${reason}。対処法：このプロファイルを再インポートしてから切り替えてください。サブスクリプションの場合は先に最新内容へ更新してください。それでも失敗する場合は、この表示のスクリーンショットを送ってください。";
+  static String m81(name, reason) => "プロファイル${name}の更新に失敗しました。理由：${reason}。対処法：スマートフォンのネットワークでウェブページが開けること、サブスクリプションリンクの有効期限が切れていないこと（提供元に確認）を確認し、このプロファイルの更新ボタンを押して再試行してください。";
+  static String m82(name, reason) => "プロファイル${name}の自動更新に失敗しました。理由：${reason}。対処法：スマートフォンのネットワークでウェブページが開けること、サブスクリプションリンクの有効期限が切れていないこと（提供元に確認）を確認してください。急ぐ場合はこのプロファイルの更新ボタンを押して手動で更新できます。";
   static String m83(count) => "さらに${count}件のプロファイルも更新に失敗しました。";
-  static String m84(reason) => "サービスの開始または停止に失敗しました。理由：${reason}。現在のプロファイルとポート設定を確認してから再試行してください。";
+  static String m84(reason) => "サービスの開始または停止に失敗しました。理由：${reason}。対処法：理由にポートが使用中とある場合は、そのポートを使う他のプロキシアプリを閉じるか、「詳細 → カーネル設定 → 一般」で別のポートに変更して再試行してください。理由がプロファイルに関する場合は、正常にインポートできるプロファイルに切り替えてください。それでも失敗する場合は、アプリを完全に終了して開き直してください。";
 
   static String m85(latin, sign) => "${latin} · ${sign}の守護神";
+
+  static String m86(name) => "読み込みに失敗しました：プロファイルがルールセット「${name}」を参照していますが、最終設定にそのルールセットがないため、カーネルが読み込めません。対処法：① この参照がサブスクリプション自体に含まれている場合は、提供元に rule-providers セクションを完全に含む設定を求めるか、別の完全なプロファイルをインポートしてください。② DNS 設定に残った参照の可能性もあります——「詳細 → カーネル設定 → DNS」で fake-ip-filter と nameserver-policy を確認し、「${name}」を含む項目を削除して再試行してください。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -2279,8 +2281,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileSwitchFailedRollbackReason": m79,
     "profileUpdateFailed": m81,
     "restartCoreFailedSolution": MessageLookupByLibrary.simpleMessage(
-      "しばらくしてから再試行してください。繰り返し失敗する場合はアプリを再起動してください。",
+      "対処法：数秒待ってから再試行してください。繰り返し失敗する場合は、アプリを完全に終了して開き直してください。それでも直らない場合は、この表示のスクリーンショットを送ってください。",
     ),
     "serviceStartStopFailed": m84,
+    "ruleSetMissing": m86,
   };
 }

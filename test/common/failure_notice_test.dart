@@ -236,7 +236,36 @@ void main() {
     test('core restart failure appends the remedy to the reason', () {
       final notice = coreRestartFailureNotice(StateError('core gone'));
       expect(notice, contains('core gone'));
-      expect(notice, contains('请稍后重试'));
+      expect(notice, contains('等几秒再试一次'));
+      expect(notice, contains('完全退出应用'));
+    });
+
+    test('missing rule-set name is extracted from the core error', () {
+      expect(missingRuleSetNameOf('not found rule-set: cn'), 'cn');
+      expect(
+        missingRuleSetNameOf('load failed: not found rule-set: cn_bettbox'),
+        'cn_bettbox',
+      );
+      expect(missingRuleSetNameOf('some other failure'), isNull);
+    });
+
+    test('switch failure with a missing rule-set names what to check', () {
+      final notice = profileSwitchFailureNotice(
+        'not found rule-set: cn',
+        rolledBack: true,
+      );
+      expect(notice, contains('规则集「cn」'));
+      expect(notice, contains('rule-providers'));
+      expect(notice, contains('fake-ip-filter'));
+      expect(notice, contains('nameserver-policy'));
+      // The dedicated notice replaces the generic rollback wording.
+      expect(notice, isNot(contains('已切回原来的配置')));
+    });
+
+    test('service toggle failure with a missing rule-set is dedicated', () {
+      final notice = serviceToggleFailureNotice('not found rule-set: cn');
+      expect(notice, contains('规则集「cn」'));
+      expect(notice, contains('删掉含「cn」的条目'));
     });
   });
 }

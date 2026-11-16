@@ -11764,50 +11764,50 @@ class AppLocalizations {
     );
   }
 
-  /// `Please try again later; if it keeps failing, restart the app.`
+  /// `What to do: wait a few seconds and try again; if it keeps failing, fully quit the app and reopen it; if it still fails, send us a screenshot of this message.`
   String get restartCoreFailedSolution {
     return Intl.message(
-      'Please try again later; if it keeps failing, restart the app.',
+      'What to do: wait a few seconds and try again; if it keeps failing, fully quit the app and reopen it; if it still fails, send us a screenshot of this message.',
       name: 'restartCoreFailedSolution',
       desc: '',
       args: [],
     );
   }
 
-  /// `Couldn't switch to the new profile, so the previous profile was restored. Reason: {reason}. Check the target profile, or re-import it and try again.`
+  /// `Couldn't switch to the new profile, so the previous profile was restored. Reason: {reason}. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.`
   String profileSwitchFailedRollbackReason(Object reason) {
     return Intl.message(
-      'Couldn\'t switch to the new profile, so the previous profile was restored. Reason: $reason. Check the target profile, or re-import it and try again.',
+      'Couldn\'t switch to the new profile, so the previous profile was restored. Reason: $reason. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.',
       name: 'profileSwitchFailedRollbackReason',
       desc: '',
       args: [reason],
     );
   }
 
-  /// `Couldn't switch profiles; the current profile is unchanged. Reason: {reason}. Check the target profile, or re-import it and try again.`
+  /// `Couldn't switch profiles; the current profile is unchanged. Reason: {reason}. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.`
   String profileSwitchFailedReason(Object reason) {
     return Intl.message(
-      'Couldn\'t switch profiles; the current profile is unchanged. Reason: $reason. Check the target profile, or re-import it and try again.',
+      'Couldn\'t switch profiles; the current profile is unchanged. Reason: $reason. What to do: re-import this profile, then switch again; for a subscription profile, update it to the latest content first; if it still fails, send us a screenshot of this message.',
       name: 'profileSwitchFailedReason',
       desc: '',
       args: [reason],
     );
   }
 
-  /// `Failed to update profile {name}. Reason: {reason}. Check your network, or make sure the subscription link is still valid, then try again.`
+  /// `Failed to update profile {name}. Reason: {reason}. What to do: make sure the phone's network can open web pages and the subscription link has not expired (check with your provider), then tap the profile's update button to retry.`
   String profileUpdateFailed(Object name, Object reason) {
     return Intl.message(
-      'Failed to update profile $name. Reason: $reason. Check your network, or make sure the subscription link is still valid, then try again.',
+      'Failed to update profile $name. Reason: $reason. What to do: make sure the phone\'s network can open web pages and the subscription link has not expired (check with your provider), then tap the profile\'s update button to retry.',
       name: 'profileUpdateFailed',
       desc: '',
       args: [name, reason],
     );
   }
 
-  /// `Profile {name} failed to update automatically. Reason: {reason}. Check your network, or make sure the subscription link is still valid.`
+  /// `Profile {name} failed to update automatically. Reason: {reason}. What to do: make sure the phone's network can open web pages and the subscription link has not expired (check with your provider); if you need it now, tap the profile's update button to update manually.`
   String profileAutoUpdateFailed(Object name, Object reason) {
     return Intl.message(
-      'Profile $name failed to update automatically. Reason: $reason. Check your network, or make sure the subscription link is still valid.',
+      'Profile $name failed to update automatically. Reason: $reason. What to do: make sure the phone\'s network can open web pages and the subscription link has not expired (check with your provider); if you need it now, tap the profile\'s update button to update manually.',
       name: 'profileAutoUpdateFailed',
       desc: '',
       args: [name, reason],
@@ -11824,13 +11824,23 @@ class AppLocalizations {
     );
   }
 
-  /// `Couldn't start or stop the service. Reason: {reason}. Check the current profile and the port settings, then try again.`
+  /// `Couldn't start or stop the service. Reason: {reason}. What to do: if the reason says a port is already in use, close the other proxy app using that port, or pick a different port in More → Core Configuration → General; if the reason points at the profile, switch to a profile that imports cleanly; if it still fails, fully quit the app, reopen it, and try again.`
   String serviceStartStopFailed(Object reason) {
     return Intl.message(
-      'Couldn\'t start or stop the service. Reason: $reason. Check the current profile and the port settings, then try again.',
+      'Couldn\'t start or stop the service. Reason: $reason. What to do: if the reason says a port is already in use, close the other proxy app using that port, or pick a different port in More → Core Configuration → General; if the reason points at the profile, switch to a profile that imports cleanly; if it still fails, fully quit the app, reopen it, and try again.',
       name: 'serviceStartStopFailed',
       desc: '',
       args: [reason],
+    );
+  }
+
+  /// `Load failed: the profile references the rule set "{name}", but the final config does not contain it, so the kernel cannot load it. What to do: (1) if the subscription itself carries this reference, ask your provider for a complete config including the full rule-providers section, or import a different complete profile; (2) it may also be a leftover reference in DNS settings — go to More → Core Configuration → DNS, check fake-ip-filter and nameserver-policy, delete any entry containing "{name}", then try again.`
+  String ruleSetMissing(Object name) {
+    return Intl.message(
+      'Load failed: the profile references the rule set "$name", but the final config does not contain it, so the kernel cannot load it. What to do: (1) if the subscription itself carries this reference, ask your provider for a complete config including the full rule-providers section, or import a different complete profile; (2) it may also be a leftover reference in DNS settings — go to More → Core Configuration → DNS, check fake-ip-filter and nameserver-policy, delete any entry containing "$name", then try again.',
+      name: 'ruleSetMissing',
+      desc: '',
+      args: [name],
     );
   }
 }

@@ -734,22 +734,9 @@ class AppSidebarContainer extends ConsumerWidget {
       );
     }
 
-    final isLight = context.colorScheme.brightness == Brightness.light;
     final washColor = context.colorScheme.surfaceContainer;
-    final baseColor = isLight
-        ? Color.lerp(
-            washColor,
-            context.colorScheme.surfaceContainerLowest,
-            0.85,
-          )!
-        : Color.lerp(
-            washColor,
-            context.colorScheme.surfaceContainerHigh,
-            0.35,
-          )!;
     return _SidebarOverlay(
       child: _WashBackground(
-        baseColor: baseColor,
         washColor: washColor,
         child: Material(
           color: Colors.transparent,
@@ -1253,15 +1240,10 @@ class _SidebarFlyoutState extends ConsumerState<_SidebarFlyout>
 }
 
 class _WashBackground extends StatelessWidget {
-  final Color baseColor;
   final Color washColor;
   final Widget child;
 
-  const _WashBackground({
-    required this.baseColor,
-    required this.washColor,
-    required this.child,
-  });
+  const _WashBackground({required this.washColor, required this.child});
 
   Decoration _wash(Alignment center, double radius) {
     return BoxDecoration(
@@ -1279,17 +1261,17 @@ class _WashBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (baseColor == washColor) {
-      return ColoredBox(color: baseColor, child: child);
-    }
-    return ColoredBox(
-      color: baseColor,
+    // The zodiac backdrop at the app root is the single window
+    // background (T123). This shell wash used to lay an opaque
+    // ColoredBox over it, which is why desktop main pages rendered
+    // flat while pushed pages (carrying their own backdrop) showed
+    // the theme (T173). Only the radial light washes remain; they
+    // fade to full transparency and never hide the backdrop.
+    return DecoratedBox(
+      decoration: _wash(const Alignment(-1, -1), 1.2),
       child: DecoratedBox(
-        decoration: _wash(const Alignment(-1, -1), 1.2),
-        child: DecoratedBox(
-          decoration: _wash(const Alignment(-1, 1.1), 1),
-          child: child,
-        ),
+        decoration: _wash(const Alignment(-1, 1.1), 1),
+        child: child,
       ),
     );
   }

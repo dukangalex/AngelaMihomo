@@ -147,7 +147,7 @@ class TrackerInfoItem extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
           style: context.textTheme.bodyMedium?.copyWith(
             fontSize: 12.5,
-            color: context.colorScheme.onSurfaceVariant.opacity80,
+            color: context.colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -365,7 +365,7 @@ class _ConnectionProcessIconState extends State<ConnectionProcessIcon> {
                       child: Icon(
                         _fallbackIcon,
                         size: 22,
-                        color: context.colorScheme.onSurfaceVariant.opacity80,
+                        color: context.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   );

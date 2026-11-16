@@ -61,15 +61,39 @@ String? chainStaleNoticeOf(Object error) {
   return reference == null ? null : chainStaleNotice(reference);
 }
 
+/// The rule-set name a core "not found rule-set: `name`" error blames,
+/// or null when [error] is not about a missing rule-set. The core raises
+/// this when any part of the assembled config (the profile's rules, or
+/// DNS fields such as fake-ip-filter / nameserver-policy) references a
+/// rule-set that no rule-providers entry defines.
+String? missingRuleSetNameOf(Object error) {
+  final match = RegExp(
+    r'not found rule-set: ([A-Za-z0-9_.\-]+)',
+  ).firstMatch(error.toString());
+  return match?.group(1);
+}
+
+/// The dedicated notice for a missing rule-set reference: it names the
+/// missing set and the two concrete places to fix it — the profile's
+/// own rule-providers section, or a leftover reference in the app's DNS
+/// settings (user directive 2026-11-16: a notice must say exactly what
+/// to check, never a bare "check the profile").
+String? missingRuleSetNoticeOf(Object error) {
+  final name = missingRuleSetNameOf(error);
+  return name == null ? null : appLocalizations.ruleSetMissing(name);
+}
+
 /// The error's own message with credentials masked out.
 String redactedReasonOf(Object error) =>
     redactSensitiveText(error.formatError);
 
 /// Display text for failures that have no dedicated wording: the
-/// redacted reason, or the chain notice when the chain selection is
-/// what went stale.
+/// redacted reason, or a dedicated notice when the failure class has
+/// one (stale chain selection, missing rule-set).
 String failureNoticeOf(Object error) =>
-    chainStaleNoticeOf(error) ?? redactedReasonOf(error);
+    chainStaleNoticeOf(error) ??
+    missingRuleSetNoticeOf(error) ??
+    redactedReasonOf(error);
 
 /// Full text for a failed profile switch. A stale chain selection gets
 /// its dedicated notice; anything else keeps the rollback wording and
@@ -77,6 +101,8 @@ String failureNoticeOf(Object error) =>
 String profileSwitchFailureNotice(Object error, {required bool rolledBack}) {
   final stale = chainStaleNoticeOf(error);
   if (stale != null) return stale;
+  final missingRuleSet = missingRuleSetNoticeOf(error);
+  if (missingRuleSet != null) return missingRuleSet;
   final reason = redactedReasonOf(error);
   return rolledBack
       ? appLocalizations.profileSwitchFailedRollbackReason(reason)
@@ -87,6 +113,8 @@ String profileSwitchFailureNotice(Object error, {required bool rolledBack}) {
 String coreRestartFailureNotice(Object error) {
   final stale = chainStaleNoticeOf(error);
   if (stale != null) return stale;
+  final missingRuleSet = missingRuleSetNoticeOf(error);
+  if (missingRuleSet != null) return missingRuleSet;
   return '${appLocalizations.restartCoreTitle}: ${redactedReasonOf(error)} '
       '${appLocalizations.restartCoreFailedSolution}';
 }
@@ -95,6 +123,8 @@ String coreRestartFailureNotice(Object error) {
 String serviceToggleFailureNotice(Object error) {
   final stale = chainStaleNoticeOf(error);
   if (stale != null) return stale;
+  final missingRuleSet = missingRuleSetNoticeOf(error);
+  if (missingRuleSet != null) return missingRuleSet;
   return appLocalizations.serviceStartStopFailed(redactedReasonOf(error));
 }
 
@@ -106,6 +136,8 @@ String profileUpdateFailureNotice(
 }) {
   final stale = chainStaleNoticeOf(error);
   if (stale != null) return stale;
+  final missingRuleSet = missingRuleSetNoticeOf(error);
+  if (missingRuleSet != null) return missingRuleSet;
   final reason = redactedReasonOf(error);
   return automatic
       ? appLocalizations.profileAutoUpdateFailed(name, reason)

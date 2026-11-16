@@ -224,6 +224,58 @@ func TestApplyPatchDnsOverrideGate(t *testing.T) {
 	}
 }
 
+// T162: DNS entries referencing rule-sets the final config does not define
+// must be stripped during patching — mihomo rejects the whole config
+// otherwise ("not found rule-set: cn_bettbox") and the VPN cannot start.
+// References to rule-sets that ARE defined must survive.
+func TestApplyPatchDnsDanglingRuleSetRefs(t *testing.T) {
+	profile := "dns:\n  enable: true\n  nameserver: ['9.9.9.9']\n"
+	params := patchParams(t, `{"override-dns":true,"dns":{"enable":true,"nameserver":["1.1.1.1"],"fake-ip-filter":["*","rule-set:cn_bettbox","rule-set:cn","geosite:private"],"nameserver-policy":{"rule-set:cn_bettbox":"119.29.29.29","rule-set:cn":"119.29.29.29","geosite:cn":"223.5.5.5"}}}`)
+
+	rawCfg := parsePatchProfile(t, profile)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	for _, pattern := range rawCfg.DNS.FakeIPFilter {
+		if pattern == "rule-set:cn_bettbox" || pattern == "rule-set:cn" {
+			t.Errorf("dangling rule-set ref should be dropped from fake-ip-filter, got %v", rawCfg.DNS.FakeIPFilter)
+		}
+	}
+	if rawCfg.DNS.NameServerPolicy == nil {
+		t.Fatal("nameserver-policy should survive patching")
+	}
+	if _, ok := rawCfg.DNS.NameServerPolicy.Get("rule-set:cn_bettbox"); ok {
+		t.Errorf("dangling rule-set ref should be dropped from nameserver-policy")
+	}
+	// "cn" is the script-era provider name: stored DNS settings carrying
+	// it must not break profiles that define no such provider (T162
+	// field repro on chain.24).
+	if _, ok := rawCfg.DNS.NameServerPolicy.Get("rule-set:cn"); ok {
+		t.Errorf("dangling script-era rule-set ref should be dropped from nameserver-policy")
+	}
+	if _, ok := rawCfg.DNS.NameServerPolicy.Get("geosite:cn"); !ok {
+		t.Errorf("geosite policy entry should survive")
+	}
+	// No ParseRawConfig assertion here: a config with geosite policies
+	// makes the parser fetch GeoSite.dat, which this unit harness cannot
+	// do offline. Parse-level proof is the release build + device trial.
+
+	withProvider := "dns:\n  enable: true\n  nameserver: ['9.9.9.9']\nrule-providers:\n  cn_bettbox:\n    type: http\n    behavior: domain\n    url: 'https://example.com/cn.yaml'\n    path: './rules/cn.yaml'\n"
+	rawCfg = parsePatchProfile(t, withProvider)
+	if _, err := applyPatch(rawCfg, params); err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, pattern := range rawCfg.DNS.FakeIPFilter {
+		if pattern == "rule-set:cn_bettbox" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("defined rule-set ref should be kept in fake-ip-filter, got %v", rawCfg.DNS.FakeIPFilter)
+	}
+}
+
 func TestApplyPatchLinuxRouteExclude(t *testing.T) {
 	previous := patchForLinux
 	defer func() { patchForLinux = previous }()
@@ -2089,7 +2141,6 @@ func TestIsRegionSelectGroup(t *testing.T) {
 		t.Error("paired group that is not url-test must not mark a region group")
 	}
 }
-
 
 // T86 regression: when the node exclusion filter empties a group's
 // member list, the fallback member must be REJECT (fail-closed), never
