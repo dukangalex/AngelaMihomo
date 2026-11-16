@@ -9,9 +9,11 @@ import 'zodiac_themes.dart';
 
 /// The guardian deity of one zodiac theme (T159; user spec finalised
 /// 2026-11-15 22:25: every existing theme element stays untouched — the
-/// guardian is one added layer on the dashboard only, anchored lower-left
-/// raised, in Japanese-anime line style, gazing up at the theme's own
-/// constellation chart at the top of the backdrop, with a name plate).
+/// guardian is one added layer, anchored lower-left raised, in
+/// Japanese-anime line style, gazing up at the theme's own constellation
+/// chart at the top of the backdrop, with a name plate. Scope widened
+/// 2026-11-16 by the user: not the dashboard only — every page that
+/// shows the zodiac backdrop carries the figure and the plate).
 class ZodiacGuardian {
   final String themeId;
 
@@ -209,40 +211,75 @@ String zodiacGuardianSignName(String themeId, Locale locale) {
       def.nameEn.split('·').first.trim();
 }
 
-/// The dashboard-only guardian layer (T159). Sits above the app-root
-/// [ZodiacBackdrop] light field (background gradient, glow spots,
-/// constellation layer, sign watermark — all untouched) and below the
-/// dashboard cards: the guardian figure at 55% opacity behind the left
-/// card column, gazing up at the backdrop's constellation chart, plus
-/// its name plate at the lower left, above the navigation bar.
-class ZodiacGuardianLayer extends StatelessWidget {
-  const ZodiacGuardianLayer({super.key});
+/// Resolves the active theme's guardian, or null when there is no
+/// zodiac theme or the theme has no guardian mapped. Shared by the
+/// figure layer and the name plate so both read the one data source.
+({ZodiacGuardian guardian, ZodiacVariant variant})? _activeGuardian(
+  BuildContext context,
+) {
+  final zodiac = context.zodiac;
+  if (zodiac == null) return null;
+  final guardian = zodiacGuardianForTheme(zodiac.themeId);
+  if (guardian == null) return null;
+  return (guardian: guardian, variant: zodiac.variant);
+}
+
+/// The guardian figure layer (T159). Lives in the app-root background
+/// stack, directly above the [ZodiacBackdrop] light field (background
+/// gradient, glow spots, constellation layer, sign watermark — all
+/// untouched) and below all page content, so every page that shows the
+/// zodiac backdrop carries the figure: anchored lower-left raised,
+/// gazing up at the backdrop's constellation chart at the top.
+class ZodiacGuardianFigureLayer extends StatelessWidget {
+  const ZodiacGuardianFigureLayer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final zodiac = context.zodiac;
-    if (zodiac == null) return const SizedBox.expand();
-    final guardian = zodiacGuardianForTheme(zodiac.themeId);
-    if (guardian == null) return const SizedBox.expand();
-    final variant = zodiac.variant;
+    final active = _activeGuardian(context);
+    if (active == null) return const SizedBox.expand();
     final size = MediaQuery.sizeOf(context);
-    final l10n = appLocalizations;
-    final sign = zodiacGuardianSignName(
-      zodiac.themeId,
-      Localizations.localeOf(context),
-    );
     return IgnorePointer(
       child: Stack(
         children: [
           Positioned(
             left: -2,
-            top: size.height * 0.4,
-            width: math.min(size.width * 0.55, 360),
+            top: size.height * 0.36,
+            width: math.min(size.width * 0.66, 400),
             child: Opacity(
-              opacity: 0.55,
-              child: Image.asset(guardian.assetPath, fit: BoxFit.fitWidth),
+              opacity: 0.85,
+              child: Image.asset(
+                active.guardian.assetPath,
+                fit: BoxFit.fitWidth,
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The guardian name plate (T159): a root-level floating seal rendered
+/// above all page content (still IgnorePointer, so it never intercepts
+/// touches), lower-left above the bottom navigation bar, so it stays
+/// visible on every page — home, sub-pages and grandchild pages alike.
+class ZodiacGuardianPlate extends StatelessWidget {
+  const ZodiacGuardianPlate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = _activeGuardian(context);
+    if (active == null) return const SizedBox.expand();
+    final guardian = active.guardian;
+    final variant = active.variant;
+    final l10n = appLocalizations;
+    final sign = zodiacGuardianSignName(
+      guardian.themeId,
+      Localizations.localeOf(context),
+    );
+    return IgnorePointer(
+      child: Stack(
+        children: [
           Positioned(
             left: 15,
             bottom: getFloatingBottomBarReserveHeight(context) + 22,
