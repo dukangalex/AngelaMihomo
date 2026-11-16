@@ -94,4 +94,66 @@ void main() {
       );
     });
   });
+
+  group('autoLaunchTaskDefinitionIsCurrent', () {
+    const exe = r'D:\VPN\Bettbox\AngelaMihomo.exe';
+    const dir = r'D:\VPN\Bettbox';
+
+    String exported({
+      bool runLevel = true,
+      String command = exe,
+      bool workingDirectory = true,
+    }) {
+      return '''
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Principals><Principal id="Author"><LogonType>InteractiveToken</LogonType>${runLevel ? '<RunLevel>HighestAvailable</RunLevel>' : ''}</Principal></Principals>
+  <Actions Context="Author"><Exec><Command>$command</Command>${workingDirectory ? '<WorkingDirectory>$dir</WorkingDirectory>' : ''}</Exec></Actions>
+</Task>''';
+    }
+
+    test('accepts a definition built to the current template', () {
+      expect(
+        autoLaunchTaskDefinitionIsCurrent(
+          exported(),
+          executablePath: exe,
+          workingDirectory: dir,
+        ),
+        isTrue,
+      );
+    });
+
+    test('rejects the legacy definition without run level', () {
+      expect(
+        autoLaunchTaskDefinitionIsCurrent(
+          exported(runLevel: false),
+          executablePath: exe,
+          workingDirectory: dir,
+        ),
+        isFalse,
+      );
+    });
+
+    test('rejects a definition without a working directory', () {
+      expect(
+        autoLaunchTaskDefinitionIsCurrent(
+          exported(workingDirectory: false),
+          executablePath: exe,
+          workingDirectory: dir,
+        ),
+        isFalse,
+      );
+    });
+
+    test('rejects a definition pointing at a moved executable', () {
+      expect(
+        autoLaunchTaskDefinitionIsCurrent(
+          exported(command: r'C:\Old\AngelaMihomo.exe'),
+          executablePath: exe,
+          workingDirectory: dir,
+        ),
+        isFalse,
+      );
+    });
+  });
 }

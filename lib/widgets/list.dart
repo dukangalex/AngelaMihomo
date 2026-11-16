@@ -300,7 +300,7 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
           subtitleTextStyle ??
           context.textTheme.bodyMedium?.copyWith(
             fontSize: 12.5,
-            color: context.colorScheme.onSurfaceVariant.opacity80,
+            color: context.colorScheme.onSurfaceVariant,
             height: 1.35,
           ),
       leading: effectiveLeading != null
@@ -587,7 +587,7 @@ class ListHeader extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurfaceVariant.opacity80,
+                    ).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

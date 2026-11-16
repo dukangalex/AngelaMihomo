@@ -105,7 +105,7 @@ pub mod named_pipe {
         same_dir
             && client
                 .file_name()
-                .is_some_and(|name| name.eq_ignore_ascii_case("Bettbox.exe"))
+                .is_some_and(|name| name.eq_ignore_ascii_case(env!("APP_EXE_NAME")))
     }
 
     struct PipeSecurityAttributes {

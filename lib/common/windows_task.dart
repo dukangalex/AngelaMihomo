@@ -42,6 +42,34 @@ String buildDeleteTaskCommandLine({required String taskName}) {
   return ['/Delete', '/TN', quoteSchtasksArgument(taskName), '/F'].join(' ');
 }
 
+/// Whether an exported Task Scheduler XML still matches the current
+/// auto-launch definition: highest run level, the current executable
+/// path, and the working directory. Tasks registered by older builds
+/// keep their original definition forever, so existence alone does not
+/// mean auto-launch works the way the current build intends; callers
+/// re-register when this returns false.
+bool autoLaunchTaskDefinitionIsCurrent(
+  String exportedXml, {
+  required String executablePath,
+  required String workingDirectory,
+}) {
+  final xml = exportedXml.toLowerCase();
+  bool containsValue(String needle) {
+    final raw = needle.toLowerCase();
+    if (xml.contains(raw)) return true;
+    // Exported XML entity-escapes values; accept the escaped form too.
+    final escaped = raw
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    return xml.contains(escaped);
+  }
+
+  return xml.contains('<runlevel>highestavailable</runlevel>') &&
+      containsValue('<command>$executablePath</command>') &&
+      containsValue('<workingdirectory>$workingDirectory</workingdirectory>');
+}
+
 /// Builds the Task Scheduler XML for the logon auto-launch task.
 ///
 /// The `<Command>` element holds the executable path itself, not a

@@ -54,6 +54,24 @@ class AutoLaunch {
     if (kDebugMode) {
       return;
     }
+    if (system.isWindows && isAutoLaunch && await isEnable) {
+      // The task exists, but a definition registered by an older build
+      // never upgrades itself (no run level, no working directory), and
+      // existence-only checks call that healthy. Re-register in place
+      // when the definition has drifted; the overwrite keeps the same
+      // task name, so this is invisible to the user.
+      final current = await windows?.taskDefinitionIsCurrent(_taskName);
+      if (current == false) {
+        final succeeded = await enable();
+        if (!succeeded) {
+          commonPrint.warn(
+            'autoLaunch updateStatus: stale task definition for '
+            '"$_taskName" could not be re-registered',
+          );
+        }
+      }
+      return;
+    }
     if (await isEnable == isAutoLaunch) return;
 
     final succeeded = isAutoLaunch ? await enable() : await disable();

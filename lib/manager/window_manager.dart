@@ -234,11 +234,11 @@ class WindowHeaderContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (_, ref, child) {
-        final isMobileView = ref.watch(isMobileViewProvider);
         return Material(
-          color: isMobileView
-              ? context.colorScheme.pageColor
-              : Colors.transparent,
+          // Transparent in every view mode: the root zodiac backdrop
+          // is the single window background (T123/T173); an opaque
+          // pageColor here painted over it on narrow desktop windows.
+          color: Colors.transparent,
           child: Stack(
             children: [
               Column(

@@ -44,7 +44,7 @@ class _LogColors {
     final isDark = scheme.brightness == Brightness.dark;
     final warning = isDark ? const Color(0xFFFFD54F) : const Color(0xFFB26A00);
     return _LogColors(
-      time: scheme.onSurfaceVariant.opacity80,
+      time: scheme.onSurfaceVariant,
       tag: scheme.primary,
       appTag: scheme.tertiary,
       text: scheme.onSurface,

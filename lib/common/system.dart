@@ -874,6 +874,30 @@ class Windows {
     }
   }
 
+  /// Whether the registered task [appName] still matches the current
+  /// auto-launch definition (run level, executable path, working
+  /// directory). Older builds registered leaner definitions that never
+  /// get upgraded on their own; [AutoLaunch.updateStatus] re-registers
+  /// the task when this reports drift.
+  Future<bool> taskDefinitionIsCurrent(String appName) async {
+    try {
+      final result = await Process.run('schtasks', [
+        '/Query',
+        '/TN',
+        appName,
+        '/XML',
+      ]);
+      if (result.exitCode != 0) return false;
+      return autoLaunchTaskDefinitionIsCurrent(
+        result.stdout.toString(),
+        executablePath: Platform.resolvedExecutable,
+        workingDirectory: dirname(Platform.resolvedExecutable),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Polls [isTaskRegistered] until it reports [shouldExist].
   ///
   /// The elevated schtasks process started through ShellExecuteW runs

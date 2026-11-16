@@ -29,8 +29,19 @@ var
 function IsProcessRunning(ProcessName: String): Boolean;
 var
   ResultCode: Integer;
+  BaseName: String;
 begin
-  Exec('cmd.exe', '/c tasklist /fi "imagename eq ' + ProcessName + '" 2>nul | find /i "' + ProcessName + '" >nul', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  { Do not probe with tasklist's table output: its image-name column is
+    truncated, so the find-based check never matched the 30-character
+    helper executable name and the running helper service was silently
+    left alive, locking its file during upgrades. PowerShell matches the
+    full process name regardless of length or console width. }
+  BaseName := ProcessName;
+  if Lowercase(Copy(BaseName, Length(BaseName) - 3, 4)) = '.exe' then
+    BaseName := Copy(BaseName, 1, Length(BaseName) - 4);
+  Exec('powershell.exe',
+    '-NoProfile -NonInteractive -Command "if (Get-Process -Name ''' + BaseName + ''' -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Result := (ResultCode = 0);
 end;
 
@@ -51,7 +62,18 @@ begin
     end;
 
     if IsProcessRunning('{{HELPER_EXECUTABLE_NAME}}') then
+    begin
       Exec('taskkill', '/f /im {{HELPER_EXECUTABLE_NAME}}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+      { Wait until the process is really gone so its file is unlocked
+        before Inno Setup starts copying. }
+      WaitCount := 0;
+      while (WaitCount < 6) and IsProcessRunning('{{HELPER_EXECUTABLE_NAME}}') do
+      begin
+        Sleep(500);
+        WaitCount := WaitCount + 1;
+      end;
+    end;
   end;
 
   { Try to elegantly exit the main app using --exit parameter }

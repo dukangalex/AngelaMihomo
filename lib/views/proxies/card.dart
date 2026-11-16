@@ -400,7 +400,7 @@ class _ProxyMetaTag extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: context.textTheme.labelSmall?.copyWith(
         height: 1,
-        color: colorScheme.onSurfaceVariant.opacity80,
+        color: colorScheme.onSurfaceVariant,
         fontWeight: FontWeight.w400,
       ),
     );

@@ -163,7 +163,11 @@ class ZodiacVariant {
         surfaceSolid,
       ),
       onErrorContainer: error,
-      surface: surface,
+      // Composited over the background base, never the raw translucent
+      // token: panels painted with `surface` must stay solid enough
+      // that the text on them keeps its contrast over the backdrop's
+      // bright artwork (T175).
+      surface: surfaceSolid,
       onSurface: textPrimary,
       onSurfaceVariant: textSecondary,
       surfaceDim: Color.alphaBlend(const Color(0x14000000), base),
