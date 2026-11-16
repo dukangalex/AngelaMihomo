@@ -3,15 +3,19 @@ import 'dart:math' as math;
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'package:bett_box/enum/enum.dart';
+
 import 'app_localizations.dart';
 import 'constant.dart';
 import 'zodiac_themes.dart';
 
 /// The guardian deity of one zodiac theme (T159; user spec finalised
 /// 2026-11-15 22:25: every existing theme element stays untouched — the
-/// guardian is one added layer on the dashboard only, anchored lower-left
-/// raised, in Japanese-anime line style, gazing up at the theme's own
-/// constellation chart at the top of the backdrop, with a name plate).
+/// guardian is one added layer, anchored lower-left raised, in
+/// Japanese-anime line style, gazing up at the theme's own constellation
+/// chart at the top of the backdrop, with a name plate. Scope widened
+/// 2026-11-16 by the user: not the dashboard only — every page that
+/// shows the zodiac backdrop carries the figure and the plate).
 class ZodiacGuardian {
   final String themeId;
 
@@ -209,40 +213,205 @@ String zodiacGuardianSignName(String themeId, Locale locale) {
       def.nameEn.split('·').first.trim();
 }
 
-/// The dashboard-only guardian layer (T159). Sits above the app-root
-/// [ZodiacBackdrop] light field (background gradient, glow spots,
-/// constellation layer, sign watermark — all untouched) and below the
-/// dashboard cards: the guardian figure at 55% opacity behind the left
-/// card column, gazing up at the backdrop's constellation chart, plus
-/// its name plate at the lower left, above the navigation bar.
-class ZodiacGuardianLayer extends StatelessWidget {
-  const ZodiacGuardianLayer({super.key});
+/// Resolves the active theme's guardian, or null when there is no
+/// zodiac theme or the theme has no guardian mapped. Shared by the
+/// figure layer and the name plate so both read the one data source.
+({ZodiacGuardian guardian, ZodiacVariant variant})? _activeGuardian(
+  BuildContext context,
+) {
+  final zodiac = context.zodiac;
+  if (zodiac == null) return null;
+  final guardian = zodiacGuardianForTheme(zodiac.themeId);
+  if (guardian == null) return null;
+  return (guardian: guardian, variant: zodiac.variant);
+}
+
+/// How one page presents its sign's guardian figure: a transform of
+/// the sign's single canonical artwork (mirror, zoom/crop focus,
+/// anchor micro-shift). Every page keeps the lower-left-raised grand
+/// position; only the presentation changes, so no two pages pose the
+/// guardian quite the same way.
+///
+/// HARD CONSTRAINT (user, 2026-11-16): every variant of a sign's
+/// guardian is the SAME character — same face, same character design.
+/// A variant may only ever be (a) a transform of the one canonical
+/// artwork, as in this table, or (b) future new-pose artwork of that
+/// same character. Introducing a different person, face or design for
+/// a sign — per page or otherwise — is forbidden. When real new-pose
+/// artwork arrives, swap only the asset mapping; this structure and
+/// the per-page presentation split stay.
+class GuardianFigureVariant {
+  /// Mirror the artwork horizontally (the gaze flips with it).
+  final bool flipX;
+
+  /// Zoom into the artwork: above 1 crops toward [focal] (e.g. an
+  /// upper-body close-up), below 1 pulls back to a farther full view.
+  final double zoom;
+
+  /// The focal point the zoom crops around.
+  final Alignment focal;
+
+  /// Figure width as a fraction of screen width (capped at 400dp).
+  final double widthFactor;
+
+  /// Figure top as a fraction of screen height.
+  final double topFraction;
+
+  /// Figure left offset in dp.
+  final double left;
+
+  const GuardianFigureVariant({
+    this.flipX = false,
+    this.zoom = 1,
+    this.focal = Alignment.center,
+    this.widthFactor = 0.6,
+    this.topFraction = 0.36,
+    this.left = -2,
+  });
+
+  /// The transform signature, for tests and debugging.
+  (bool, double, Alignment, double, double, double) get signature =>
+      (flipX, zoom, focal, widthFactor, topFraction, left);
+}
+
+/// The presentation the dashboard (home) uses; also the fallback for
+/// any page without an explicit entry.
+const defaultGuardianFigureVariant = GuardianFigureVariant();
+
+/// The one extensible page-variant table (T159). Keys are the app's
+/// main-page labels; pushed grandchild pages inherit their section's
+/// variant (e.g. the app-settings page presents the tools variant).
+const zodiacGuardianFigureVariants = <PageLabel, GuardianFigureVariant>{
+  PageLabel.dashboard: defaultGuardianFigureVariant,
+  PageLabel.proxies: GuardianFigureVariant(
+    flipX: true,
+    widthFactor: 0.56,
+    topFraction: 0.34,
+  ),
+  PageLabel.profiles: GuardianFigureVariant(
+    zoom: 1.45,
+    focal: Alignment(-0.2, -0.55),
+    widthFactor: 0.58,
+    topFraction: 0.38,
+  ),
+  PageLabel.tools: GuardianFigureVariant(
+    flipX: true,
+    zoom: 1.2,
+    focal: Alignment(0, -0.3),
+    widthFactor: 0.54,
+    topFraction: 0.33,
+  ),
+  PageLabel.logs: GuardianFigureVariant(
+    zoom: 0.88,
+    widthFactor: 0.58,
+    topFraction: 0.4,
+  ),
+  PageLabel.resources: GuardianFigureVariant(
+    zoom: 1.25,
+    focal: Alignment(0.2, -0.4),
+    widthFactor: 0.57,
+    topFraction: 0.35,
+  ),
+  PageLabel.script: GuardianFigureVariant(
+    flipX: true,
+    zoom: 1.1,
+    focal: Alignment(0, -0.2),
+    widthFactor: 0.55,
+    topFraction: 0.37,
+  ),
+  PageLabel.toolbox: GuardianFigureVariant(
+    zoom: 1.35,
+    focal: Alignment(-0.3, -0.5),
+    widthFactor: 0.58,
+    topFraction: 0.39,
+  ),
+  PageLabel.connections: GuardianFigureVariant(
+    flipX: true,
+    zoom: 0.95,
+    widthFactor: 0.56,
+    topFraction: 0.35,
+  ),
+};
+
+/// The figure variant for a main-page label (never null: unmapped
+/// pages fall back to [defaultGuardianFigureVariant]).
+GuardianFigureVariant zodiacGuardianVariantFor(PageLabel pageLabel) =>
+    zodiacGuardianFigureVariants[pageLabel] ?? defaultGuardianFigureVariant;
+
+/// The guardian figure layer (T159). Lives in the app-root background
+/// stack, directly above the [ZodiacBackdrop] light field (background
+/// gradient, glow spots, constellation layer, sign watermark — all
+/// untouched) and below all page content, so every page that shows the
+/// zodiac backdrop carries the figure: anchored lower-left raised,
+/// gazing up at the backdrop's constellation chart at the top, posed
+/// per page by [zodiacGuardianFigureVariants].
+class ZodiacGuardianFigureLayer extends StatelessWidget {
+  /// The main page this layer instance presents the figure for.
+  final PageLabel pageLabel;
+
+  const ZodiacGuardianFigureLayer({super.key, required this.pageLabel});
 
   @override
   Widget build(BuildContext context) {
-    final zodiac = context.zodiac;
-    if (zodiac == null) return const SizedBox.expand();
-    final guardian = zodiacGuardianForTheme(zodiac.themeId);
-    if (guardian == null) return const SizedBox.expand();
-    final variant = zodiac.variant;
+    final active = _activeGuardian(context);
+    if (active == null) return const SizedBox.expand();
+    final variant = zodiacGuardianVariantFor(pageLabel);
     final size = MediaQuery.sizeOf(context);
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned(
+            left: variant.left,
+            top: size.height * variant.topFraction,
+            width: math.min(size.width * variant.widthFactor, 400),
+            child: Opacity(
+              // The figure is a background presence, never the scene's
+              // subject (user correction 2026-11-16): 0.6 keeps it
+              // clearly discernible behind sparse sub-page content
+              // without outshining the cards above it.
+              opacity: 0.6,
+              child: ClipRect(
+                child: Transform.scale(
+                  scale: variant.zoom,
+                  alignment: variant.focal,
+                  child: Transform.flip(
+                    flipX: variant.flipX,
+                    child: Image.asset(
+                      active.guardian.assetPath,
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The guardian name plate (T159): a root-level floating seal rendered
+/// above all page content (still IgnorePointer, so it never intercepts
+/// touches), lower-left above the bottom navigation bar, so it stays
+/// visible on every page — home, sub-pages and grandchild pages alike.
+class ZodiacGuardianPlate extends StatelessWidget {
+  const ZodiacGuardianPlate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = _activeGuardian(context);
+    if (active == null) return const SizedBox.expand();
+    final guardian = active.guardian;
+    final variant = active.variant;
     final l10n = appLocalizations;
     final sign = zodiacGuardianSignName(
-      zodiac.themeId,
+      guardian.themeId,
       Localizations.localeOf(context),
     );
     return IgnorePointer(
       child: Stack(
         children: [
-          Positioned(
-            left: -2,
-            top: size.height * 0.4,
-            width: math.min(size.width * 0.55, 360),
-            child: Opacity(
-              opacity: 0.55,
-              child: Image.asset(guardian.assetPath, fit: BoxFit.fitWidth),
-            ),
-          ),
           Positioned(
             left: 15,
             bottom: getFloatingBottomBarReserveHeight(context) + 22,

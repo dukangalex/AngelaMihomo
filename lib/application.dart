@@ -369,6 +369,7 @@ class ApplicationState extends ConsumerState<Application>
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
+            final pageLabel = ref.watch(currentPageLabelProvider);
             final fontFamily = themeProps.useHarmonyFont
                 ? 'HarmonyOS_Sans'
                 : null;
@@ -399,6 +400,14 @@ class ApplicationState extends ConsumerState<Application>
                   fit: StackFit.expand,
                   children: [
                     const ZodiacBackdrop(),
+                    // T159: the guardian figure rides in the root
+                    // background stack — above the backdrop's own
+                    // layers, below every page — so all pages that sit
+                    // on the zodiac backdrop carry it, not just the
+                    // dashboard.
+                    Positioned.fill(
+                      child: ZodiacGuardianFigureLayer(pageLabel: pageLabel),
+                    ),
                     Directionality(
                       textDirection: TextDirection.ltr,
                       child: ValueListenableBuilder<bool>(
@@ -415,6 +424,11 @@ class ApplicationState extends ConsumerState<Application>
                         },
                       ),
                     ),
+                    // T159: the guardian name plate is a root-level
+                    // floating seal above all page content (IgnorePointer
+                    // inside), so it stays visible on sub-pages and
+                    // grandchild pages too, not only on the dashboard.
+                    const Positioned.fill(child: ZodiacGuardianPlate()),
                   ],
                 );
               },
