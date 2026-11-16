@@ -1,13 +1,20 @@
 # Angela Mihomo 正式版本发布 / Stable Release
 
-### ✨ 本版定制 / What's new in this build
+### ✨ 本版亮点 / What's new in this build
 
-- **按配置文件链式代理 / Per-profile chain proxy**：每个订阅配置可独立设置链式代理
-  (Chain proxy can be configured independently for each profile)
-- **泄漏防护 / Leak protection**：防 DNS 泄漏、严格路由策略
-  (DNS leak protection and strict routing policy)
-- **导入增强 / Import**：订阅导入归一化转换
-  (Subscription import normalization)
+- **十二星座主题 / Twelve zodiac themes**：一套设计走到底，默认射手座·靛夜飞箭；十二套主题的卡片全是半透玻璃，星图透卡可见
+  (One design throughout, Sagittarius · Indigo Night Arrow by default; translucent glass cards over a visible star chart in all twelve themes)
+- **首页合并卡与提示灯 / Merged home card and status light**：当前配置、运行模式与节点状态一卡集中、固定置顶；提示灯实时显示当前节点可用状态，点灯即测速
+  (Current profile, mode and node status in one pinned card; the light shows live node availability — tap it to run a speed test)
+- **开启自动测速 / Auto speed test on start**：每次开启服务后自动执行一次全局联动测速，只测不选，开局即是真实延迟
+  (A global linked delay test runs automatically on every start — measure only, never auto-selects)
+- **配置卡状态标记 / Profile card badges**：托管与链式状况在卡面直接标明，链式两端引用完整显绿、任一端失效显红
+  (Managed and chain status shown on the card face; green when both chain ends resolve, red when either end is stale)
+- **失败明示 / Clear failure notices**：操作失败会写清具体原因与解决办法；链式引用失效会指明失效的一端并引导重新选择，绝不静默降级为单跳
+  (Failures state the concrete cause and the remedy; a stale chain reference names the stale end and guides re-selection — never a silent fallback to single-hop)
+- **链式代理与系统显式 / Chain proxy and system-explicit rules**：每个配置可独立设置链式代理；系统显式（中国自适应性）的拦截类规则在三种运行模式下都生效；DNS 覆写仲裁单一权威
+  (Chained proxying per profile; interception rules from System Explicit (China adaptability) apply in all three modes; a single authority arbitrates DNS overrides)
+- **内核 / Core**：Mihomo v1.19.34
 
 ### ✍️ 签名说明 / Signing
 
