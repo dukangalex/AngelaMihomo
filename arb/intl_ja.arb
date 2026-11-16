@@ -1128,6 +1128,7 @@
   "ipRiskHint": "確認する IP を入力",
   "ipRiskInvalid": "有効なグローバル IP を入力してください",
   "ipRiskSource": "データ提供元",
+  "ipRiskDisclosure": "有効にすると、現在の出口 IP を第三者サービス Scamalytics に送信してリスクスコアを照会します。無効の間は何も送信されません。",
   "ipRiskHomeBroadband": "プレミアム住宅用 IP",
   "ipRiskNoteTitle": "不正スコアについて",
   "ipRiskNoteDirect": "Scamalytics はこの IP の Web トラフィックを直接観測しています。スコア {score} は、そのうち不正が疑われるトラフィックの割合を示します。",

@@ -1127,6 +1127,7 @@
   "ipRiskHint": "Enter an IP to check",
   "ipRiskInvalid": "Enter a valid public IP",
   "ipRiskSource": "Source",
+  "ipRiskDisclosure": "When on, the app sends your current exit IP to the third-party service Scamalytics for a risk score. Nothing is sent while it is off.",
   "ipRiskHomeBroadband": "Premium Residential IP",
   "ipRiskNoteTitle": "About the fraud score",
   "ipRiskNoteDirect": "Scamalytics can see web traffic from this IP directly. The score of {score} reflects the share of that traffic suspected to be fraudulent.",

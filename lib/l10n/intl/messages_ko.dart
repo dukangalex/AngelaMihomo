@@ -999,6 +999,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("거의 없음"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("일부"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("데이터 출처"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("켜면 현재 출구 IP를 제3자 서비스 Scamalytics로 보내 위험 점수를 조회합니다. 꺼져 있는 동안은 아무것도 전송되지 않습니다."),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor 출구 노드"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("매우 높은 위험"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("웹 프록시"),

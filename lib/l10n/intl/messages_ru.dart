@@ -1240,6 +1240,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("Часть"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("Источник"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("Когда включено, приложение отправляет текущий выходной IP стороннему сервису Scamalytics для оценки риска. Когда выключено, ничего не отправляется."),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Выходной узел Tor"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage(
       "Очень высокий риск",

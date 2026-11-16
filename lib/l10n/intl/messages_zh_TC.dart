@@ -896,6 +896,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("極少"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("部分"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("資料來源"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("開啟後，應用會把目前出口 IP 發送給第三方服務 Scamalytics 查詢風險評分；關閉時不會發送。"),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor 出口節點"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("極高風險"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web 代理"),

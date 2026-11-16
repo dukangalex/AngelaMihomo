@@ -1128,6 +1128,7 @@
   "ipRiskHint": "輸入要查詢的 IP",
   "ipRiskInvalid": "請輸入有效的公網 IP",
   "ipRiskSource": "資料來源",
+  "ipRiskDisclosure": "開啟後，應用會把目前出口 IP 發送給第三方服務 Scamalytics 查詢風險評分；關閉時不會發送。",
   "ipRiskHomeBroadband": "優質原生 IP",
   "ipRiskNoteTitle": "欺詐值說明",
   "ipRiskNoteDirect": "Scamalytics 能直接觀測到該 IP 的網頁流量，欺詐值 {score} 代表其中疑似欺詐流量所佔的比例。",

@@ -888,6 +888,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("极少"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("部分"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("数据来源"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("开启后，应用会把当前出口 IP 发送给第三方服务 Scamalytics 查询风险评分；关闭时不会发送。"),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor 出口节点"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("极高风险"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web 代理"),

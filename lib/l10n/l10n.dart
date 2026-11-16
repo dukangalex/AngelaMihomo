@@ -9558,6 +9558,15 @@ class AppLocalizations {
     return Intl.message('Source', name: 'ipRiskSource', desc: '', args: []);
   }
 
+  String get ipRiskDisclosure {
+    return Intl.message(
+      'When on, the app sends your current exit IP to the third-party service Scamalytics for a risk score. Nothing is sent while it is off.',
+      name: 'ipRiskDisclosure',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Premium Residential IP`
   String get ipRiskHomeBroadband {
     return Intl.message(

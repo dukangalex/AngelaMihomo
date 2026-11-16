@@ -231,7 +231,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     MrsTapAction mrsTapAction,
     @Default(true) bool mrsResolveDns,
     @Default(false) bool ipRiskDetail,
-    @Default(true) bool ipRiskAlert,
+    @Default(false) bool ipRiskAlert,
     @Default(IperfOptions()) IperfOptions iperfOptions,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,

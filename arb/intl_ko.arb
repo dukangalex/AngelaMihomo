@@ -1128,6 +1128,7 @@
   "ipRiskHint": "조회할 IP 입력",
   "ipRiskInvalid": "유효한 공인 IP를 입력하세요",
   "ipRiskSource": "데이터 출처",
+  "ipRiskDisclosure": "켜면 현재 출구 IP를 제3자 서비스 Scamalytics로 보내 위험 점수를 조회합니다. 꺼져 있는 동안은 아무것도 전송되지 않습니다.",
   "ipRiskHomeBroadband": "프리미엄 주거용 IP",
   "ipRiskNoteTitle": "사기 점수 안내",
   "ipRiskNoteDirect": "Scamalytics는 이 IP의 웹 트래픽을 직접 관측합니다. 점수 {score}은(는) 그중 사기로 의심되는 트래픽의 비율을 나타냅니다.",

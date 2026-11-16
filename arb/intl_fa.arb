@@ -1128,6 +1128,7 @@
   "ipRiskHint": "IP مورد نظر را وارد کنید",
   "ipRiskInvalid": "یک IP عمومی معتبر وارد کنید",
   "ipRiskSource": "منبع",
+  "ipRiskDisclosure": "وقتی روشن است، برنامه IP خروجی فعلی را برای امتیاز خطر به سرویس شخص ثالث Scamalytics می‌فرستد. وقتی خاموش است چیزی ارسال نمی‌شود.",
   "ipRiskHomeBroadband": "IP مسکونی ممتاز",
   "ipRiskNoteTitle": "درباره امتیاز تقلب",
   "ipRiskNoteDirect": "Scamalytics ترافیک وب این IP را مستقیماً مشاهده می‌کند. امتیاز {score} نشان‌دهنده سهم ترافیک مشکوک به تقلب از آن است.",

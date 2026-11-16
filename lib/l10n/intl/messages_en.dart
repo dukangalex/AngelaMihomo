@@ -1188,6 +1188,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("Very little"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("Some"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("Source"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("When on, the app sends your current exit IP to the third-party service Scamalytics for a risk score. Nothing is sent while it is off."),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor exit node"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("Very high risk"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web proxy"),

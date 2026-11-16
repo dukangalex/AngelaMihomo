@@ -145,12 +145,24 @@ class Preferences {
       }
     }
 
+    // AngelaMihomo (chain.26, T165): the IP risk alert used to default to
+    // on, and while on it sends the current exit IP to a third-party
+    // scoring service. Turn it off once for existing installs; the flag
+    // keeps this one-time, so users may turn it back on afterwards.
+    if (preferences?.getBool(ipRiskAlertOffMigratedKey) != true) {
+      if (selected != null && selected.appSetting.ipRiskAlert) {
+        selected = selected.copyWith(
+          appSetting: selected.appSetting.copyWith(ipRiskAlert: false),
+        );
+      }
+      await preferences?.setBool(ipRiskAlertOffMigratedKey, true);
+    }
+
     if (selected != null && !identical(selected, fileConfig)) {
       await saveConfig(selected);
     } else if (preferences?.containsKey(configKey) == true) {
       await preferences?.remove(configKey);
     }
-
     if (selected != null) {
       await _syncFlag(
         preferences,

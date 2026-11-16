@@ -62,11 +62,24 @@ class IpRiskSource extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Text(
-          '${appLocalizations.ipRiskSource} Scamalytics',
-          style: context.textTheme.labelSmall?.copyWith(
-            color: context.colorScheme.outline,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${appLocalizations.ipRiskSource} Scamalytics',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              appLocalizations.ipRiskDisclosure,
+              textAlign: TextAlign.right,
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.outline,
+              ),
+            ),
+          ],
         ),
       ),
     );

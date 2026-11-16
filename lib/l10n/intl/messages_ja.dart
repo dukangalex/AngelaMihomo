@@ -990,6 +990,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("ごくわずか"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("一部"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("データ提供元"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("有効にすると、現在の出口 IP を第三者サービス Scamalytics に送信してリスクスコアを照会します。無効の間は何も送信されません。"),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor 出口ノード"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("非常に高いリスク"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web プロキシ"),
