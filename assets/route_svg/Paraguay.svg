@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>巴拉圭</title>
+<defs>
+<mask id="py-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="py-red" x1="72" y1="21.4745" x2="72" y2="55.0005" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="py-white" x1="72" y1="55.0005" x2="72" y2="88.5266" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F5F5" /><stop offset="1" stop-color="#E6E6E6" /></linearGradient>
+<linearGradient id="py-blue" x1="72" y1="88.5266" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="py-emblem-green" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="py-emblem-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+</defs>
+<g mask="url(#py-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 33.8 h -140.9162 Z" fill="url(#py-red)" stroke="url(#py-red)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 54.8 h 140.9162 v 34.0 h -140.9162 Z" fill="url(#py-white)" stroke="url(#py-white)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 88.3 h 140.9162 v 33.8 h -140.9162 Z" fill="url(#py-blue)" stroke="url(#py-blue)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="m 83.4421,58.0735 l -4.366,4.3475 a 10.2675,10.2675 0 0,1 -7.289,17.575 a 10.3045,10.3045 0 0,1 -7.2705,-17.575 L 60.1321,58.0735 a 16.465,16.465 0 1,0 23.31,0 z" fill="url(#py-emblem-green)" />
+<path d="m 71.7871,63.5311 l 1.5355,4.7175 L 78.2621,68.2485 l -4.0145,2.923 l 1.5355,4.7175 l -4.0145,-2.923 l -4.0145,2.923 l 1.5355,-4.7175 l -4.0145,-2.923 l 4.958,0 z" fill="url(#py-emblem-gold)" />
+</g>
+</svg>

@@ -73,6 +73,16 @@ void main() {
     final icons = catalog.icons.toSet();
     expect(catalog.sets, isNotEmpty);
     expect(index.sets.length, catalog.sets.length);
+    // T167: every icon the catalog references ships inside the app and
+    // resolves to a local asset; nothing is fetched at runtime.
+    await loadBundledRouteIcons();
+    for (final icon in icons) {
+      expect(
+        routeIconAsset(routeIconUrl(icon)),
+        isNotNull,
+        reason: icon,
+      );
+    }
     expect(catalog.targets.first, '默认代理');
     expect(catalog.sets.map((set) => set.type).toSet(), {'geosite', 'geoip'});
     for (final set in catalog.sets) {

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>法属波利尼西亚</title>
+<defs>
+<mask id="pf-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="pf-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="pf-white" x1="72" y1="46.6190" x2="72" y2="96.9081" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F5F5" /><stop offset="1" stop-color="#E6E6E6" /></linearGradient>
+<linearGradient id="pf-emblem-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+<linearGradient id="pf-emblem-blue" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="pf-emblem-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+</defs>
+<g mask="url(#pf-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#pf-red)" stroke="url(#pf-red)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 46.4 h 140.9162 v 50.7 h -140.9162 Z" fill="url(#pf-white)" stroke="url(#pf-white)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 88.2521,71.782 c 0,9.102 -7.363,14.43 -16.465,14.43 s -16.465,-5.328 -16.465,-14.43 a 16.465,16.465 0 0,1 32.93,0 z" fill="url(#pf-emblem-gold)" />
+<path d="M 88.2521,71.782 a 16.465,16.465 0 0,1 -32.93,0" fill="url(#pf-emblem-blue)" />
+<path d="M 61.4826,67.6565 l 4.1255,0 l 0,8.251 l -4.1255,0 z m 16.465,0 l 4.144,0 l 0,8.251 l -4.1255,0 z M 69.7521,61.4776 l 4.07,0 l 0,14.43 l -4.07,0 z" fill="url(#pf-emblem-red)" />
+</g>
+</svg>

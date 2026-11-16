@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>莫桑比克</title>
+<defs>
+<mask id="mz-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="mz-white" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F5F5" /><stop offset="1" stop-color="#E6E6E6" /></linearGradient>
+<linearGradient id="mz-green" x1="72" y1="21.4745" x2="72" y2="50.4745" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="mz-black" x1="72" y1="54.4745" x2="72" y2="83.4745" gradientUnits="userSpaceOnUse"><stop stop-color="#3D3838" /><stop offset="1" stop-color="#181616" /></linearGradient>
+<linearGradient id="mz-yellow" x1="72" y1="87.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+<linearGradient id="mz-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="mz-emblem-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+<linearGradient id="mz-emblem-white" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" /><stop offset="1" stop-color="#E8E8E8" /></linearGradient>
+<linearGradient id="mz-emblem-black" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3D3838" /><stop offset="1" stop-color="#181616" /></linearGradient>
+</defs>
+<g mask="url(#mz-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#mz-white)" stroke="url(#mz-white)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 21.4745 h 140.9162 v 29 h -140.9162 Z" fill="url(#mz-green)" />
+<path d="M 1.329 54.4745 h 140.9162 v 29 h -140.9162 Z" fill="url(#mz-black)" />
+<path d="M 1.329 87.4745 h 140.9162 v 34.5781 h -140.9162 Z" fill="url(#mz-yellow)" />
+<path d="M 1.329 21.4745 L 57.329 71.76355000000001 L 1.329 122.05260000000001 Z" fill="url(#mz-red)" />
+<path d="m 22.329,58.0695 l 3.403,10.455 l 10.988,0 l -8.897,6.478 l 3.403,10.455 l -8.897,-6.4575 l -8.897,6.4575 l 3.403,-10.455 l -8.897,-6.478 L 18.926,68.5246 z" fill="url(#mz-emblem-gold)" />
+<path d="M 12.3865,71.7635 l 19.885,0 l 0,9.1225 l -19.885,0 z" fill="url(#mz-emblem-white)" />
+<path d="m 36.0435,61.3085 l -3.2185,-3.239 l -10.496,10.496 l -10.4755,-10.496 L 8.6145,61.3085 L 19.131,71.7635 l -10.496,10.5165 l 3.239,3.1775 l 10.4755,-10.455 l 10.496,10.455 l 3.2185,-3.1775 l -10.496,-10.496 z" fill="url(#mz-emblem-black)" />
+</g>
+</svg>

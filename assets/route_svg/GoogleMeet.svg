@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+  <title>GoogleMeet</title>
+  <desc>Qure-style GoogleMeet icon. Google Meet 谷歌官方多色摄像机会议标志</desc>
+  <defs>
+    <linearGradient id="gmeet-darkgreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#059A39"/>
+      <stop offset="50%" stop-color="#00832D"/>
+      <stop offset="100%" stop-color="#006421"/>
+    </linearGradient>
+    <linearGradient id="gmeet-darkblue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1B78EB"/>
+      <stop offset="50%" stop-color="#0066DA"/>
+      <stop offset="100%" stop-color="#004FB0"/>
+    </linearGradient>
+    <linearGradient id="gmeet-red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6354"/>
+      <stop offset="50%" stop-color="#E94235"/>
+      <stop offset="100%" stop-color="#C5221F"/>
+    </linearGradient>
+    <linearGradient id="gmeet-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#549BFD"/>
+      <stop offset="50%" stop-color="#2684FC"/>
+      <stop offset="100%" stop-color="#126DE2"/>
+    </linearGradient>
+    <linearGradient id="gmeet-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#24CE66"/>
+      <stop offset="50%" stop-color="#00AC47"/>
+      <stop offset="100%" stop-color="#008A38"/>
+    </linearGradient>
+    <linearGradient id="gmeet-yellow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFCE38"/>
+      <stop offset="50%" stop-color="#FFBA00"/>
+      <stop offset="100%" stop-color="#EAA600"/>
+    </linearGradient>
+  </defs>
+  <path d="M 79.753296145,72.00011944 L 91.25678099,85.14918445 L 106.72671619,95.033872785 L 109.41761872,72.083129775 L 106.72671619,49.65001414 L 90.96045119,58.333427055 L 79.753296145,72.00011944 Z" fill="url(#gmeet-darkgreen)"/>
+  <path d="M 13.0000376695,92.898018765 L 13.0000376695,112.455405655 C 13.0000376695,116.920867795 16.6248101705,120.54653888 21.0912600765,120.54653888 L 40.64858998,120.54653888 L 44.69843058,105.76955952 L 40.64858998,92.898018765 L 27.230890609,88.848178165 L 13.0000376695,92.898018765 Z" fill="url(#gmeet-darkblue)"/>
+  <path d="M 40.64858998,23.4536985508 L 13.0000376695,51.10241007 L 27.2318213885,55.14237301 L 40.64858998,51.10241007 L 44.62472804,38.4059128475 L 40.64858998,23.4536985508 Z" fill="url(#gmeet-red)"/>
+  <path d="M 13.0004992526,92.906756695 L 40.64858998,92.906756695 L 40.64858998,51.101840205 L 13.0004992526,51.101840205 L 13.0004992526,92.906756695 Z" fill="url(#gmeet-blue)"/>
+  <path d="M 124.38873209,35.1604936815 L 106.72633628,49.65039405 L 106.72633628,95.033872785 L 124.46167481,109.58005682 C 127.11648589,111.65968416 131.00030582,109.76431317 131.00030582,106.389382685 L 131.00030582,38.2865451255 C 131.00030582,34.874250492 127.023977805,32.988111315 124.38835218,35.1609495735" fill="url(#gmeet-green)"/>
+  <path d="M 79.753296145,72.00011944 L 79.753296145,92.898018765 L 40.64858998,92.898018765 L 40.64858998,120.54653888 L 98.635962875,120.54653888 C 103.10237479,120.54653888 106.72671619,116.920867795 106.72671619,112.455405655 L 106.72671619,95.033872785 L 79.753296145,72.00011944 Z" fill="url(#gmeet-green)"/>
+  <path d="M 98.635962875,23.4536985508 L 40.64858998,23.4536985508 L 40.64858998,51.10241007 L 79.753296145,51.10241007 L 79.753296145,72.00011944 L 106.7270961,49.649444275 L 106.7270961,31.5453840945 C 106.7270961,27.0789341885 103.10237479,23.454159484 98.635962875,23.454159484" fill="url(#gmeet-yellow)"/>
+</svg>

@@ -151,6 +151,7 @@ const Compatible_With_AngelaMihomo = {
 * **[Mihomo Core](https://github.com/MetaCubeX/mihomo)**（强大灵活的核心驱动）
 * **[HiClash](https://github.com/dukangalex/HiClash)**（本项目内置托管脚本的来源；脚本正本现随本仓库 `assets/scripts/managed.js` 维护，更新随 App 版本走）
 * **[MyClash](https://github.com/AIsouler/MyClash)**（AIsouler 的脚本/配置分享，HiClash 的上游谱系来源）
+* **[Qure 图标集](https://github.com/Koolson/Qure)**（托管模式的路由与服务图标来源；图标已全量收进本仓库 `assets/route_svg/` 随包分发）
 
 以及以下开源项目的启发与使用参考：
 

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+  <title>Pexels</title>
+  <desc>Qure-style Pexels icon. 全球免费高质量商用摄影素材与免版权图库 官方无底板 P 标志</desc>
+  <defs>
+    <linearGradient id="pexels-pure-grad" gradientUnits="userSpaceOnUse" x1="72" y1="14.0" x2="72" y2="130.0">
+      <stop offset="0.0" stop-color="#05A081" />
+      <stop offset="0.5" stop-color="#03725C" />
+      <stop offset="1.0" stop-color="#014A3B" />
+    </linearGradient>
+  </defs>
+  <path d="m 21.6434014273,14.00000456 l 58.2375215202,0 a 42.456,42.456 0 0,1 6.92685687056,84.3463585891 L 86.807779818,130 L 21.6434014273,130 L 21.6434014273,14.00000456 z m 16.57142792,16.57142792 l 0,82.8571396 l 32.0204177889,0 l 0,-31.0935225872 l 9.64457104944,0 a 25.8846,25.8846 0 1,0 0,-51.7636170128 L 38.2148293473,30.57143248 Z" fill="url(#pexels-pure-grad)" />
+</svg>

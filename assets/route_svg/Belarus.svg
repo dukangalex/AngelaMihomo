@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>白俄罗斯</title>
+<defs>
+<mask id="by-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="by-white" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" /><stop offset="1" stop-color="#F0F0F0" /></linearGradient>
+<linearGradient id="by-red" x1="72" y1="21.4745" x2="72" y2="88.5266" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="by-green" x1="72" y1="88.5266" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="by-pattern-red" x1="14" y1="21.4745" x2="14" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+</defs>
+<g mask="url(#by-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#by-white)" stroke="url(#by-white)" stroke-width=".5" stroke-linejoin="round" />
+<path d="M 26 21.4745 h 116.2452 v 67.5521 h -116.2452 Z" fill="url(#by-red)" stroke="url(#by-red)" stroke-width=".5" stroke-linejoin="round" />
+<path d="M 26 88.0266 h 116.2452 v 34.026 h -116.2452 Z" fill="url(#by-green)" stroke="url(#by-green)" stroke-width=".5" stroke-linejoin="round" />
+<g fill="none" stroke="url(#by-pattern-red)" stroke-linecap="round" stroke-linejoin="round">
+<path d="M 14.13 62.76 L 21.13 71.76 L 14.13 80.76 L 7.13 71.76 Z" stroke-width="2.2" />
+<path d="M 14.13 66.96 L 17.83 71.76 L 14.13 76.56 L 10.43 71.76 Z" stroke-width="1.8" />
+<path d="M 14.13 71.76 m -0.01 0 a 0.01 0.01 0 1 0 0.02 0 a 0.01 0.01 0 1 0 -0.02 0" stroke-width="2.6" />
+<path d="M 14.13 46.76 L 19.63 53.76 L 14.13 60.76 L 8.63 53.76 Z" stroke-width="1.8" />
+<path d="M 14.13 53.76 m -0.01 0 a 0.01 0.01 0 1 0 0.02 0 a 0.01 0.01 0 1 0 -0.02 0" stroke-width="2.2" />
+<path d="M 14.13 82.76 L 19.63 89.76 L 14.13 96.76 L 8.63 89.76 Z" stroke-width="1.8" />
+<path d="M 14.13 89.76 m -0.01 0 a 0.01 0.01 0 1 0 0.02 0 a 0.01 0.01 0 1 0 -0.02 0" stroke-width="2.2" />
+<path d="M 14.13 33.76 L 18.13 38.76 L 14.13 43.76 L 10.13 38.76 Z" stroke-width="1.6" />
+<path d="M 14.13 99.76 L 18.13 104.76 L 14.13 109.76 L 10.13 104.76 Z" stroke-width="1.6" />
+<path d="M 7.13 62.76 L 10.13 62.76 M 18.13 62.76 L 21.13 62.76" stroke-width="1.4" />
+<path d="M 7.13 80.76 L 10.13 80.76 M 18.13 80.76 L 21.13 80.76" stroke-width="1.4" />
+<path d="M 14.13 26.5 m -0.01 0 a 0.01 0.01 0 1 0 0.02 0 a 0.01 0.01 0 1 0 -0.02 0" stroke-width="2.4" />
+<path d="M 14.13 117.0 m -0.01 0 a 0.01 0.01 0 1 0 0.02 0 a 0.01 0.01 0 1 0 -0.02 0" stroke-width="2.4" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>伯利兹</title>
+<defs>
+<mask id="bz-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="bz-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="bz-blue" x1="72" y1="34.4745" x2="72" y2="109.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="bz-emblem-white" x1="72" y1="45.4476" x2="72" y2="98.0796" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" /><stop offset="1" stop-color="#E8E8E8" /></linearGradient>
+<linearGradient id="bz-emblem-green" x1="72" y1="50.2206" x2="72" y2="93.3066" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="bz-emblem-blue" x1="72" y1="63.1636" x2="72" y2="83.5886" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="bz-emblem-gold" x1="72" y1="63.1636" x2="72" y2="83.5886" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+</defs>
+<g mask="url(#bz-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#bz-red)" stroke="url(#bz-red)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 34.4745 h 140.9162 v 74.5781 h -140.9162 Z" fill="url(#bz-blue)" stroke="url(#bz-blue)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 45.4711 71.7636 a 26.316 26.316 0 1 0 52.632 0 a 26.316 26.316 0 1 0 -52.632 0 Z" fill="url(#bz-emblem-white)" />
+<path d="M 50.2441 71.7636 a 21.543 21.543 0 1 0 43.086 0 a 21.543 21.543 0 1 0 -43.086 0 Z" fill="url(#bz-emblem-green)" />
+<path d="M 57.4251 71.7636 a 14.362 14.362 0 1 0 28.724 0 a 14.362 14.362 0 1 0 -28.724 0 Z" fill="url(#bz-emblem-white)" />
+<path d="M 71.7871,68.1731 L 64.0041,71.7635 l 0,5.977 l 7.783,4.7945 l 7.783,-4.7945 L 79.5701,71.7635 z" fill="url(#bz-emblem-blue)" />
+<path d="M 64.0041,64.5825 l 15.566,0 L 79.5701,71.7635 l -15.566,0 z" fill="url(#bz-emblem-gold)" />
+</g>
+</svg>

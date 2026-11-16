@@ -103,6 +103,13 @@ String? routeIconAsset(String? url) {
   return '$_routeIconAssetDir$icon';
 }
 
+/// Whether [url] addresses the built-in route icon set. Since chain.26
+/// (T167) every catalog icon ships inside the app, so these URLs resolve
+/// locally via [routeIconAsset] and must never be fetched over the
+/// network; an unbundled one renders the default icon instead.
+bool isRouteIconUrl(String? url) =>
+    url != null && url.startsWith(_routeIconBaseUrl);
+
 final _prefixStart = RegExp(r'[\p{L}\p{N}]', unicode: true);
 final _prefixPattern = RegExp(
   r'^(?:\p{Script=Han}{1,2}|(?:(?!\p{Script=Han})[\p{L}\p{N}])+)',
