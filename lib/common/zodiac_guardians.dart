@@ -2,8 +2,10 @@ import 'dart:math' as math;
 
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/providers/app.dart';
 
 import 'app_localizations.dart';
 import 'constant.dart';
@@ -338,13 +340,14 @@ const zodiacGuardianFigureVariants = <PageLabel, GuardianFigureVariant>{
 GuardianFigureVariant zodiacGuardianVariantFor(PageLabel pageLabel) =>
     zodiacGuardianFigureVariants[pageLabel] ?? defaultGuardianFigureVariant;
 
-/// The guardian figure layer (T159). Lives in the app-root background
-/// stack, directly above the [ZodiacBackdrop] light field (background
-/// gradient, glow spots, constellation layer, sign watermark — all
-/// untouched) and below all page content, so every page that shows the
-/// zodiac backdrop carries the figure: anchored lower-left raised,
-/// gazing up at the backdrop's constellation chart at the top, posed
-/// per page by [zodiacGuardianFigureVariants].
+/// The guardian figure layer (T159). [ZodiacBackdrop] embeds it as its
+/// own top layer — directly above the backdrop's light field
+/// (background gradient, glow spots, constellation layer, sign
+/// watermark — all untouched) and below all page content — so every
+/// surface that paints the zodiac backdrop carries the figure with it:
+/// anchored lower-left raised, gazing up at the backdrop's
+/// constellation chart at the top, posed per page by
+/// [zodiacGuardianFigureVariants].
 class ZodiacGuardianFigureLayer extends StatelessWidget {
   /// The main page this layer instance presents the figure for.
   final PageLabel pageLabel;
@@ -391,10 +394,29 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
   }
 }
 
-/// The guardian name plate (T159): a root-level floating seal rendered
-/// above all page content (still IgnorePointer, so it never intercepts
-/// touches), lower-left above the bottom navigation bar, so it stays
-/// visible on every page — home, sub-pages and grandchild pages alike.
+/// The figure layer as [ZodiacBackdrop] embeds it: the page label —
+/// and with it the section whose variant a pushed grandchild page
+/// inherits — comes from the app's own current-page state, watched
+/// here so no backdrop call site has to thread it through and the
+/// figure re-poses itself when the main page changes.
+class ZodiacGuardianBackdropFigure extends ConsumerWidget {
+  const ZodiacGuardianBackdropFigure({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ZodiacGuardianFigureLayer(
+      pageLabel: ref.watch(currentPageLabelProvider),
+    );
+  }
+}
+
+/// The guardian name plate (T159): part of the background, not a
+/// fixed overlay. [ZodiacBackdrop] embeds it as its topmost layer —
+/// still below all page content, so bottom sheets, dialogs and cards
+/// cover it naturally (user correction 2026-11-16: the name must not
+/// be pinned above everything). Lower-left, above the bottom
+/// navigation bar's reserve, in the page background of every page
+/// that paints the zodiac backdrop.
 class ZodiacGuardianPlate extends StatelessWidget {
   const ZodiacGuardianPlate({super.key});
 
