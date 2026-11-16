@@ -26,9 +26,18 @@
 遵循 GPL-3.0 开源协议，独立开发与发布。
 
 <p align="center">
-  <img src="snapshots/home-chain24.png" alt="Angela Mihomo" />
+  <img src="snapshots/shot-home-windows.png" alt="Angela Mihomo · Windows 真机实拍" width="63%" />
+  <img src="snapshots/shot-home-android.png" alt="Angela Mihomo · Android 真机实拍" width="30%" />
 </p>
-<p align="center"><sub>界面概念图 · 实拍图随后更新</sub></p>
+<p align="center"><sub>真机实拍：Windows 与 Android 首页（敏感信息已打码）</sub></p>
+
+### 界面实拍
+
+<p align="center">
+  <img src="snapshots/shot-proxies.jpg" alt="Angela Mihomo · 代理页实拍" width="32%" />
+  <img src="snapshots/shot-more.jpg" alt="Angela Mihomo · 更多页实拍" width="32%" />
+</p>
+<p align="center"><sub>代理页与更多页实拍（Android）</sub></p>
 
 ### 📣 发布频道
 

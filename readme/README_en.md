@@ -18,6 +18,18 @@
 
 Four product principles guide the project: easy to use (import a subscription and it just runs), system-explicit (every kernel capability is on screen, with an explanation and a source), local-first privacy (whatever can stay on the device stays on the device, and logs and data are redacted before they are written), and long-term stability over decoration. It is developed and released independently under the GPL-3.0 license.
 
+<p align="center">
+  <img src="../snapshots/shot-home-windows.png" alt="Angela Mihomo on Windows, real device" width="63%" />
+  <img src="../snapshots/shot-home-android.png" alt="Angela Mihomo on Android, real device" width="30%" />
+</p>
+<p align="center"><sub>Real-device screenshots: home screen on Windows and Android (sensitive details redacted)</sub></p>
+
+<p align="center">
+  <img src="../snapshots/shot-proxies.jpg" alt="Proxies page, real device" width="32%" />
+  <img src="../snapshots/shot-more.jpg" alt="More page, real device" width="32%" />
+</p>
+<p align="center"><sub>Proxies and More pages on Android</sub></p>
+
 Release announcements: https://t.me/AngelaNexus
 
 Discussion and feedback: https://t.me/AngelaMihomoGroup
