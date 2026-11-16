@@ -1,5 +1,5 @@
 <h4 align="right">
-  <a href="../README.md">简体中文</a> | <a href="README_en.md">English</a> | <a href="README_ru.md">Русский</a> | <a href="README_fa.md">فارسی</a> | <a href="README_ja.md">日本語</a> | <strong>한국어</strong>
+  <a href="../README.md">简⁠体⁠中⁠文</a> | <a href="README_en.md">English</a> | <a href="README_ru.md">Русский</a> | <a href="README_fa.md">فارسی</a> | <a href="README_ja.md">日⁠本⁠語</a> | <strong>한⁠국⁠어</strong>
 </h4>
 
 <h1 align="center">⚡ Angela Mihomo</h1>
