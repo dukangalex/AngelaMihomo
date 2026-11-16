@@ -2,6 +2,8 @@
 
 ### ✨ 本版定制 / What's new in this build
 
+- **十二星座之星辰大海 / Zodiac Guardians**：十二位守护神融入十二套星座主题的每一页背景，仰望顶部本星座星图；每页造型不同、人物始终同一位；形象与名牌同为背景层，不遮挡内容
+  (A guardian for each of the twelve zodiac themes lives in every page's backdrop, gazing up at the sign's own star chart; the pose varies by page, the character never changes)
 - **按配置文件链式代理 / Per-profile chain proxy**：每个订阅配置可独立设置链式代理
   (Chain proxy can be configured independently for each profile)
 - **泄漏防护 / Leak protection**：防 DNS 泄漏、严格路由策略
