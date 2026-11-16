@@ -31,6 +31,7 @@ import 'common/profile_chain.dart';
 import 'common/profile_chain_overlay.dart';
 import 'controller.dart';
 import 'models/models.dart';
+import 'views/proxies/common.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
@@ -503,6 +504,23 @@ class GlobalState {
     }
     await startUpdateTasks(tasks);
     appEventLog.record('service', 'started');
+    // T155: a successful start immediately refreshes the node health
+    // picture, so the status light shows a measured state instead of
+    // waiting for a manual tap. This is the one authoritative start
+    // success point every start path converges on (manual start, auto
+    // run, core-restart resume, VPN rebuild, profile-switch start,
+    // launch re-attach), and it fires the very same global linked delay
+    // test the light's tap triggers — one shared entry, measure-only.
+    // The entry itself refuses to overlap a run already in flight, so
+    // an auto run and a tapped run can never race. Fire-and-forget: a
+    // delay test must never hold the start path (or the lifecycle lock
+    // some callers hold across this call). The test resolves groups
+    // through the UI-side app controller; a start without one (the
+    // Android service isolate never calls this method) has nothing to
+    // measure into and skips the trigger.
+    if (_appController != null) {
+      unawaited(globalDelayTest());
+    }
   }
 
   Future updateStartTime() async {
