@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' show PlatformDispatcher;
 
-import 'package:bett_box/common/common.dart';
+import 'package:angelamihomo/common/common.dart';
 import 'package:dio/dio.dart';
 import 'package:image/image.dart' as img;
 import 'package:material_ui/material_ui.dart';

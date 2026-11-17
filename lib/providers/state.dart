@@ -1,10 +1,10 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/common/chain_health.dart';
-import 'package:bett_box/common/explicit_policy.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/common/chain_health.dart';
+import 'package:angelamihomo/common/explicit_policy.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

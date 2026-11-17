@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/common.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/common.dart';
 import 'package:code_forge/code_forge.dart'
     show CodeForgeController, CodeForgeSuggestionDetails;
 import 'package:flutter/foundation.dart' show ValueListenable;

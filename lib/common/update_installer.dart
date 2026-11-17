@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:bett_box/common/path.dart';
-import 'package:bett_box/common/release_updates.dart';
+import 'package:angelamihomo/common/path.dart';
+import 'package:angelamihomo/common/release_updates.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:open_filex/open_filex.dart';

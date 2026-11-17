@@ -1,4 +1,4 @@
-package app.angelabettbox.services
+package app.angelamihomo.services
 
 import android.annotation.SuppressLint
 import android.app.Service
@@ -14,10 +14,10 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.RelativeSizeSpan
 import androidx.core.app.NotificationCompat
-import app.angelabettbox.GlobalState
-import app.angelabettbox.R
-import app.angelabettbox.core.Core
-import app.angelabettbox.models.VpnOptions
+import app.angelamihomo.GlobalState
+import app.angelamihomo.R
+import app.angelamihomo.core.Core
+import app.angelamihomo.models.VpnOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

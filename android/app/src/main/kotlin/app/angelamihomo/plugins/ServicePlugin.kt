@@ -1,11 +1,11 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import app.angelabettbox.GlobalState
-import app.angelabettbox.RunState
-import app.angelabettbox.models.VpnOptions
+import app.angelamihomo.GlobalState
+import app.angelamihomo.RunState
+import app.angelamihomo.models.VpnOptions
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall

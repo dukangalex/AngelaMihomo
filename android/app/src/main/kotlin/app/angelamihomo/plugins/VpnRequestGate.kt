@@ -1,4 +1,4 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 /**
  * Request-completion gate used by ConfirmedVpnLifecycle.

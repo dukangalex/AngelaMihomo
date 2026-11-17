@@ -1,4 +1,4 @@
-package app.angelabettbox.services
+package app.angelamihomo.services
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -10,9 +10,9 @@ import android.app.Service
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import app.angelabettbox.GlobalState
-import app.angelabettbox.R
-import app.angelabettbox.models.VpnOptions
+import app.angelamihomo.GlobalState
+import app.angelamihomo.R
+import app.angelamihomo.models.VpnOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -35,9 +35,9 @@ suspend fun Service.createNotificationBuilder(
     isHighPriority: Boolean = GlobalState.isNotificationHighPriority
 ): NotificationCompat.Builder =
     withContext(Dispatchers.IO) {
-        val defaultComponent = ComponentName(packageName, "app.angelabettbox.MainActivity")
-        val lightComponent = ComponentName(packageName, "app.angelabettbox.MainActivityLight")
-        val darkComponent = ComponentName(packageName, "app.angelabettbox.MainActivityDark")
+        val defaultComponent = ComponentName(packageName, "app.angelamihomo.MainActivity")
+        val lightComponent = ComponentName(packageName, "app.angelamihomo.MainActivityLight")
+        val darkComponent = ComponentName(packageName, "app.angelamihomo.MainActivityDark")
 
         val targetComponent = NotificationComponentCache.get(packageManager, defaultComponent, lightComponent, darkComponent)
 

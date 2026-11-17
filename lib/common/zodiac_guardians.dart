@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/providers/app.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/providers/app.dart';
 
 import 'app_localizations.dart';
 import 'constant.dart';

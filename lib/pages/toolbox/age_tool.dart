@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';

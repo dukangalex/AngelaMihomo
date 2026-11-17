@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 
 import 'package:flutter/foundation.dart';
 

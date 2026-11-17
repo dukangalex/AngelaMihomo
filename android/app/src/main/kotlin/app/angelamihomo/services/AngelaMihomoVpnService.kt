@@ -1,4 +1,4 @@
-package app.angelabettbox.services
+package app.angelamihomo.services
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -14,15 +14,15 @@ import android.os.Parcel
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import app.angelabettbox.GlobalState
-import app.angelabettbox.core.Core
-import app.angelabettbox.extensions.getIpv4RouteAddress
-import app.angelabettbox.extensions.getIpv6RouteAddress
-import app.angelabettbox.extensions.toCIDR
-import app.angelabettbox.models.AccessControlMode
-import app.angelabettbox.models.VpnOptions
-import app.angelabettbox.plugins.VpnPlugin
-import app.angelabettbox.R
+import app.angelamihomo.GlobalState
+import app.angelamihomo.core.Core
+import app.angelamihomo.extensions.getIpv4RouteAddress
+import app.angelamihomo.extensions.getIpv6RouteAddress
+import app.angelamihomo.extensions.toCIDR
+import app.angelamihomo.models.AccessControlMode
+import app.angelamihomo.models.VpnOptions
+import app.angelamihomo.plugins.VpnPlugin
+import app.angelamihomo.R
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

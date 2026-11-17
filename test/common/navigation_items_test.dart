@@ -1,5 +1,5 @@
-import 'package:bett_box/common/navigation.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/common/navigation.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T122: the AI patrol page is gone. The navigation table must contain

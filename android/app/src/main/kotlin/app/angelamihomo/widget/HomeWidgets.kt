@@ -1,4 +1,4 @@
-package app.angelabettbox.widget
+package app.angelamihomo.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -6,8 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import app.angelabettbox.GlobalState
-import app.angelabettbox.plugins.AppPlugin
+import app.angelamihomo.GlobalState
+import app.angelamihomo.plugins.AppPlugin
 import org.json.JSONObject
 
 enum class HomeWidgetStyle { LARGE, WIDE, SQUARE }

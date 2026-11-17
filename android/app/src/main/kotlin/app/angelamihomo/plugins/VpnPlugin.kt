@@ -1,4 +1,4 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 import android.content.ComponentName
 import android.content.Context
@@ -17,20 +17,20 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.widget.Toast
 import androidx.core.content.getSystemService
-import app.angelabettbox.AngelaMihomoApplication
-import app.angelabettbox.GlobalState
-import app.angelabettbox.RunState
-import app.angelabettbox.core.Core
-import app.angelabettbox.extensions.awaitResult
-import app.angelabettbox.extensions.asSocketAddressText
-import app.angelabettbox.extensions.resolveDns
-import app.angelabettbox.extensions.trafficSpeedInfo
-import app.angelabettbox.models.StartForegroundParams
-import app.angelabettbox.models.VpnOptions
-import app.angelabettbox.modules.SuspendModule
-import app.angelabettbox.services.BaseServiceInterface
-import app.angelabettbox.services.AngelaMihomoService
-import app.angelabettbox.services.AngelaMihomoVpnService
+import app.angelamihomo.AngelaMihomoApplication
+import app.angelamihomo.GlobalState
+import app.angelamihomo.RunState
+import app.angelamihomo.core.Core
+import app.angelamihomo.extensions.awaitResult
+import app.angelamihomo.extensions.asSocketAddressText
+import app.angelamihomo.extensions.resolveDns
+import app.angelamihomo.extensions.trafficSpeedInfo
+import app.angelamihomo.models.StartForegroundParams
+import app.angelamihomo.models.VpnOptions
+import app.angelamihomo.modules.SuspendModule
+import app.angelamihomo.services.BaseServiceInterface
+import app.angelamihomo.services.AngelaMihomoService
+import app.angelamihomo.services.AngelaMihomoVpnService
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
@@ -979,7 +979,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
 
         tunStartedAt = SystemClock.elapsedRealtime()
-        val coreStarted = app.angelabettbox.core.Core.startTun(
+        val coreStarted = app.angelamihomo.core.Core.startTun(
             fd = fd ?: 0,
             epoch = epoch,
             protect = { socket -> (service as? AngelaMihomoVpnService)?.protect(socket) == true },

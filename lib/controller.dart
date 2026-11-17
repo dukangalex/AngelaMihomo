@@ -6,16 +6,16 @@ import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:dio/dio.dart';
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/helper/helper.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/helper/helper.dart';
 
-import 'package:bett_box/plugins/app.dart';
-import 'package:bett_box/plugins/service.dart' as vpn_service;
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/dialog.dart';
-import 'package:bett_box/widgets/input.dart';
+import 'package:angelamihomo/plugins/app.dart';
+import 'package:angelamihomo/plugins/service.dart' as vpn_service;
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/dialog.dart';
+import 'package:angelamihomo/widgets/input.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';

@@ -1,7 +1,7 @@
-import 'package:bett_box/common/zodiac_themes.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/app.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/zodiac_themes.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/app.dart';
+import 'package:angelamihomo/state.dart';
 import 'dart:async';
 import 'dart:ui' show FlutterView;
 

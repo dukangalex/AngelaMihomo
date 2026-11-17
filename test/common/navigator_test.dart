@@ -1,6 +1,6 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoPageTransitionsBuilder;
 import 'package:flutter/gestures.dart';

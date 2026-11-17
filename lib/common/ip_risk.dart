@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
 
 final _commentReg = RegExp(r'<!--[\s\S]*?-->');
 final _scoreReg = RegExp(r'Fraud Score:\s*(\d+)');

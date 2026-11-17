@@ -1,4 +1,4 @@
-import 'package:bett_box/models/config.dart';
+import 'package:angelamihomo/models/config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // T165 (chain.26): the IP risk alert sends the current exit IP to a

@@ -28,7 +28,7 @@ if (releaseTaskRequested && !isRelease) {
 }
 
 android {
-    namespace = "app.angelabettbox"
+    namespace = "app.angelamihomo"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -38,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.angelabettbox"
+        applicationId = "app.angelamihomo"
         minSdk = 26
         targetSdk = 36
         versionCode = flutter.versionCode

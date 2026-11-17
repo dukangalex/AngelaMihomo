@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/utils/platform_check.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/utils/platform_check.dart';
 
 class ExternalControl {
   static ServerSocket? _server;

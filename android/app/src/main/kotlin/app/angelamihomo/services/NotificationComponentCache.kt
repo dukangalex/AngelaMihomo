@@ -1,4 +1,4 @@
-package app.angelabettbox.services
+package app.angelamihomo.services
 
 import android.content.ComponentName
 import android.content.pm.PackageManager

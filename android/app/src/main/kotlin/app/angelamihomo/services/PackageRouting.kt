@@ -1,4 +1,4 @@
-package app.angelabettbox.services
+package app.angelamihomo.services
 
 /** Builds the intersection of subscription routing and application access control.
  * Both inputs operate on Android UIDs: packages with a shared UID travel together.

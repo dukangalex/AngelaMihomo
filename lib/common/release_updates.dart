@@ -84,7 +84,7 @@ class ReleaseUpdates {
         options: Options(headers: {'Accept': 'application/vnd.github+json'}),
       );
       final data = response.data;
-      if (data is! List) return latest();
+      if (data is! List) return await latest();
       for (final item in data) {
         if (item is! Map) continue;
         if (item['draft'] == true || item['prerelease'] == true) continue;
@@ -97,7 +97,7 @@ class ReleaseUpdates {
       }
       return null;
     } on DioException {
-      return latest();
+      return await latest();
     }
   }
 

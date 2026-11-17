@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/picker.dart';
-import 'package:bett_box/common/qr_reader.dart';
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/common/picker.dart';
+import 'package:angelamihomo/common/qr_reader.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;

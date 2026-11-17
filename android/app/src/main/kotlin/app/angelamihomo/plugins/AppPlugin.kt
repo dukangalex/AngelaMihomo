@@ -1,4 +1,4 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 import android.Manifest
 import android.app.Activity
@@ -20,13 +20,13 @@ import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import app.angelabettbox.AngelaMihomoApplication
-import app.angelabettbox.GlobalState
-import app.angelabettbox.R
-import app.angelabettbox.extensions.awaitResult
-import app.angelabettbox.extensions.getActionIntent
-import app.angelabettbox.models.Package
-import app.angelabettbox.widget.HomeWidgets
+import app.angelamihomo.AngelaMihomoApplication
+import app.angelamihomo.GlobalState
+import app.angelamihomo.R
+import app.angelamihomo.extensions.awaitResult
+import app.angelamihomo.extensions.getActionIntent
+import app.angelamihomo.models.Package
+import app.angelamihomo.widget.HomeWidgets
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -599,9 +599,9 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         val context = AngelaMihomoApplication.getAppContext()
         val pm = context.packageManager
         val packageName = context.packageName
-        val defaultComponent = android.content.ComponentName(packageName, "app.angelabettbox.MainActivity")
-        val lightComponent = android.content.ComponentName(packageName, "app.angelabettbox.MainActivityLight")
-        val darkComponent = android.content.ComponentName(packageName, "app.angelabettbox.MainActivityDark")
+        val defaultComponent = android.content.ComponentName(packageName, "app.angelamihomo.MainActivity")
+        val lightComponent = android.content.ComponentName(packageName, "app.angelamihomo.MainActivityLight")
+        val darkComponent = android.content.ComponentName(packageName, "app.angelamihomo.MainActivityDark")
 
         if (useDarkIcon) {
             pm.setComponentEnabledSetting(darkComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
@@ -612,7 +612,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
             pm.setComponentEnabledSetting(darkComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
             pm.setComponentEnabledSetting(lightComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
         }
-        app.angelabettbox.services.NotificationComponentCache.invalidate()
+        app.angelamihomo.services.NotificationComponentCache.invalidate()
         VpnPlugin.updateNotificationIcon()
     }
 

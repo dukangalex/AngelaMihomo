@@ -1,4 +1,4 @@
-package app.angelabettbox
+package app.angelamihomo
 
 import android.app.UiModeManager
 import android.content.Context
@@ -11,11 +11,11 @@ import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import app.angelabettbox.plugins.AppPlugin
-import app.angelabettbox.plugins.ServicePlugin
-import app.angelabettbox.plugins.TilePlugin
-import app.angelabettbox.plugins.VpnPlugin
-import app.angelabettbox.widget.HomeWidgets
+import app.angelamihomo.plugins.AppPlugin
+import app.angelamihomo.plugins.ServicePlugin
+import app.angelamihomo.plugins.TilePlugin
+import app.angelamihomo.plugins.VpnPlugin
+import app.angelamihomo.widget.HomeWidgets
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineGroup

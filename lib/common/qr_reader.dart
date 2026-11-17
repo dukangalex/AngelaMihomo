@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/print.dart';
+import 'package:angelamihomo/common/print.dart';
 import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
 

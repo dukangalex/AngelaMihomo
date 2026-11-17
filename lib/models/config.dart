@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 

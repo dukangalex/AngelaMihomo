@@ -5,11 +5,11 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
-import 'package:bett_box/plugins/app.dart';
-import 'package:bett_box/plugins/clipboard_ext.dart';
-import 'package:bett_box/plugins/tile.dart';
-import 'package:bett_box/plugins/vpn.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/plugins/app.dart';
+import 'package:angelamihomo/plugins/clipboard_ext.dart';
+import 'package:angelamihomo/plugins/tile.dart';
+import 'package:angelamihomo/plugins/vpn.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

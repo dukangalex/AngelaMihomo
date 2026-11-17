@@ -1,4 +1,4 @@
-package app.angelabettbox.modules
+package app.angelamihomo.modules
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,7 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import androidx.core.content.getSystemService
-import app.angelabettbox.core.Core
+import app.angelamihomo.core.Core
 
 class SuspendModule(private val context: Context) {
     private var isInstalled = false
@@ -37,7 +37,7 @@ class SuspendModule(private val context: Context) {
         if (isSuspended) {
             Core.dozeSuspend(false)
             isSuspended = false
-            app.angelabettbox.plugins.VpnPlugin.onUpdateNetwork()
+            app.angelamihomo.plugins.VpnPlugin.onUpdateNetwork()
         }
     }
 

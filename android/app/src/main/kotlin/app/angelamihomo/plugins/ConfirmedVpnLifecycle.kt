@@ -1,4 +1,4 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong

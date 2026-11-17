@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/common/deepspace_themes.dart';
-import 'package:bett_box/common/zodiac_themes.dart';
+import 'package:angelamihomo/common/deepspace_themes.dart';
+import 'package:angelamihomo/common/zodiac_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,6 +1,6 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,12 +1,12 @@
-package app.angelabettbox.receivers
+package app.angelamihomo.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import app.angelabettbox.GlobalState
-import app.angelabettbox.RunState
+import app.angelamihomo.GlobalState
+import app.angelamihomo.RunState
 
 class PackageReplacedReceiver : BroadcastReceiver() {
     companion object {

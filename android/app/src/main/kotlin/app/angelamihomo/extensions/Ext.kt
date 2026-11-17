@@ -1,4 +1,4 @@
-package app.angelabettbox.extensions
+package app.angelamihomo.extensions
 
 import android.app.PendingIntent
 import android.content.Context
@@ -12,10 +12,10 @@ import android.system.OsConstants.IPPROTO_TCP
 import android.system.OsConstants.IPPROTO_UDP
 import android.util.Base64
 import androidx.core.graphics.drawable.toBitmap
-import app.angelabettbox.TempActivity
-import app.angelabettbox.models.CIDR
-import app.angelabettbox.models.Metadata
-import app.angelabettbox.models.VpnOptions
+import app.angelamihomo.TempActivity
+import app.angelamihomo.models.CIDR
+import app.angelamihomo.models.Metadata
+import app.angelamihomo.models.VpnOptions
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine

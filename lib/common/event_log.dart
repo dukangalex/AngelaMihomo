@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:bett_box/models/common.dart' show redactSensitiveText;
+import 'package:angelamihomo/models/common.dart' show redactSensitiveText;
 import 'package:path/path.dart' as p;
 import 'package:synchronized/synchronized.dart';
 

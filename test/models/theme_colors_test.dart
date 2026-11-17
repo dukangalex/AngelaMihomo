@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/constant.dart';
-import 'package:bett_box/models/config.dart';
+import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/models/config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Config _restore(ThemeProps themeProps) {

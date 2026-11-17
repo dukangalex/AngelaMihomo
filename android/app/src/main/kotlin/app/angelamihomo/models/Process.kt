@@ -1,4 +1,4 @@
-package app.angelabettbox.models
+package app.angelamihomo.models
 
 data class Process(
     val id: String,

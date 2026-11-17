@@ -1,4 +1,4 @@
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T141 (T57 carryback): the profile card's subscription warnings —

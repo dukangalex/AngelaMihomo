@@ -1,5 +1,5 @@
-import 'package:bett_box/common/path_score.dart';
-import 'package:bett_box/common/profile_chain.dart';
+import 'package:angelamihomo/common/path_score.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
 
 /// One selectable chain target (a proxy or a group) found in a profile's
 /// effective config. The chain settings page builds its entry/exit choice

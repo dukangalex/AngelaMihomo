@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -62,12 +62,12 @@ void main() {
 
   setUpAll(() async {
     globalState.packageInfo = PackageInfo(
-      appName: 'Bettbox',
-      packageName: 'com.appshub.bettbox',
+      appName: 'AngelaMihomo',
+      packageName: 'app.angelamihomo',
       version: '1.0.0',
       buildNumber: '1',
     );
-    home = await Directory.systemTemp.createTemp('bettbox_request_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_request_');
     server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
     server.listen(serve);
     url = 'http://127.0.0.1:${server.port}/clash.yaml';

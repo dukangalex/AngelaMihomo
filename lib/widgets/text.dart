@@ -1,5 +1,5 @@
 import 'package:emoji_regex/emoji_regex.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../state.dart';

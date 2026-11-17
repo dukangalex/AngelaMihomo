@@ -1,4 +1,4 @@
-package app.angelabettbox.widget
+package app.angelamihomo.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -17,9 +17,9 @@ import android.text.TextPaint
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import app.angelabettbox.R
-import app.angelabettbox.RunState
-import app.angelabettbox.extensions.getActionIntent
+import app.angelamihomo.R
+import app.angelamihomo.RunState
+import app.angelamihomo.extensions.getActionIntent
 import org.json.JSONObject
 import kotlin.math.max
 import kotlin.math.min

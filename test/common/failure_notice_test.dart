@@ -1,7 +1,7 @@
-import 'package:bett_box/common/failure_notice.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/common/profile_chain_overlay.dart';
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/common/failure_notice.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/common/profile_chain_overlay.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

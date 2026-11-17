@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/common/profile_chain_overlay.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/common/profile_chain_overlay.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-package app.angelabettbox.models
+package app.angelamihomo.models
 
 import java.net.InetAddress
 

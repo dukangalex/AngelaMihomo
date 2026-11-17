@@ -8,7 +8,7 @@
 PRODUCT_NAME = AngelaMihomo
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.appshub.bettbox
+PRODUCT_BUNDLE_IDENTIFIER = app.angelamihomo
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 Appshub All rights reserved.

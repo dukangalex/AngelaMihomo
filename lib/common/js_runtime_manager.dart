@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:code_forge/script.dart' as rust;
 import 'package:synchronized/synchronized.dart';
 

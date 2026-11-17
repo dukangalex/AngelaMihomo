@@ -1,4 +1,4 @@
-package app.angelabettbox.core
+package app.angelamihomo.core
 
 import androidx.annotation.Keep
 

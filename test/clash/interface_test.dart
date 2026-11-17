@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/clash/interface.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeHandler extends ClashHandlerInterface {

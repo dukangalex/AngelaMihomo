@@ -1,5 +1,5 @@
-import 'package:bett_box/common/chain_health.dart';
-import 'package:bett_box/common/profile_chain.dart';
+import 'package:angelamihomo/common/chain_health.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T152: the profile-card chain health projection. Pure matrix over the

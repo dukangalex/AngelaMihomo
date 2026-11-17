@@ -1,4 +1,4 @@
-package app.angelabettbox.plugins
+package app.angelamihomo.plugins
 
 import android.os.Handler
 import android.os.Looper

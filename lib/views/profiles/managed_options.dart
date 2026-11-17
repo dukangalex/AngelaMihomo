@@ -1,11 +1,11 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/icon_sets.dart';
-import 'package:bett_box/views/profiles/scripts.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/icon_sets.dart';
+import 'package:angelamihomo/views/profiles/scripts.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 

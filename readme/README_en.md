@@ -46,7 +46,7 @@ Highlights:
 * **Automatic delay test on start**: every time the service starts, one global linked delay test runs automatically — measure only, never changing your node selection — so delays and availability are real data from the first second.
 * **Profile status at a glance**: profile cards carry managed and chain markers directly. Managed shows only when on; chain shows green when both the entry and exit references are intact, and red when either end has gone stale — no need to open a broken profile to find out.
 * **Failures explained**: when an operation fails, the notice states the concrete cause and the remedy — a stale chain reference, for example, names which end went stale and where to re-select it, instead of leaving you guessing at a bare "failed".
-* **Independent package identity**: the Android application id is `app.angelabettbox`, so it can be installed alongside other clients; the id stays stable so existing installs upgrade in place.
+* **Independent package identity**: the Android application id is `app.angelamihomo`, so it can be installed alongside other clients. Note: the id changed with chain.26 — users of older builds export their configuration in the old app and import it in the new one once; after that, upgrades install in place again.
 * **Core and data alignment**: the bundled Mihomo core tracks official Mihomo releases (currently v1.19.34), and built-in rule data comes from the official MetaCubeX/meta-rules-dat source.
 
 ## Downloads

@@ -1,16 +1,16 @@
-package app.angelabettbox
+package app.angelamihomo
 
 import android.content.ComponentName
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.service.quicksettings.TileService
-import app.angelabettbox.plugins.AppPlugin
-import app.angelabettbox.plugins.ServicePlugin
-import app.angelabettbox.plugins.TilePlugin
-import app.angelabettbox.plugins.VpnPlugin
-import app.angelabettbox.services.AngelaMihomoTileService
-import app.angelabettbox.widget.HomeWidgets
+import app.angelamihomo.plugins.AppPlugin
+import app.angelamihomo.plugins.ServicePlugin
+import app.angelamihomo.plugins.TilePlugin
+import app.angelamihomo.plugins.VpnPlugin
+import app.angelamihomo.services.AngelaMihomoTileService
+import app.angelamihomo.widget.HomeWidgets
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor

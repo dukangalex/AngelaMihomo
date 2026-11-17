@@ -1,6 +1,6 @@
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/views/dashboard/dashboard.dart';
-import 'package:bett_box/widgets/grid.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/views/dashboard/dashboard.dart';
+import 'package:angelamihomo/widgets/grid.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

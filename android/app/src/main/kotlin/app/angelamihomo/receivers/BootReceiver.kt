@@ -1,10 +1,10 @@
-package app.angelabettbox.receivers
+package app.angelamihomo.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import app.angelabettbox.GlobalState
+import app.angelamihomo.GlobalState
 
 class BootReceiver : BroadcastReceiver() {
     companion object {

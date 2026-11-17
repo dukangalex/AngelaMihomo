@@ -1,7 +1,7 @@
-import 'package:bett_box/common/app_localizations.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/common/string.dart';
-import 'package:bett_box/models/common.dart' show redactSensitiveText;
+import 'package:angelamihomo/common/app_localizations.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/common/string.dart';
+import 'package:angelamihomo/models/common.dart' show redactSensitiveText;
 
 /// User-facing failure wording (T150, user directive 2026-11-15: every
 /// failure must state its concrete reason plus a workable next step —

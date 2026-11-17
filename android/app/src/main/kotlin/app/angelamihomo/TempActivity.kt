@@ -1,10 +1,10 @@
-package app.angelabettbox
+package app.angelamihomo
 
 import android.app.Activity
 import android.os.Bundle
-import app.angelabettbox.extensions.wrapAction
-import app.angelabettbox.widget.HomeWidgetRenderer
-import app.angelabettbox.widget.HomeWidgets
+import app.angelamihomo.extensions.wrapAction
+import app.angelamihomo.widget.HomeWidgetRenderer
+import app.angelamihomo.widget.HomeWidgets
 
 class TempActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {

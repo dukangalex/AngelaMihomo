@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:bett_box/common/path.dart';
+import 'package:angelamihomo/common/path.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

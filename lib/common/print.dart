@@ -1,6 +1,6 @@
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 
 class CommonPrint {

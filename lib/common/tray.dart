@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/proxies/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/proxies/common.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
