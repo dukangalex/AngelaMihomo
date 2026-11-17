@@ -2281,5 +2281,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "이 규칙 세트에 제공된 파일이 프로필에 선언된 유형과 일치하지 않습니다. 대개 구독 또는 변환 서비스가 생성한 파일의 문제입니다. 해결 방법: 제공처에 알리거나 다른 소스로 전환한 뒤 다시 동기화하세요.",
+    ),
   };
 }

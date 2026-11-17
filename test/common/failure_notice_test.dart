@@ -268,4 +268,25 @@ void main() {
       expect(notice, contains('删掉含「cn」的条目'));
     });
   });
+
+  group('rule-set file mismatch notices (T207)', () {
+    test('the three core MRS rejections are classified', () {
+      expect(isRuleSetFileMismatch('invalid behavior'), isTrue);
+      expect(isRuleSetFileMismatch('invalid MrsMagic bytes'), isTrue);
+      expect(isRuleSetFileMismatch('invalid format'), isTrue);
+      expect(isRuleSetFileMismatch('connection refused'), isFalse);
+      expect(isRuleSetFileMismatch('not found rule-set: cn'), isFalse);
+    });
+
+    test('failureNoticeOf swaps the bare core wording for the remedy', () {
+      final notice = failureNoticeOf('invalid behavior');
+      expect(notice, contains('类型不一致'));
+      expect(notice, contains('重新同步'));
+      expect(notice, isNot(contains('invalid behavior')));
+    });
+
+    test('unrelated provider errors keep their redacted reason', () {
+      expect(failureNoticeOf('connection refused'), 'connection refused');
+    });
+  });
 }

@@ -2039,5 +2039,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "该规则集下发的文件与配置声明的类型不一致，多半是订阅或转换服务生成的文件有误。解决办法：向来源方反馈，或改用其他来源后重新同步。",
+    ),
   };
 }

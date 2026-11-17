@@ -1395,6 +1395,7 @@
   "chainStaleExitProfile": "链式出口所选的配置已不存在。请到链式设置重新选择出口配置。",
   "chainStaleExitTarget": "链式出口所选的分组或节点已不在出口配置中。请到链式设置重新选择出口。",
   "chainStaleEntry": "链式入口所选的分组或节点已不在当前配置中。请到链式设置重新选择入口。",
+  "ruleSetFileMismatch": "该规则集下发的文件与配置声明的类型不一致，多半是订阅或转换服务生成的文件有误。解决办法：向来源方反馈，或改用其他来源后重新同步。",
   "chainStaleExitSameProfile": "链式出口必须从其它配置中选择。请到链式设置重新选择出口。",
   "chainExitScriptHint": "出口配置请不要启用脚本。",
   "restartCoreFailedSolution": "怎么办：等几秒再试一次；反复失败请完全退出应用后重新打开；仍不行，请把本提示截图发给我们排查。",

@@ -36,7 +36,7 @@ Future<void> updateExternalProviders(
       providerName: provider.name,
     );
     if (message.isNotEmpty) {
-      messages.add('${provider.name}: $message \n');
+      messages.add('${provider.name}: ${failureNoticeOf(message)} \n');
     }
     final updated = await clashCore.getExternalProvider(provider.name);
     appController.setProvider(updated);

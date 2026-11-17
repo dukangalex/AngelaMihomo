@@ -2734,5 +2734,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "فایل دریافت‌شده برای این مجموعه‌قوانین با نوع اعلام‌شده در پروفایل مطابقت ندارد. معمولاً فایل ساخته‌شده توسط اشتراک یا سرویس مبدل مشکل دارد. راه‌حل: به منبع اطلاع دهید یا منبع را عوض کرده و دوباره همگام‌سازی کنید.",
+    ),
   };
 }

@@ -2828,5 +2828,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "Файл, полученный для этого набора правил, не соответствует типу, объявленному в профиле. Чаще всего виноват файл, созданный подпиской или сервисом конвертации. Что делать: сообщите источнику или смените источник и повторите синхронизацию.",
+    ),
   };
 }

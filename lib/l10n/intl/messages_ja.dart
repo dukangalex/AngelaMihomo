@@ -2286,5 +2286,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "このルールセットに配信されたファイルが、プロファイルで宣言された種類と一致しません。購読または変換サービスが生成したファイル側の問題であることがほとんどです。対処法：提供元へ連絡するか、別のソースに切り替えて再同期してください。",
+    ),
   };
 }
