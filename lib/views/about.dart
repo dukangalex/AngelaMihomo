@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
-import 'package:bett_box/common/geo_data.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
@@ -23,13 +22,6 @@ class AboutView extends StatelessWidget {
     globalState.appController.checkUpdateResultHandle(
       data: data,
       handleError: true,
-    );
-  }
-
-  List<Widget> _buildGeoSection(BuildContext context) {
-    return generateSection(
-      title: appLocalizations.geoData,
-      items: const [_GeoDataTile()],
     );
   }
 
@@ -130,8 +122,6 @@ class AboutView extends StatelessWidget {
           ],
         ),
       ),
-      const SizedBox(height: 12),
-      ..._buildGeoSection(context),
       const SizedBox(height: 12),
       ..._buildMoreSection(context),
     ];
@@ -319,87 +309,6 @@ class _LinkTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// T194: geo data status row — shows the local city database version
-/// and offers a manual refresh. The database itself is pulled
-/// automatically on first launch (see GeoDataService.ensureData).
-class _GeoDataTile extends StatefulWidget {
-  const _GeoDataTile();
-
-  @override
-  State<_GeoDataTile> createState() => _GeoDataTileState();
-}
-
-class _GeoDataTileState extends State<_GeoDataTile> {
-  GeoDataMeta? _meta;
-  bool _loaded = false;
-  bool _updating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final meta = await GeoDataService().currentMeta();
-    if (mounted) {
-      setState(() {
-        _meta = meta;
-        _loaded = true;
-      });
-    }
-  }
-
-  Future<void> _update() async {
-    if (_updating) return;
-    setState(() => _updating = true);
-    final outcome = await globalState.appController.updateGeoData();
-    if (!mounted) return;
-    final message = switch (outcome) {
-      GeoUpdateOutcome.updated => appLocalizations.geoDataUpdated,
-      GeoUpdateOutcome.alreadyLatest => appLocalizations.geoDataUpToDate,
-      GeoUpdateOutcome.verifyFailed => appLocalizations.geoDataVerifyFailed,
-      GeoUpdateOutcome.failed => appLocalizations.geoDataUpdateFailed,
-    };
-    context.showNotifier(message);
-    await _load();
-    if (mounted) setState(() => _updating = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final meta = _meta;
-    final String title;
-    String? subtitle;
-    if (!_loaded) {
-      title = appLocalizations.checking;
-    } else if (meta == null) {
-      title = appLocalizations.geoDataNotDownloaded;
-    } else {
-      title = meta.tag;
-      final at = meta.downloadedAt.toLocal();
-      String two(int v) => v.toString().padLeft(2, '0');
-      subtitle =
-          '${at.year}-${two(at.month)}-${two(at.day)} ${two(at.hour)}:${two(at.minute)}';
-    }
-    return ListTile(
-      title: Text(title),
-      subtitle: subtitle == null ? null : Text(subtitle),
-      trailing: _updating
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: appLocalizations.geoDataUpdate,
-              onPressed: _update,
-            ),
     );
   }
 }

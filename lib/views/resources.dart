@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bett_box/clash/clash.dart';
+import 'package:bett_box/common/geo_data.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/app.dart';
@@ -54,7 +55,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     final syncItems = geoItems
         .where((geoItem) => geoItem.key != 'mrs')
         .toList();
-    updatingKeysNotifier.state = syncItems.map((e) => e.key).toSet();
+    updatingKeysNotifier.state = {...syncItems.map((e) => e.key), 'city'};
 
     final errors = <String>[];
     try {
@@ -81,6 +82,21 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           }
         }),
       );
+      try {
+        final outcome = await globalState.appController.updateGeoData();
+        if (outcome == GeoUpdateOutcome.failed ||
+            outcome == GeoUpdateOutcome.verifyFailed) {
+          errors.add(
+            '${appLocalizations.geoData}: ${appLocalizations.geoDataUpdateFailed}',
+          );
+        }
+      } catch (e) {
+        errors.add('${appLocalizations.geoData}: $e');
+      } finally {
+        if (mounted) {
+          updatingKeysNotifier.update((s) => Set.of(s)..remove('city'));
+        }
+      }
       if (errors.isNotEmpty) {
         globalState.showMessage(
           title: appLocalizations.syncFailed,
@@ -263,9 +279,10 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
               ],
             ),
             ...generateSection(
-              items: geoItems.map(
-                (geoItem) => GeoDataListItem(geoItem: geoItem),
-              ),
+              items: [
+                ...geoItems.map((geoItem) => GeoDataListItem(geoItem: geoItem)),
+                const CityDataListItem(),
+              ],
             ),
           ],
         ),
@@ -459,6 +476,139 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 ],
               ],
             ),
+    );
+  }
+}
+
+/// T194: the city-level geolocation database, listed with the other
+/// GEO resources at the user's direction. Unlike the core-managed
+/// files above it is pulled by the app itself from the project's own
+/// data repository (see GeoDataService); the row mirrors the sibling
+/// rows (size · age, source URL, sync chip) with no edit affordance —
+/// its source is fixed by design.
+class CityDataListItem extends ConsumerStatefulWidget {
+  const CityDataListItem({super.key});
+
+  @override
+  ConsumerState<CityDataListItem> createState() => _CityDataListItemState();
+}
+
+class _CityDataListItemState extends ConsumerState<CityDataListItem> {
+  Future<(GeoDataMeta?, FileInfo?)> _load() async {
+    final meta = await GeoDataService().currentMeta();
+    if (meta == null) return (null, null);
+    try {
+      final homePath = await appPath.homeDirPath;
+      final file = File(join(homePath, GeoDataService.dataFileName));
+      final info = FileInfo(
+        size: await file.length(),
+        lastModified: await file.lastModified(),
+      );
+      return (meta, info);
+    } catch (_) {
+      return (meta, null);
+    }
+  }
+
+  Future<void> _handleSync() async {
+    final updatingKeysNotifier = ref.read(geoUpdatingKeysProvider.notifier);
+    if (ref.read(geoUpdatingKeysProvider).contains('city')) return;
+    updatingKeysNotifier.update((s) => Set.of(s)..add('city'));
+    try {
+      final outcome = await globalState.appController.updateGeoData();
+      if (!mounted) return;
+      final message = switch (outcome) {
+        GeoUpdateOutcome.updated => appLocalizations.geoDataUpdated,
+        GeoUpdateOutcome.alreadyLatest => appLocalizations.geoDataUpToDate,
+        GeoUpdateOutcome.verifyFailed => appLocalizations.geoDataVerifyFailed,
+        GeoUpdateOutcome.failed => appLocalizations.geoDataUpdateFailed,
+      };
+      context.showNotifier(message);
+    } finally {
+      if (mounted) {
+        updatingKeysNotifier.update((s) => Set.of(s)..remove('city'));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(geoUpdatingKeysProvider.select((s) => s.contains('city')), (
+      prev,
+      next,
+    ) {
+      if (prev == true && next == false && mounted) {
+        setState(() {});
+      }
+    });
+    final isSyncing = ref.watch(
+      geoUpdatingKeysProvider.select((s) => s.contains('city')),
+    );
+    return ListItem(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: Text(appLocalizations.geoData),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          FutureBuilder<(GeoDataMeta?, FileInfo?)>(
+            future: _load(),
+            builder: (_, snapshot) {
+              final height = globalState.measure.bodyMediumHeight;
+              final data = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  data == null) {
+                return SizedBox(width: height, height: height);
+              }
+              final (meta, info) = data;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: height,
+                    child: Text(
+                      meta == null
+                          ? appLocalizations.geoDataNotDownloaded
+                          : info?.desc ?? meta.tag,
+                      style: context.textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    meta == null
+                        ? 'https://github.com/$geoDataRepository/releases'
+                        : 'https://github.com/$geoDataRepository/releases/download/${meta.tag}/${GeoDataService.assetName}',
+                    style: context.textTheme.bodyMedium?.toLight,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              isSyncing
+                  ? const SizedBox(
+                      height: 30,
+                      width: 30,
+                      child: Padding(
+                        padding: EdgeInsets.all(2),
+                        child: SyncedLoading(
+                          size: 26,
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    )
+                  : CommonChip(
+                      avatar: const Icon(Icons.sync),
+                      label: appLocalizations.sync,
+                      onPressed: _handleSync,
+                    ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
