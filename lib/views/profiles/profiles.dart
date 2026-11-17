@@ -237,6 +237,11 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
   List<Widget> _buildActions() {
     return [
       IconButton(
+        onPressed: _handleShowAddExtendPage,
+        icon: const Icon(Icons.add),
+        tooltip: appLocalizations.add,
+      ),
+      IconButton(
         onPressed: () {
           _updateProfiles();
         },
@@ -286,34 +291,11 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
     ];
   }
 
-  Widget _buildFAB() {
-    final isMobileView = ref.watch(isMobileViewProvider);
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: isMobileView
-            ? getFloatingBottomBarFABReserveHeight(context)
-            : 0,
-      ),
-      child: FloatingActionButton(
-        heroTag: null,
-        onPressed: _handleShowAddExtendPage,
-        // Icon only, no label, and slightly translucent so the profile
-        // card beneath stays partly visible while scrolling
-        // (user's calls, 2026-11-17).
-        backgroundColor: context.colorScheme.primaryContainer.withValues(
-          alpha: 0.85,
-        ),
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.watch(appSettingProvider.select((state) => state.locale));
     return CommonScaffold(
       title: appLocalizations.profiles,
-      floatingActionButton: _buildFAB(),
       actions: _buildActions(),
       body: ActiveConsumer(
         builder: (_, ref) {
