@@ -2099,23 +2099,7 @@ class AppLocalizations {
     );
   }
 
-  String get solidBackground {
-    return Intl.message(
-      'Solid background',
-      name: 'solidBackground',
-      desc: '',
-      examples: const {},
-    );
-  }
 
-  String get solidBackgroundDesc {
-    return Intl.message(
-      "Only the selected theme's base color — no star chart, glow or guardian",
-      name: 'solidBackgroundDesc',
-      desc: '',
-      examples: const {},
-    );
-  }
 
   /// `Only English letters, digits and symbols are supported`
   String get backupPasswordTip {

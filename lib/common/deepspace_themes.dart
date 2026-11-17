@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'zodiac_themes.dart';
 
 /// The Human Deep Space Exploration series （星辰大海之人类深空探索，
-/// T181): twelve historic events as themes, sibling to the
+/// T181): fifteen historic events as themes, sibling to the
 /// twelve-constellation series under the 星辰大海 umbrella. Each
 /// event carries the family's shared 21-token system (DESIGN doc
 /// section 2) and paints its [DeepSpaceMotif] as the background
@@ -30,7 +30,7 @@ class DeepSpaceThemeDef {
   });
 }
 
-/// All twelve events in chronological order.
+/// All fifteen events in chronological order.
 const List<DeepSpaceThemeDef> deepSpaceThemeDefs = [
   DeepSpaceThemeDef(
     id: 'vostok1',
@@ -126,6 +126,37 @@ const List<DeepSpaceThemeDef> deepSpaceThemeDefs = [
     ),
   ),
   DeepSpaceThemeDef(
+    id: 'columbia',
+    year: '1981',
+    nameZh: '哥伦比亚号·航天飞机首飞',
+    nameEn: 'Columbia · First Shuttle Flight',
+    skeleton: ZodiacSkeleton.vibrant,
+    motif: DeepSpaceMotif.shuttleAscent,
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFF12203A), Color(0xFF0A1220)]),
+      surface: Color(0x12FFFFFF),
+      surfaceVariant: Color(0x14FFFFFF),
+      primary: Color(0xFF7FB2F0),
+      secondary: Color(0xFFF0563F),
+      accent: Color(0xFFE8E4D8),
+      onPrimary: Color(0xFF0B1526),
+      textPrimary: Color(0xFFEAF0FA),
+      textSecondary: Color(0xFFB9C8DC),
+      outline: Color(0xFF24334D),
+      success: Color(0xFF4ADE80),
+      warning: Color(0xFFFFB03A),
+      error: Color(0xFFFF8A70),
+      navBar: Color(0xFF0A1220),
+      selected: ZodiacPaint.solid(Color(0xFF7FB2F0)),
+      hero: ZodiacPaint.gradient([Color(0xFF7FB2F0), Color(0xFFF0563F)]),
+      glow: Color(0x597FB2F0),
+      glows: [
+        ZodiacGlow(Color(0x387FB2F0), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x29F0563F), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  DeepSpaceThemeDef(
     id: 'palebluedot',
     year: '1990',
     nameZh: '暗淡蓝点·回望家园',
@@ -152,6 +183,37 @@ const List<DeepSpaceThemeDef> deepSpaceThemeDefs = [
       glow: Color(0x598FC7EE),
       glows: [
         ZodiacGlow(Color(0x388FC7EE), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x26E8B34B), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  DeepSpaceThemeDef(
+    id: 'hubble',
+    year: '1990',
+    nameZh: '哈勃望远镜·深空凝视',
+    nameEn: 'Hubble · The Deep Gaze',
+    skeleton: ZodiacSkeleton.console,
+    motif: DeepSpaceMotif.telescopeOrbit,
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFF0E1A24), Color(0xFF080F16)]),
+      surface: Color(0x12FFFFFF),
+      surfaceVariant: Color(0x14FFFFFF),
+      primary: Color(0xFF8FE3FF),
+      secondary: Color(0xFFE8B34B),
+      accent: Color(0xFFB48CF2),
+      onPrimary: Color(0xFF06222E),
+      textPrimary: Color(0xFFE8F6FA),
+      textSecondary: Color(0xFFAECBD6),
+      outline: Color(0xFF20333F),
+      success: Color(0xFF4ADE80),
+      warning: Color(0xFFFFB03A),
+      error: Color(0xFFFF8A70),
+      navBar: Color(0xFF080F16),
+      selected: ZodiacPaint.solid(Color(0xFF8FE3FF)),
+      hero: ZodiacPaint.gradient([Color(0xFF8FE3FF), Color(0xFFE8B34B)]),
+      glow: Color(0x598FE3FF),
+      glows: [
+        ZodiacGlow(Color(0x388FE3FF), ZodiacGlowPos.topRight),
         ZodiacGlow(Color(0x26E8B34B), ZodiacGlowPos.centerLeft),
       ],
     ),
@@ -184,6 +246,37 @@ const List<DeepSpaceThemeDef> deepSpaceThemeDefs = [
       glows: [
         ZodiacGlow(Color(0x40E3B341), ZodiacGlowPos.topRight),
         ZodiacGlow(Color(0x29D98A5F), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  DeepSpaceThemeDef(
+    id: 'iss',
+    year: '1998',
+    nameZh: '国际空间站·人类前哨',
+    nameEn: "ISS · Humanity's Outpost",
+    skeleton: ZodiacSkeleton.layered,
+    motif: DeepSpaceMotif.spaceStation,
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFF101E2C), Color(0xFF0A121C)]),
+      surface: Color(0x12FFFFFF),
+      surfaceVariant: Color(0x14FFFFFF),
+      primary: Color(0xFF6CB4EE),
+      secondary: Color(0xFFF2C14E),
+      accent: Color(0xFF7FE3C3),
+      onPrimary: Color(0xFF0B1A29),
+      textPrimary: Color(0xFFEAF3FB),
+      textSecondary: Color(0xFFB3C9DC),
+      outline: Color(0xFF22344A),
+      success: Color(0xFF4ADE80),
+      warning: Color(0xFFFFB03A),
+      error: Color(0xFFFF8A70),
+      navBar: Color(0xFF0A121C),
+      selected: ZodiacPaint.solid(Color(0xFF6CB4EE)),
+      hero: ZodiacPaint.gradient([Color(0xFF6CB4EE), Color(0xFFF2C14E)]),
+      glow: Color(0x596CB4EE),
+      glows: [
+        ZodiacGlow(Color(0x386CB4EE), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x29F2C14E), ZodiacGlowPos.centerLeft),
       ],
     ),
   ),

@@ -412,8 +412,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateVerifying": MessageLookupByLibrary.simpleMessage("در حال بررسی فایل دانلودشده"),
     "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("فایل دانلودشده در بررسی رد شد و حذف شد. دوباره دانلود کنید؛ اگر باز هم نشد، بسته را از صفحه انتشار GitHub بگیرید."),
     "updateDownloadFailedReason": m87,
-    "solidBackground": MessageLookupByLibrary.simpleMessage("پس‌زمینه ساده"),
-    "solidBackgroundDesc": MessageLookupByLibrary.simpleMessage("فقط رنگ پایه تم انتخاب‌شده — بدون نقشه ستاره، هاله نور و نگهبان"),
     "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "پشتیبان‌گیری با موفقیت انجام شد",

@@ -417,8 +417,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateVerifying": MessageLookupByLibrary.simpleMessage("Verifying the downloaded file"),
     "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("The downloaded file failed verification and was deleted. Download it again; if it keeps failing, get the package from the GitHub release page."),
     "updateDownloadFailedReason": m87,
-    "solidBackground": MessageLookupByLibrary.simpleMessage("Solid background"),
-    "solidBackgroundDesc": MessageLookupByLibrary.simpleMessage("Only the selected theme's base color — no star chart, glow or guardian"),
     "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("Backup Successful"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("Core Configuration"),

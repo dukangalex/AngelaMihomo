@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:bett_box/common/deepspace_themes.dart';
+import 'package:bett_box/common/goldsaint_themes.dart';
+import 'package:bett_box/common/solarsystem_themes.dart';
 import 'package:bett_box/common/zodiac_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,6 +55,50 @@ void main() {
 
   group('deep space textSecondary contrast floor (T181)', () {
     for (final def in deepSpaceThemeDefs) {
+      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
+        final variant = def.variant;
+        final stops = variant.background.isGradient
+            ? variant.background.stops!
+            : [variant.background.firstColor];
+        final lightest = stops.reduce(
+          (a, b) => _luminance(a) >= _luminance(b) ? a : b,
+        );
+        final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
+        expect(
+          _contrast(variant.textSecondary, worstCard),
+          greaterThanOrEqualTo(5.5),
+          reason:
+              '${def.id} textSecondary ${variant.textSecondary} vs worst '
+              'card $worstCard',
+        );
+      });
+    }
+  });
+
+  group('golden saints textSecondary contrast floor (T184)', () {
+    for (final def in goldSaintThemeDefs) {
+      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
+        final variant = def.variant;
+        final stops = variant.background.isGradient
+            ? variant.background.stops!
+            : [variant.background.firstColor];
+        final lightest = stops.reduce(
+          (a, b) => _luminance(a) >= _luminance(b) ? a : b,
+        );
+        final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
+        expect(
+          _contrast(variant.textSecondary, worstCard),
+          greaterThanOrEqualTo(5.5),
+          reason:
+              '${def.id} textSecondary ${variant.textSecondary} vs worst '
+              'card $worstCard',
+        );
+      });
+    }
+  });
+
+  group('solar system textSecondary contrast floor (T183)', () {
+    for (final def in solarSystemThemeDefs) {
       test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
         final variant = def.variant;
         final stops = variant.background.isGradient

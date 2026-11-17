@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('deep space series data (T181)', () {
-    test('twelve events, unique ids, chronological years', () {
-      expect(deepSpaceThemeDefs, hasLength(12));
+    test('fifteen events, unique ids, chronological years', () {
+      expect(deepSpaceThemeDefs, hasLength(15));
       final ids = deepSpaceThemeDefs.map((d) => d.id).toSet();
-      expect(ids, hasLength(12));
+      expect(ids, hasLength(15));
       final zodiacIds = zodiacThemes.map((d) => d.id).toSet();
       expect(ids.intersection(zodiacIds), isEmpty);
       final years = deepSpaceThemeDefs.map((d) => int.parse(d.year)).toList();
@@ -71,12 +71,83 @@ void main() {
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
   });
 
-  testWidgets('solid mode also flattens a deep-space theme', (tester) async {
-    final def = deepSpaceThemeById('jwst')!;
+  group('golden saints and solar system series (T183/T184)', () {
+    test('golden saints: twelve, mirroring valid zodiac ids', () {
+      expect(goldSaintThemeDefs, hasLength(12));
+      final ids = goldSaintThemeDefs.map((d) => d.id).toSet();
+      expect(ids, hasLength(12));
+      final zodiacIds = zodiacThemes.map((d) => d.id).toSet();
+      expect(ids.intersection(zodiacIds), isEmpty);
+      for (final def in goldSaintThemeDefs) {
+        expect(zodiacIds, contains(def.zodiacId), reason: def.id);
+        expect(def.nameZh, contains('·'), reason: def.id);
+      }
+    });
+
+    test('solar system: eight planets, one body each, solid paint', () {
+      expect(solarSystemThemeDefs, hasLength(8));
+      final bodies = solarSystemThemeDefs.map((d) => d.body).toSet();
+      expect(bodies, SolarBody.values.toSet());
+      for (final def in solarSystemThemeDefs) {
+        expect(def.variant.background.isGradient, isFalse, reason: def.id);
+      }
+    });
+
+    test('registry resolves gold and solar selections', () {
+      final gold = resolveAppTheme('gold-leo');
+      expect(gold.series, ThemeSeries.goldSaint);
+      expect(gold.variant, goldSaintThemeById('gold-leo')!.variant);
+      expect(gold.constellation, resolveZodiacTheme('leo').constellation);
+      expect(gold.showGuardian, isFalse);
+      final solar = resolveAppTheme('sol-earth');
+      expect(solar.series, ThemeSeries.solarSystem);
+      expect(solar.planet, SolarBody.earth);
+      expect(themeGlyphFor('gold-leo'), '♌');
+      expect(themeGlyphFor('sol-earth'), '●');
+    });
+  });
+
+  testWidgets('solar backdrop: one blurred planet, nothing else', (
+    tester,
+  ) async {
+    final def = solarSystemThemeById('sol-saturn')!;
     final theme = ThemeData(
-      extensions: [
-        resolveAppTheme('jwst').toExtension(solidBackground: true),
-      ],
+      extensions: [resolveAppTheme('sol-saturn').toExtension()],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        home: const Scaffold(body: ZodiacBackdrop()),
+      ),
+    );
+    await tester.pump();
+    final paints = tester.widgetList<CustomPaint>(
+      find.descendant(
+        of: find.byType(ZodiacBackdrop),
+        matching: find.byType(CustomPaint),
+      ),
+    );
+    expect(paints, hasLength(1));
+    expect(paints.single.painter, isA<SolarPlanetPainter>());
+    expect(find.byType(Image), findsNothing);
+    expect(find.byType(ZodiacGuardianPlate), findsNothing);
+    final boxes = tester.widgetList<DecoratedBox>(
+      find.descendant(
+        of: find.byType(ZodiacBackdrop),
+        matching: find.byType(DecoratedBox),
+      ),
+    );
+    expect(
+      (boxes.first.decoration as BoxDecoration).color,
+      def.variant.backgroundBase,
+    );
+  });
+
+  testWidgets('gold backdrop: gilded constellation, no guardian', (
+    tester,
+  ) async {
+    final theme = ThemeData(
+      extensions: [resolveAppTheme('gold-leo').toExtension()],
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -90,18 +161,9 @@ void main() {
         of: find.byType(ZodiacBackdrop),
         matching: find.byType(CustomPaint),
       ),
-      findsNothing,
+      findsWidgets,
     );
-    final boxes = tester.widgetList<DecoratedBox>(
-      find.descendant(
-        of: find.byType(ZodiacBackdrop),
-        matching: find.byType(DecoratedBox),
-      ),
-    );
-    expect(boxes, hasLength(1));
-    expect(
-      (boxes.single.decoration as BoxDecoration).color,
-      def.variant.backgroundBase,
-    );
+    expect(find.byType(Image), findsNothing);
+    expect(find.byType(ZodiacGuardianPlate), findsNothing);
   });
 }

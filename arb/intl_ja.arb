@@ -251,16 +251,6 @@
     }
   },
   "updateInstallLaunchFailed": "インストーラーを起動できませんでした。理由：{reason}。対処：アプリのキャッシュフォルダーからダウンロードしたファイルを自分で開くか、GitHub のリリースページからパッケージをダウンロードして手動でインストールしてください。",
-  "solidBackground": "単色背景",
-  "@solidBackground": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "solidBackgroundDesc": "選択中のテーマの基調色のみ。星図・グロー・守護神なし",
-  "@solidBackgroundDesc": {
-    "type": "text",
-    "placeholders": {}
-  },
   "@updateInstallLaunchFailed": {
     "placeholders": {
       "reason": {

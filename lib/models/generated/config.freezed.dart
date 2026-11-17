@@ -2321,11 +2321,7 @@ mixin _$ThemeProps {
 /// Brightness always follows the system; legacy upstream color choices
 /// above are kept only for stored-config compatibility and no longer
 /// drive the color scheme.
- String get zodiacTheme;/// Solid background mode (T178): when on, every page background is
-/// the selected theme's base color only — no light field, star
-/// chart, watermark or guardian. Off by default; stored configs
-/// without the key keep the full backdrop.
- bool get solidBackground;
+ String get zodiacTheme;
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2339,20 +2335,20 @@ $ThemePropsCopyWith<ThemeProps> get copyWith => _$ThemePropsCopyWithImpl<ThemePr
 @override
 bool operator ==(Object other) {
   final _this = this as ThemeProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale)&&(identical(other.useDarkIcon, _this.useDarkIcon) || other.useDarkIcon == _this.useDarkIcon)&&(identical(other.useHarmonyFont, _this.useHarmonyFont) || other.useHarmonyFont == _this.useHarmonyFont)&&(identical(other.invertTrayIcon, _this.invertTrayIcon) || other.invertTrayIcon == _this.invertTrayIcon)&&(identical(other.zodiacTheme, _this.zodiacTheme) || other.zodiacTheme == _this.zodiacTheme)&&(identical(other.solidBackground, _this.solidBackground) || other.solidBackground == _this.solidBackground));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale)&&(identical(other.useDarkIcon, _this.useDarkIcon) || other.useDarkIcon == _this.useDarkIcon)&&(identical(other.useHarmonyFont, _this.useHarmonyFont) || other.useHarmonyFont == _this.useHarmonyFont)&&(identical(other.invertTrayIcon, _this.invertTrayIcon) || other.invertTrayIcon == _this.invertTrayIcon)&&(identical(other.zodiacTheme, _this.zodiacTheme) || other.zodiacTheme == _this.zodiacTheme));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ThemeProps;
-  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.schemeVariant,_this.textScale,_this.useDarkIcon,_this.useHarmonyFont,_this.invertTrayIcon,_this.zodiacTheme,_this.solidBackground);
+  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.schemeVariant,_this.textScale,_this.useDarkIcon,_this.useHarmonyFont,_this.invertTrayIcon,_this.zodiacTheme);
 }
 
 @override
 String toString() {
   final _this = this as ThemeProps;
-  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, schemeVariant: ${_this.schemeVariant}, textScale: ${_this.textScale}, useDarkIcon: ${_this.useDarkIcon}, useHarmonyFont: ${_this.useHarmonyFont}, invertTrayIcon: ${_this.invertTrayIcon}, zodiacTheme: ${_this.zodiacTheme}, solidBackground: ${_this.solidBackground})';
+  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, schemeVariant: ${_this.schemeVariant}, textScale: ${_this.textScale}, useDarkIcon: ${_this.useDarkIcon}, useHarmonyFont: ${_this.useHarmonyFont}, invertTrayIcon: ${_this.invertTrayIcon}, zodiacTheme: ${_this.zodiacTheme})';
 }
 
 
@@ -2363,7 +2359,7 @@ abstract mixin class $ThemePropsCopyWith<$Res>  {
   factory $ThemePropsCopyWith(ThemeProps value, $Res Function(ThemeProps) _then) = _$ThemePropsCopyWithImpl;
 @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool useHarmonyFont, bool invertTrayIcon, String zodiacTheme, bool solidBackground
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool useHarmonyFont, bool invertTrayIcon, String zodiacTheme
 });
 
 
@@ -2380,7 +2376,7 @@ class _$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? useHarmonyFont = null,Object? invertTrayIcon = null,Object? zodiacTheme = null,Object? solidBackground = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? useHarmonyFont = null,Object? invertTrayIcon = null,Object? zodiacTheme = null,}) {
   return _then(ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self.primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
@@ -2391,8 +2387,7 @@ as TextScale,useDarkIcon: null == useDarkIcon ? _self.useDarkIcon : useDarkIcon 
 as bool,useHarmonyFont: null == useHarmonyFont ? _self.useHarmonyFont : useHarmonyFont // ignore: cast_nullable_to_non_nullable
 as bool,invertTrayIcon: null == invertTrayIcon ? _self.invertTrayIcon : invertTrayIcon // ignore: cast_nullable_to_non_nullable
 as bool,zodiacTheme: null == zodiacTheme ? _self.zodiacTheme : zodiacTheme // ignore: cast_nullable_to_non_nullable
-as String,solidBackground: null == solidBackground ? _self.solidBackground : solidBackground // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,
   ));
 }
 /// Create a copy of ThemeProps
@@ -2486,10 +2481,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme,  bool solidBackground)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme,_that.solidBackground);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme);case _:
   return orElse();
 
 }
@@ -2507,10 +2502,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme,  bool solidBackground)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps():
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme,_that.solidBackground);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2527,10 +2522,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme,  bool solidBackground)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  TextScale textScale,  bool useDarkIcon,  bool useHarmonyFont,  bool invertTrayIcon,  String zodiacTheme)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme,_that.solidBackground);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.textScale,_that.useDarkIcon,_that.useHarmonyFont,_that.invertTrayIcon,_that.zodiacTheme);case _:
   return null;
 
 }
@@ -2542,7 +2537,7 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 @JsonSerializable()
 
 class _ThemeProps implements ThemeProps {
-  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.system, this.schemeVariant = DynamicSchemeVariant.content, this.textScale = const TextScale(), this.useDarkIcon = false, this.useHarmonyFont = false, this.invertTrayIcon = false, this.zodiacTheme = zodiacDefaultThemeId, this.solidBackground = false}): _primaryColors = primaryColors;
+  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.system, this.schemeVariant = DynamicSchemeVariant.content, this.textScale = const TextScale(), this.useDarkIcon = false, this.useHarmonyFont = false, this.invertTrayIcon = false, this.zodiacTheme = zodiacDefaultThemeId}): _primaryColors = primaryColors;
   factory _ThemeProps.fromJson(Map<String, dynamic> json) => _$ThemePropsFromJson(json);
 
 @override final  int? primaryColor;
@@ -2564,11 +2559,6 @@ class _ThemeProps implements ThemeProps {
 /// above are kept only for stored-config compatibility and no longer
 /// drive the color scheme.
 @override@JsonKey() final  String zodiacTheme;
-/// Solid background mode (T178): when on, every page background is
-/// the selected theme's base color only — no light field, star
-/// chart, watermark or guardian. Off by default; stored configs
-/// without the key keep the full backdrop.
-@override@JsonKey() final  bool solidBackground;
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
@@ -2583,18 +2573,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.useDarkIcon, useDarkIcon) || other.useDarkIcon == useDarkIcon)&&(identical(other.useHarmonyFont, useHarmonyFont) || other.useHarmonyFont == useHarmonyFont)&&(identical(other.invertTrayIcon, invertTrayIcon) || other.invertTrayIcon == invertTrayIcon)&&(identical(other.zodiacTheme, zodiacTheme) || other.zodiacTheme == zodiacTheme)&&(identical(other.solidBackground, solidBackground) || other.solidBackground == solidBackground));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.textScale, textScale) || other.textScale == textScale)&&(identical(other.useDarkIcon, useDarkIcon) || other.useDarkIcon == useDarkIcon)&&(identical(other.useHarmonyFont, useHarmonyFont) || other.useHarmonyFont == useHarmonyFont)&&(identical(other.invertTrayIcon, invertTrayIcon) || other.invertTrayIcon == invertTrayIcon)&&(identical(other.zodiacTheme, zodiacTheme) || other.zodiacTheme == zodiacTheme));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,schemeVariant,textScale,useDarkIcon,useHarmonyFont,invertTrayIcon,zodiacTheme,solidBackground);
+    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,schemeVariant,textScale,useDarkIcon,useHarmonyFont,invertTrayIcon,zodiacTheme);
 }
 
 @override
 String toString() {
-    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, schemeVariant: $schemeVariant, textScale: $textScale, useDarkIcon: $useDarkIcon, useHarmonyFont: $useHarmonyFont, invertTrayIcon: $invertTrayIcon, zodiacTheme: $zodiacTheme, solidBackground: $solidBackground)';
+    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, schemeVariant: $schemeVariant, textScale: $textScale, useDarkIcon: $useDarkIcon, useHarmonyFont: $useHarmonyFont, invertTrayIcon: $invertTrayIcon, zodiacTheme: $zodiacTheme)';
 }
 
 
@@ -2605,7 +2595,7 @@ abstract mixin class _$ThemePropsCopyWith<$Res> implements $ThemePropsCopyWith<$
   factory _$ThemePropsCopyWith(_ThemeProps value, $Res Function(_ThemeProps) _then) = __$ThemePropsCopyWithImpl;
 @override @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool useHarmonyFont, bool invertTrayIcon, String zodiacTheme, bool solidBackground
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, TextScale textScale, bool useDarkIcon, bool useHarmonyFont, bool invertTrayIcon, String zodiacTheme
 });
 
 
@@ -2622,7 +2612,7 @@ class __$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? useHarmonyFont = null,Object? invertTrayIcon = null,Object? zodiacTheme = null,Object? solidBackground = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? textScale = null,Object? useDarkIcon = null,Object? useHarmonyFont = null,Object? invertTrayIcon = null,Object? zodiacTheme = null,}) {
   return _then(_ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self._primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
@@ -2633,8 +2623,7 @@ as TextScale,useDarkIcon: null == useDarkIcon ? _self.useDarkIcon : useDarkIcon 
 as bool,useHarmonyFont: null == useHarmonyFont ? _self.useHarmonyFont : useHarmonyFont // ignore: cast_nullable_to_non_nullable
 as bool,invertTrayIcon: null == invertTrayIcon ? _self.invertTrayIcon : invertTrayIcon // ignore: cast_nullable_to_non_nullable
 as bool,zodiacTheme: null == zodiacTheme ? _self.zodiacTheme : zodiacTheme // ignore: cast_nullable_to_non_nullable
-as String,solidBackground: null == solidBackground ? _self.solidBackground : solidBackground // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,
   ));
 }
 

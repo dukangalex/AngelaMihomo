@@ -251,16 +251,6 @@
     }
   },
   "updateInstallLaunchFailed": "安裝程式未能啟動。原因：{reason}。怎麼辦：到應用程式快取目錄裡手動打開已下載的檔案，或從 GitHub 發布頁下載安裝包手動安裝。",
-  "solidBackground": "純色背景",
-  "@solidBackground": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "solidBackgroundDesc": "只用所選主題的底色，沒有星圖、光暈和守護神",
-  "@solidBackgroundDesc": {
-    "type": "text",
-    "placeholders": {}
-  },
   "@updateInstallLaunchFailed": {
     "placeholders": {
       "reason": {

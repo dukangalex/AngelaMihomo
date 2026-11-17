@@ -251,16 +251,6 @@
     }
   },
   "updateInstallLaunchFailed": "Не удалось запустить установщик. Причина: {reason}. Что делать: откройте загруженный файл сами из папки кэша приложения или скачайте пакет со страницы релизов GitHub и установите вручную.",
-  "solidBackground": "Однотонный фон",
-  "@solidBackground": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "solidBackgroundDesc": "Только базовый цвет выбранной темы — без звёздной карты, свечения и хранителя",
-  "@solidBackgroundDesc": {
-    "type": "text",
-    "placeholders": {}
-  },
   "@updateInstallLaunchFailed": {
     "placeholders": {
       "reason": {

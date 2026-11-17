@@ -251,16 +251,6 @@
     }
   },
   "updateInstallLaunchFailed": "설치 프로그램을 시작할 수 없습니다. 이유: {reason}. 해결 방법: 앱 캐시 폴더에서 다운로드한 파일을 직접 열거나, GitHub 릴리스 페이지에서 패키지를 다운로드해 수동으로 설치하세요.",
-  "solidBackground": "단색 배경",
-  "@solidBackground": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "solidBackgroundDesc": "선택한 테마의 기본 색상만 사용 — 별자리, 글로우, 수호신 없음",
-  "@solidBackgroundDesc": {
-    "type": "text",
-    "placeholders": {}
-  },
   "@updateInstallLaunchFailed": {
     "placeholders": {
       "reason": {

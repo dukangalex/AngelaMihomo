@@ -445,12 +445,6 @@ abstract class ThemeProps with _$ThemeProps {
     /// above are kept only for stored-config compatibility and no longer
     /// drive the color scheme.
     @Default(zodiacDefaultThemeId) String zodiacTheme,
-
-    /// Solid background mode (T178): when on, every page background is
-    /// the selected theme's base color only — no light field, star
-    /// chart, watermark or guardian. Off by default; stored configs
-    /// without the key keep the full backdrop.
-    @Default(false) bool solidBackground,
   }) = _ThemeProps;
 
   factory ThemeProps.fromJson(Map<String, Object?> json) =>

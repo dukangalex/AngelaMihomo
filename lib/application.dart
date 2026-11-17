@@ -65,7 +65,7 @@ class ApplicationState extends ConsumerState<Application>
     ),
   );
 
-  final Map<Brightness, ((ColorScheme, String?, String, bool), ThemeData)>
+  final Map<Brightness, ((ColorScheme, String?, String), ThemeData)>
   _themeCache = {};
 
   ThemeData _themeOf(
@@ -73,12 +73,7 @@ class ApplicationState extends ConsumerState<Application>
     String? fontFamily,
     ZodiacThemeExtension zodiac,
   ) {
-    final key = (
-      colorScheme,
-      fontFamily,
-      zodiac.themeId,
-      zodiac.solidBackground,
-    );
+    final key = (colorScheme, fontFamily, zodiac.themeId);
     final cached = _themeCache[colorScheme.brightness];
     if (cached != null && cached.$1 == key) {
       return cached.$2;
@@ -452,16 +447,12 @@ class ApplicationState extends ConsumerState<Application>
               theme: _themeOf(
                 lightColorScheme,
                 fontFamily,
-                zodiac.toExtension(
-                  solidBackground: themeProps.solidBackground,
-                ),
+                zodiac.toExtension(),
               ),
               darkTheme: _themeOf(
                 darkColorScheme,
                 fontFamily,
-                zodiac.toExtension(
-                  solidBackground: themeProps.solidBackground,
-                ),
+                zodiac.toExtension(),
               ),
               home: child!,
             );

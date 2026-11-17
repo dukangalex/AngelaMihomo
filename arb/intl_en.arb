@@ -251,16 +251,6 @@
     }
   },
   "updateInstallLaunchFailed": "The installer could not be started. Reason: {reason}. What to do: open the downloaded file yourself from the app cache folder, or download the package from the GitHub release page and install it manually.",
-  "solidBackground": "Solid background",
-  "@solidBackground": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "solidBackgroundDesc": "Only the selected theme's base color — no star chart, glow or guardian",
-  "@solidBackgroundDesc": {
-    "type": "text",
-    "placeholders": {}
-  },
   "@updateInstallLaunchFailed": {
     "placeholders": {
       "reason": {
