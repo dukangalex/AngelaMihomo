@@ -234,4 +234,91 @@ void main() {
     expect(apiHits, 3);
     expect((await svc.currentMeta())?.tag, tag);
   });
+
+  group('custom source (T201)', () {
+    const customUrl = 'https://mirror.example.com/data/amcity.bin.gz';
+    const sumsUrl = 'https://mirror.example.com/data/sha256sums.txt';
+
+    Dio mirrorDio({required bool withSums, String? digest}) {
+      final d = Dio();
+      d.httpClientAdapter = StubAdapter((options) async {
+        final url = options.uri.toString();
+        if (url == sumsUrl && withSums) {
+          return ResponseBody.fromString(
+            '${digest ?? gzDigest}  ${GeoDataService.assetName}\n',
+            200,
+          );
+        }
+        if (url == customUrl) {
+          return ResponseBody.fromBytes(gzBytes, 200);
+        }
+        return ResponseBody.fromString('not found', 404);
+      });
+      return d;
+    }
+
+    GeoDataService customService(Dio d, {String? stored}) => GeoDataService(
+      updates: ReleaseUpdates(repository: repo, client: d),
+      installer: UpdateInstaller(dio: d),
+      sourceUrlLoader: () async => stored,
+    );
+
+    test('pulls from the custom source and records provenance', () async {
+      final svc = customService(mirrorDio(withSums: true), stored: customUrl);
+      expect(await svc.customSourceUrl(), customUrl);
+      expect(await svc.updateNow(), GeoUpdateOutcome.updated);
+      expect(
+        await File(
+          '${home.path}/${GeoDataService.dataFileName}',
+        ).readAsBytes(),
+        raw,
+      );
+      final meta = await svc.currentMeta();
+      expect(meta?.tag, GeoDataService.customTag);
+      expect(meta?.sourceUrl, customUrl);
+    });
+
+    test('fails when the custom source ships no sha256sums', () async {
+      final svc = customService(mirrorDio(withSums: false), stored: customUrl);
+      expect(await svc.updateNow(), GeoUpdateOutcome.failed);
+      expect(await svc.currentMeta(), isNull);
+      expect(
+        await File('${home.path}/${GeoDataService.dataFileName}').exists(),
+        isFalse,
+      );
+    });
+
+    test('rejects a custom payload whose digest mismatches', () async {
+      final svc = customService(
+        mirrorDio(withSums: true, digest: '0' * 64),
+        stored: customUrl,
+      );
+      expect(await svc.updateNow(), GeoUpdateOutcome.verifyFailed);
+      expect(await svc.currentMeta(), isNull);
+    });
+
+    test('source url persists through the saver and loader', () async {
+      String? stored;
+      final svc = GeoDataService(
+        sourceUrlLoader: () async => stored,
+        sourceUrlSaver: (url) async => stored = url,
+      );
+      expect(await svc.customSourceUrl(), isNull);
+      await svc.setCustomSourceUrl(customUrl);
+      expect(await svc.customSourceUrl(), customUrl);
+      await svc.setCustomSourceUrl(null);
+      expect(await svc.customSourceUrl(), isNull);
+    });
+
+    test('meta round trip keeps the source url', () {
+      final meta = GeoDataMeta(
+        tag: GeoDataService.customTag,
+        downloadedAt: DateTime.utc(2026, 11, 17, 10, 0),
+        sourceUrl: customUrl,
+      );
+      final back = GeoDataMeta.fromJson(meta.toJson());
+      expect(back?.sourceUrl, customUrl);
+      expect(back?.tag, GeoDataService.customTag);
+    });
+  });
 }

@@ -482,10 +482,12 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
 
 /// T194: the city-level geolocation database, listed with the other
 /// GEO resources at the user's direction. Unlike the core-managed
-/// files above it is pulled by the app itself from the project's own
-/// data repository (see GeoDataService); the row mirrors the sibling
-/// rows (size · age, source URL, sync chip) with no edit affordance —
-/// its source is fixed by design.
+/// files above it is pulled by the app itself (see GeoDataService),
+/// by default from the project's own data repository. The row
+/// mirrors the sibling rows (size · age, source URL, edit and sync
+/// chips): the source is editable like theirs (T201, the user's
+/// call — users decide their own data source), with the project
+/// repository as the default the edit dialog resets to.
 class CityDataListItem extends ConsumerStatefulWidget {
   const CityDataListItem({super.key});
 
@@ -494,9 +496,17 @@ class CityDataListItem extends ConsumerStatefulWidget {
 }
 
 class _CityDataListItemState extends ConsumerState<CityDataListItem> {
-  Future<(GeoDataMeta?, FileInfo?)> _load() async {
-    final meta = await GeoDataService().currentMeta();
-    if (meta == null) return (null, null);
+  static const _releasesUrl =
+      'https://github.com/$geoDataRepository/releases';
+
+  String _repoAssetUrl(String tag) =>
+      'https://github.com/$geoDataRepository/releases/download/$tag/${GeoDataService.assetName}';
+
+  Future<(GeoDataMeta?, FileInfo?, String?)> _load() async {
+    final service = GeoDataService();
+    final custom = await service.customSourceUrl();
+    final meta = await service.currentMeta();
+    if (meta == null) return (null, null, custom);
     try {
       final homePath = await appPath.homeDirPath;
       final file = File(join(homePath, GeoDataService.dataFileName));
@@ -504,9 +514,52 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
         size: await file.length(),
         lastModified: await file.lastModified(),
       );
-      return (meta, info);
+      return (meta, info, custom);
     } catch (_) {
-      return (meta, null);
+      return (meta, null, custom);
+    }
+  }
+
+  /// T201: edit the city database source, mirroring the sibling GEO
+  /// rows. The dialog's reset target is the project repository's
+  /// releases page; submitting it (or the URL already in effect)
+  /// restores the default channel. Any other URL becomes the source
+  /// and is synced from immediately, on this page.
+  Future<void> _updateUrl() async {
+    final service = GeoDataService();
+    final custom = await service.customSourceUrl();
+    final meta = await service.currentMeta();
+    final current =
+        custom ??
+        meta?.sourceUrl ??
+        (meta == null ? _releasesUrl : _repoAssetUrl(meta.tag));
+    final newUrl = await globalState.showCommonDialog<String>(
+      child: UpdateGeoUrlFormDialog(
+        title: appLocalizations.geoData,
+        url: current,
+        defaultValue: _releasesUrl,
+      ),
+    );
+    if (newUrl == null || !mounted) return;
+    try {
+      if (newUrl == _releasesUrl || newUrl == current) {
+        if (custom != null) {
+          await service.setCustomSourceUrl(null);
+          if (mounted) await _handleSync();
+        }
+        return;
+      }
+      if (!newUrl.isHttpUrl) {
+        throw 'Invalid url';
+      }
+      await service.setCustomSourceUrl(newUrl);
+      if (mounted) await _handleSync();
+    } catch (e) {
+      globalState.showMessage(
+        title: appLocalizations.geoData,
+        message: TextSpan(text: e.toString()),
+        cancelable: false,
+      );
     }
   }
 
@@ -551,7 +604,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          FutureBuilder<(GeoDataMeta?, FileInfo?)>(
+          FutureBuilder<(GeoDataMeta?, FileInfo?, String?)>(
             future: _load(),
             builder: (_, snapshot) {
               final height = globalState.measure.bodyMediumHeight;
@@ -560,7 +613,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                   data == null) {
                 return SizedBox(width: height, height: height);
               }
-              final (meta, info) = data;
+              final (meta, info, custom) = data;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -575,9 +628,10 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    meta == null
-                        ? 'https://github.com/$geoDataRepository/releases'
-                        : 'https://github.com/$geoDataRepository/releases/download/${meta.tag}/${GeoDataService.assetName}',
+                    custom ??
+                        (meta == null
+                            ? _releasesUrl
+                            : _repoAssetUrl(meta.tag)),
                     style: context.textTheme.bodyMedium?.toLight,
                   ),
                 ],
@@ -585,26 +639,38 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
             },
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            runSpacing: 6,
+            spacing: 12,
+            runAlignment: WrapAlignment.center,
             children: [
-              isSyncing
-                  ? const SizedBox(
-                      height: 30,
-                      width: 30,
-                      child: Padding(
-                        padding: EdgeInsets.all(2),
-                        child: SyncedLoading(
-                          size: 26,
-                          child: CircularProgressIndicator(),
+              CommonChip(
+                avatar: const Icon(Icons.edit),
+                label: appLocalizations.edit,
+                onPressed: isSyncing ? null : _updateUrl,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  isSyncing
+                      ? const SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: Padding(
+                            padding: EdgeInsets.all(2),
+                            child: SyncedLoading(
+                              size: 26,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        )
+                      : CommonChip(
+                          avatar: const Icon(Icons.sync),
+                          label: appLocalizations.sync,
+                          onPressed: _handleSync,
                         ),
-                      ),
-                    )
-                  : CommonChip(
-                      avatar: const Icon(Icons.sync),
-                      label: appLocalizations.sync,
-                      onPressed: _handleSync,
-                    ),
+                ],
+              ),
             ],
           ),
         ],
