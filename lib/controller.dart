@@ -144,15 +144,29 @@ class AppController {
     });
   }
 
+  // Manual selection takes effect immediately (T209): the switch used
+  // to sit behind the debouncer's default 600 ms, which read as lag —
+  // worst on chain hops, where the user expects the new entry/exit to
+  // carry traffic at once. The core Set is a runtime pointer swap and
+  // changeProxy already closes the group's live connections, so there
+  // is nothing to coalesce. Switches are chained instead, so rapid
+  // taps still land strictly in tap order and the last tap wins; a
+  // debounced switch queued by an earlier code path is cancelled so
+  // it can never land after a newer choice.
+  Future<void> _proxySwitchTail = Future.value();
+
   void changeProxyDebounce(String groupName, String proxyName) {
-    debouncer.call(FunctionTag.changeProxy, (
-      String groupName,
-      String proxyName,
-    ) async {
-      await changeProxy(groupName: groupName, proxyName: proxyName);
-      await updateGroups();
-      addCheckIp();
-    }, args: [groupName, proxyName]);
+    debouncer.cancel(FunctionTag.changeProxy);
+    _proxySwitchTail = _proxySwitchTail.then(
+      (_) => _switchProxy(groupName, proxyName),
+      onError: (_) => _switchProxy(groupName, proxyName),
+    );
+  }
+
+  Future<void> _switchProxy(String groupName, String proxyName) async {
+    await changeProxy(groupName: groupName, proxyName: proxyName);
+    await updateGroups();
+    addCheckIp();
   }
 
   void _invalidateCoreReads() {
