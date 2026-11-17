@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -45,7 +45,7 @@ void main() {
 
   test('route icons resolve to Qure paths and bundled assets', () async {
     const base =
-        'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+        'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
     expect(routeIconUrl('YouTube.svg'), '${base}common/YouTube.svg');
     expect(routeIconUrl('flag/Japan.svg'), '${base}flag/Japan.svg');
     expect(
@@ -67,12 +67,35 @@ void main() {
     expect(routeIconAsset('https://example.com/YouTube.svg'), null);
   });
 
+  test('legacy upstream icon URLs still resolve to bundled assets', () async {
+    const legacy =
+        'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+    await loadBundledRouteIcons();
+    expect(isRouteIconUrl('${legacy}common/YouTube.svg'), isTrue);
+    expect(
+      routeIconAsset('${legacy}common/YouTube.svg'),
+      'assets/route_svg/YouTube.svg',
+    );
+    expect(routeIconValue('${legacy}common/YouTube.svg'), 'YouTube.svg');
+    expect(routeIconValue('${legacy}flag/Japan.svg'), 'flag/Japan.svg');
+  });
+
   test('route catalog entries point to the bundled rule sets', () async {
     final index = await ManagedScript.catalog(const ManagedProps());
     final catalog = index.catalog;
     final icons = catalog.icons.toSet();
     expect(catalog.sets, isNotEmpty);
     expect(index.sets.length, catalog.sets.length);
+    // T167: every icon the catalog references ships inside the app and
+    // resolves to a local asset; nothing is fetched at runtime.
+    await loadBundledRouteIcons();
+    for (final icon in icons) {
+      expect(
+        routeIconAsset(routeIconUrl(icon)),
+        isNotNull,
+        reason: icon,
+      );
+    }
     expect(catalog.targets.first, '默认代理');
     expect(catalog.sets.map((set) => set.type).toSet(), {'geosite', 'geoip'});
     for (final set in catalog.sets) {
@@ -427,5 +450,19 @@ void main() {
 
     const olderProps = ManagedProps(syncedVersion: '99');
     expect(ManagedScript.syncedVersion(olderProps), isNull);
+  });
+
+  test('stored remote-sync versions are ignored after T166', () async {
+    await ManagedScript.loadBundledVersion();
+    // A version left over from the removed remote-sync path, even one
+    // newer than the bundled script, no longer resolves: the bundled
+    // copy is the only built-in source.
+    const syncedProps = ManagedProps(syncedVersion: '999999999999');
+    expect(ManagedScript.isCustom(syncedProps), isFalse);
+    expect(ManagedScript.syncedVersion(syncedProps), isNull);
+    expect(
+      ManagedScript.version(syncedProps),
+      ManagedScript.bundledVersion,
+    );
   });
 }

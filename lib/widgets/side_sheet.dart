@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:bett_box/common/color.dart';
+import 'package:angelamihomo/common/color.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 

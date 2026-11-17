@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/proxies/common.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/proxies/common.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'start_auto_delay_harness.dart';

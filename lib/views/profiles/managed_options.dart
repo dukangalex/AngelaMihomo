@@ -1,11 +1,11 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/icon_sets.dart';
-import 'package:bett_box/views/profiles/scripts.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/icon_sets.dart';
+import 'package:angelamihomo/views/profiles/scripts.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -19,30 +19,6 @@ Future<void> showManagedOptions(BuildContext context) async {
     context,
     builder: (_, type) => ManagedOptionsSheet(type: type),
   );
-}
-
-Future<void> syncManagedScript(BuildContext context, WidgetRef ref) async {
-  final res = await globalState.showMessage(
-    title: appLocalizations.syncFromUpstream,
-    message: TextSpan(text: appLocalizations.managedSyncTip),
-  );
-  if (res != true || !context.mounted) return;
-  final props = ref.read(managedSettingProvider);
-  final result = await globalState.appController.safeRun(
-    () => ManagedScript.sync(props),
-    needLoading: true,
-    silence: false,
-  );
-  if (result == null || !context.mounted) return;
-  if (!result.updated) {
-    context.showNotifier(appLocalizations.managedUpToDate);
-    return;
-  }
-  globalState.appController.updateManagedSetting(
-    (state) => state.copyWith(syncedVersion: result.syncedVersion),
-  );
-  ref.invalidate(builtInIconSetProvider);
-  context.showNotifier(appLocalizations.success);
 }
 
 String _targetLabel(String target) =>

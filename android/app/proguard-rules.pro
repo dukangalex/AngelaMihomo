@@ -1,2 +1,2 @@
 
--keep class app.angelabettbox.models.**{ *; }
+-keep class app.angelamihomo.models.**{ *; }

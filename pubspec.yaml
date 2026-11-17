@@ -1,7 +1,7 @@
-name: bett_box
+name: angelamihomo
 description: A multi-platform proxy client based on Mihomo, simple and easy to use, open-source and ad-free.
 publish_to: 'none'
-version: 1.19.8-chain.25+2026111603
+version: 1.19.8-chain.26+2026111604
 environment:
   sdk: '>=3.9.0 <4.0.0'
 
@@ -70,6 +70,9 @@ dependencies:
     path: plugins/code_forge
   material_ui: ^1.8.0
   cupertino_ui: ^1.1.4
+  flutter_secure_storage: ^11.2.0
+  cryptography: ^2.9.0
+  open_filex: ^5.0.0
 dependency_overrides:
   flutter_rust_bridge: 2.13.0
   hotkey_manager_linux:

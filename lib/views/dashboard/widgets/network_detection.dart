@@ -1,9 +1,9 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -164,7 +164,10 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           ),
           Text(
             value,
-            maxLines: 1,
+            // Two lines, fully shown (T210): city and ASN names used to
+            // be cut off with an ellipsis on the half-width card; let
+            // them wrap onto a second line instead of truncating.
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: context.textTheme.bodyMedium?.toLight,
           ),

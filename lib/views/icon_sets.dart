@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -193,11 +193,10 @@ class _IconSetsSheetState extends ConsumerState<_IconSetsSheet> {
               builtIn,
               subtitle:
                   '${appLocalizations.builtIn} · '
-                  '${appLocalizations.iconCount(builtIn.icons.length)} · '
-                  '@aaANDkk',
+                  '${appLocalizations.iconCount(builtIn.icons.length)}',
               actions: const [Icon(Icons.open_in_new, size: 18)],
               onTap: () => globalState.openUrl(
-                'https://github.com/appshubcc/Qure_Style_SVG',
+                'https://github.com/dukangalex/angelamihomo-icons',
               ),
             ),
           for (final iconSet in imported) _buildImported(iconSet),

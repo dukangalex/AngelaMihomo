@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>海地</title>
+<defs>
+<mask id="ht-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="ht-blue" x1="72" y1="21.4745" x2="72" y2="71.7636" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="ht-red" x1="72" y1="71.7636" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="ht-panel-white" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" /><stop offset="1" stop-color="#E8E8E8" /></linearGradient>
+<linearGradient id="ht-emblem-blue" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="ht-emblem-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="ht-emblem-green" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="ht-emblem-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+</defs>
+<g mask="url(#ht-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 50.2891 h -140.9162 Z" fill="url(#ht-blue)" stroke="url(#ht-blue)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 71.7636 h 140.9162 v 50.2891 h -140.9162 Z" fill="url(#ht-red)" stroke="url(#ht-red)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="m 88.6971,84.4556 l -16.91,-2.109 l -16.91,2.09 L 54.8771,59.0906 l 33.82,0 z" fill="url(#ht-panel-white)" />
+<path d="M 63.3321 73.8726 a 8.455 8.455 0 1 0 16.91 0 a 8.455 8.455 0 1 0 -16.91 0 Z" fill="url(#ht-emblem-blue)" />
+<path d="M 67.5501 73.8726 a 4.237 4.237 0 1 0 8.474 0 a 4.237 4.237 0 1 0 -8.474 0 Z" fill="url(#ht-emblem-red)" />
+<path d="M 65.4411,63.3085 l 12.692,0 L 71.7871,69.6546 z" fill="url(#ht-emblem-green)" />
+<path d="M 69.6781,67.5266 L 73.8771,67.5266 l 0,12.692 l -4.18,0 z" fill="url(#ht-emblem-gold)" />
+<path d="M 78.5511,78.9455 l -13.528,0 l -10.146,5.51 l 33.82,0 z" fill="url(#ht-emblem-green)" />
+</g>
+</svg>

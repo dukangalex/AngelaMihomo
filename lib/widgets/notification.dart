@@ -1,5 +1,5 @@
-import 'package:bett_box/models/config.dart';
-import 'package:bett_box/providers/config.dart';
+import 'package:angelamihomo/models/config.dart';
+import 'package:angelamihomo/providers/config.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

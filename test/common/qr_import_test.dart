@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/picker.dart';
-import 'package:bett_box/common/qr_reader.dart';
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/common/picker.dart';
+import 'package:angelamihomo/common/qr_reader.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -66,7 +66,7 @@ void main() {
     test('截图里的二维码（页面底色 + 卡片留白）可解码', () {
       final path = writeTempImage(
         encodeQrScreenshot('https://example.com/subscribe?token=abc123'),
-        'bettbox_qr_screenshot.png',
+        'angelamihomo_qr_screenshot.png',
       );
       expect(
         qrReader.decodeFile(path),
@@ -140,7 +140,7 @@ void main() {
     test('扫码导入拿到的 URL 就是二维码内容', () async {
       final path = writeTempImage(
         encodeQrScreenshot('https://example.com/subscribe?token=abc123'),
-        'bettbox_qr_import.png',
+        'angelamihomo_qr_import.png',
       );
       expect(
         await picker.decodeProfileUrlFromQrImage(path),
@@ -151,7 +151,7 @@ void main() {
     test('非 URL 的二维码提示「请上传有效的二维码」', () async {
       final path = writeTempImage(
         encodeQrImage('hello world'),
-        'bettbox_qr_not_url.png',
+        'angelamihomo_qr_not_url.png',
       );
       await expectLater(
         picker.decodeProfileUrlFromQrImage(path),
@@ -162,7 +162,7 @@ void main() {
     test('图片里没有二维码时提示「请上传有效的二维码」', () async {
       final blank = img.Image(width: 300, height: 300, numChannels: 4);
       img.fill(blank, color: img.ColorRgba8(255, 255, 255, 255));
-      final path = writeTempImage(img.encodePng(blank), 'bettbox_qr_blank.png');
+      final path = writeTempImage(img.encodePng(blank), 'angelamihomo_qr_blank.png');
       await expectLater(
         picker.decodeProfileUrlFromQrImage(path),
         throwsA(predicate<String>((e) => e.contains('二维码'), '二维码提示文案')),

@@ -1,7 +1,7 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'dialog.dart';
@@ -62,11 +62,24 @@ class IpRiskSource extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Text(
-          '${appLocalizations.ipRiskSource} Scamalytics',
-          style: context.textTheme.labelSmall?.copyWith(
-            color: context.colorScheme.outline,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${appLocalizations.ipRiskSource} Scamalytics',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              appLocalizations.ipRiskDisclosure,
+              textAlign: TextAlign.right,
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.outline,
+              ),
+            ),
+          ],
         ),
       ),
     );

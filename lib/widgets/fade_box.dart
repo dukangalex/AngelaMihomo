@@ -1,5 +1,5 @@
 import 'package:animations/animations.dart';
-import 'package:bett_box/common/common.dart';
+import 'package:angelamihomo/common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FadeBox extends StatelessWidget {

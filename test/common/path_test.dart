@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:bett_box/common/path.dart';
+import 'package:angelamihomo/common/path.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,7 +10,7 @@ void main() {
   test(
     'missing Downloads support falls back to the app data directory',
     () async {
-      final home = await Directory.systemTemp.createTemp('bettbox_paths_');
+      final home = await Directory.systemTemp.createTemp('angelamihomo_paths_');
       const channel = MethodChannel('plugins.flutter.io/path_provider');
       final messenger =
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;

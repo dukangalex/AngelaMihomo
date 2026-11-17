@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/connection/item.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/connection/item.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -171,6 +171,7 @@ class _TrafficStatsPageState extends ConsumerState<TrafficStatsPage> {
         ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.trafficStatsDesc,
         children: [
           if (!enable) ...[
             ToolSurface(
@@ -1075,6 +1076,7 @@ class _TrafficStatsSettingsDialog extends ConsumerWidget {
         children: [
           ListItem.switchItem(
             title: Text(appLocalizations.trafficStatsEnable),
+            subtitle: Text(appLocalizations.trafficStatsEnableDesc),
             delegate: SwitchDelegate(
               value: props.enable,
               onChanged: (value) =>

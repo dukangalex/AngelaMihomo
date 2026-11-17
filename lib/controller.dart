@@ -5,16 +5,17 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/helper/helper.dart';
+import 'package:dio/dio.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/helper/helper.dart';
 
-import 'package:bett_box/plugins/app.dart';
-import 'package:bett_box/plugins/service.dart' as vpn_service;
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/dialog.dart';
-import 'package:bett_box/widgets/input.dart';
+import 'package:angelamihomo/plugins/app.dart';
+import 'package:angelamihomo/plugins/service.dart' as vpn_service;
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/dialog.dart';
+import 'package:angelamihomo/widgets/input.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,8 @@ import 'common/archive.dart'
 import 'common/common.dart';
 import 'common/dav_client.dart';
 import 'common/release_updates.dart';
+import 'common/geo_data.dart';
+import 'common/update_installer.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
 import 'views/proxies/common.dart' show cancelDelayTests;
@@ -141,15 +144,29 @@ class AppController {
     });
   }
 
+  // Manual selection takes effect immediately (T209): the switch used
+  // to sit behind the debouncer's default 600 ms, which read as lag —
+  // worst on chain hops, where the user expects the new entry/exit to
+  // carry traffic at once. The core Set is a runtime pointer swap and
+  // changeProxy already closes the group's live connections, so there
+  // is nothing to coalesce. Switches are chained instead, so rapid
+  // taps still land strictly in tap order and the last tap wins; a
+  // debounced switch queued by an earlier code path is cancelled so
+  // it can never land after a newer choice.
+  Future<void> _proxySwitchTail = Future.value();
+
   void changeProxyDebounce(String groupName, String proxyName) {
-    debouncer.call(FunctionTag.changeProxy, (
-      String groupName,
-      String proxyName,
-    ) async {
-      await changeProxy(groupName: groupName, proxyName: proxyName);
-      await updateGroups();
-      addCheckIp();
-    }, args: [groupName, proxyName]);
+    debouncer.cancel(FunctionTag.changeProxy);
+    _proxySwitchTail = _proxySwitchTail.then(
+      (_) => _switchProxy(groupName, proxyName),
+      onError: (_) => _switchProxy(groupName, proxyName),
+    );
+  }
+
+  Future<void> _switchProxy(String groupName, String proxyName) async {
+    await changeProxy(groupName: groupName, proxyName: proxyName);
+    await updateGroups();
+    addCheckIp();
   }
 
   void _invalidateCoreReads() {
@@ -407,8 +424,7 @@ class AppController {
     bool Function(T)? accepted,
   }) async {
     final rebuild = system.isAndroid && await _isServiceRunning();
-    if (system.isAndroid &&
-        (rebuild || globalState.vpnTransitionUnconfirmed)) {
+    if (system.isAndroid && (rebuild || globalState.vpnTransitionUnconfirmed)) {
       await globalState.handleStop();
     }
     final value = await configure();
@@ -471,7 +487,7 @@ class AppController {
       appEventLog.record(
         'core',
         'scripted setup config failed for profile '
-        '${currentProfile.label ?? currentProfile.id}: $message',
+            '${currentProfile.label ?? currentProfile.id}: $message',
       );
       globalState.showNotifier(
         '${appLocalizations.profileParseErrorDesc}: ${redactSensitiveText(message)}',
@@ -492,7 +508,7 @@ class AppController {
       appEventLog.record(
         'core',
         'setup config failed for profile '
-        '${currentProfile.label ?? currentProfile.id}: $message',
+            '${currentProfile.label ?? currentProfile.id}: $message',
       );
       throw message;
     }
@@ -1233,7 +1249,7 @@ class AppController {
           appEventLog.record(
             'profile-switch',
             'switch to profile $requestedProfileId failed (full rebuild): '
-            '${err.formatErrorLog}',
+                '${err.formatErrorLog}',
           );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
@@ -1306,7 +1322,7 @@ class AppController {
           appEventLog.record(
             'profile-switch',
             'switch to profile $requestedProfileId failed (hot path): '
-            '${err.formatErrorLog}',
+                '${err.formatErrorLog}',
           );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
@@ -1387,7 +1403,7 @@ class AppController {
         appEventLog.record(
           'profile-update',
           'auto update failed for profile ${profile.label ?? profile.id}: '
-          '${e.formatErrorLog}',
+              '${e.formatErrorLog}',
         );
         failures.add((profile.label ?? profile.id, e));
       }
@@ -1403,7 +1419,8 @@ class AppController {
     final (name, error) = failures.first;
     var text = profileUpdateFailureNotice(name, error, automatic: true);
     if (failures.length > 1) {
-      text = '$text ${appLocalizations.profileAutoUpdateFailedMore(failures.length - 1)}';
+      text =
+          '$text ${appLocalizations.profileAutoUpdateFailedMore(failures.length - 1)}';
     }
     globalState.showNotifier(text);
   }
@@ -1428,7 +1445,7 @@ class AppController {
           appEventLog.record(
             'profile-update',
             'missed update failed for profile ${profile.label ?? profile.id}: '
-            '${e.formatErrorLog}',
+                '${e.formatErrorLog}',
           );
           failures.add((profile.label ?? profile.id, e));
         }
@@ -1799,6 +1816,12 @@ class AppController {
     await prefs?.setInt('last_check_update_time', now);
   }
 
+  /// T194: manual geo data refresh from the About page. The outcome
+  /// drives the feedback shown to the user.
+  Future<GeoUpdateOutcome> updateGeoData() {
+    return GeoDataService().updateNow();
+  }
+
   Future<void> checkUpdateResultHandle({
     Map<String, dynamic>? data,
     bool handleError = false,
@@ -1832,9 +1855,15 @@ class AppController {
       if (assetSuffix.isNotEmpty && appPath.isPortable && system.isWindows) {
         finalSuffix = 'windows-amd64-compatible-portable.zip';
       }
-      final downloadUrl = ReleaseUpdates(
-        repository: repository,
-      ).downloadUrl(data, assetSuffix: finalSuffix);
+      final updates = ReleaseUpdates(repository: repository);
+      final asset = updates.assetFor(data, assetSuffix: finalSuffix);
+      // T179: when the exact asset and its GitHub digest are known,
+      // download and install in-app; otherwise keep the browser path.
+      if (asset != null && asset.sha256 != null) {
+        await _downloadAndInstallUpdate(asset);
+        return;
+      }
+      final downloadUrl = updates.downloadUrl(data, assetSuffix: finalSuffix);
 
       globalState.openUrl(downloadUrl);
     } else if (handleError) {
@@ -1842,6 +1871,111 @@ class AppController {
         title: appLocalizations.checkUpdate,
         message: TextSpan(text: appLocalizations.checkUpdateError),
         cancelable: false,
+      );
+    }
+  }
+
+  /// T179: in-app update — download the validated asset with a
+  /// cancellable progress dialog, verify its SHA-256 against the
+  /// digest GitHub reports, then hand it to the platform installer.
+  /// Every failure says what happened and what to do instead.
+  Future<void> _downloadAndInstallUpdate(ReleaseAsset asset) async {
+    final dialogContext = globalState.navigatorKey.currentState?.context;
+    if (dialogContext == null || !dialogContext.mounted) {
+      globalState.openUrl(asset.url);
+      return;
+    }
+    final installer = UpdateInstaller();
+    final cancelToken = CancelToken();
+    final progress = ValueNotifier<double?>(null);
+    final verifying = ValueNotifier<bool>(false);
+    var dialogOpen = true;
+    void closeDialog() {
+      if (dialogOpen && dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+      dialogOpen = false;
+    }
+
+    unawaited(
+      showDialog<void>(
+        context: dialogContext,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(appLocalizations.discoverNewVersion),
+          content: ValueListenableBuilder<bool>(
+            valueListenable: verifying,
+            builder: (context, isVerifying, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isVerifying
+                      ? appLocalizations.updateVerifying
+                      : appLocalizations.updateDownloading,
+                ),
+                const SizedBox(height: 16),
+                ValueListenableBuilder<double?>(
+                  valueListenable: progress,
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: isVerifying ? null : value,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                cancelToken.cancel('user');
+                closeDialog();
+              },
+              child: Text(appLocalizations.cancel),
+            ),
+          ],
+        ),
+      ).whenComplete(() => dialogOpen = false),
+    );
+
+    File? file;
+    try {
+      file = await installer.download(
+        asset,
+        cancelToken: cancelToken,
+        onProgress: (received, total) {
+          if (total > 0) progress.value = received / total;
+        },
+      );
+    } on DioException catch (e) {
+      closeDialog();
+      if (e.type == DioExceptionType.cancel) return;
+      globalState.showNotifier(
+        appLocalizations.updateDownloadFailedReason(e.message ?? e.type.name),
+      );
+      return;
+    } catch (e) {
+      closeDialog();
+      globalState.showNotifier(
+        appLocalizations.updateDownloadFailedReason(e.toString()),
+      );
+      return;
+    }
+
+    verifying.value = true;
+    final verified = await installer.verify(file, asset.sha256!);
+    if (!verified) {
+      try {
+        await file.delete();
+      } catch (_) {}
+      closeDialog();
+      globalState.showNotifier(appLocalizations.updateVerifyFailed);
+      return;
+    }
+    closeDialog();
+    final launchError = await installer.launchInstaller(file);
+    if (launchError != null) {
+      globalState.showNotifier(
+        appLocalizations.updateInstallLaunchFailed(launchError),
       );
     }
   }
@@ -2000,6 +2134,9 @@ class AppController {
       autoUpdateProfiles();
     });
     autoCheckUpdate();
+    // T194: pull the city database on first launch (silent; a failed
+    // attempt simply retries on the next launch).
+    unawaited(GeoDataService().ensureData());
 
     final isWindowVisible = await window?.isVisible ?? false;
     if (isWindowVisible) {
@@ -2610,10 +2747,12 @@ class AppController {
     if (configJson['dav'] is Map) {
       final davMap = Map<String, dynamic>.from(configJson['dav'] as Map);
       if (davMap['user'] is String) {
-        davMap['user'] = utils.encryptSecret(davMap['user'] as String);
+        davMap['user'] = await utils.encryptSecret(davMap['user'] as String);
       }
       if (davMap['password'] is String) {
-        davMap['password'] = utils.encryptSecret(davMap['password'] as String);
+        davMap['password'] = await utils.encryptSecret(
+          davMap['password'] as String,
+        );
       }
       configJson['dav'] = davMap;
     }
@@ -2665,7 +2804,7 @@ class AppController {
       final tempConfigFile = File(
         join(
           tempDir.path,
-          'bettbox_config_${DateTime.now().millisecondsSinceEpoch}.tmp',
+          'angelamihomo_config_${DateTime.now().millisecondsSinceEpoch}.tmp',
         ),
       );
       await tempConfigFile.writeAsString(configStr);
@@ -3017,11 +3156,15 @@ class AppController {
     var tempConfig = Config.compatibleFromJson(
       json.decode(utf8.decode(configContent)),
     );
+    var davCredentialsLost = false;
     if (tempConfig.dav != null) {
+      final davUser = await utils.decryptSecret(tempConfig.dav!.user);
+      final davPassword = await utils.decryptSecret(tempConfig.dav!.password);
+      davCredentialsLost = davUser == null || davPassword == null;
       tempConfig = tempConfig.copyWith(
         dav: tempConfig.dav!.copyWith(
-          user: utils.decryptSecret(tempConfig.dav!.user),
-          password: utils.decryptSecret(tempConfig.dav!.password),
+          user: davUser ?? '',
+          password: davPassword ?? '',
         ),
       );
     }
@@ -3042,6 +3185,12 @@ class AppController {
 
     _recovery(tempConfig, recoveryOption);
     await savePreferences();
+    if (davCredentialsLost) {
+      // The backup's DAV section was encrypted with another install's
+      // key (T168): say so plainly instead of storing ciphertext or
+      // failing the whole restore.
+      globalState.showNotifier(appLocalizations.davCredentialsNotRestored);
+    }
     if (globalState.isStart) {
       await applyProfile(silence: true);
     }

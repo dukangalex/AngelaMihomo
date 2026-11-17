@@ -1,5 +1,5 @@
-import 'package:bett_box/common/system_explicit.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/common/system_explicit.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

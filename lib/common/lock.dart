@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
+import 'package:angelamihomo/common/common.dart';
 
 class SingleInstanceLock {
   static SingleInstanceLock? _instance;

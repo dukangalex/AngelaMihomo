@@ -60,6 +60,14 @@ var (
 )
 
 func init() {
+	// Memory discipline (T208, measured 2026-11-17): the dashboard's
+	// memory figure counts heap the runtime holds on to, and the
+	// default GC target (GOGC=100) lets it sit at roughly twice the
+	// live set. Halving the GC target and adding a generous soft
+	// limit keeps the resident figure close to the live set without
+	// starving bursty work (config applies, provider syncs).
+	debug.SetGCPercent(50)
+	debug.SetMemoryLimit(128 << 20)
 	toolbox.Setup(toolbox.Host{
 		Notify: func(kind string, data any) {
 			sendMessage(Message{Type: MessageType(kind), Data: data})
@@ -776,6 +784,60 @@ func handleGetCountryCode(ip string, fn func(value string)) {
 			return
 		}
 		fn(codes[0])
+	}()
+}
+
+type ipGeoResult struct {
+	CountryCode string `json:"countryCode"`
+	ASN         string `json:"asn"`
+	Org         string `json:"org"`
+	Region      string `json:"region"`
+	City        string `json:"city"`
+}
+
+// AngelaMihomo (chain.26, T100): all IP geolocation enrichment is
+// resolved locally against the kernel's bundled GeoIP/ASN databases.
+// Nothing about the queried IP leaves the device; when a database is
+// absent the corresponding fields simply stay empty.
+func handleGetIpGeo(ip string, fn func(value string)) {
+	go func() {
+		runLock.Lock()
+		defer runLock.Unlock()
+		parsed := net.ParseIP(ip)
+		if parsed == nil {
+			fn("")
+			return
+		}
+		result := ipGeoResult{}
+		if codes := mmdb.IPInstance().LookupCode(parsed); len(codes) > 0 {
+			result.CountryCode = strings.ToUpper(codes[0])
+		}
+		// ASNInstance aborts the process when its database file is
+		// missing, so only touch it when the file is actually there.
+		if _, err := os.Stat(constant.Path.ASN()); err == nil {
+			if asn, org := mmdb.ASNInstance().LookupASN(parsed); asn != "" && asn != "0" {
+				result.ASN = asn
+				result.Org = org
+			}
+		}
+		// AngelaMihomo (chain.26, T194): city/region come from the
+		// project-hosted city database (amcity.bin in the home dir).
+		// The kernel's country database stays authoritative: the city
+		// is only adopted when both sources agree on the country, so a
+		// stale or mismatched city cell can never move an IP across
+		// borders.
+		if result.CountryCode != "" {
+			if cc, region, city, ok := lookupCity(parsed); ok && cc == result.CountryCode {
+				result.Region = region
+				result.City = city
+			}
+		}
+		data, err := json.Marshal(result)
+		if err != nil {
+			fn("")
+			return
+		}
+		fn(string(data))
 	}()
 }
 

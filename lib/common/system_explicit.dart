@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/enum/enum.dart';
 
 /// Persist the selected options before rebuilding the active runtime config.
 /// Updating general core settings alone does not apply routing rules.

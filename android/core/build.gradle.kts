@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "app.angelabettbox.core"
+    namespace = "app.angelamihomo.core"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 

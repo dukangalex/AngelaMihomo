@@ -1,4 +1,4 @@
-import 'package:bett_box/models/core.dart';
+import 'package:angelamihomo/models/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T128: the core status payload carries the core's self-reported

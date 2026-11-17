@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 class TvQrImportDialog extends StatefulWidget {
@@ -928,7 +928,7 @@ let currentLang = ${isZh ? "'zh'" : "'en'"};
 
 function toggleLang() {
   const next = currentLang === 'zh' ? 'en' : 'zh';
-  try { localStorage.setItem('bettbox_tv_lang', next); } catch (_) {}
+  try { localStorage.setItem('angelamihomo_tv_lang', next); } catch (_) {}
   applyLang(next);
 }
 
@@ -1067,7 +1067,7 @@ async function submitFile() {
 }
 
 try {
-  const saved = localStorage.getItem('bettbox_tv_lang');
+  const saved = localStorage.getItem('angelamihomo_tv_lang');
   if (saved === 'zh' || saved === 'en') {
     currentLang = saved;
   }

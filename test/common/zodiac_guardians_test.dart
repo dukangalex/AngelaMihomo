@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/l10n/l10n.dart';
-import 'package:bett_box/providers/providers.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
+import 'package:angelamihomo/providers/providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,10 +35,7 @@ void main() {
       for (final theme in zodiacThemes) {
         final guardian = zodiacGuardianForTheme(theme.id);
         expect(guardian, isNotNull, reason: '${theme.id} needs a guardian');
-        expect(
-          guardian!.assetPath,
-          'assets/images/guardians/${theme.id}.webp',
-        );
+        expect(guardian!.assetPath, 'assets/images/guardians/${theme.id}.webp');
         expect(
           File(guardian.assetPath).existsSync(),
           isTrue,
@@ -73,7 +70,10 @@ void main() {
         ),
         '射手座',
       );
-      expect(zodiacGuardianSignName('sagittarius', const Locale('en')), 'Sagittarius');
+      expect(
+        zodiacGuardianSignName('sagittarius', const Locale('en')),
+        'Sagittarius',
+      );
       expect(zodiacGuardianSignName('cancer', const Locale('ja')), '蟹座');
       expect(zodiacGuardianSignName('scorpio', const Locale('ru')), 'Скорпион');
       expect(zodiacGuardianSignName('libra', const Locale('fa')), 'میزان');
@@ -100,9 +100,7 @@ void main() {
         // overrides, so re-pumping with another label needs a new key.
         key: ValueKey((label, showGuardian)),
         overrides: [
-          currentPageLabelProvider.overrideWith(
-            () => _FixedPageLabel(label),
-          ),
+          currentPageLabelProvider.overrideWith(() => _FixedPageLabel(label)),
         ],
         child: MaterialApp(
           theme: theme,
@@ -177,9 +175,7 @@ void main() {
     expect(xScales(), contains(-1.0));
   });
 
-  testWidgets('backdrop renders no guardian when switched off', (
-    tester,
-  ) async {
+  testWidgets('backdrop renders no guardian when switched off', (tester) async {
     await pumpBackdrop(tester, showGuardian: false);
     expect(find.byType(CustomPaint), findsWidgets);
     expect(find.byType(Image), findsNothing);

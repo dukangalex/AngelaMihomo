@@ -1,7 +1,7 @@
-import 'package:bett_box/common/app_localizations.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/common/string.dart';
-import 'package:bett_box/models/common.dart' show redactSensitiveText;
+import 'package:angelamihomo/common/app_localizations.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/common/string.dart';
+import 'package:angelamihomo/models/common.dart' show redactSensitiveText;
 
 /// User-facing failure wording (T150, user directive 2026-11-15: every
 /// failure must state its concrete reason plus a workable next step —
@@ -83,6 +83,29 @@ String? missingRuleSetNoticeOf(Object error) {
   return name == null ? null : appLocalizations.ruleSetMissing(name);
 }
 
+/// Whether [error] is the core rejecting a downloaded rule-set file:
+/// the .mrs payload's embedded behavior does not match the behavior
+/// the profile declares for that provider ("invalid behavior"), or
+/// the payload is not a rule-set file in the declared format at all
+/// ("invalid MrsMagic bytes", "invalid format"). All three mean the
+/// file served by the subscription or converter source is wrong for
+/// this rule-set; the app and its bundled copy are not at fault
+/// (T206 diagnosis, 2026-11-17).
+bool isRuleSetFileMismatch(Object error) {
+  final text = error.toString();
+  return text.contains('invalid behavior') ||
+      text.contains('invalid MrsMagic bytes') ||
+      text.contains('invalid format');
+}
+
+/// The dedicated notice for a rule-set file mismatch: the concrete
+/// reason plus the remedy, instead of the core's bare wording
+/// (user directive 2026-11-17, on top of the T150 wording rule).
+String? ruleSetFileMismatchNoticeOf(Object error) =>
+    isRuleSetFileMismatch(error)
+    ? appLocalizations.ruleSetFileMismatch
+    : null;
+
 /// The error's own message with credentials masked out.
 String redactedReasonOf(Object error) =>
     redactSensitiveText(error.formatError);
@@ -93,6 +116,7 @@ String redactedReasonOf(Object error) =>
 String failureNoticeOf(Object error) =>
     chainStaleNoticeOf(error) ??
     missingRuleSetNoticeOf(error) ??
+    ruleSetFileMismatchNoticeOf(error) ??
     redactedReasonOf(error);
 
 /// Full text for a failed profile switch. A stale chain selection gets

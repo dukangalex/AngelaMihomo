@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/clash/interface.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:intl/intl.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -497,6 +497,38 @@ class ClashCore {
       return null;
     }
     return IpInfo(ip: ip, countryCode: countryCode);
+  }
+
+  // AngelaMihomo (chain.26, T100): local GeoIP/ASN enrichment served
+  // by the core from its bundled databases. Returns null when the core
+  // has nothing for this IP; never performs a network request.
+  Future<IpInfo?> getIpGeo(String ip) async {
+    final raw = await clashInterface.getIpGeo(ip);
+    if (raw.isEmpty) return null;
+    try {
+      final decoded = json.decode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final countryCode = decoded['countryCode']?.toString() ?? '';
+      if (countryCode.isEmpty) return null;
+      final asnNumber = decoded['asn']?.toString() ?? '';
+      final org = decoded['org']?.toString() ?? '';
+      // T194: region/city from the project-hosted city database; the
+      // core only sends them when its country agrees with the kernel
+      // country database, so they are safe to surface as-is.
+      final region = decoded['region']?.toString() ?? '';
+      final city = decoded['city']?.toString() ?? '';
+      return IpInfo(
+        ip: ip,
+        countryCode: countryCode,
+        province: region.isEmpty ? null : region,
+        city: city.isEmpty ? null : city,
+        asn: asnNumber.isEmpty ? null : 'AS$asnNumber',
+        asName: org.isEmpty ? null : org,
+        isp: org.isEmpty ? null : org,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<({Traffic now, Traffic total})> getTrafficSnapshot() async {

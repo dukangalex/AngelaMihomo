@@ -2,13 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
-import 'constant.dart';
 import 'path.dart';
-import 'request.dart';
 import 'route_icon.dart';
 import 'string.dart';
 
@@ -80,12 +78,23 @@ Profile profileWithScriptChoice(Profile profile, String? choice) {
 }
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
-const _managedScriptUrl =
-    'https://raw.githubusercontent.com/$repository/main/$_managedScriptAsset';
-const _routeCatalogUrl =
-    'https://raw.githubusercontent.com/$repository/main/$_routeCatalogAsset';
 const _routeIconBaseUrl =
+    'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
+
+/// Pre-T214 icon base under the upstream org. Stored profiles and
+/// group configs still carry URLs with this prefix; they keep
+/// resolving to the bundled assets so existing setups do not lose
+/// their icons. New URLs are always built on [_routeIconBaseUrl].
+const _legacyRouteIconBaseUrl =
     'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+
+String? _routeIconBaseOf(String url) {
+  if (url.startsWith(_routeIconBaseUrl)) return _routeIconBaseUrl;
+  if (url.startsWith(_legacyRouteIconBaseUrl)) {
+    return _legacyRouteIconBaseUrl;
+  }
+  return null;
+}
 const _routeIconCommonDir = 'common/';
 const _routeIconAssetDir = 'assets/route_svg/';
 final _versionPattern = RegExp(r'^//\s*@version\s+(\d+)\s*$', multiLine: true);
@@ -103,11 +112,18 @@ Future<void> loadBundledRouteIcons() => _bundledRouteIconsLoad ??= () async {
 }();
 
 String? routeIconAsset(String? url) {
-  if (url == null || !url.startsWith(_routeIconBaseUrl)) return null;
+  if (url == null || _routeIconBaseOf(url) == null) return null;
   final icon = Uri.tryParse(url)?.pathSegments.lastOrNull;
   if (icon == null || !_bundledRouteIcons.contains(icon)) return null;
   return '$_routeIconAssetDir$icon';
 }
+
+/// Whether [url] addresses the built-in route icon set. Since chain.26
+/// (T167) every catalog icon ships inside the app, so these URLs resolve
+/// locally via [routeIconAsset] and must never be fetched over the
+/// network; an unbundled one renders the default icon instead.
+bool isRouteIconUrl(String? url) =>
+    url != null && _routeIconBaseOf(url) != null;
 
 final _prefixStart = RegExp(r'[\p{L}\p{N}]', unicode: true);
 final _prefixPattern = RegExp(
@@ -178,8 +194,9 @@ IconSet routeIconSet(RouteCatalog catalog) => IconSet(
 );
 
 String routeIconValue(String url) {
-  if (!url.startsWith(_routeIconBaseUrl)) return url;
-  final path = Uri.decodeComponent(url.substring(_routeIconBaseUrl.length));
+  final base = _routeIconBaseOf(url);
+  if (base == null) return url;
+  final path = Uri.decodeComponent(url.substring(base.length));
   return path.startsWith(_routeIconCommonDir)
       ? path.substring(_routeIconCommonDir.length)
       : path;
@@ -496,10 +513,11 @@ class ManagedScript {
     final version = props.syncedVersion;
     if (version == null) return null;
     if (version.startsWith(_customVersionPrefix)) return version;
-    if (compareVersions(version, bundledVersion) < 0) {
-      return null;
-    }
-    return version;
+    // AngelaMihomo (chain.26, T166): remote sync is gone — the bundled
+    // script and route catalog are the only built-in source and they
+    // update with the app. A stored sync version from an older install
+    // is ignored, so its files fall back to the bundled copies.
+    return null;
   }
 
   static String version(ManagedProps props) =>
@@ -560,57 +578,6 @@ class ManagedScript {
     await temp.parent.create(recursive: true);
     await temp.writeAsString(content, flush: true);
     await temp.rename(file.path);
-  }
-
-  static Future<String> _fetchCatalog() async {
-    final res = await request.getTextResponseForUrl(
-      mirrorUrl(_routeCatalogUrl),
-    );
-    final content = res.data;
-    if (content is! String) {
-      throw 'Invalid route catalog';
-    }
-    final index = await _parseCatalog(content);
-    if (index.catalog.sets.isEmpty) {
-      throw 'Invalid route catalog';
-    }
-    return content;
-  }
-
-  static Future<({bool updated, String? syncedVersion})> sync(
-    ManagedProps props,
-  ) async {
-    final (res, catalog) = await (
-      request.getTextResponseForUrl(mirrorUrl(_managedScriptUrl)),
-      _fetchCatalog(),
-    ).wait;
-    final content = res.data;
-    final next = content is String ? parseVersion(content) : null;
-    if (content is! String ||
-        next == null ||
-        !content.contains('function main')) {
-      throw 'Invalid script';
-    }
-    final scriptChanged = content != await read(props);
-    final catalogChanged = catalog != await _readCatalog(props);
-    if (!scriptChanged && !catalogChanged && !isCustom(props)) {
-      return (updated: false, syncedVersion: syncedVersion(props));
-    }
-    final (bundledScript, bundledCatalog) = await (
-      readBundled(),
-      rootBundle.loadString(_routeCatalogAsset, cache: false),
-    ).wait;
-    if (content == bundledScript && catalog == bundledCatalog) {
-      await restore();
-      return (updated: true, syncedVersion: null);
-    }
-    if (scriptChanged) {
-      await _write(File(await appPath.getScriptPath(managedScriptId)), content);
-    }
-    if (catalogChanged) {
-      await _write(await _catalogFile(), catalog);
-    }
-    return (updated: true, syncedVersion: next);
   }
 
   static Future<void> restore() async {

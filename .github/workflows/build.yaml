@@ -182,7 +182,7 @@ jobs:
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update -o Acquire::Retries=3 -o Acquire::ForceIPv4=true
-          sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::ForceIPv4=true --fix-missing libcurl4-openssl-dev ninja-build libgtk-3-dev rpm
+          sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::ForceIPv4=true --fix-missing libcurl4-openssl-dev ninja-build libgtk-3-dev libsecret-1-dev rpm
 
       - name: Setup Golang
         uses: actions/setup-go@v6
@@ -240,7 +240,7 @@ jobs:
           dart setup.dart ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }} ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }}
 
       - name: Verify production APK signatures
-        if: matrix.platform == 'android' && env.BETTBOX_ALLOW_DEBUG_PREVIEW != 'true'
+        if: matrix.platform == 'android' && env.ANGELAMIHOMO_ALLOW_DEBUG_PREVIEW != 'true'
         shell: bash
         env:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}

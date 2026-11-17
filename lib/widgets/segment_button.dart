@@ -1,5 +1,5 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SegmentOption<T> {

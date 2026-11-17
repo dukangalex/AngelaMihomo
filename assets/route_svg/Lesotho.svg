@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>莱索托</title>
+<defs>
+<mask id="ls-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="ls-blue" x1="72" y1="21.4745" x2="72" y2="51.6479" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="ls-white" x1="72" y1="51.6479" x2="72" y2="91.8792" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F5F5" /><stop offset="1" stop-color="#E6E6E6" /></linearGradient>
+<linearGradient id="ls-green" x1="72" y1="91.8792" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="ls-black" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3D3838" /><stop offset="1" stop-color="#181616" /></linearGradient>
+</defs>
+<g mask="url(#ls-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 30.1734 h -140.9162 Z" fill="url(#ls-blue)" stroke="url(#ls-blue)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 51.6479 h 140.9162 v 40.2312 h -140.9162 Z" fill="url(#ls-white)" stroke="url(#ls-white)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 91.8792 h 140.9162 v 30.1734 h -140.9162 Z" fill="url(#ls-green)" stroke="url(#ls-green)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 75.4611,74.0516 l 0,-13.464 l -7.348,0 l 0,13.464 L 59.2471,82.9395 a 14.674,14.674 0 0,0 25.08,0 z" fill="url(#ls-black)" />
+</g>
+</svg>

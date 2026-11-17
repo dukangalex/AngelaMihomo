@@ -1,14 +1,15 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/providers/app.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/providers/app.dart';
 
 import 'app_localizations.dart';
 import 'constant.dart';
+import 'deepspace_themes.dart';
 import 'zodiac_themes.dart';
 
 /// The guardian deity of one zodiac theme (T159; user spec finalised
@@ -369,19 +370,61 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
             width: math.min(size.width * variant.widthFactor, 400),
             child: Opacity(
               // The figure is a background presence, never the scene's
-              // subject (user correction 2026-11-16): 0.6 keeps it
-              // clearly discernible behind sparse sub-page content
-              // without outshining the cards above it.
+              // subject (user correction 2026-11-16): chain.26 weakens
+              // it (T160) and the edge-feather masks below sink it into
+              // the backdrop's light field — but at 0.45 with the
+              // stronger blur it read as too faint on the user's real
+              // device (2026-11-17, T193), so the presence is raised
+              // to 0.6 and the blur eased in the backdrop.
               opacity: 0.6,
-              child: ClipRect(
-                child: Transform.scale(
-                  scale: variant.zoom,
-                  alignment: variant.focal,
-                  child: Transform.flip(
-                    flipX: variant.flipX,
-                    child: Image.asset(
-                      active.guardian.assetPath,
-                      fit: BoxFit.fitWidth,
+              child: ShaderMask(
+                // T188: feather the artwork's edges into the
+                // background on both axes so the figure reads as grown
+                // into the backdrop rather than pasted on it. The
+                // earlier single radial dissolve (T160) left the
+                // asset's straight rectangular edges visible — alpha
+                // was still high where the rectangle's sides sat
+                // inside the radial falloff — and the user's real
+                // device still read it as a pasted picture
+                // (2026-11-17). A box feather drives alpha to exactly
+                // zero at every side of the asset rectangle, so no
+                // hard edge can survive anywhere on its perimeter.
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (rect) => const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.transparent,
+                    Colors.white,
+                    Colors.white,
+                    Colors.transparent,
+                  ],
+                  stops: [0, 0.22, 0.78, 1],
+                ).createShader(rect),
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [0, 0.12, 0.78, 1],
+                  ).createShader(rect),
+                  child: ClipRect(
+                    child: Transform.scale(
+                      scale: variant.zoom,
+                      alignment: variant.focal,
+                      child: Transform.flip(
+                        flipX: variant.flipX,
+                        child: Image.asset(
+                          active.guardian.assetPath,
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -410,13 +453,15 @@ class ZodiacGuardianBackdropFigure extends ConsumerWidget {
   }
 }
 
-/// The guardian name plate (T159): part of the background, not a
-/// fixed overlay. [ZodiacBackdrop] embeds it as its topmost layer —
-/// still below all page content, so bottom sheets, dialogs and cards
-/// cover it naturally (user correction 2026-11-16: the name must not
-/// be pinned above everything). Lower-left, above the bottom
-/// navigation bar's reserve, in the page background of every page
-/// that paints the zodiac backdrop.
+/// The guardian name plate (T159): part of the background painting,
+/// not a fixed overlay. [ZodiacBackdrop] embeds it as its topmost
+/// layer — still below all page content, so bottom sheets, dialogs
+/// and cards cover it naturally (user correction 2026-11-16: the name
+/// must not be pinned above everything). Chain.26 (T161/T176): the
+/// plate moves to the lower-right corner (the user found the right
+/// side emptier) and is dimmed to background level — smaller, lighter
+/// and translucent like the backdrop's watermark — so scrolling lists
+/// no longer show a bright label shining through the glass cards.
 class ZodiacGuardianPlate extends StatelessWidget {
   const ZodiacGuardianPlate({super.key});
 
@@ -435,30 +480,93 @@ class ZodiacGuardianPlate extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            left: 15,
+            right: 15,
             bottom: getFloatingBottomBarReserveHeight(context) + 22,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   guardian.localizedName(l10n),
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
-                    color: variant.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 6,
+                    color: variant.textPrimary.withValues(alpha: 0.55),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3.5,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
-                    color: variant.textSecondary,
-                    fontSize: 9.5,
-                    letterSpacing: 2.4,
+                    color: variant.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 8.5,
+                    letterSpacing: 1.8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The deep-space event name plate (T191, user 2026-11-17: the
+/// deep-space series carries a plate too). Same seat and voice as
+/// the guardian plate — lower-right corner, dimmed to background
+/// level, part of the backdrop painting rather than an overlay —
+/// naming the event instead of a guardian: the event's Chinese name
+/// over its Latin name and year.
+class DeepSpacePlate extends StatelessWidget {
+  const DeepSpacePlate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final zodiac = context.zodiac;
+    if (zodiac == null || zodiac.motif == null) {
+      return const SizedBox.expand();
+    }
+    final def = deepSpaceThemeById(zodiac.themeId);
+    if (def == null) return const SizedBox.expand();
+    final variant = zodiac.variant;
+    final title = def.nameZh.split('·').first.trim();
+    final latin = def.nameEn.split('·').first.trim().toUpperCase();
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned(
+            right: 15,
+            bottom: getFloatingBottomBarReserveHeight(context) + 22,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    decoration: TextDecoration.none,
+                    color: variant.textPrimary.withValues(alpha: 0.55),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3.5,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$latin · ${def.year}',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    decoration: TextDecoration.none,
+                    color: variant.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 8.5,
+                    letterSpacing: 1.8,
                   ),
                 ),
               ],

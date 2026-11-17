@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +30,7 @@ void main() {
   }
 
   setUpAll(() async {
-    home = await Directory.systemTemp.createTemp('bettbox_preferences_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_preferences_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

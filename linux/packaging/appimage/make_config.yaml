@@ -14,7 +14,7 @@ categories:
   - Network
 
 startup_notify: true
-startup_wm_class: app.angelabettbox
+startup_wm_class: app.angelamihomo
 
 include: []
 extra_files:

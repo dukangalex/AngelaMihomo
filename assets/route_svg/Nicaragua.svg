@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>尼加拉瓜</title>
+<defs>
+<mask id="ni-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="ni-blue" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="ni-white" x1="72" y1="55.0005" x2="72" y2="88.5266" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F5F5" /><stop offset="1" stop-color="#E6E6E6" /></linearGradient>
+<linearGradient id="ni-emblem-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+<linearGradient id="ni-emblem-blue" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3B7FE4" /><stop offset="1" stop-color="#1A359E" /></linearGradient>
+<linearGradient id="ni-emblem-sky" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#59B1FF" /><stop offset="1" stop-color="#3B7FE4" /></linearGradient>
+<linearGradient id="ni-emblem-green" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+</defs>
+<g mask="url(#ni-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#ni-blue)" stroke="url(#ni-blue)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 1.329 54.8 h 140.9162 v 34.0 h -140.9162 Z" fill="url(#ni-white)" stroke="url(#ni-white)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 71.7871,57.7236 a 14.04,14.04 0 0,0 0,28.08 a 14.04,14.04 0 0,0 0,-28.08 z m 0,22.05 a 8.01,8.01 0 0,1 0,-16.02 a 8.01,8.01 0 0,1 0,16.02 z" fill="url(#ni-emblem-gold)" />
+<path d="M 78.7351,73.7615 L 71.7871,71.7635 l -6.948,1.998 l -2.304,4.014 l 18.504,0 z" fill="url(#ni-emblem-blue)" />
+<path d="M 71.7871,61.7375 L 67.1611,69.7836 l 4.626,1.98 l 4.626,-1.998 z" fill="url(#ni-emblem-sky)" />
+<path d="M 64.8391,73.7615 l 13.896,0 L 76.4131,69.7836 l -9.252,0 z" fill="url(#ni-emblem-green)" />
+</g>
+</svg>

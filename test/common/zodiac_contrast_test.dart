@@ -1,11 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/common/zodiac_themes.dart';
+import 'package:angelamihomo/common/deepspace_themes.dart';
+import 'package:angelamihomo/common/zodiac_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// T175 readability floor (DESIGN doc, 2026-11-16): every theme's
-/// secondary text must keep at least 4.5:1 contrast against the card
+/// T175 readability floor, raised by T177 (DESIGN doc, 2026-11-16): every theme's
+/// secondary text must keep at least 5.5:1 contrast against the card
 /// tone in the worst case — the surfaceVariant composited over the
 /// background's lightest stop. Mirrors the guard in the token
 /// generator (t117-gen-zodiac-data.py) so a future token edit cannot
@@ -28,9 +29,9 @@ double _contrast(Color a, Color b) {
 }
 
 void main() {
-  group('zodiac textSecondary contrast floor (T175)', () {
+  group('zodiac textSecondary contrast floor (T177)', () {
     for (final def in zodiacThemeDefs) {
-      test('${def.id} stays at or above 4.5:1 on its worst-case card', () {
+      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
         final variant = def.variant;
         final stops = variant.background.isGradient
             ? variant.background.stops!
@@ -41,7 +42,7 @@ void main() {
         final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
         expect(
           _contrast(variant.textSecondary, worstCard),
-          greaterThanOrEqualTo(4.5),
+          greaterThanOrEqualTo(5.5),
           reason:
               '${def.id} textSecondary ${variant.textSecondary} vs worst '
               'card $worstCard',
@@ -49,4 +50,27 @@ void main() {
       });
     }
   });
+
+  group('deep space textSecondary contrast floor (T181)', () {
+    for (final def in deepSpaceThemeDefs) {
+      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
+        final variant = def.variant;
+        final stops = variant.background.isGradient
+            ? variant.background.stops!
+            : [variant.background.firstColor];
+        final lightest = stops.reduce(
+          (a, b) => _luminance(a) >= _luminance(b) ? a : b,
+        );
+        final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
+        expect(
+          _contrast(variant.textSecondary, worstCard),
+          greaterThanOrEqualTo(5.5),
+          reason:
+              '${def.id} textSecondary ${variant.textSecondary} vs worst '
+              'card $worstCard',
+        );
+      });
+    }
+  });
+
 }

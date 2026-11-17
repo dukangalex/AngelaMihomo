@@ -1,6 +1,6 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,6 +35,7 @@ class QuicGoDisableGsoItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.quicGoDisableGso),
+      subtitle: Text(appLocalizations.quicGoDisableGsoDesc),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {
@@ -65,6 +66,7 @@ class QuicGoDisableEcnItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.quicGoDisableEcn),
+      subtitle: Text(appLocalizations.quicGoDisableEcnDesc),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {
@@ -95,6 +97,7 @@ class DialerIp4pConvertItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.dialerIp4pConvert),
+      subtitle: Text(appLocalizations.dialerIp4pConvertDesc),
       delegate: SwitchDelegate(
         value: value,
         onChanged: (bool newValue) async {

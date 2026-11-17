@@ -1,4 +1,4 @@
-import 'package:bett_box/common/explicit_policy.dart';
+import 'package:angelamihomo/common/explicit_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

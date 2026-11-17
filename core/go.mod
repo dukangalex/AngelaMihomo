@@ -7,7 +7,6 @@ godebug default=go1.20
 replace github.com/metacubex/mihomo => ./Clash.Meta
 
 require (
-	github.com/appshubcc/go-iperf3 v0.1.0
 	github.com/metacubex/mihomo v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.11.0
 )
@@ -144,5 +143,5 @@ require (
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.10.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	google.golang.org/protobuf v1.34.2
 )

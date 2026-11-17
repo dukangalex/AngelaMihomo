@@ -1,5 +1,5 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/providers/providers.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/providers/providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/clash/interface.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/controller.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/l10n/l10n.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/proxies/common.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/controller.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/proxies/common.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -241,6 +241,31 @@ void main() {
       const DelayTestTarget(name: 'US-01', url: defaultTestUrl),
       const DelayTestTarget(name: 'HK-02', url: _entryTestUrl),
     });
+  });
+
+  testWidgets('result auto-dismisses after five seconds, failures included', (
+    tester,
+  ) async {
+    ClashCore.setHandlerForTesting(_FakeHandler(const {'JP-02': -1}));
+    await _pumpHarness(tester);
+
+    final controller = GlobalDelayTestController();
+    await globalDelayTest(controller: controller);
+    await tester.pump();
+
+    expect(controller.phase, GlobalDelayTestPhase.done);
+    expect(controller.failed, 1);
+
+    // Still up just before the five-second mark.
+    await tester.pump(const Duration(seconds: 4));
+    expect(controller.phase, GlobalDelayTestPhase.done);
+
+    // Gone once five seconds have passed, failures notwithstanding.
+    await tester.pump(const Duration(seconds: 2));
+    expect(controller.phase, GlobalDelayTestPhase.idle);
+
+    // Drain the bridge watchdog timer that every invoke leaves behind.
+    await tester.pump(const Duration(seconds: 30));
   });
 
   testWidgets('global run is rejected while a group test is running', (

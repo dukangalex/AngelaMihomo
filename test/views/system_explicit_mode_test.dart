@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/controller.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/l10n/l10n.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/system_explicit.dart';
-import 'package:bett_box/widgets/list.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/controller.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/system_explicit.dart';
+import 'package:angelamihomo/widgets/list.dart';
 import 'package:flutter/material.dart';
 import 'package:material_ui/material_ui.dart' as mui;
 import 'package:flutter/services.dart';

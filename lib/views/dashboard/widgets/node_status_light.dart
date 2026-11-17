@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/views/proxies/common.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/views/proxies/common.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -161,9 +161,7 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
         variant?.outline ??
         context.colorScheme.outlineVariant.withValues(alpha: 0.6);
     final haloColor = variant?.glow ?? statusColor.withValues(alpha: 0.30);
-    final sign = zodiac == null
-        ? null
-        : resolveZodiacTheme(zodiac.themeId).sign;
+    final sign = zodiac == null ? null : themeGlyphFor(zodiac.themeId);
 
     return AnimatedBuilder(
       animation: globalDelayTestController,

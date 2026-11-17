@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:bett_box/clash/message.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/clash/message.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
 
 mixin ClashInterface {
   Future<bool> init(InitParams params);
@@ -89,6 +89,8 @@ mixin ClashInterface {
   FutureOr<String> getTrafficSnapshot();
 
   FutureOr<String> getCountryCode(String ip);
+
+  FutureOr<String> getIpGeo(String ip);
 
   FutureOr<String> getMemory();
 
@@ -715,6 +717,11 @@ abstract class ClashHandlerInterface with ClashInterface {
   @override
   FutureOr<String> getCountryCode(String ip) {
     return invoke<String>(method: ActionMethod.getCountryCode, data: ip);
+  }
+
+  @override
+  FutureOr<String> getIpGeo(String ip) {
+    return invoke<String>(method: ActionMethod.getIpGeo, data: ip);
   }
 
   @override

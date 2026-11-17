@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bett_box/models/core.dart';
+import 'package:angelamihomo/models/core.dart';
 
 void main() {
   Map<String, dynamic> input({Object? include, Object? exclude}) => {

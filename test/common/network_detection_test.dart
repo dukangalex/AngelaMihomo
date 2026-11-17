@@ -2,12 +2,34 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Chain.26 (T100): checkIp now enriches its result through the core
+/// bridge (getIpGeo). Inject a no-op handler so the tests never start
+/// a desktop core; enrichment simply finds nothing.
+class _NoopCoreHandler extends ClashHandlerInterface {
+  @override
+  FutureOr<String> getIpGeo(String ip) => '';
+
+  @override
+  Future<bool> preload() async => true;
+
+  @override
+  FutureOr<void> reStart() {}
+
+  @override
+  FutureOr<bool> destroy() => true;
+
+  @override
+  Future<Object?> sendMessage(String message) async => null;
+}
 
 Future<void> _waitFor(bool Function() condition) async {
   final deadline = DateTime.now().add(const Duration(seconds: 5));
@@ -58,8 +80,16 @@ void main() {
   }
 
   setUpAll(() async {
+    ClashCore.setHandlerForTesting(_NoopCoreHandler());
     HttpOverrides.global = AngelaHttpOverrides();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    // Chain.26 (T100): exit-IP discovery now uses HTTPS trace
+    // endpoints only, which this fake proxy cannot serve; point the
+    // detector at the loopback fake instead (one request per check,
+    // as the assertions below expect).
+    request.exitIpSourcesOverride = [
+      'http://127.0.0.1:${server.port}/cdn-cgi/trace',
+    ];
     server.listen((request) async {
       if (request.method != 'GET') {
         request.response.statusCode = HttpStatus.badGateway;
@@ -82,6 +112,7 @@ void main() {
   });
 
   tearDownAll(() async {
+    request.exitIpSourcesOverride = null;
     release();
     await server.close(force: true);
   });

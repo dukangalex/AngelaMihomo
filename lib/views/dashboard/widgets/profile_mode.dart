@@ -1,9 +1,9 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
@@ -158,6 +158,13 @@ class _ProfileZone extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              // The status light lives at the card's top-right (T211):
+              // in the mode header row it crowded out the running-mode
+              // label on narrow screens.
+              tall
+                  ? const NodeStatusLight(compact: true)
+                  : const NodeStatusLight(),
             ],
           ),
           if (subtitle.isNotEmpty) ...[
@@ -233,9 +240,10 @@ class _ModeZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The narrow tall form keeps the light in its compact form and,
-    // like the former tall mode variant, does not repeat the status
-    // chips; the segmented mode switch is shared with the wide form.
+    // The status light moved to the profile zone's top-right (T211),
+    // so this header row carries only the mode label and, in the wide
+    // form, the status chips; the segmented mode switch is shared
+    // with the tall form, which does not repeat the chips.
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -245,13 +253,7 @@ class _ModeZone extends StatelessWidget {
             label: appLocalizations.runningMode,
             iconData: Icons.call_split_sharp,
           ),
-          actions: tall
-              ? const [NodeStatusLight(compact: true)]
-              : const [
-                  NodeStatusLight(),
-                  SizedBox(width: 2),
-                  _OutboundStatusChips(),
-                ],
+          actions: tall ? const [] : const [_OutboundStatusChips()],
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(10.ap, 6.ap, 10.ap, 8.ap),

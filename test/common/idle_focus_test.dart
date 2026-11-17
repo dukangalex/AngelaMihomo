@@ -1,5 +1,5 @@
-import 'package:bett_box/common/navigator.dart';
-import 'package:bett_box/widgets/builder.dart';
+import 'package:angelamihomo/common/navigator.dart';
+import 'package:angelamihomo/widgets/builder.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

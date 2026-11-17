@@ -24,7 +24,7 @@ generic_name: Angela Mihomo
 group: Applications/Internet
 
 startup_notify: true
-startup_wm_class: app.angelabettbox
+startup_wm_class: app.angelamihomo
 
 extra_files:
   linux/packaging/polkit/90-angelamihomo.rules: usr/share/polkit-1/rules.d/90-angelamihomo.rules

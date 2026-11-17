@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/views/dashboard/widgets/tile.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/views/dashboard/widgets/tile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// T147: layouts saved before the profile/mode merge name the old

@@ -1,13 +1,14 @@
 import 'dart:io';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/app.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/views/proxies/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/geo_data.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/app.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/views/proxies/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -54,7 +55,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     final syncItems = geoItems
         .where((geoItem) => geoItem.key != 'mrs')
         .toList();
-    updatingKeysNotifier.state = syncItems.map((e) => e.key).toSet();
+    updatingKeysNotifier.state = {...syncItems.map((e) => e.key), 'city'};
 
     final errors = <String>[];
     try {
@@ -81,6 +82,21 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           }
         }),
       );
+      try {
+        final outcome = await globalState.appController.updateGeoData();
+        if (outcome == GeoUpdateOutcome.failed ||
+            outcome == GeoUpdateOutcome.verifyFailed) {
+          errors.add(
+            '${appLocalizations.geoData}: ${appLocalizations.geoDataUpdateFailed}',
+          );
+        }
+      } catch (e) {
+        errors.add('${appLocalizations.geoData}: $e');
+      } finally {
+        if (mounted) {
+          updatingKeysNotifier.update((s) => Set.of(s)..remove('city'));
+        }
+      }
       if (errors.isNotEmpty) {
         globalState.showMessage(
           title: appLocalizations.syncFailed,
@@ -263,9 +279,10 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
               ],
             ),
             ...generateSection(
-              items: geoItems.map(
-                (geoItem) => GeoDataListItem(geoItem: geoItem),
-              ),
+              items: [
+                ...geoItems.map((geoItem) => GeoDataListItem(geoItem: geoItem)),
+                const CityDataListItem(),
+              ],
             ),
           ],
         ),
@@ -459,6 +476,213 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 ],
               ],
             ),
+    );
+  }
+}
+
+/// T194: the city-level geolocation database, listed with the other
+/// GEO resources at the user's direction. Unlike the core-managed
+/// files above it is pulled by the app itself (see GeoDataService),
+/// by default from the project's own data repository. The row
+/// mirrors the sibling rows (size · age, source URL, edit and sync
+/// chips): the source is editable like theirs (T201, the user's
+/// call — users decide their own data source), with the project
+/// repository as the default the edit dialog resets to.
+class CityDataListItem extends ConsumerStatefulWidget {
+  const CityDataListItem({super.key});
+
+  @override
+  ConsumerState<CityDataListItem> createState() => _CityDataListItemState();
+}
+
+class _CityDataListItemState extends ConsumerState<CityDataListItem> {
+  static const _releasesUrl =
+      'https://github.com/$geoDataRepository/releases';
+
+  String _repoAssetUrl(String tag) =>
+      'https://github.com/$geoDataRepository/releases/download/$tag/${GeoDataService.assetName}';
+
+  Future<(GeoDataMeta?, FileInfo?, String?, String?)> _load() async {
+    final service = GeoDataService();
+    final custom = await service.customSourceUrl();
+    final meta = await service.currentMeta();
+    // Before the first download the row used to show the releases
+    // page URL while every sibling row shows its file URL — and the
+    // same app in a downloaded state showed the file URL, which read
+    // as a platform difference (T216). Resolve the address the pull
+    // will actually use, the same way the pull resolves it.
+    final latestUrl = meta == null && custom == null
+        ? await service.latestDataAssetUrl()
+        : null;
+    if (meta == null) return (null, null, custom, latestUrl);
+    try {
+      final homePath = await appPath.homeDirPath;
+      final file = File(join(homePath, GeoDataService.dataFileName));
+      final info = FileInfo(
+        size: await file.length(),
+        lastModified: await file.lastModified(),
+      );
+      return (meta, info, custom, latestUrl);
+    } catch (_) {
+      return (meta, null, custom, latestUrl);
+    }
+  }
+
+  /// T201: edit the city database source, mirroring the sibling GEO
+  /// rows. The dialog's reset target is the project repository's
+  /// releases page; submitting it (or the URL already in effect)
+  /// restores the default channel. Any other URL becomes the source
+  /// and is synced from immediately, on this page.
+  Future<void> _updateUrl() async {
+    final service = GeoDataService();
+    final custom = await service.customSourceUrl();
+    final meta = await service.currentMeta();
+    final current =
+        custom ??
+        meta?.sourceUrl ??
+        (meta == null ? _releasesUrl : _repoAssetUrl(meta.tag));
+    final newUrl = await globalState.showCommonDialog<String>(
+      child: UpdateGeoUrlFormDialog(
+        title: appLocalizations.geoData,
+        url: current,
+        defaultValue: _releasesUrl,
+      ),
+    );
+    if (newUrl == null || !mounted) return;
+    try {
+      if (newUrl == _releasesUrl || newUrl == current) {
+        if (custom != null) {
+          await service.setCustomSourceUrl(null);
+          if (mounted) await _handleSync();
+        }
+        return;
+      }
+      if (!newUrl.isHttpUrl) {
+        throw 'Invalid url';
+      }
+      await service.setCustomSourceUrl(newUrl);
+      if (mounted) await _handleSync();
+    } catch (e) {
+      globalState.showMessage(
+        title: appLocalizations.geoData,
+        message: TextSpan(text: e.toString()),
+        cancelable: false,
+      );
+    }
+  }
+
+  Future<void> _handleSync() async {
+    final updatingKeysNotifier = ref.read(geoUpdatingKeysProvider.notifier);
+    if (ref.read(geoUpdatingKeysProvider).contains('city')) return;
+    updatingKeysNotifier.update((s) => Set.of(s)..add('city'));
+    try {
+      final outcome = await globalState.appController.updateGeoData();
+      if (!mounted) return;
+      final message = switch (outcome) {
+        GeoUpdateOutcome.updated => appLocalizations.geoDataUpdated,
+        GeoUpdateOutcome.alreadyLatest => appLocalizations.geoDataUpToDate,
+        GeoUpdateOutcome.verifyFailed => appLocalizations.geoDataVerifyFailed,
+        GeoUpdateOutcome.failed => appLocalizations.geoDataUpdateFailed,
+      };
+      context.showNotifier(message);
+    } finally {
+      if (mounted) {
+        updatingKeysNotifier.update((s) => Set.of(s)..remove('city'));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(geoUpdatingKeysProvider.select((s) => s.contains('city')), (
+      prev,
+      next,
+    ) {
+      if (prev == true && next == false && mounted) {
+        setState(() {});
+      }
+    });
+    final isSyncing = ref.watch(
+      geoUpdatingKeysProvider.select((s) => s.contains('city')),
+    );
+    return ListItem(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: Text(appLocalizations.geoData),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          FutureBuilder<(GeoDataMeta?, FileInfo?, String?, String?)>(
+            future: _load(),
+            builder: (_, snapshot) {
+              final height = globalState.measure.bodyMediumHeight;
+              final data = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  data == null) {
+                return SizedBox(width: height, height: height);
+              }
+              final (meta, info, custom, latestUrl) = data;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: height,
+                    child: Text(
+                      meta == null
+                          ? appLocalizations.geoDataNotDownloaded
+                          : info?.desc ?? meta.tag,
+                      style: context.textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    custom ??
+                        (meta == null
+                            ? (latestUrl ?? _releasesUrl)
+                            : _repoAssetUrl(meta.tag)),
+                    style: context.textTheme.bodyMedium?.toLight,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            runSpacing: 6,
+            spacing: 12,
+            runAlignment: WrapAlignment.center,
+            children: [
+              CommonChip(
+                avatar: const Icon(Icons.edit),
+                label: appLocalizations.edit,
+                onPressed: isSyncing ? null : _updateUrl,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  isSyncing
+                      ? const SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: Padding(
+                            padding: EdgeInsets.all(2),
+                            child: SyncedLoading(
+                              size: 26,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        )
+                      : CommonChip(
+                          avatar: const Icon(Icons.sync),
+                          label: appLocalizations.sync,
+                          onPressed: _handleSync,
+                        ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

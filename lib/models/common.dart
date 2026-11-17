@@ -3,8 +3,8 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -982,7 +982,7 @@ class IpInfo {
         json['status'] != null) {
       if (json['status'] != null && json['status'] != 'success') {
         throw FormatException(
-          'ip-api.com status not success: ${json['message']}',
+          'geo lookup status not success: ${json['message']}',
         );
       }
       final ip = (json['query'] ?? json['ip'])?.toString() ?? '';

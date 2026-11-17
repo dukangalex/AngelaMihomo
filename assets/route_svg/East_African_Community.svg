@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>东非共同体</title>
+<defs>
+<mask id="eac-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="eac-sky" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#8ED0F4" /><stop offset="1" stop-color="#438FC5" /></linearGradient>
+<linearGradient id="eac-white" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" /><stop offset="1" stop-color="#E8E8E8" /></linearGradient>
+<linearGradient id="eac-black" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3D3838" /><stop offset="1" stop-color="#181616" /></linearGradient>
+<linearGradient id="eac-green" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="eac-gold" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+<linearGradient id="eac-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+</defs>
+<g mask="url(#eac-board)">
+<path d="M 1.329 21.4745 h 140.9162 v 100.5781 h -140.9162 Z" fill="url(#eac-sky)" stroke="url(#eac-sky)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M -1.671 21.4745 h 146.9162 v 28.2019 h -146.9162 Z" fill="url(#eac-sky)" />
+<path d="M -1.671 49.6364 h 146.9162 v 4.0631 h -146.9162 Z" fill="url(#eac-white)" />
+<path d="M -1.671 53.6595 h 146.9162 v 7.0805 h -146.9162 Z" fill="url(#eac-black)" />
+<path d="M -1.671 60.7 h 146.9162 v 4.0631 h -146.9162 Z" fill="url(#eac-green)" />
+<path d="M -1.671 64.7231 h 146.9162 v 14.1209 h -146.9162 Z" fill="url(#eac-gold)" />
+<path d="M -1.671 78.804 h 146.9162 v 4.0631 h -146.9162 Z" fill="url(#eac-green)" />
+<path d="M -1.671 82.8271 h 146.9162 v 7.0805 h -146.9162 Z" fill="url(#eac-red)" />
+<path d="M -1.671 89.8676 h 146.9162 v 4.0631 h -146.9162 Z" fill="url(#eac-white)" />
+<path d="M -1.671 93.8907 h 146.9162 v 28.2019 h -146.9162 Z" fill="url(#eac-sky)" />
+<path d="M 58.6671 70.1236 a 13.12 13.12 0 1 0 26.24 0 a 13.12 13.12 0 1 0 -26.24 0 Z" fill="url(#eac-white)" />
+<path d="m 55.7971,80.9886 l 15.99,-5.945 l 15.99,5.945 l 0,5.535 L 55.7971,86.5236 Z" fill="url(#eac-white)" />
+</g>
+</svg>

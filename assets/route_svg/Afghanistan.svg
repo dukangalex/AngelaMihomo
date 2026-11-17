@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="144" height="144">
+<title>阿富汗</title>
+<defs>
+<mask id="af-board" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="144" height="144" mask-type="alpha"><path d="M 116.6452 21.4745 c 8.9608 0 13.4413 0 16.8638 1.7439 a 16 16 0 0 1 6.9923 6.9923 c 1.7439 3.4226 1.7439 7.903 1.7439 16.8638 L 142.2452 96.4526 c 0 8.9608 0 13.4413 -1.7439 16.8638 a 16 16 0 0 1 -6.9923 6.9923 c -3.4226 1.7439 -7.903 1.7439 -16.8638 1.7439 L 26.929 122.0526 c -8.9608 0 -13.4413 0 -16.8638 -1.7439 a 16 16 0 0 1 -6.9923 -6.9923 c -1.7439 -3.4226 -1.7439 -7.903 -1.7439 -16.8638 L 1.329 47.0745 c 0 -8.9608 0 -13.4413 1.7439 -16.8638 a 16 16 0 0 1 6.9923 -6.9923 c 3.4226 -1.7439 7.903 -1.7439 16.8638 -1.7439 Z" fill="#FFFFFF" /></mask>
+<linearGradient id="af-black" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#3D3838" /><stop offset="1" stop-color="#181616" /></linearGradient>
+<linearGradient id="af-red" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3F3E" /><stop offset="1" stop-color="#C00405" /></linearGradient>
+<linearGradient id="af-green" x1="72" y1="21.4745" x2="72" y2="122.0526" gradientUnits="userSpaceOnUse"><stop stop-color="#35C879" /><stop offset="1" stop-color="#008344" /></linearGradient>
+<linearGradient id="af-gold" x1="72" y1="50.0000" x2="72" y2="94.0000" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDD3D" /><stop offset="1" stop-color="#E5AF00" /></linearGradient>
+</defs>
+<g mask="url(#af-board)">
+<path d="M 1.329 21.4745 h 46.9721 v 100.5781 h -46.9721 Z" fill="url(#af-black)" stroke="url(#af-black)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 48.3011 21.4745 h 46.9721 v 100.5781 h -46.9721 Z" fill="url(#af-red)" stroke="url(#af-red)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 95.2731 21.4745 h 46.9721 v 100.5781 h -46.9721 Z" fill="url(#af-green)" stroke="url(#af-green)" stroke-width="0.6" stroke-linejoin="round" />
+<path d="M 71.7871,52.6285 a 19.135,19.135 0 0,0 0,38.27 a 19.135,19.135 0 0,0 0,-38.27 m 0,7.095 a 12.04,12.04 0 0,1 0,24.08 a 12.04,12.04 0 0,1 0,-24.08 m 0,6.1275 c -2.58,0 -4.73,2.15 -4.73,4.73 l 0,7.095 l 9.46,0 l 0,-7.095 c 0,-2.58 -2.15,-4.73 -4.73,-4.73" fill="url(#af-gold)" />
+</g>
+</svg>

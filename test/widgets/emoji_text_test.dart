@@ -1,5 +1,5 @@
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/widgets/text.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/widgets/text.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

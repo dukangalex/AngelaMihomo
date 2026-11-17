@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:bett_box/common/event_log.dart';
+import 'package:angelamihomo/common/event_log.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 

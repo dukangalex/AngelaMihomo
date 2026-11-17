@@ -119,7 +119,6 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m42(enabled, total) => "${enabled} of ${total} enabled";
 
-  static String m43(version) => "Upstream ${version}";
 
   static String m45(size) => "Freed ${size}";
 
@@ -207,6 +206,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m85(latin, sign) => "${latin} · Guardian of ${sign}";
 
   static String m86(name) => "Load failed: the profile references the rule set \"${name}\", but the final config does not contain it, so the kernel cannot load it. What to do: (1) if the subscription itself carries this reference, ask your provider for a complete config including the full rule-providers section, or import a different complete profile; (2) it may also be a leftover reference in DNS settings — go to More → Core Configuration → DNS, check fake-ip-filter and nameserver-policy, delete any entry containing \"${name}\", then try again.";
+  static String m87(reason) => "The update download failed. Reason: \${reason}. What to do: check the network, then try again from Check for updates; if it keeps failing, download the package from the GitHub release page instead.";
+  static String m88(reason) => "The installer could not be started. Reason: \${reason}. What to do: open the downloaded file yourself from the app cache folder, or download the package from the GitHub release page and install it manually.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -245,9 +246,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addressHelp": MessageLookupByLibrary.simpleMessage(
       "WebDAV server address",
     ),
-    "addressTip": MessageLookupByLibrary.simpleMessage(
-      "Please enter a valid WebDAV address",
-    ),
+    "addressTip": MessageLookupByLibrary.simpleMessage("Enter a complete WebDAV address starting with http:// or https://."),
     "adminAutoLaunch": MessageLookupByLibrary.simpleMessage(
       "Admin Auto-Launch",
     ),
@@ -260,12 +259,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageCipherText": MessageLookupByLibrary.simpleMessage(
       "Cipher Text (-----BEGIN AGE ENCRYPTED FILE-----)",
     ),
-    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Decryption failed",
-    ),
-    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage(
-      "Encryption failed",
-    ),
+    "ageDecryptFailed": MessageLookupByLibrary.simpleMessage("Decryption failed. Check that the secret key matches this data and is complete, then try again."),
+    "ageEncryptFailed": MessageLookupByLibrary.simpleMessage("Encryption failed. Check that each recipient public key is complete and valid, then try again."),
     "ageFileTooLarge": MessageLookupByLibrary.simpleMessage(
       "File too large (8 MB max)",
     ),
@@ -315,7 +310,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageTabKeys": MessageLookupByLibrary.simpleMessage("Keys"),
     "ageTool": MessageLookupByLibrary.simpleMessage("Age Encrypt / Decrypt"),
     "ageToolDesc": MessageLookupByLibrary.simpleMessage(
-      "Generate keys, encrypt or decrypt text and configs",
+      "Generate Age keys, encrypt text or configs for a chosen recipient, and decrypt what you receive",
     ),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "Everything runs locally. Private keys are never stored or uploaded.",
@@ -347,6 +342,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "app": MessageLookupByLibrary.simpleMessage("App"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage(
       "App Access Control",
+    ),
+    "appAccessControlDesc": MessageLookupByLibrary.simpleMessage(
+      "Choose per app whether it goes through the proxy or direct",
     ),
     "appDesc": MessageLookupByLibrary.simpleMessage("App-related settings"),
     "application": MessageLookupByLibrary.simpleMessage("Application"),
@@ -389,6 +387,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("Pin Expanded"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("Auto Update"),
+    "autoUpdateDesc": MessageLookupByLibrary.simpleMessage(
+      "Update this subscription automatically at the set interval",
+    ),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
       "Auto update interval (min)",
     ),
@@ -416,9 +417,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage(
       "Only English letters, digits and symbols are supported",
     ),
-    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage(
-      "Incorrect backup password",
-    ),
+    "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Incorrect backup password. Check the password and try again; without the password set when the backup was created, it cannot be restored."),
+    "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings."),
+    "updateDownloading": MessageLookupByLibrary.simpleMessage("Downloading the update"),
+    "updateVerifying": MessageLookupByLibrary.simpleMessage("Verifying the downloaded file"),
+    "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("The downloaded file failed verification and was deleted. Download it again; if it keeps failing, get the package from the GitHub release page."),
+    "updateDownloadFailedReason": m87,
+    "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("Backup Successful"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("Core Configuration"),
     "basicConfigDesc": MessageLookupByLibrary.simpleMessage(
@@ -492,9 +497,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cacheCorrupt": MessageLookupByLibrary.simpleMessage(
       "Cache corrupted. Clear it?",
     ),
-    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Camera Permission Denied",
-    ),
+    "cameraPermissionDenied": MessageLookupByLibrary.simpleMessage("Camera permission is off. Allow camera access for this app in system settings, then try scanning again."),
     "cameraPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Camera permission is required to scan QR codes. Please grant it in settings.",
     ),
@@ -563,7 +566,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chainTitle": MessageLookupByLibrary.simpleMessage("Chain"),
     "chasingDots": MessageLookupByLibrary.simpleMessage("Chasing Dots"),
     "checkError": MessageLookupByLibrary.simpleMessage("Check Failed"),
-    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("The check could not be completed. The network or the current outbound may be unavailable; wait a moment and try again."),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "Please add a profile first",
     ),
@@ -724,6 +727,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Third-party API result (for reference only)",
     ),
     "developerMode": MessageLookupByLibrary.simpleMessage("Developer Mode"),
+    "developerModeDesc": MessageLookupByLibrary.simpleMessage(
+      "Shows extra logging and debugging options; most people never need this",
+    ),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Developer mode is enabled.",
     ),
@@ -731,7 +737,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enable Dialer IP4P Conversion",
     ),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
-      "Enable dialer IP4P conversion",
+      "Converts IP4P-format addresses to plain IPv6 before dialing; rarely needs changing",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("Direct"),
     "directNameserver": MessageLookupByLibrary.simpleMessage(
@@ -742,6 +748,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "Direct DNS Follows Policy",
+    ),
+    "directNameserverFollowPolicyDesc": MessageLookupByLibrary.simpleMessage(
+      "When on, DNS for direct traffic also picks its server by the routing rules",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("Disable QUIC"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -774,7 +783,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Resolve with rules, system DNS and the chosen server side by side to spot pollution or routing differences",
     ),
     "dnsQueryDesc": MessageLookupByLibrary.simpleMessage(
-      "Resolve with rules, system or a chosen server",
+      "Find which IP a domain really resolves to and compare DNS servers to spot pollution",
     ),
     "dnsQueryFakeIpOff": m13,
     "dnsQueryFakeIpOn": m14,
@@ -832,6 +841,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Do you want to pass",
     ),
     "domain": MessageLookupByLibrary.simpleMessage("Domain"),
+    "fallbackDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Domains on this list are always resolved with the fallback DNS",
+    ),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("Double Bounce"),
     "download": MessageLookupByLibrary.simpleMessage("Download"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("Doze Support"),
@@ -852,6 +864,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Upload crash logs when needed",
     ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("Enable Override"),
+    "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
+      "Apply the override below to this profile before the core runs it",
+    ),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("Tray Speed"),
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "Show network speed in menu bar",
@@ -910,6 +925,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Specify FakeIP filter mode",
     ),
     "fakeipFilter": MessageLookupByLibrary.simpleMessage("FakeIP Filter"),
+    "fakeipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "Domains on this list skip FakeIP and connect with their real addresses (needed for LAN devices and some games)",
+    ),
     "fakeipRange": MessageLookupByLibrary.simpleMessage("FakeIP Range"),
     "fakeipRangeV6": MessageLookupByLibrary.simpleMessage("FakeIPv6 Range"),
     "fakeipTtl": MessageLookupByLibrary.simpleMessage("FakeIP TTL"),
@@ -955,26 +973,24 @@ class MessageLookup extends MessageLookupByLibrary {
       "Clear the DNS cache when the network changes",
     ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("Folding Cube"),
-    "followGlobalScript": MessageLookupByLibrary.simpleMessage(
-      "Follow Global Script",
-    ),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Font"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
       "Force DNS Mapping",
     ),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
-      "Force mapping DNS results to connections",
+      "Maps sniffed domains back to connections using DNS results for more accurate routing",
     ),
     "forceDomain": MessageLookupByLibrary.simpleMessage("Force Sniff Domain"),
+    "forceDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Always inspect traffic for these domains to see where it really goes",
+    ),
     "forceGCDesc": MessageLookupByLibrary.simpleMessage(
       "Force kernel garbage collection? Experimental, use with caution.",
     ),
     "forceGCTitle": MessageLookupByLibrary.simpleMessage(
       "Force Garbage Collection",
     ),
-    "formatError": MessageLookupByLibrary.simpleMessage(
-      "Please check the format",
-    ),
+    "formatError": MessageLookupByLibrary.simpleMessage("Invalid format. Check the field against its hint, fix it, and try again."),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4 Columns"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Fruit Salad"),
     "fullRestart": MessageLookupByLibrary.simpleMessage("Cold Restart"),
@@ -994,12 +1010,21 @@ class MessageLookup extends MessageLookupByLibrary {
       "GEO Built-in Resources",
     ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
+    "geoDataNotDownloaded": MessageLookupByLibrary.simpleMessage("Not downloaded yet"),
+    "geoDataUpdate": MessageLookupByLibrary.simpleMessage("Update geo data"),
+    "geoDataUpdated": MessageLookupByLibrary.simpleMessage("Geo data updated"),
+    "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("Geo data is up to date"),
+    "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("Geo data update failed. Check your network and try again."),
+    "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("The downloaded geo data failed verification and was discarded. Please try again."),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "Use GEO low memory loader",
     ),
     "geodataUse": MessageLookupByLibrary.simpleMessage("GEO Load"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("GeoIP Code"),
+    "geoipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "Judge fallback DNS answers by IP location to guard against polluted results",
+    ),
     "getOriginRules": MessageLookupByLibrary.simpleMessage("Original Rules"),
     "global": MessageLookupByLibrary.simpleMessage("Global"),
     "go": MessageLookupByLibrary.simpleMessage("Go"),
@@ -1067,7 +1092,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iconStyle": MessageLookupByLibrary.simpleMessage("Icon Style"),
     "iconUrl": MessageLookupByLibrary.simpleMessage("Icon URL"),
     "import": MessageLookupByLibrary.simpleMessage("Import"),
-    "importFailed": MessageLookupByLibrary.simpleMessage("Import failed"),
+    "importFailed": MessageLookupByLibrary.simpleMessage("Import failed. Check that the content is complete and in a supported format, then try again."),
     "importFile": MessageLookupByLibrary.simpleMessage("Import from File"),
     "importFromCode": MessageLookupByLibrary.simpleMessage("Import from Code"),
     "importFromURL": MessageLookupByLibrary.simpleMessage("Import from URL"),
@@ -1090,14 +1115,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidIconSet": MessageLookupByLibrary.simpleMessage(
       "Not a valid icon set",
     ),
-    "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
-      "Invalid IP or CIDR format",
-    ),
+    "invalidIpFormat": MessageLookupByLibrary.simpleMessage("Invalid IP or CIDR format. Enter an address like 192.168.1.1 or a range like 192.168.1.0/24."),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP Address"),
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("Toggle Display"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP Lookup"),
     "ipLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "Your exit IPs, or look up any IP or domain",
+      "See which city and provider your current exit IP belongs to, or look up any IP or domain",
     ),
     "ipLookupDomesticExit": MessageLookupByLibrary.simpleMessage(
       "Domestic Local IP",
@@ -1188,10 +1211,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskShareLittle": MessageLookupByLibrary.simpleMessage("Very little"),
     "ipRiskShareSome": MessageLookupByLibrary.simpleMessage("Some"),
     "ipRiskSource": MessageLookupByLibrary.simpleMessage("Source"),
+
+    "ipRiskDisclosure": MessageLookupByLibrary.simpleMessage("When on, the app sends your current exit IP to the third-party service Scamalytics for a risk score. Nothing is sent while it is off."),
     "ipRiskTorExit": MessageLookupByLibrary.simpleMessage("Tor exit node"),
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("Very high risk"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web proxy"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP/CIDR"),
+    "fallbackIpcidrDesc": MessageLookupByLibrary.simpleMessage(
+      "Answers in these ranges from the default DNS count as polluted; the fallback DNS is used instead",
+    ),
     "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
       "Server address, e.g. 192.168.1.5",
     ),
@@ -1213,9 +1241,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfErrorInterrupted": MessageLookupByLibrary.simpleMessage(
       "The test was interrupted",
     ),
-    "iperfErrorListen": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t start the server",
-    ),
+    "iperfErrorListen": MessageLookupByLibrary.simpleMessage("Couldn't start the server. Check that no other app is using this port, or pick another port, then try again."),
     "iperfErrorPortInUse": m26,
     "iperfErrorProtocol": MessageLookupByLibrary.simpleMessage(
       "Unexpected response. The other side may not be an iPerf3 server",
@@ -1283,7 +1309,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfStreams": m32,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 Tool"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "Measure bandwidth between devices on your LAN, compatible with iperf3",
+      "Measure the real speed between two devices, e.g. phone and PC on your LAN (iperf3 compatible)",
     ),
     "iperfThroughput": MessageLookupByLibrary.simpleMessage("Throughput"),
     "iperfTransferred": MessageLookupByLibrary.simpleMessage("Data"),
@@ -1295,6 +1321,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage(
       "Enable IPv6 traffic routing",
+    ),
+    "dnsIpv6Desc": MessageLookupByLibrary.simpleMessage(
+      "Allow DNS answers with IPv6 addresses; turn off if your network has no IPv6",
     ),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage(
       "Allow IPv6 inbound",
@@ -1334,7 +1363,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingClosed": MessageLookupByLibrary.simpleMessage("Port closed"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("Count"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
-      "Direct ICMP, TCP and UDP latency and loss test",
+      "Without the proxy, test whether an address answers, its latency and packet loss",
     ),
     "localPingDone": MessageLookupByLibrary.simpleMessage("Ping finished"),
     "localPingErrorDenied": MessageLookupByLibrary.simpleMessage(
@@ -1346,7 +1375,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingErrorResolve": MessageLookupByLibrary.simpleMessage(
       "Could not resolve the domain",
     ),
-    "localPingFailed": MessageLookupByLibrary.simpleMessage("Send failed"),
+    "localPingFailed": MessageLookupByLibrary.simpleMessage("Could not send the ping. Check the network connection, then try again."),
     "localPingFrom": m35,
     "localPingGateway": MessageLookupByLibrary.simpleMessage("Gateway"),
     "localPingListLimit": m36,
@@ -1417,13 +1446,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managedRestoreTip": MessageLookupByLibrary.simpleMessage(
       "Restore the built-in script and regenerate all merged subscriptions?",
     ),
-    "managedSyncTip": MessageLookupByLibrary.simpleMessage(
-      "Download the latest script from upstream and regenerate all merged subscriptions?",
-    ),
-    "managedSynced": m43,
-    "managedUpToDate": MessageLookupByLibrary.simpleMessage(
-      "Already up to date",
-    ),
     "managedVersion": MessageLookupByLibrary.simpleMessage("Version"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Refresh IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Maximize"),
@@ -1478,16 +1500,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsCopyUrl": MessageLookupByLibrary.simpleMessage("Copy URL"),
     "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS Lookup"),
     "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "Find the GEO / RULE-SET rule sets for a domain or IP",
+      "Enter a domain or IP to see which routing rule sets cover it — and why a site goes via proxy or direct",
     ),
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("Domain or IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage(
       "Bundled BundleMRS not found",
     ),
     "mrsNoMatch": MessageLookupByLibrary.simpleMessage("No rule set matched"),
-    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage(
-      "Failed to load rule sets",
-    ),
+    "mrsPrepareFailed": MessageLookupByLibrary.simpleMessage("Failed to load the bundled rule sets. Restart the app and try again."),
     "mrsReferenced": MessageLookupByLibrary.simpleMessage("In use"),
     "mrsResolveDns": MessageLookupByLibrary.simpleMessage(
       "Resolve domains with DNS rules",
@@ -1586,7 +1606,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "natStart": MessageLookupByLibrary.simpleMessage("Start Detection"),
     "natTest": MessageLookupByLibrary.simpleMessage("NAT Detection"),
     "natTestDesc": MessageLookupByLibrary.simpleMessage(
-      "Check NAT type, external address and UDP connectivity",
+      "Find your NAT type — it decides whether games and P2P can connect directly",
     ),
     "natType": MessageLookupByLibrary.simpleMessage("NAT Type"),
     "natTypeBlocked": MessageLookupByLibrary.simpleMessage("UDP Blocked"),
@@ -1735,7 +1755,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Override Destination",
     ),
     "overrideDestinationDesc": MessageLookupByLibrary.simpleMessage(
-      "Override destination with sniffed result",
+      "Route by the sniffed real domain instead of only the destination IP",
     ),
     "overrideDns": MessageLookupByLibrary.simpleMessage("Override DNS"),
     "overrideDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1772,7 +1792,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "parsePureIp": MessageLookupByLibrary.simpleMessage("Parse Pure IP"),
     "parsePureIpDesc": MessageLookupByLibrary.simpleMessage(
-      "Parse pure IP connections",
+      "When a connection has only an IP and no domain, still try to identify its target",
     ),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
@@ -1834,21 +1854,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),
-    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage(
-      "Profile parse error",
-    ),
-    "profileSwitchFailed": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t switch profiles. The current profile is unchanged; check it and try again",
-    ),
-    "profileSwitchFailedRollback": MessageLookupByLibrary.simpleMessage(
-      "Couldn\'t switch to the new profile, so the previous profile was restored",
-    ),
+    "profileParseErrorDesc": MessageLookupByLibrary.simpleMessage("The profile could not be parsed. Its content may be damaged or in an unsupported format; re-import it, or get a fresh copy from your provider."),
     "profileSwitchMode": MessageLookupByLibrary.simpleMessage(
       "Profile Switching",
     ),
-    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
-      "Please enter a valid URL",
-    ),
+    "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage("Enter a complete URL starting with http:// or https://."),
     "profileUrlNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile URL",
     ),
@@ -1889,13 +1899,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Disable QUIC ECN",
     ),
     "quicGoDisableEcnDesc": MessageLookupByLibrary.simpleMessage(
-      "Disable QUIC ECN",
+      "Stops QUIC from using congestion-notification marks; can steady connections on some networks",
     ),
     "quicGoDisableGso": MessageLookupByLibrary.simpleMessage(
       "Disable QUIC GSO",
     ),
     "quicGoDisableGsoDesc": MessageLookupByLibrary.simpleMessage(
-      "Disable QUIC GSO",
+      "Stops QUIC from using segmentation offload; helps on network cards with compatibility issues",
     ),
     "quicPortSniffer": MessageLookupByLibrary.simpleMessage(
       "QUIC Port Sniffing",
@@ -1968,7 +1978,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "replace": MessageLookupByLibrary.simpleMessage("Replace"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("Replace All"),
     "request": MessageLookupByLibrary.simpleMessage("Request"),
-    "requests": MessageLookupByLibrary.simpleMessage("Recent"),
     "reset": MessageLookupByLibrary.simpleMessage("Reset"),
     "resetIconCache": MessageLookupByLibrary.simpleMessage("Reset Icon Cache"),
     "resetIconCacheDesc": MessageLookupByLibrary.simpleMessage(
@@ -1983,7 +1992,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "respectRules": MessageLookupByLibrary.simpleMessage("Respect Rules"),
     "respectRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "DNS connections follow Rules",
+      "DNS resolution also picks its server by the routing rules, same as traffic",
     ),
     "restart": MessageLookupByLibrary.simpleMessage("Restart"),
     "restartApp": MessageLookupByLibrary.simpleMessage("Restart App"),
@@ -2023,7 +2032,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Checked Rules",
     ),
     "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "See how the core resolves and matches a domain or IP",
+      "Trace a domain through the app: how it resolves, which rule it hits, and whether it ends up proxied or direct",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS Resolution"),
     "routeTraceDnsBy": m63,
@@ -2096,9 +2105,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "scriptDesc": MessageLookupByLibrary.simpleMessage(
       "Configure JavaScript override scripts",
     ),
-    "scriptNotUsed": MessageLookupByLibrary.simpleMessage(
-      "Do Not Use a Script",
-    ),
     "scriptOtherOptions": MessageLookupByLibrary.simpleMessage(
       "Other Settings",
     ),
@@ -2153,8 +2159,14 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "size": MessageLookupByLibrary.simpleMessage("Size"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("Skip Domain"),
+    "skipDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Traffic for these domains is not inspected and passes as-is",
+    ),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage(
       "Skip Destination IP",
+    ),
+    "skipDstAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "Connections to these IPs are not inspected",
     ),
     "skipLocalAuth": MessageLookupByLibrary.simpleMessage(
       "Skip Local Authentication",
@@ -2163,6 +2175,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow local access without credentials",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("Skip Source IP"),
+    "skipSrcAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "Connections from these IPs are not inspected",
+    ),
     "slow": MessageLookupByLibrary.simpleMessage("Slow"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("Smart Auto-Stop"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
@@ -2359,10 +2374,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
       "Sync animation to other pages",
     ),
-    "syncFailed": MessageLookupByLibrary.simpleMessage("Sync Failed"),
-    "syncFromUpstream": MessageLookupByLibrary.simpleMessage(
-      "Sync from upstream",
-    ),
+    "syncFailed": MessageLookupByLibrary.simpleMessage("Sync failed. Check the network and the WebDAV address, user name and password, then try again."),
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System App"),
     "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
@@ -2473,6 +2485,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitTurnOnRecommended": MessageLookupByLibrary.simpleMessage(
       "Turn on recommended",
     ),
+    "systemExplicitRecommendAlreadyOn": MessageLookupByLibrary.simpleMessage(
+      "The recommended combination is already fully enabled",
+    ),
+    "systemExplicitRecommendEnabled": MessageLookupByLibrary.simpleMessage(
+      "Recommended combination enabled",
+    ),
     "systemFont": MessageLookupByLibrary.simpleMessage("System Font"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("System Proxy"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("Set system proxy"),
@@ -2530,7 +2548,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Clear all traffic statistics?",
     ),
     "trafficStatsDesc": MessageLookupByLibrary.simpleMessage(
-      "See exactly where your traffic goes by day, week and month",
+      "See by day, week and month which sites, apps and nodes your traffic went to",
     ),
     "trafficStatsDetail": MessageLookupByLibrary.simpleMessage(
       "Record details",
@@ -2543,6 +2561,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "trafficStatsEnable": MessageLookupByLibrary.simpleMessage(
       "Traffic statistics",
+    ),
+    "trafficStatsEnableDesc": MessageLookupByLibrary.simpleMessage(
+      "Record which sites, apps and nodes your traffic goes to; when off, only totals are kept",
     ),
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage(
       "Data retention",
@@ -2624,9 +2645,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Waiting for profile from phone...",
     ),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2 Columns"),
-    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage(
-      "Unable to update current profile",
-    ),
+    "unableToUpdateCurrentProfileDesc": MessageLookupByLibrary.simpleMessage("Unable to update the current profile. Check the network and that the subscription link has not expired, then tap update again."),
     "unauthorized": MessageLookupByLibrary.simpleMessage("Unauthorized"),
     "undo": MessageLookupByLibrary.simpleMessage("Undo"),
     "unifiedDelay": MessageLookupByLibrary.simpleMessage("Unified Delay"),
@@ -2653,7 +2672,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Script per Profile",
     ),
     "useHosts": MessageLookupByLibrary.simpleMessage("Use Hosts"),
+    "useHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "When resolving, first check the fixed mappings in the hosts file",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use System Hosts"),
+    "useSystemHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "Also apply the operating system's own hosts file",
+    ),
     "userAuth": MessageLookupByLibrary.simpleMessage("User Authentication"),
     "userAuthEmpty": MessageLookupByLibrary.simpleMessage(
       "No authentication configured, LAN connections do not require credentials",
@@ -2723,5 +2748,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "serviceStartStopFailed": m84,
     "ruleSetMissing": m86,
+    "ruleSetFileMismatch": MessageLookupByLibrary.simpleMessage(
+      "The rule-set file served for this rule set does not match the type declared in the profile. The file generated by the subscription or converter is usually at fault. What to do: report it to the source, or switch to another source and sync again.",
+    ),
   };
 }

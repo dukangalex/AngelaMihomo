@@ -1,6 +1,6 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/widgets/card.dart';
-import 'package:bett_box/widgets/list.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/widgets/card.dart';
+import 'package:angelamihomo/widgets/list.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

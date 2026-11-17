@@ -1,28 +1,28 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/l10n/l10n.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/about.dart';
-import 'package:bett_box/views/access.dart';
-import 'package:bett_box/views/application_setting.dart';
-import 'package:bett_box/views/config/config.dart';
-import 'package:bett_box/views/config/experimental.dart';
-import 'package:bett_box/views/config/general.dart';
-import 'package:bett_box/views/config/network.dart';
-import 'package:bett_box/views/config/ntp.dart';
-import 'package:bett_box/views/config/sniffer.dart';
-import 'package:bett_box/views/config/tunnel.dart';
-import 'package:bett_box/views/connection/connections.dart';
-import 'package:bett_box/views/hotkey.dart';
-import 'package:bett_box/views/other_setting.dart';
-import 'package:bett_box/views/profiles/scripts.dart';
-import 'package:bett_box/views/resources.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/about.dart';
+import 'package:angelamihomo/views/access.dart';
+import 'package:angelamihomo/views/application_setting.dart';
+import 'package:angelamihomo/views/config/config.dart';
+import 'package:angelamihomo/views/config/experimental.dart';
+import 'package:angelamihomo/views/config/general.dart';
+import 'package:angelamihomo/views/config/network.dart';
+import 'package:angelamihomo/views/config/ntp.dart';
+import 'package:angelamihomo/views/config/sniffer.dart';
+import 'package:angelamihomo/views/config/tunnel.dart';
+import 'package:angelamihomo/views/connection/connections.dart';
+import 'package:angelamihomo/views/hotkey.dart';
+import 'package:angelamihomo/views/other_setting.dart';
+import 'package:angelamihomo/views/profiles/scripts.dart';
+import 'package:angelamihomo/views/resources.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -229,7 +229,21 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     required List<Widget> items,
     bool isFirst = false,
   }) {
-    return SectionContainer(title: title, items: items, isFirst: isFirst);
+    // T196 (user direction): the Tools page adopts the proxy page's
+    // look — every entry is its own radius-20 subtle card, titles in
+    // titleMedium, subtitles in light labelMedium, and navigation
+    // rows carry the circular tonal chevron of the group headers.
+    return ListItemStyleScope(
+      titleStyle: context.textTheme.titleMedium,
+      subtitleStyle: context.textTheme.labelMedium?.toLight,
+      circularTrailing: true,
+      child: SectionContainer(
+        title: title,
+        items: items,
+        isFirst: isFirst,
+        cards: true,
+      ),
+    );
   }
 
   String _query = '';

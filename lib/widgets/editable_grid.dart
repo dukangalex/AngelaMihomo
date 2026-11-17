@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';

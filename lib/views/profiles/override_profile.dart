@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/access.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/access.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -261,6 +261,7 @@ class OverrideSwitch extends ConsumerWidget {
       child: ListItem.switchItem(
         padding: const EdgeInsets.only(left: 16, right: 16),
         title: Text(appLocalizations.enableOverride),
+        subtitle: Text(appLocalizations.enableOverrideDesc),
         delegate: SwitchDelegate(
           value: enable ?? false,
           onChanged: (value) {
@@ -986,7 +987,9 @@ class _AddRuleDialogState extends State<AddRuleDialog> {
                   ),
                   validator: (_) {
                     if (_contentController.text.isEmpty) {
-                      return appLocalizations.emptyTip(appLocalizations.content);
+                      return appLocalizations.emptyTip(
+                        appLocalizations.content,
+                      );
                     }
                     return null;
                   },

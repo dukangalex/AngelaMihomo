@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/constant.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/config.dart';
-import 'package:bett_box/models/profile.dart';
+import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/config.dart';
+import 'package:angelamihomo/models/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -366,9 +366,11 @@ class GlobalDelayTestController extends ChangeNotifier {
 
   void _scheduleAutoDismiss() {
     _dismissTimer?.cancel();
-    if (_failed > 0) return;
     final runId = _runId;
-    _dismissTimer = Timer(const Duration(seconds: 4), () {
+    // The result strip always auto-dismisses five seconds after the run
+    // completes, failures included (user's call, 2026-11-17); the manual
+    // close button stays for dismissing it sooner.
+    _dismissTimer = Timer(const Duration(seconds: 5), () {
       if (_phase == GlobalDelayTestPhase.done && _runId == runId) {
         dismiss();
       }

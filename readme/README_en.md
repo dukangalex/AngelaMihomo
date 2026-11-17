@@ -16,7 +16,7 @@
 
 **Angela Mihomo** is a cross-platform proxy client built on the [Mihomo](https://github.com/MetaCubeX/mihomo) core, shipping one version with one feature set across Android, Windows, macOS and Linux. Its design language is a family of twelve zodiac themes — each constellation brings its own palette and star chart, and the whole family shares one design language with no separate light variant: the deep starfield look is the canonical design, with the interface floating over a starfield light field.
 
-Four product principles guide the project: easy to use (import a subscription and it just runs), system-explicit (every kernel capability is on screen, with an explanation and a source), local-first privacy (whatever can stay on the device stays on the device, and logs and data are redacted before they are written), and long-term stability over decoration. It is developed and released independently under the GPL-3.0 license.
+The project's first hard rule is its six foundation pillars, equal in rank with none subordinate to another; no trade-off may sacrifice one to serve another, and a genuine conflict means finding a solution that satisfies all six or stopping for the project owner's decision: privacy (user privacy protected to the maximum within our capability — every feature kept, none hollowed out, nothing leaked; see PRIVACY-GUIDELINES.md), data security (configuration, subscriptions, and credentials stored and transferred on a security baseline, credentials encrypted, backups and exports controlled and redacted first), efficiency (restrained resource use that respects memory and battery, never spent on decorative features), stability (reliable connections, dependable subscription updates, accurate speed tests, correct modes and routing, over any decoration), explicit capabilities (every kernel capability on screen, with an explanation and a source), and out-of-the-box usability (import a subscription and it just runs, no concepts to learn first). It is developed and released independently under the GPL-3.0 license.
 
 <p align="center">
   <img src="../snapshots/shot-home-windows.png" alt="Angela Mihomo on Windows, real device" width="63%" />
@@ -46,7 +46,7 @@ Highlights:
 * **Automatic delay test on start**: every time the service starts, one global linked delay test runs automatically — measure only, never changing your node selection — so delays and availability are real data from the first second.
 * **Profile status at a glance**: profile cards carry managed and chain markers directly. Managed shows only when on; chain shows green when both the entry and exit references are intact, and red when either end has gone stale — no need to open a broken profile to find out.
 * **Failures explained**: when an operation fails, the notice states the concrete cause and the remedy — a stale chain reference, for example, names which end went stale and where to re-select it, instead of leaving you guessing at a bare "failed".
-* **Independent package identity**: the Android application id is `app.angelabettbox`, so it can be installed alongside other clients; the id stays stable so existing installs upgrade in place.
+* **Independent package identity**: the Android application id is `app.angelamihomo`, so it can be installed alongside other clients. Note: the id changed with chain.26 — users of older builds export their configuration in the old app and import it in the new one once; after that, upgrades install in place again.
 * **Core and data alignment**: the bundled Mihomo core tracks official Mihomo releases (currently v1.19.34), and built-in rule data comes from the official MetaCubeX/meta-rules-dat source.
 
 ## Downloads
@@ -62,6 +62,10 @@ Get packages for your platform from this repository's **[Releases](https://githu
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)** — the core engine.
 * **[HiClash](https://github.com/dukangalex/HiClash)** — the origin of the built-in managed script; the script's canonical copy now lives in this repository at `assets/scripts/managed.js`, and updates ship with app releases.
 * **[MyClash](https://github.com/AIsouler/MyClash)** — AIsouler's script and configuration sharing, the upstream lineage of HiClash.
+* **[Qure icon set](https://github.com/Koolson/Qure)** — the source of the managed mode's routing and service icons; the icons ship bundled in this repository under `assets/route_svg/`.
+* **[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)** — the source of the built-in GEO rule data: GeoSite, MMDB, ASN, and related resource files.
+* **[DB-IP](https://db-ip.com)** — the source of the city-level IP geolocation data (IP Geolocation by DB-IP, used under CC BY 4.0), distributed through this project's own data repository [angelamihomo-geo](https://github.com/dukangalex/angelamihomo-geo); the app downloads it automatically on first launch and answers all lookups locally afterwards.
+* **[Scamalytics](https://scamalytics.com)** — the data reference for the IP risk check feature; the feature is off by default and queries only when the user enables it.
 
 Inspiration and references: [Zashboard](https://github.com/Zephyruso/zashboard), [CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid), [Sparkle](https://github.com/xishang0128/sparkle), [SFA](https://github.com/SagerNet/sing-box-for-android), [HUSI](https://github.com/xchacha20-poly1305/husi), [V2rayN](https://github.com/2dust/v2rayN)
 

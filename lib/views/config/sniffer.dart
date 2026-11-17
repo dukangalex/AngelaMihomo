@@ -1,8 +1,8 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/clash_config.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/clash_config.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -58,6 +58,7 @@ class ForceDnsMappingItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.forceDnsMapping),
+      subtitle: Text(appLocalizations.forceDnsMappingDesc),
       delegate: SwitchDelegate(
         value: forceDnsMapping,
         onChanged: (bool value) async {
@@ -82,6 +83,7 @@ class ParsePureIpItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.parsePureIp),
+      subtitle: Text(appLocalizations.parsePureIpDesc),
       delegate: SwitchDelegate(
         value: parsePureIp,
         onChanged: (bool value) async {
@@ -106,6 +108,7 @@ class OverrideDestinationItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.overrideDestination),
+      subtitle: Text(appLocalizations.overrideDestinationDesc),
       delegate: SwitchDelegate(
         value: overrideDest,
         onChanged: (bool value) async {
@@ -369,6 +372,7 @@ class ForceDomainWidget extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return ListItem.next(
       title: Text(appLocalizations.forceDomain),
+      subtitle: Text(appLocalizations.forceDomainDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.forceDomain,
@@ -406,6 +410,7 @@ class SkipDomainWidget extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return ListItem.next(
       title: Text(appLocalizations.skipDomain),
+      subtitle: Text(appLocalizations.skipDomainDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipDomain,
@@ -443,6 +448,7 @@ class SkipSrcAddressWidget extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return ListItem.next(
       title: Text(appLocalizations.skipSrcAddress),
+      subtitle: Text(appLocalizations.skipSrcAddressDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipSrcAddress,
@@ -481,6 +487,7 @@ class SkipDstAddressWidget extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return ListItem.next(
       title: Text(appLocalizations.skipDstAddress),
+      subtitle: Text(appLocalizations.skipDstAddressDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.skipDstAddress,

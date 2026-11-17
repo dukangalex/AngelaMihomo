@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bett_box/models/clash_config.dart';
+import 'package:angelamihomo/models/clash_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

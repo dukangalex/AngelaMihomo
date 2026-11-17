@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/clash/core.dart';
-import 'package:bett_box/clash/interface.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/clash/core.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,7 +40,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     ClashCore.setHandlerForTesting(_ValidationHandler());
-    home = await Directory.systemTemp.createTemp('bettbox_profiles_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_profiles_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

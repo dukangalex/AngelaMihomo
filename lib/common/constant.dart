@@ -2,10 +2,10 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:material_ui/material_ui.dart';
 
 const appName = AppIdentity.displayName;
@@ -44,11 +44,16 @@ const profilesDirectoryName = 'profiles';
 const localhost = '127.0.0.1';
 const clashConfigKey = 'clash_config';
 const configKey = 'config';
+const ipRiskAlertOffMigratedKey = 'ipRiskAlertOffMigrated';
 const customSidebarIconKey = 'custom_sidebar_icon';
 const customDashboardTitleKey = 'custom_dashboard_title';
 const lastManagedScriptVersionKey = 'last_managed_script_version';
 const double dialogCommonWidth = 300;
 const repository = 'dukangalex/AngelaMihomo';
+
+/// AngelaMihomo (chain.26, T194): the project's own geo data repository.
+/// The app pulls the city database (amcity.bin.gz) from its releases.
+const geoDataRepository = 'dukangalex/angelamihomo-geo';
 const ipInfoToken = String.fromEnvironment('IPINFO_TOKEN', defaultValue: '');
 const defaultExternalController = '127.0.0.1:9090';
 const maxMobileWidth = 600;

@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:bett_box/clash/core.dart';
-import 'package:bett_box/clash/interface.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/l10n/l10n.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/views/profile_chain.dart';
-import 'package:bett_box/widgets/list.dart';
+import 'package:angelamihomo/clash/core.dart';
+import 'package:angelamihomo/clash/interface.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/views/profile_chain.dart';
+import 'package:angelamihomo/widgets/list.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,7 +77,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await AppLocalizations.load(const Locale('en'));
     ClashCore.setHandlerForTesting(handler);
-    home = await Directory.systemTemp.createTemp('bettbox_chain_page_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_chain_page_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

@@ -1,6 +1,6 @@
 # Android 首次正式签名
 
-这是首次正式发布，无需寻找历史正式 APK 或原签名。现有预览 APK 使用 Android Debug 证书，不能当作正式版；若已安装该预览包，正式签名不同，通常需先备份应用内配置，再卸载预览包后安装正式包（卸载可能清除数据）。包名保持 `com.appshub.bettbox` 不变。正式发布后请永久保留同一签名密钥，以支持后续覆盖升级。
+这是首次正式发布，无需寻找历史正式 APK 或原签名。现有预览 APK 使用 Android Debug 证书，不能当作正式版；若已安装该预览包，正式签名不同，通常需先备份应用内配置，再卸载预览包后安装正式包（卸载可能清除数据）。包名保持 `com.appshub.bettbox` 不变。（注：chain.26 起包名已改为 `app.angelamihomo`，老用户需先在旧版导出配置再到新版导入，一次迁移后恢复覆盖升级。）正式发布后请永久保留同一签名密钥，以支持后续覆盖升级。
 
 ## 只需在自己的电脑完成一次
 
@@ -9,7 +9,7 @@
 1. 在仓库目录之外建立仅自己可访问的私人目录（macOS/Linux 可先执行 `umask 077`，Windows 请限制目录访问权限）。在此目录运行下列命令；keytool 会交互询问密码和证书信息，密码不会出现在命令历史中：
 
    ```sh
-   keytool -genkeypair -v -storetype PKCS12 -keystore bettbox-release.p12 -alias bettbox-release -keyalg RSA -keysize 3072 -validity 10000
+   keytool -genkeypair -v -storetype PKCS12 -keystore angelamihomo-release.p12 -alias bettbox-release -keyalg RSA -keysize 3072 -validity 10000
    ```
 
    请使用强密码。PKCS12 的密钥密码与仓库密码保持一致。不要覆盖已有密钥文件；若已生成密钥，请直接使用它而不是再次生成。
@@ -18,7 +18,7 @@
 3. 从项目仓库运行辅助脚本（把路径替换为自己电脑上真实路径）：
 
    ```sh
-   python3 tools/configure-android-signing.py /private/path/bettbox-release.p12
+   python3 tools/configure-android-signing.py /private/path/angelamihomo-release.p12
    ```
 
    脚本不会生成密钥；会隐蔽询问密码、检查 keystore/alias，并在你输入 `UPLOAD` 后通过当前 `gh` 登录向 `dukangalex/AngelaMihomo` 配置四项 Actions secrets：`KEYSTORE`（整个文件的 base64）、`KEY_ALIAS`、`STORE_PASSWORD`、`KEY_PASSWORD`。不会将秘密写入脚本或输出到终端。若中途失败，部分 secret 可能已保存；使用同一密钥重新运行即可补齐，不要换密钥。
@@ -27,7 +27,7 @@
 4. 查看公开证书指纹（不是私钥）：
 
    ```sh
-   keytool -list -v -keystore bettbox-release.p12 -alias bettbox-release
+   keytool -list -v -keystore angelamihomo-release.p12 -alias bettbox-release
    ```
 
    记录证书 SHA-256 指纹即可；不要发送 `.p12` 或密码。

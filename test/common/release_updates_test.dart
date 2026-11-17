@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/constant.dart';
-import 'package:bett_box/common/release_updates.dart';
+import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/common/release_updates.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +43,71 @@ void main() {
       },
     ],
   };
+
+  test('latestWithAsset skips a newer release without the asset', () async {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    final geo = ReleaseUpdates(repository: geoRepo, client: dio);
+    Map<String, dynamic> rel(String tag, List<String> names) => {
+      'tag_name': tag,
+      'assets': [
+        for (final n in names)
+          {
+            'name': n,
+            'browser_download_url':
+                'https://github.com/$geoRepo/releases/download/$tag/$n',
+          },
+      ],
+    };
+    dio.httpClientAdapter = StubAdapter((options) async {
+      expect(
+        options.uri.toString(),
+        'https://api.github.com/repos/$geoRepo/releases?per_page=20',
+      );
+      return ResponseBody.fromString(
+        jsonEncode([
+          rel('core-bundle-2026.11', ['BundleMRS.7z', 'zash.zip']),
+          rel('v2026.11.1', ['amcity.bin.gz', 'sha256sums.txt']),
+        ]),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    });
+    final data = (await geo.latestWithAsset(name: 'amcity.bin.gz'))!;
+    expect(data['tag_name'], 'v2026.11.1');
+    expect(
+      geo.assetByName(data, name: 'amcity.bin.gz')?.url,
+      'https://github.com/$geoRepo/releases/download/v2026.11.1/amcity.bin.gz',
+    );
+  });
+
+  test('latestWithAsset returns null when no release ships the asset',
+      () async {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    final geo = ReleaseUpdates(repository: geoRepo, client: dio);
+    dio.httpClientAdapter = StubAdapter((options) async {
+      return ResponseBody.fromString(
+        jsonEncode([
+          {
+            'tag_name': 'core-bundle-2026.11',
+            'assets': [
+              {
+                'name': 'BundleMRS.7z',
+                'browser_download_url':
+                    'https://github.com/$geoRepo/releases/download/core-bundle-2026.11/BundleMRS.7z',
+              },
+            ],
+          },
+        ]),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    });
+    expect(await geo.latestWithAsset(name: 'amcity.bin.gz'), isNull);
+  });
 
   test('fork checks its own repository rather than upstream', () {
     expect(repository, repo);
@@ -214,4 +279,106 @@ void main() {
       expect(updates.downloadUrl(data, assetSuffix: suffix), page);
     });
   }
+  group('assetFor (T179 in-app update)', () {
+    test('returns validated metadata including the API digest', () {
+      final data = release();
+      final asset = Map<String, dynamic>.from(
+        (data['assets'] as List).single as Map,
+      );
+      asset['size'] = 12345;
+      asset['digest'] = 'sha256:abcdef0123';
+      data['assets'] = [asset];
+      final found = updates.assetFor(data, assetSuffix: suffix);
+      expect(found, isNotNull);
+      expect(found!.name, 'AngelaBettbox-1.19.6-chain.2-$suffix');
+      expect(found.size, 12345);
+      expect(found.sha256, 'abcdef0123');
+      expect(
+        found.url,
+        'https://github.com/$repo/releases/download/$tag/AngelaBettbox-1.19.6-chain.2-$suffix',
+      );
+    });
+    test('digest absent or malformed yields null sha256', () {
+      final data = release();
+      expect(updates.assetFor(data, assetSuffix: suffix)!.sha256, isNull);
+      ((data['assets'] as List).single as Map)['digest'] = 'md5:xyz';
+      expect(updates.assetFor(data, assetSuffix: suffix)!.sha256, isNull);
+    });
+    test('no unique match yields null', () {
+      expect(updates.assetFor(release(), assetSuffix: 'nope.zip'), isNull);
+      expect(updates.assetFor(release()), isNull);
+    });
+  });
+
+  group('assetByName (T194 geo data)', () {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    const geoTag = 'v2026.11.1';
+    late ReleaseUpdates geoUpdates;
+    setUp(() {
+      geoUpdates = ReleaseUpdates(repository: geoRepo, client: Dio());
+    });
+
+    Map<String, dynamic> geoRelease({
+      String name = 'amcity.bin.gz',
+      String? url,
+      Object? digest = 'sha256:abc123',
+    }) => {
+      'tag_name': geoTag,
+      'assets': [
+        {
+          'name': name,
+          'browser_download_url':
+              url ??
+              'https://github.com/$geoRepo/releases/download/$geoTag/$name',
+          'digest': ?digest,
+          'size': 42,
+        },
+      ],
+    };
+
+    test('returns the exact-name asset with its digest', () {
+      final asset = geoUpdates.assetByName(geoRelease(), name: 'amcity.bin.gz');
+      expect(asset, isNotNull);
+      expect(asset!.name, 'amcity.bin.gz');
+      expect(asset.sha256, 'abc123');
+      expect(asset.size, 42);
+    });
+
+    test('rejects a download URL outside this repo and tag', () {
+      final asset = geoUpdates.assetByName(
+        geoRelease(
+          url:
+              'https://github.com/other/repo/releases/download/$geoTag/amcity.bin.gz',
+        ),
+        name: 'amcity.bin.gz',
+      );
+      expect(asset, isNull);
+    });
+
+    test('returns null when the asset is absent or duplicated', () {
+      expect(
+        geoUpdates.assetByName(
+          geoRelease(name: 'other.bin'),
+          name: 'amcity.bin.gz',
+        ),
+        isNull,
+      );
+      final dup = geoRelease();
+      (dup['assets'] as List).add({
+        'name': 'amcity.bin.gz',
+        'browser_download_url':
+            'https://github.com/$geoRepo/releases/download/$geoTag/amcity.bin.gz',
+      });
+      expect(geoUpdates.assetByName(dup, name: 'amcity.bin.gz'), isNull);
+    });
+
+    test('asset without a digest still resolves, sha256 null', () {
+      final asset = geoUpdates.assetByName(
+        geoRelease(digest: null),
+        name: 'amcity.bin.gz',
+      );
+      expect(asset, isNotNull);
+      expect(asset!.sha256, isNull);
+    });
+  });
 }

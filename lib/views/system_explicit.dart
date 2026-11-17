@@ -1,8 +1,8 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/providers/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/providers/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -146,14 +146,35 @@ class _SystemExplicitSectionState extends ConsumerState<SystemExplicitSection> {
   /// options on and leaves every other switch exactly as the user set
   /// it. The single source of truth stays the switches themselves, so
   /// the row carries no status badge of its own.
+  ///
+  /// T203: the action still reports its outcome on this page — a tap
+  /// that visibly changed nothing (all three already on) used to feel
+  /// like a dead button. When all three are already on the tap is a
+  /// pure no-op: it must not re-apply the profile, because a full
+  /// apply restarts the TUN and drops in-flight DNS for seconds (the
+  /// 2026-11-17 trial log shows a 3.7 s apply with a burst of
+  /// "tun lifecycle is transitioning" dial failures for one such
+  /// tap). Success and already-on get a notifier; failure stays with
+  /// the _applyError row _commit fills in, and is never dressed up
+  /// as success.
   Future<void> _turnOnRecommended() async {
     final value = SystemExplicitStore.instance.value;
+    final alreadyOn =
+        value.privacy && value.blockCommonWebRtc && value.blockAds;
+    if (alreadyOn) {
+      context.showNotifier(
+        appLocalizations.systemExplicitRecommendAlreadyOn,
+      );
+      return;
+    }
     setState(() {
       value.privacy = true;
       value.blockCommonWebRtc = true;
       value.blockAds = true;
     });
     await _commit();
+    if (!mounted || _applyError.isNotEmpty) return;
+    context.showNotifier(appLocalizations.systemExplicitRecommendEnabled);
   }
 
   Widget _recommendItem() {

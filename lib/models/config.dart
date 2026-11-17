@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -231,7 +231,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     MrsTapAction mrsTapAction,
     @Default(true) bool mrsResolveDns,
     @Default(false) bool ipRiskDetail,
-    @Default(true) bool ipRiskAlert,
+    @Default(false) bool ipRiskAlert,
     @Default(IperfOptions()) IperfOptions iperfOptions,
     @Default(LocalPingOptions()) LocalPingOptions localPingOptions,
     @Default(<String, String>{}) Map<String, String> mobileDashboardSizes,

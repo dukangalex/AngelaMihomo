@@ -1,7 +1,7 @@
-import 'package:bett_box/common/failure_notice.dart';
-import 'package:bett_box/common/profile_chain.dart';
-import 'package:bett_box/common/profile_chain_overlay.dart';
-import 'package:bett_box/l10n/l10n.dart';
+import 'package:angelamihomo/common/failure_notice.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
+import 'package:angelamihomo/common/profile_chain_overlay.dart';
+import 'package:angelamihomo/l10n/l10n.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -266,6 +266,27 @@ void main() {
       final notice = serviceToggleFailureNotice('not found rule-set: cn');
       expect(notice, contains('规则集「cn」'));
       expect(notice, contains('删掉含「cn」的条目'));
+    });
+  });
+
+  group('rule-set file mismatch notices (T207)', () {
+    test('the three core MRS rejections are classified', () {
+      expect(isRuleSetFileMismatch('invalid behavior'), isTrue);
+      expect(isRuleSetFileMismatch('invalid MrsMagic bytes'), isTrue);
+      expect(isRuleSetFileMismatch('invalid format'), isTrue);
+      expect(isRuleSetFileMismatch('connection refused'), isFalse);
+      expect(isRuleSetFileMismatch('not found rule-set: cn'), isFalse);
+    });
+
+    test('failureNoticeOf swaps the bare core wording for the remedy', () {
+      final notice = failureNoticeOf('invalid behavior');
+      expect(notice, contains('类型不一致'));
+      expect(notice, contains('重新同步'));
+      expect(notice, isNot(contains('invalid behavior')));
+    });
+
+    test('unrelated provider errors keep their redacted reason', () {
+      expect(failureNoticeOf('connection refused'), 'connection refused');
     });
   });
 }

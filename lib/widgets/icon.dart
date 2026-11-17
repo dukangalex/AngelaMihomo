@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:bett_box/common/common.dart';
+import 'package:angelamihomo/common/common.dart';
 import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_svg/svg.dart';
@@ -177,6 +177,9 @@ class _CommonTargetIconState extends State<CommonTargetIcon> {
   void _syncCheckAndInit() {
     if (widget.src.isEmpty || widget.src.getBase64 != null) return;
     if (routeIconAsset(widget.src) != null) return;
+    // Built-in route icons are bundled (T167): never download them, an
+    // unbundled route icon falls through to the default icon.
+    if (isRouteIconUrl(widget.src)) return;
 
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     final cacheSize = (widget.size * devicePixelRatio).ceil();

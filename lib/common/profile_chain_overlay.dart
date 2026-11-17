@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bett_box/common/profile_chain.dart';
+import 'package:angelamihomo/common/profile_chain.dart';
 
 /// Builds the minimal dependency closure needed to use a target from another
 /// profile without changing either saved subscription. Names are namespaced so

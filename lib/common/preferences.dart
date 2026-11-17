@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 import 'package:shared_preferences_platform_interface/types.dart';
@@ -145,12 +145,24 @@ class Preferences {
       }
     }
 
+    // AngelaMihomo (chain.26, T165): the IP risk alert used to default to
+    // on, and while on it sends the current exit IP to a third-party
+    // scoring service. Turn it off once for existing installs; the flag
+    // keeps this one-time, so users may turn it back on afterwards.
+    if (preferences?.getBool(ipRiskAlertOffMigratedKey) != true) {
+      if (selected != null && selected.appSetting.ipRiskAlert) {
+        selected = selected.copyWith(
+          appSetting: selected.appSetting.copyWith(ipRiskAlert: false),
+        );
+      }
+      await preferences?.setBool(ipRiskAlertOffMigratedKey, true);
+    }
+
     if (selected != null && !identical(selected, fileConfig)) {
       await saveConfig(selected);
     } else if (preferences?.containsKey(configKey) == true) {
       await preferences?.remove(configKey);
     }
-
     if (selected != null) {
       await _syncFlag(
         preferences,

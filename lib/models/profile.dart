@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bett_box/clash/core.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/common/import_normalize.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/core.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/clash/core.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/common/import_normalize.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/core.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'clash_config.dart';

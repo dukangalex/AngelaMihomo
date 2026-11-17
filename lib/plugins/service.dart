@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:bett_box/common/system.dart';
-import 'package:bett_box/state.dart';
+import 'package:angelamihomo/common/system.dart';
+import 'package:angelamihomo/state.dart';
 import 'package:flutter/services.dart';
 
 import '../clash/lib.dart';

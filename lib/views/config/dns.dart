@@ -1,8 +1,8 @@
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/enum/enum.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/enum/enum.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -114,6 +114,7 @@ class IPv6Item extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: const Text('IPv6'),
+      subtitle: Text(appLocalizations.dnsIpv6Desc),
       delegate: SwitchDelegate(
         value: ipv6,
         onChanged: (bool value) async {
@@ -296,6 +297,7 @@ class FakeIpFilterItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListItem.next(
       title: Text(appLocalizations.fakeipFilter),
+      subtitle: Text(appLocalizations.fakeipFilterDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.fakeipFilter,
@@ -486,6 +488,7 @@ class UseHostsItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.useHosts),
+      subtitle: Text(appLocalizations.useHostsDesc),
       delegate: SwitchDelegate(
         value: useHosts,
         onChanged: (bool value) async {
@@ -508,6 +511,7 @@ class UseSystemHostsItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: Text(appLocalizations.useSystemHosts),
+      subtitle: Text(appLocalizations.useSystemHostsDesc),
       delegate: SwitchDelegate(
         value: useSystemHosts,
         onChanged: (bool value) async {
@@ -659,6 +663,7 @@ class DirectNameserverFollowPolicyItem extends ConsumerWidget {
 
     return ListItem.switchItem(
       title: Text(appLocalizations.directNameserverFollowPolicy),
+      subtitle: Text(appLocalizations.directNameserverFollowPolicyDesc),
       delegate: SwitchDelegate(
         value: directNameserverFollowPolicy,
         onChanged: (bool value) async {
@@ -721,6 +726,7 @@ class GeoipItem extends ConsumerWidget {
     );
     return ListItem.switchItem(
       title: const Text('Geoip'),
+      subtitle: Text(appLocalizations.geoipFilterDesc),
       delegate: SwitchDelegate(
         value: geoip,
         onChanged: (bool value) async {
@@ -805,6 +811,7 @@ class IpcidrItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListItem.next(
       title: Text(appLocalizations.ipcidr),
+      subtitle: Text(appLocalizations.fallbackIpcidrDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.ipcidr,
@@ -843,6 +850,7 @@ class DomainItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListItem.next(
       title: Text(appLocalizations.domain),
+      subtitle: Text(appLocalizations.fallbackDomainDesc),
       delegate: NextDelegate(
         blur: false,
         title: appLocalizations.domain,

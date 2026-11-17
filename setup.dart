@@ -449,13 +449,17 @@ class Build {
       fileName: 'ASN.mmdb',
     ),
     AssetDownloadItem(
+      // Mirrored into the project's own data repo (T214) from the
+      // MetaCubeX rule set bundle; see angelamihomo-geo release notes.
       url:
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/BundleMRS.7z',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/BundleMRS.7z',
       fileName: 'BundleMRS.7z',
     ),
     AssetDownloadItem(
+      // zashboard v3.29.1 dist-no-fonts, mirrored into the project's
+      // own data repo (T214); original: Zephyruso/zashboard.
       url:
-          'https://github.com/Zephyruso/zashboard/releases/download/v3.29.1/dist-no-fonts.zip',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
       fileName: 'zash.zip',
     ),
   ];

@@ -12,7 +12,7 @@ class AppIdentity {
   // other legacy artifacts produced by older builds stay readable.
   static const legacyProductName = 'Bettbox';
   static const devSuffix = 'Dev';
-  static const packageId = 'app.angelabettbox';
+  static const packageId = 'app.angelamihomo';
 
   static const compactName = isDev ? '$productName$devSuffix' : productName;
   static const displayName = isDev ? 'Angela Mihomo Dev' : 'Angela Mihomo';

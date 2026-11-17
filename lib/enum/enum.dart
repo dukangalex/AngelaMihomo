@@ -2,10 +2,10 @@
 
 import 'dart:io';
 
-import 'package:bett_box/common/system.dart';
-import 'package:bett_box/common/app_localizations.dart';
-import 'package:bett_box/views/dashboard/widgets/widgets.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/common/system.dart';
+import 'package:angelamihomo/common/app_localizations.dart';
+import 'package:angelamihomo/views/dashboard/widgets/widgets.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -273,6 +273,7 @@ enum ActionMethod {
   startListener,
   stopListener,
   getCountryCode,
+  getIpGeo,
   getMemory,
   crash,
   setupConfig,
