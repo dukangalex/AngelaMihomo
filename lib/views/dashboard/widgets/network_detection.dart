@@ -164,7 +164,10 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
           ),
           Text(
             value,
-            maxLines: 1,
+            // Two lines, fully shown (T210): city and ASN names used to
+            // be cut off with an ellipsis on the half-width card; let
+            // them wrap onto a second line instead of truncating.
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: context.textTheme.bodyMedium?.toLight,
           ),
