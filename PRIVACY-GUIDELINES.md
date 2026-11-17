@@ -1,7 +1,8 @@
 # AngelaMihomo 隐私与功能完整性指引
 
 > 本文件是 AngelaMihomo 的项目长远发展指引之一，2026-11-17 由项目所有者定版。
-> 它是产品总纲（易用、内核能力全显式、最大限度保护用户隐私、长期平稳运行）在隐私维度的展开，
+> 项目的第一硬性规定是六条地基——隐私、数据安全、高效节能、运行平稳、能力显式、开箱即用，
+> 六条没有主次之分，都是项目地基。本文件是其中「隐私」一条的展开，
 > 与自有化总目标、数据自建仓通则、单一规范原则共同构成项目的长期约束。
 > 本文件的修订须经项目所有者拍板，并在此处留痕。
 
@@ -52,7 +53,7 @@
 # AngelaMihomo Privacy and Feature-Integrity Guidelines
 
 > This document is one of the long-term development guidelines of AngelaMihomo, adopted by the project owner on 2026-11-17.
-> It elaborates the privacy dimension of the product charter (ease of use, full exposure of kernel capabilities, maximum protection of user privacy, long-term stable operation), and together with the self-sufficiency goal, the self-hosted data-repository rule, and the single-source-of-truth principle, it forms the project's long-term constraints.
+> The project's first hard rule is its six foundation pillars — privacy, data security, efficiency, stability, explicit capabilities, and out-of-the-box usability — equal in rank, none subordinate to another. This document elaborates the privacy pillar, and together with the self-sufficiency goal, the self-hosted data-repository rule, and the single-source-of-truth principle, it forms the project's long-term constraints.
 > Amendments require the project owner's decision and are recorded here.
 
 ## The principle in one sentence
