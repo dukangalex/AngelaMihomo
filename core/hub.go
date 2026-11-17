@@ -60,6 +60,14 @@ var (
 )
 
 func init() {
+	// Memory discipline (T208, measured 2026-11-17): the dashboard's
+	// memory figure counts heap the runtime holds on to, and the
+	// default GC target (GOGC=100) lets it sit at roughly twice the
+	// live set. Halving the GC target and adding a generous soft
+	// limit keeps the resident figure close to the live set without
+	// starving bursty work (config applies, provider syncs).
+	debug.SetGCPercent(50)
+	debug.SetMemoryLimit(128 << 20)
 	toolbox.Setup(toolbox.Host{
 		Notify: func(kind string, data any) {
 			sendMessage(Message{Type: MessageType(kind), Data: data})

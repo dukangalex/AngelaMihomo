@@ -7,6 +7,12 @@ package main
 // it whenever it changes. Format specification: FORMAT.md in the data
 // repository (grid + run-length encoding, majority tuple per cell).
 // All lookups are local; nothing about the queried IP leaves the device.
+//
+// Memory (T208): the database is memory-mapped where the platform
+// supports it, so the ~30 MB file never enters the Go heap, and the
+// dictionary is kept as byte offsets into the mapping — tuples are
+// materialized one at a time per lookup instead of being held as Go
+// strings. The parsed footprint is just the two section indexes.
 
 import (
 	"encoding/binary"
@@ -39,7 +45,13 @@ type cityIndexEntry struct {
 }
 
 type cityDB struct {
-	dict []cityTuple
+	// data backs every section's runs and the dictionary entries. On
+	// unix platforms it is an mmap of the file (release unmaps it);
+	// elsewhere it is a heap copy and release is nil.
+	data    []byte
+	release func()
+	// dict holds the byte offset of each dictionary entry in data.
+	dict []uint32
 	v4   citySection
 	v6   citySection
 }
@@ -62,12 +74,12 @@ func cityDBPath() string {
 	return filepath.Join(home, cityDBFileName)
 }
 
-// loadCityDB returns the parsed city database, reloading it when the
-// file on disk has changed. Returns nil when no usable file exists.
-// The stat check runs at most once per second; lookups stay cheap.
-func loadCityDB() *cityDB {
-	cityMu.Lock()
-	defer cityMu.Unlock()
+// loadCityDBLocked returns the parsed city database, reloading it when
+// the file on disk has changed. Returns nil when no usable file exists.
+// The caller must hold cityMu: lookups read the (possibly mapped)
+// backing store, so a reload must never unmap it mid-lookup. The stat
+// check runs at most once per second; lookups stay cheap.
+func loadCityDBLocked() *cityDB {
 	path := cityDBPath()
 	if path == "" {
 		return nil
@@ -78,26 +90,48 @@ func loadCityDB() *cityDB {
 	cityChecked = time.Now()
 	info, err := os.Stat(path)
 	if err != nil {
-		cityLoaded = nil
-		cityStamp = time.Time{}
-		citySize = 0
+		unloadCityDBLocked()
 		return nil
 	}
 	if cityLoaded != nil && info.ModTime().Equal(cityStamp) && info.Size() == citySize {
 		return cityLoaded
 	}
-	data, err := os.ReadFile(path)
+	data, release, err := acquireCityData(path)
 	if err != nil {
 		return cityLoaded
 	}
 	parsed := parseCityDB(data)
 	if parsed == nil {
+		if release != nil {
+			release()
+		}
 		return cityLoaded
 	}
+	parsed.release = release
+	unloadCityDBLocked()
 	cityLoaded = parsed
 	cityStamp = info.ModTime()
 	citySize = info.Size()
 	return cityLoaded
+}
+
+// unloadCityDBLocked drops the loaded database, releasing its backing
+// store. The caller must hold cityMu.
+func unloadCityDBLocked() {
+	if cityLoaded != nil && cityLoaded.release != nil {
+		cityLoaded.release()
+	}
+	cityLoaded = nil
+	cityStamp = time.Time{}
+	citySize = 0
+}
+
+// loadCityDB returns the parsed city database, reloading it when the
+// file on disk has changed. Returns nil when no usable file exists.
+func loadCityDB() *cityDB {
+	cityMu.Lock()
+	defer cityMu.Unlock()
+	return loadCityDBLocked()
 }
 
 func parseCityDB(data []byte) *cityDB {
@@ -125,26 +159,26 @@ func parseCityDB(data []byte) *cityDB {
 	if !ok {
 		return nil
 	}
-	dict := make([]cityTuple, 0, dictCount)
+	// The dictionary walk validates every entry exactly as before, but
+	// records only the entry's offset; the strings live in the backing
+	// store and are copied out per lookup by tupleAt.
+	dict := make([]uint32, 0, dictCount)
 	for i := uint64(0); i < dictCount; i++ {
 		if off+2 > len(data) {
 			return nil
 		}
-		cc := string(data[off : off+2])
+		dict = append(dict, uint32(off))
 		off += 2
 		rl, ok := readUV()
 		if !ok || off+int(rl) > len(data) {
 			return nil
 		}
-		region := string(data[off : off+int(rl)])
 		off += int(rl)
 		cl, ok := readUV()
 		if !ok || off+int(cl) > len(data) {
 			return nil
 		}
-		city := string(data[off : off+int(cl)])
 		off += int(cl)
-		dict = append(dict, cityTuple{cc, region, city})
 	}
 	readSection := func(runCount uint64) (citySection, bool) {
 		start := off
@@ -187,7 +221,37 @@ func parseCityDB(data []byte) *cityDB {
 	if !ok {
 		return nil
 	}
-	return &cityDB{dict: dict, v4: v4, v6: v6}
+	return &cityDB{data: data, dict: dict, v4: v4, v6: v6}
+}
+
+// tupleAt materializes dictionary entry tid from the backing store.
+// parseCityDB has already validated the whole file, so the bounds
+// checks here are only a guard against a corrupt in-memory state.
+func (db *cityDB) tupleAt(tid uint32) (cityTuple, bool) {
+	if int(tid) >= len(db.dict) {
+		return cityTuple{}, false
+	}
+	data := db.data
+	off := int(db.dict[tid])
+	if off+2 > len(data) {
+		return cityTuple{}, false
+	}
+	country := string(data[off : off+2])
+	off += 2
+	rl, n := binary.Uvarint(data[off:])
+	if n <= 0 || off+n+int(rl) > len(data) {
+		return cityTuple{}, false
+	}
+	off += n
+	region := string(data[off : off+int(rl)])
+	off += int(rl)
+	cl, n := binary.Uvarint(data[off:])
+	if n <= 0 || off+n+int(cl) > len(data) {
+		return cityTuple{}, false
+	}
+	off += n
+	city := string(data[off : off+int(cl)])
+	return cityTuple{country, region, city}, true
 }
 
 func (s citySection) lookup(cell uint64) (uint32, bool) {
@@ -249,7 +313,11 @@ func (s citySection) lookup(cell uint64) (uint32, bool) {
 // lookupCity resolves an IP to (country, region, city) from the local
 // city database. ok is false when no database or no covering cell exists.
 func lookupCity(ip net.IP) (country, region, city string, ok bool) {
-	db := loadCityDB()
+	// The whole lookup runs under cityMu: a reload swaps (and on unix
+	// unmaps) the backing store, which must never happen mid-lookup.
+	cityMu.Lock()
+	defer cityMu.Unlock()
+	db := loadCityDBLocked()
 	if db == nil {
 		return "", "", "", false
 	}
@@ -265,9 +333,12 @@ func lookupCity(ip net.IP) (country, region, city string, ok bool) {
 		cell := new(big.Int).Rsh(new(big.Int).SetBytes(ip16), 80).Uint64()
 		tid, ok = db.v6.lookup(cell)
 	}
-	if !ok || int(tid) >= len(db.dict) {
+	if !ok {
 		return "", "", "", false
 	}
-	t := db.dict[tid]
+	t, ok := db.tupleAt(tid)
+	if !ok {
+		return "", "", "", false
+	}
 	return t.country, t.region, t.city, true
 }
