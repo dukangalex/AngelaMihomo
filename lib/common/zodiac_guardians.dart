@@ -370,30 +370,56 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
             child: Opacity(
               // The figure is a background presence, never the scene's
               // subject (user correction 2026-11-16): chain.26 weakens
-              // it further (T160) — 0.45 plus the edge-dissolve mask
+              // it further (T160) — 0.45 plus the edge-feather masks
               // below sinks it into the backdrop's light field.
               opacity: 0.45,
               child: ShaderMask(
-                // T160: dissolve the artwork's rectangular edges into
-                // the background so the figure reads as grown into the
-                // backdrop rather than pasted on it. The mask keeps
-                // the figure's core fully visible and fades the rim.
+                // T188: feather the artwork's edges into the
+                // background on both axes so the figure reads as grown
+                // into the backdrop rather than pasted on it. The
+                // earlier single radial dissolve (T160) left the
+                // asset's straight rectangular edges visible — alpha
+                // was still high where the rectangle's sides sat
+                // inside the radial falloff — and the user's real
+                // device still read it as a pasted picture
+                // (2026-11-17). A box feather drives alpha to exactly
+                // zero at every side of the asset rectangle, so no
+                // hard edge can survive anywhere on its perimeter.
                 blendMode: BlendMode.dstIn,
-                shaderCallback: (rect) => const RadialGradient(
-                  center: Alignment(-0.05, -0.15),
-                  radius: 0.92,
-                  colors: [Colors.white, Colors.white, Colors.transparent],
-                  stops: [0, 0.52, 1],
+                shaderCallback: (rect) => const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.transparent,
+                    Colors.white,
+                    Colors.white,
+                    Colors.transparent,
+                  ],
+                  stops: [0, 0.22, 0.78, 1],
                 ).createShader(rect),
-                child: ClipRect(
-                  child: Transform.scale(
-                    scale: variant.zoom,
-                    alignment: variant.focal,
-                    child: Transform.flip(
-                      flipX: variant.flipX,
-                      child: Image.asset(
-                        active.guardian.assetPath,
-                        fit: BoxFit.fitWidth,
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [0, 0.12, 0.78, 1],
+                  ).createShader(rect),
+                  child: ClipRect(
+                    child: Transform.scale(
+                      scale: variant.zoom,
+                      alignment: variant.focal,
+                      child: Transform.flip(
+                        flipX: variant.flipX,
+                        child: Image.asset(
+                          active.guardian.assetPath,
+                          fit: BoxFit.fitWidth,
+                        ),
                       ),
                     ),
                   ),
