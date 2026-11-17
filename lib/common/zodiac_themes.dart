@@ -1406,15 +1406,21 @@ class SolarPlanetPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final center = Offset(w * 0.76, h * 0.30);
-    final r = w * 0.33;
+    // T189: the first cut (centre 0.76/0.30, radius 0.33w, disc at
+    // full strength) read on the user's real device as a giant bright
+    // smudge washing over the home cards — a background presence must
+    // stay a presence. The body is now smaller, tucked into the top
+    // corner so the screen edge crops it, and the disc itself is
+    // translucent: its light tones can no longer outshine content.
+    final center = Offset(w * 0.84, h * 0.22);
+    final r = w * 0.23;
 
     // Halo: the body's light bleeding into the plain field.
     canvas.drawCircle(
       center,
       r * 1.3,
       Paint()
-        ..color = variant.primary.withValues(alpha: 0.10)
+        ..color = variant.primary.withValues(alpha: 0.08)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 34),
     );
 
@@ -1426,10 +1432,13 @@ class SolarPlanetPainter extends CustomPainter {
       ..shader = RadialGradient(
         center: const Alignment(-0.45, -0.45),
         radius: 1.25,
-        colors: [variant.primary, variant.secondary],
+        colors: [
+          variant.primary.withValues(alpha: 0.5),
+          variant.secondary.withValues(alpha: 0.5),
+        ],
         stops: const [0.1, 1],
       ).createShader(rect)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 13);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
     canvas.drawCircle(center, r, discPaint);
 
     if (body == SolarBody.saturn) {
@@ -1441,7 +1450,7 @@ class SolarPlanetPainter extends CustomPainter {
         Offset.zero,
         r * 1.45,
         Paint()
-          ..color = variant.secondary.withValues(alpha: 0.5)
+          ..color = variant.secondary.withValues(alpha: 0.32)
           ..style = PaintingStyle.stroke
           ..strokeWidth = r * 0.17
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
@@ -1461,7 +1470,7 @@ class SolarPlanetPainter extends CustomPainter {
             r * 0.17,
           ),
           Paint()
-            ..color = variant.secondary.withValues(alpha: 0.20)
+            ..color = variant.secondary.withValues(alpha: 0.13)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
         );
       }
