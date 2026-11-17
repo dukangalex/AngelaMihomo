@@ -371,9 +371,12 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
             child: Opacity(
               // The figure is a background presence, never the scene's
               // subject (user correction 2026-11-16): chain.26 weakens
-              // it further (T160) — 0.45 plus the edge-feather masks
-              // below sinks it into the backdrop's light field.
-              opacity: 0.45,
+              // it (T160) and the edge-feather masks below sink it into
+              // the backdrop's light field — but at 0.45 with the
+              // stronger blur it read as too faint on the user's real
+              // device (2026-11-17, T193), so the presence is raised
+              // to 0.6 and the blur eased in the backdrop.
+              opacity: 0.6,
               child: ShaderMask(
                 // T188: feather the artwork's edges into the
                 // background on both axes so the figure reads as grown

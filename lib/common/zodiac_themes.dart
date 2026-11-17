@@ -499,10 +499,10 @@ class ZodiacBackdrop extends StatelessWidget {
           ),
         // Every painted artwork layer in the backdrop is softly
         // blurred (T187, family-wide rule): backgrounds set the
-        // mood, they never compete with the content. Element line
-        // art gets a light defocus; the guardian figure a stronger
-        // one. The name plates are text, not artwork — they stay
-        // legible, already dimmed.
+        // mood, they never compete with the content. All artwork
+        // sits at a light defocus (sigma 1.2–1.3; the guardian's
+        // strength was recalibrated by T193). The name plates are
+        // text, not artwork — they stay legible, already dimmed.
         if (zodiac.motif != null) ...[
           Positioned.fill(
             child: ImageFiltered(
@@ -550,9 +550,13 @@ class ZodiacBackdrop extends StatelessWidget {
           if (showGuardian && zodiac.showGuardian)
             Positioned.fill(
               child: ImageFiltered(
+                // T187's stronger defocus (2.2) plus the figure's
+                // own dimming read as too faint on the user's real
+                // device (2026-11-17, T193): eased to 1.2 — still
+                // softened, never sharp, but with body.
                 imageFilter: ui.ImageFilter.blur(
-                  sigmaX: 2.2,
-                  sigmaY: 2.2,
+                  sigmaX: 1.2,
+                  sigmaY: 1.2,
                   tileMode: ui.TileMode.mirror,
                 ),
                 child: const ZodiacGuardianBackdropFigure(),
