@@ -339,18 +339,9 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
     Widget? trailing,
     Widget? leading,
     bool enabled = true,
-    Color? subtitleColor,
   }) {
     final effectiveLeading = leading ?? this.leading;
     final styleScope = ListItemStyleScope.of(context);
-    final baseSubtitleStyle =
-        subtitleTextStyle ??
-        styleScope?.subtitleStyle ??
-        context.textTheme.bodyMedium?.copyWith(
-          fontSize: 12.5,
-          color: context.colorScheme.onSurfaceVariant,
-          height: 1.35,
-        );
     return ListTile(
       key: key,
       dense: dense,
@@ -364,9 +355,21 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
-      subtitleTextStyle: subtitleColor == null
-          ? baseSubtitleStyle
-          : baseSubtitleStyle?.copyWith(color: subtitleColor),
+      // T218 (the user's call, as corrected): the small print is
+      // always lit — the theme's lit color halved toward onSurface,
+      // bright enough to read over the backdrop, softer than a lit
+      // switch. Explicit styles and page scopes keep their own tone.
+      subtitleTextStyle:
+          subtitleTextStyle ??
+          styleScope?.subtitleStyle ??
+          context.textTheme.bodyMedium?.copyWith(
+            fontSize: 12.5,
+            color: zodiacSubtitleColor(
+              context.colorScheme,
+              context.zodiac?.variant,
+            ),
+            height: 1.35,
+          ),
       leading: effectiveLeading != null
           ? IconTheme(
               data: IconThemeData(
@@ -544,21 +547,9 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
     if (delegate is SwitchDelegate) {
       final switchDelegate = delegate as SwitchDelegate;
       final isEnabled = switchDelegate.onChanged != null;
-      // T218 (the user's call): while the switch is on, the row's
-      // small print wears the switch's own lit color — the thumb's
-      // color from the same single source the switch theme uses —
-      // so it follows the active theme. Off or disabled rows keep
-      // the muted subtitle tone.
-      final litColor = switchDelegate.value && isEnabled
-          ? zodiacSwitchLitColor(
-              context.colorScheme,
-              context.zodiac?.variant,
-            )
-          : null;
       return _buildListTile(
         context,
         enabled: isEnabled,
-        subtitleColor: litColor,
         onTap: isEnabled
             ? () {
                 switchDelegate.onChanged!(!switchDelegate.value);

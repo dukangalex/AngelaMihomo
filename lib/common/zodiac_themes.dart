@@ -421,6 +421,19 @@ Color zodiacSwitchLitColor(ColorScheme colorScheme, ZodiacVariant? variant) {
   return _zodiacSwitchOnThumb(variant);
 }
 
+/// The standing tone for small supporting text (T218, as corrected
+/// by the user): always lit, never as loud as a switch. The theme's
+/// lit color is halved toward onSurface — bright enough to read
+/// over the guardian backdrop, soft enough to stay small print, and
+/// it follows the active theme like every other lit surface.
+Color zodiacSubtitleColor(ColorScheme colorScheme, ZodiacVariant? variant) {
+  return Color.lerp(
+    colorScheme.onSurface,
+    zodiacSwitchLitColor(colorScheme, variant),
+    0.5,
+  )!;
+}
+
 /// The lit track: the selected gradient's start. A selected paint of
 /// none/atmosphere carries no flat tone, so the primary stands in.
 Color _zodiacSwitchOnTrack(ZodiacVariant variant) {
