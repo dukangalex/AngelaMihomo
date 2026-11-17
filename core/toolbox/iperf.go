@@ -9,7 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	iperf3 "github.com/appshubcc/go-iperf3"
+	// Vendored in-tree (T214): the iperf3 client/server package used
+	// to be the upstream org's module; it now lives in this repo under
+	// toolbox/iperf3 with its MIT license preserved alongside.
+	iperf3 "core/toolbox/iperf3"
 
 	"github.com/metacubex/mihomo/component/dialer"
 )

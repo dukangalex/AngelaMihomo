@@ -1040,7 +1040,7 @@
   "iperfPort": "連接埠",
   "iperfPortInvalid": "請輸入 1–65535 之間的連接埠",
   "iperfServerTip": "伺服端只在本頁面開啟時執行，離開頁面後會自動停止；執行期間螢幕保持常亮。",
-  "iperfFirewallTip": "如果其他裝置無法連線，請在系統防火牆中允許 Bettbox 核心的傳入連線。",
+  "iperfFirewallTip": "如果其他裝置無法連線，請在系統防火牆中允許 AngelaMihomo 核心的傳入連線。",
   "iperfUdpUnavailable": "UDP 連接埠已被佔用，只能進行 TCP 測試。",
   "iperfAddressHint": "伺服器位址，例如 192.168.1.5",
   "iperfScan": "掃碼連線",

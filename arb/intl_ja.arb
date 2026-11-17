@@ -1040,7 +1040,7 @@
   "iperfPort": "ポート",
   "iperfPortInvalid": "1〜65535 のポートを入力してください",
   "iperfServerTip": "サーバーはこのページを開いている間だけ動作し、離れると自動で停止します。動作中は画面が消えません。",
-  "iperfFirewallTip": "他のデバイスから接続できない場合は、システムのファイアウォールで Bettbox コアの受信接続を許可してください。",
+  "iperfFirewallTip": "他のデバイスから接続できない場合は、システムのファイアウォールで AngelaMihomo コアの受信接続を許可してください。",
   "iperfUdpUnavailable": "UDP ポートが使用中のため、TCP テストのみ利用できます。",
   "iperfAddressHint": "サーバーアドレス（例：192.168.1.5）",
   "iperfScan": "スキャンして接続",

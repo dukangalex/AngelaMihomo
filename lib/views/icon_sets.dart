@@ -193,11 +193,10 @@ class _IconSetsSheetState extends ConsumerState<_IconSetsSheet> {
               builtIn,
               subtitle:
                   '${appLocalizations.builtIn} · '
-                  '${appLocalizations.iconCount(builtIn.icons.length)} · '
-                  '@aaANDkk',
+                  '${appLocalizations.iconCount(builtIn.icons.length)}',
               actions: const [Icon(Icons.open_in_new, size: 18)],
               onTap: () => globalState.openUrl(
-                'https://github.com/appshubcc/Qure_Style_SVG',
+                'https://github.com/dukangalex/angelamihomo-icons',
               ),
             ),
           for (final iconSet in imported) _buildImported(iconSet),

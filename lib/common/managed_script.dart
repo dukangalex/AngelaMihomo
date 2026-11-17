@@ -79,7 +79,22 @@ Profile profileWithScriptChoice(Profile profile, String? choice) {
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
 const _routeIconBaseUrl =
+    'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
+
+/// Pre-T214 icon base under the upstream org. Stored profiles and
+/// group configs still carry URLs with this prefix; they keep
+/// resolving to the bundled assets so existing setups do not lose
+/// their icons. New URLs are always built on [_routeIconBaseUrl].
+const _legacyRouteIconBaseUrl =
     'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+
+String? _routeIconBaseOf(String url) {
+  if (url.startsWith(_routeIconBaseUrl)) return _routeIconBaseUrl;
+  if (url.startsWith(_legacyRouteIconBaseUrl)) {
+    return _legacyRouteIconBaseUrl;
+  }
+  return null;
+}
 const _routeIconCommonDir = 'common/';
 const _routeIconAssetDir = 'assets/route_svg/';
 final _versionPattern = RegExp(r'^//\s*@version\s+(\d+)\s*$', multiLine: true);
@@ -97,7 +112,7 @@ Future<void> loadBundledRouteIcons() => _bundledRouteIconsLoad ??= () async {
 }();
 
 String? routeIconAsset(String? url) {
-  if (url == null || !url.startsWith(_routeIconBaseUrl)) return null;
+  if (url == null || _routeIconBaseOf(url) == null) return null;
   final icon = Uri.tryParse(url)?.pathSegments.lastOrNull;
   if (icon == null || !_bundledRouteIcons.contains(icon)) return null;
   return '$_routeIconAssetDir$icon';
@@ -108,7 +123,7 @@ String? routeIconAsset(String? url) {
 /// locally via [routeIconAsset] and must never be fetched over the
 /// network; an unbundled one renders the default icon instead.
 bool isRouteIconUrl(String? url) =>
-    url != null && url.startsWith(_routeIconBaseUrl);
+    url != null && _routeIconBaseOf(url) != null;
 
 final _prefixStart = RegExp(r'[\p{L}\p{N}]', unicode: true);
 final _prefixPattern = RegExp(
@@ -179,8 +194,9 @@ IconSet routeIconSet(RouteCatalog catalog) => IconSet(
 );
 
 String routeIconValue(String url) {
-  if (!url.startsWith(_routeIconBaseUrl)) return url;
-  final path = Uri.decodeComponent(url.substring(_routeIconBaseUrl.length));
+  final base = _routeIconBaseOf(url);
+  if (base == null) return url;
+  final path = Uri.decodeComponent(url.substring(base.length));
   return path.startsWith(_routeIconCommonDir)
       ? path.substring(_routeIconCommonDir.length)
       : path;

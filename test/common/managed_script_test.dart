@@ -45,7 +45,7 @@ void main() {
 
   test('route icons resolve to Qure paths and bundled assets', () async {
     const base =
-        'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+        'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
     expect(routeIconUrl('YouTube.svg'), '${base}common/YouTube.svg');
     expect(routeIconUrl('flag/Japan.svg'), '${base}flag/Japan.svg');
     expect(
@@ -65,6 +65,19 @@ void main() {
       'assets/route_svg/Japan.svg',
     );
     expect(routeIconAsset('https://example.com/YouTube.svg'), null);
+  });
+
+  test('legacy upstream icon URLs still resolve to bundled assets', () async {
+    const legacy =
+        'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+    await loadBundledRouteIcons();
+    expect(isRouteIconUrl('${legacy}common/YouTube.svg'), isTrue);
+    expect(
+      routeIconAsset('${legacy}common/YouTube.svg'),
+      'assets/route_svg/YouTube.svg',
+    );
+    expect(routeIconValue('${legacy}common/YouTube.svg'), 'YouTube.svg');
+    expect(routeIconValue('${legacy}flag/Japan.svg'), 'flag/Japan.svg');
   });
 
   test('route catalog entries point to the bundled rule sets', () async {

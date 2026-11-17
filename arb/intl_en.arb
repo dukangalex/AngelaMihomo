@@ -1040,7 +1040,7 @@
   "iperfPort": "Port",
   "iperfPortInvalid": "Enter a port between 1 and 65535",
   "iperfServerTip": "The server only runs while this page is open and stops when you leave. The screen stays on while it runs.",
-  "iperfFirewallTip": "If other devices can't connect, allow incoming connections for the Bettbox core in your system firewall.",
+  "iperfFirewallTip": "If other devices can't connect, allow incoming connections for the AngelaMihomo core in your system firewall.",
   "iperfUdpUnavailable": "The UDP port is in use, so only TCP tests are available.",
   "iperfAddressHint": "Server address, e.g. 192.168.1.5",
   "iperfScan": "Scan to connect",

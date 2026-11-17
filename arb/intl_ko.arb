@@ -1040,7 +1040,7 @@
   "iperfPort": "포트",
   "iperfPortInvalid": "1–65535 사이의 포트를 입력하세요",
   "iperfServerTip": "서버는 이 페이지가 열려 있을 때만 실행되며 나가면 자동으로 중지됩니다. 실행 중에는 화면이 꺼지지 않습니다.",
-  "iperfFirewallTip": "다른 기기에서 연결할 수 없다면 시스템 방화벽에서 Bettbox 코어의 수신 연결을 허용하세요.",
+  "iperfFirewallTip": "다른 기기에서 연결할 수 없다면 시스템 방화벽에서 AngelaMihomo 코어의 수신 연결을 허용하세요.",
   "iperfUdpUnavailable": "UDP 포트가 사용 중이어서 TCP 테스트만 가능합니다.",
   "iperfAddressHint": "서버 주소 (예: 192.168.1.5)",
   "iperfScan": "스캔하여 연결",
