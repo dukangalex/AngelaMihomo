@@ -62,8 +62,6 @@ class GlobalState {
   String? coreSHA256;
   late PackageInfo packageInfo;
   Function? updateCurrentDelayDebounce;
-  VoidCallback? focusDashboardStartSwitch;
-  bool isDashboardStartSwitchFocused = false;
   late Measure measure;
   late CommonTheme theme;
   late Color accentColor;

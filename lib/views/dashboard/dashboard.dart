@@ -24,30 +24,11 @@ class DashboardView extends ConsumerStatefulWidget {
 }
 
 class _DashboardViewState extends ConsumerState<DashboardView> {
-  final GlobalKey<_DashboardStartSwitchState> _startSwitchKey = GlobalKey();
   final _isEditNotifier = ValueNotifier<bool>(false);
   final _menuOpenNotifier = ValueNotifier<bool>(false);
 
   @override
-  void initState() {
-    super.initState();
-    if (globalState.isAndroidTV) {
-      globalState.focusDashboardStartSwitch = _requestStartSwitchFocus;
-    }
-  }
-
-  void _requestStartSwitchFocus() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _startSwitchKey.currentState?.requestFocus();
-    });
-  }
-
-  @override
   void dispose() {
-    if (globalState.focusDashboardStartSwitch == _requestStartSwitchFocus) {
-      globalState.focusDashboardStartSwitch = null;
-    }
     _isEditNotifier.dispose();
     _menuOpenNotifier.dispose();
     super.dispose();
@@ -122,11 +103,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     _saveWidgets(widgets);
   }
 
-  List<Widget> _buildActions(
-    bool showStartSwitch,
-    ThemeMode themeMode,
-    bool watermark,
-  ) {
+  List<Widget> _buildActions(ThemeMode themeMode, bool watermark) {
     return [
       _buildIsEdit((isEdit) {
         if (!isEdit) return const SizedBox.shrink();
@@ -164,18 +141,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 _menuOpenNotifier.value = false;
               },
               tooltip: appLocalizations.more,
-              icon: showStartSwitch
-                  ? ValueListenableBuilder<bool>(
-                      valueListenable: _menuOpenNotifier,
-                      builder: (_, isOpen, _) => _MenuDots(isOpen: isOpen),
-                    )
-                  : const Icon(Icons.more_vert),
+              icon: ValueListenableBuilder<bool>(
+                valueListenable: _menuOpenNotifier,
+                builder: (_, isOpen, _) => _MenuDots(isOpen: isOpen),
+              ),
             );
-            if (!showStartSwitch) return button;
-            return Transform.translate(
-              offset: const Offset(4, 0),
-              child: button,
-            );
+            return button;
           },
           popup: CommonPopupMenu(
             items: [
@@ -244,7 +215,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           ),
         );
       }),
-      if (showStartSwitch) _DashboardStartSwitch(key: _startSwitchKey),
     ];
   }
 
@@ -320,10 +290,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       dashboardStateProvider.select((state) => state.dashboardWidgets),
     );
     final isMobileView = ref.watch(isMobileViewProvider);
-    final (customTitle, showStartSwitch) = ref.watch(
-      appSettingProvider.select(
-        (state) => (state.dashboardTitle, state.showStartSwitch),
-      ),
+    final customTitle = ref.watch(
+      appSettingProvider.select((state) => state.dashboardTitle),
     );
     final themeMode = ref.watch(
       themeSettingProvider.select((state) => state.themeMode),
@@ -355,7 +323,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         title: title,
         inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
         isMobileView: isMobileView,
-        showStartSwitch: showStartSwitch,
         themeMode: themeMode,
         watermark: watermark,
         spacing: spacing,
@@ -368,7 +335,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     required String title,
     required double inset,
     required bool isMobileView,
-    required bool showStartSwitch,
     required ThemeMode themeMode,
     required bool watermark,
     required double spacing,
@@ -397,7 +363,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             : EmojiText(title),
       ),
       actions: [
-        ..._buildActions(showStartSwitch, themeMode, watermark),
+        ..._buildActions(themeMode, watermark),
         if (inset > 4) SizedBox(width: inset - 4),
       ],
       body: ScrollEdgeRise(
@@ -687,252 +653,6 @@ class _DashboardTitleDialogState extends State<_DashboardTitleDialog> {
           ),
           onChanged: _validate,
         ),
-      ),
-    );
-  }
-}
-
-class _DashboardStartSwitch extends ConsumerStatefulWidget {
-  const _DashboardStartSwitch({super.key});
-
-  @override
-  ConsumerState<_DashboardStartSwitch> createState() =>
-      _DashboardStartSwitchState();
-}
-
-class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
-  bool _isDisabled = false;
-  bool? _optimisticStart;
-  FocusNode? _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    if (globalState.isAndroidTV) {
-      _focusNode = FocusNode()..addListener(_onFocusChange);
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusNode?.removeListener(_onFocusChange);
-    _focusNode?.dispose();
-    super.dispose();
-  }
-
-  void _onFocusChange() {
-    globalState.isDashboardStartSwitchFocused = _focusNode?.hasFocus ?? false;
-  }
-
-  void requestFocus() {
-    _focusNode?.requestFocus();
-  }
-
-  Future<void> _handleStart() async {
-    if (_isDisabled) return;
-    final newState =
-        ref.read(isSmartStoppedProvider) || ref.read(runTimeProvider) == null;
-    setState(() {
-      _isDisabled = true;
-      _optimisticStart = newState;
-    });
-
-    try {
-      await globalState.appController.updateStatus(newState);
-    } catch (e) {
-      commonPrint.error('updateStatus failed: $e');
-      globalState.showNotifier(serviceToggleFailureNotice(e));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isDisabled = false;
-          _optimisticStart = null;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final (isInit, hasProfile) = ref.watch(
-      startButtonSelectorStateProvider.select(
-        (state) => (state.isInit, state.hasProfile),
-      ),
-    );
-    final isRestarting = ref.watch(isRestartingCoreProvider);
-    final isSmartStopped = ref.watch(isSmartStoppedProvider);
-    final isStart = ref.watch(runTimeProvider.select((state) => state != null));
-    final displayStart = isSmartStopped ? false : (_optimisticStart ?? isStart);
-
-    final canPress = isInit && hasProfile && !_isDisabled && !isRestarting;
-
-    final colorScheme = context.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
-    final isBusy = _isDisabled || isRestarting;
-    final isAvailable = isInit && hasProfile;
-    final (style, onLabel, offLabel) = ref.watch(
-      appSettingProvider.select(
-        (state) => (
-          state.startSwitchStyle,
-          state.startSwitchOnLabel,
-          state.startSwitchOffLabel,
-        ),
-      ),
-    );
-    final isOutlined = style == StartSwitchStyle.outlined;
-    // Zodiac start-switch faces (design doc 3.5.1.1): on = the family's
-    // selected paint (gradient or solid) with onPrimary content; off =
-    // the surfaceVariant track with textSecondary content. The gradient
-    // is painted by a DecoratedBox around the button below, so the
-    // button's own track goes transparent in the on state.
-    final zodiacVariant = context.zodiac?.variant;
-    final zodiacOnPaint = (zodiacVariant != null && displayStart)
-        ? zodiacVariant.selected
-        : null;
-    final zodiacOn = zodiacOnPaint != null && !zodiacOnPaint.isNone;
-    final trackColor = zodiacOn
-        ? Colors.transparent
-        : zodiacVariant != null
-        ? zodiacVariant.surfaceVariant
-        : isOutlined
-        ? isLight
-              ? Color.lerp(
-                  colorScheme.surface,
-                  colorScheme.surfaceContainerLowest,
-                  0.5,
-                )
-              : colorScheme.surfaceContainerHigh
-        : displayStart
-        ? colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.2)
-        : colorScheme.onSurface.withValues(alpha: 0.06);
-    final borderSide = zodiacVariant != null
-        ? BorderSide.none
-        : isOutlined
-        ? BorderSide(
-            color: displayStart
-                ? colorScheme.primary.withValues(alpha: 0.45)
-                : colorScheme.outlineVariant.withValues(
-                    alpha: isLight ? 0.45 : 0.25,
-                  ),
-          )
-        : BorderSide.none;
-    final zodiacOnColor = zodiacOn ? zodiacVariant!.onPrimary : null;
-    final iconColor =
-        zodiacOnColor ??
-        (displayStart ? colorScheme.primary : colorScheme.onSurfaceVariant);
-    final labelMediumStyle = context.textTheme.labelMedium;
-    final labels = [
-      (
-        offLabel ?? appLocalizations.disabled,
-        !displayStart,
-        zodiacVariant != null && !displayStart
-            ? zodiacVariant.textSecondary
-            : colorScheme.onSurfaceVariant,
-      ),
-      (
-        onLabel ?? appLocalizations.enabled,
-        displayStart,
-        zodiacOnColor ?? colorScheme.primary,
-      ),
-    ];
-
-    final button = TextButton(
-      focusNode: _focusNode,
-      onPressed: canPress ? _handleStart : null,
-      style: ButtonStyle(
-        visualDensity: VisualDensity.standard,
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        ),
-        minimumSize: const WidgetStatePropertyAll(Size.zero),
-        backgroundColor: WidgetStatePropertyAll(trackColor),
-        shape: WidgetStateProperty.resolveWith(
-          (states) => StadiumBorder(
-            side: states.contains(WidgetState.focused)
-                ? BorderSide(color: colorScheme.primary, width: 2)
-                : borderSide,
-          ),
-        ),
-      ),
-      child: Stack(
-        children: [
-          AnimatedPadding(
-            duration: midDuration,
-            curve: Curves.easeOutCubic,
-            padding: EdgeInsetsDirectional.only(
-              start: displayStart ? 4 : 26,
-              end: displayStart ? 26 : 4,
-            ),
-            child: SizedBox(
-              height: 24,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  for (final (label, isActive, color) in labels)
-                    AnimatedOpacity(
-                      opacity: isActive ? 1 : 0,
-                      duration: midDuration,
-                      child: Text(
-                        label,
-                        maxLines: 1,
-                        style: labelMediumStyle?.copyWith(color: color),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: AnimatedAlign(
-              duration: midDuration,
-              curve: Curves.easeOutCubic,
-              alignment: displayStart
-                  ? AlignmentDirectional.centerEnd
-                  : AlignmentDirectional.centerStart,
-              child: SizedBox.square(
-                dimension: 20,
-                child: Center(
-                  child: isBusy
-                      ? RepaintBoundary(
-                          child: SizedBox.square(
-                            dimension: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: iconColor,
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.power_settings_new,
-                          size: 18,
-                          color: iconColor,
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: AnimatedOpacity(
-        opacity: isAvailable ? 1 : 0.38,
-        duration: midDuration,
-        child: !zodiacOn
-            ? button
-            : DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: zodiacOnPaint.isGradient
-                      ? zodiacOnPaint.selectedGradient
-                      : null,
-                  color: zodiacOnPaint.isGradient
-                      ? null
-                      : zodiacOnPaint.solidColor,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: button,
-              ),
       ),
     );
   }
