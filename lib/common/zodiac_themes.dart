@@ -410,6 +410,17 @@ SwitchThemeData zodiacSwitchTheme(
   );
 }
 
+/// The accent a switch row's supporting text takes while its switch
+/// is on (T218, the user's call): the same color the lit thumb
+/// paints, so the small text follows the switch's own highlight,
+/// theme by theme. Without a zodiac variant the thumb falls back to
+/// onPrimary, which is not a readable text color — the primary
+/// stands in for text in that case.
+Color zodiacSwitchLitColor(ColorScheme colorScheme, ZodiacVariant? variant) {
+  if (variant == null) return colorScheme.primary;
+  return _zodiacSwitchOnThumb(variant);
+}
+
 /// The lit track: the selected gradient's start. A selected paint of
 /// none/atmosphere carries no flat tone, so the primary stands in.
 Color _zodiacSwitchOnTrack(ZodiacVariant variant) {
