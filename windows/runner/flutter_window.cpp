@@ -8,7 +8,7 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
-#ifdef BETTBOX_DEV
+#ifdef ANGELAMIHOMO_DEV
 #define ANGELAMIHOMO_REG_KEY L"Software\\AngelaMihomoDev"
 #else
 #define ANGELAMIHOMO_REG_KEY L"Software\\AngelaMihomo"

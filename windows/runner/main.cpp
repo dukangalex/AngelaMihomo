@@ -17,7 +17,7 @@
 
 namespace {
 
-#ifdef BETTBOX_DEV
+#ifdef ANGELAMIHOMO_DEV
 constexpr const wchar_t kAppUserModelId[] = L"Angela.AngelaMihomo.Dev";
 #else
 constexpr const wchar_t kAppUserModelId[] = L"Angela.AngelaMihomo";
@@ -142,7 +142,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-#ifdef BETTBOX_DEV
+#ifdef ANGELAMIHOMO_DEV
   const wchar_t *window_title = L"Angela Mihomo Dev";
 #else
   const wchar_t *window_title = L"Angela Mihomo";
