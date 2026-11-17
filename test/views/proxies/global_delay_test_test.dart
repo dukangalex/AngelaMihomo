@@ -243,6 +243,31 @@ void main() {
     });
   });
 
+  testWidgets('result auto-dismisses after five seconds, failures included', (
+    tester,
+  ) async {
+    ClashCore.setHandlerForTesting(_FakeHandler(const {'JP-02': -1}));
+    await _pumpHarness(tester);
+
+    final controller = GlobalDelayTestController();
+    await globalDelayTest(controller: controller);
+    await tester.pump();
+
+    expect(controller.phase, GlobalDelayTestPhase.done);
+    expect(controller.failed, 1);
+
+    // Still up just before the five-second mark.
+    await tester.pump(const Duration(seconds: 4));
+    expect(controller.phase, GlobalDelayTestPhase.done);
+
+    // Gone once five seconds have passed, failures notwithstanding.
+    await tester.pump(const Duration(seconds: 2));
+    expect(controller.phase, GlobalDelayTestPhase.idle);
+
+    // Drain the bridge watchdog timer that every invoke leaves behind.
+    await tester.pump(const Duration(seconds: 30));
+  });
+
   testWidgets('global run is rejected while a group test is running', (
     tester,
   ) async {
