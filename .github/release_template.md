@@ -1,25 +1,24 @@
 # Angela Mihomo 正式版本发布 / Stable Release
 
+### ⚠️ 升级必读：应用标识已变更，先导出再安装 / Important: new app identity — export before installing
+
+本版起应用标识改为自有的 app.angelamihomo，新版会作为一个全新的应用安装，不会覆盖旧版。升级步骤：① 在旧版中导出配置（备份与恢复）② 安装本版 ③ 在新版中导入配置 ④ 确认一切正常后再卸载旧版。这是一次性迁移，之后的版本恢复覆盖升级。
+(From this release on, the app uses its own identity, app.angelamihomo, and installs as a new app instead of updating the old one. To upgrade: export your configuration from the old app, install this release, import the configuration, and remove the old app only after everything checks out. This is a one-time migration; later releases update in place again.)
+
 ### ✨ 本版亮点 / What's new in this build
 
-- **热修 / Hotfix：部分订阅 VPN 启动不了**：内置 DNS 默认值引用了不存在的规则集（报错 not found rule-set: cn_bettbox），内核整份配置被拒——现改用内核原生 geosite 条目，存量设置自动迁移，组装层另加兜底校验
-  (Fixed: some profiles could not start the VPN — the built-in DNS defaults referenced rule-sets that do not exist, so the kernel rejected the whole config; defaults now use native geosite entries, stored settings migrate automatically, and assembly strips any dangling reference)
-- **失败提示说人话 / Clearer failure notices**：切换、启动、重启、更新失败时，提示逐条写明要检查什么、怎么做；规则集缺失会直接点名缺的规则集并给出处理路径，不再有「请检查目标配置」这类空话
-  (Failure notices for switching, starting, restarting and updating now spell out exactly what to check and what to do; a missing rule-set is named, with the concrete fix for each source)
-- **十二星座之星辰大海 / Zodiac Guardians**：十二位守护神融入十二套星座主题的每一页背景，仰望顶部本星座星图；每页造型不同、人物始终同一位；形象与名牌同为背景层，不遮挡内容
-  (A guardian for each of the twelve zodiac themes lives in every page's backdrop, gazing up at the sign's own star chart; the pose varies by page, the character never changes)
-- **十二星座主题 / Twelve zodiac themes**：一套设计走到底，默认射手座·靛夜飞箭；十二套主题的卡片全是半透玻璃，星图透卡可见
-  (One design throughout, Sagittarius · Indigo Night Arrow by default; translucent glass cards over a visible star chart in all twelve themes)
-- **首页合并卡与提示灯 / Merged home card and status light**：当前配置、运行模式与节点状态一卡集中、固定置顶；提示灯实时显示当前节点可用状态，点灯即测速
-  (Current profile, mode and node status in one pinned card; the light shows live node availability — tap it to run a speed test)
-- **开启自动测速 / Auto speed test on start**：每次开启服务后自动执行一次全局联动测速，只测不选，开局即是真实延迟
-  (A global linked delay test runs automatically on every start — measure only, never auto-selects)
-- **配置卡状态标记 / Profile card badges**：托管与链式状况在卡面直接标明，链式两端引用完整显绿、任一端失效显红
-  (Managed and chain status shown on the card face; green when both chain ends resolve, red when either end is stale)
-- **失败明示 / Clear failure notices**：操作失败会写清具体原因与解决办法；链式引用失效会指明失效的一端并引导重新选择，绝不静默降级为单跳
-  (Failures state the concrete cause and the remedy; a stale chain reference names the stale end and guides re-selection — never a silent fallback to single-hop)
-- **链式代理与系统显式 / Chain proxy and system-explicit rules**：每个配置可独立设置链式代理；系统显式（中国自适应性）的拦截类规则在三种运行模式下都生效；DNS 覆写仲裁单一权威
-  (Chained proxying per profile; interception rules from System Explicit (China adaptability) apply in all three modes; a single authority arbitrates DNS overrides)
+- **星辰大海主题家族 / The Starry Seas theme family**：两大系列共 27 套主题——十二星座（每套带本星座守护神与名牌，守护神仰望顶部星图）与人类深空探索（从东方一号到 DART 共 15 件深空事件，各带事件名牌）；默认主题射手座·靛夜飞箭
+  (Two series, 27 themes in total: the twelve zodiac signs, each with its guardian and nameplate beneath its own star chart, and fifteen landmark events of human deep-space exploration from Vostok 1 to DART, each with its event nameplate. Default: Sagittarius, Indigo Night Arrow)
+- **隐私本地化 / Privacy, kept on-device**：地理信息全部本地查询（城市库经项目自有数据仓分发、校验后落盘本地查询），移除全部在线地理问询；图标改走项目自有仓；WebDAV 凭据改为 AES-256-GCM 加密存储
+  (All geo lookups are local now: the city database ships through the project's own data repository, is verified and stored on-device, and every online geo query is gone. Icons come from the project's own repository, and WebDAV credentials are stored with AES-256-GCM encryption)
+- **应用内更新 / In-app update**：发现新版后可在应用内下载，校验 SHA-256 后直接调起安装，失败自动回落浏览器
+  (New releases can be downloaded inside the app, verified against their SHA-256, and installed directly; any failure falls back to the browser)
+- **每个选项都有说明 / Every option explains itself**：全 App 选项补齐通俗说明，工具箱各页加页内说明；选项小字常亮易读；失败提示逐条写明原因与解决办法
+  (Every option across the app now carries a plain-language explanation, the toolbox pages explain themselves, option captions stay lit and readable, and failure notices state the cause and the fix)
+- **界面与手感 / Interface touches**：配置页添加按钮移入顶栏；测速提示统一 5 秒消失；链式代理切换去掉迟滞；城市库改内存映射，内存占用更低
+  (The add button moved into the profiles top bar, speed-test notices dismiss after five seconds, chain-proxy switching lost its lag, and the city database is memory-mapped to cut memory use)
+- **沿用并完善 / Carried forward**：首页合并卡与提示灯、开启自动测速、配置卡状态标记、按配置文件链式代理、系统显式规则三模式生效、DNS 悬空引用热修与存量自动迁移
+  (The merged home card and status light, auto speed test on start, profile card badges, per-profile chain proxy, system-explicit rules in all three modes, and the DNS dangling-reference hotfix with automatic migration of stored settings)
 - **内核 / Core**：Mihomo v1.19.34
 
 ### ✍️ 签名说明 / Signing
