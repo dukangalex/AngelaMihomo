@@ -54,10 +54,20 @@ class GeoDataService {
 
   final ReleaseUpdates _updates;
   final UpdateInstaller _installer;
+  final List<Duration> _retryDelays;
 
-  GeoDataService({ReleaseUpdates? updates, UpdateInstaller? installer})
-    : _updates = updates ?? ReleaseUpdates(repository: geoDataRepository),
-      _installer = installer ?? UpdateInstaller();
+  GeoDataService({
+    ReleaseUpdates? updates,
+    UpdateInstaller? installer,
+    List<Duration>? retryDelays,
+  }) : _updates = updates ?? ReleaseUpdates(repository: geoDataRepository),
+       _installer = installer ?? UpdateInstaller(),
+       _retryDelays =
+           retryDelays ?? const [Duration(seconds: 20), Duration(seconds: 60)];
+
+  /// One pull at a time, shared by every caller (first-launch
+  /// auto-pull, retries and the About page button may overlap).
+  static Future<GeoUpdateOutcome>? _inFlight;
 
   Future<File> _dataFile() async =>
       File('${await appPath.homeDirPath}/$dataFileName');
@@ -79,20 +89,48 @@ class GeoDataService {
   }
 
   /// First-launch entry point: fetch the database when it is missing.
-  /// Silent by design — any failure simply retries on the next launch,
-  /// and the app keeps working with country-level data meanwhile.
+  /// Silent by design — a failed attempt retries within this launch
+  /// (see [_retryDelays]) and again on the next launch, and the app
+  /// keeps working with country-level data meanwhile. The in-launch
+  /// retries matter: the single first attempt races the device still
+  /// settling its network right after startup, which is how the
+  /// chain.26 first build reached real phones without the database.
   Future<void> ensureData() async {
     try {
       if (await currentMeta() != null) return;
-      await updateNow();
+      var outcome = await updateNow();
+      for (final delay in _retryDelays) {
+        if (outcome == GeoUpdateOutcome.updated ||
+            outcome == GeoUpdateOutcome.alreadyLatest) {
+          return;
+        }
+        await Future<void>.delayed(delay);
+        if (await currentMeta() != null) return;
+        outcome = await updateNow();
+      }
     } catch (_) {
       // Silent by design; see class doc.
     }
   }
 
   /// Fetch the latest database now. When the local copy already is
-  /// the latest release, nothing is downloaded.
+  /// the latest release, nothing is downloaded. Concurrent callers
+  /// share the same in-flight pull.
   Future<GeoUpdateOutcome> updateNow({
+    void Function(int received, int total)? onProgress,
+  }) async {
+    final running = _inFlight;
+    if (running != null) return running;
+    final future = _updateNow(onProgress: onProgress);
+    _inFlight = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_inFlight, future)) _inFlight = null;
+    }
+  }
+
+  Future<GeoUpdateOutcome> _updateNow({
     void Function(int received, int total)? onProgress,
   }) async {
     try {
@@ -104,9 +142,16 @@ class GeoDataService {
       if (current != null && current.tag == tag) {
         return GeoUpdateOutcome.alreadyLatest;
       }
-      final asset = _updates.assetByName(release, name: assetName);
+      var asset = _updates.assetByName(release, name: assetName);
       if (asset == null || asset.sha256 == null) {
-        return GeoUpdateOutcome.failed;
+        // The release lookup fell back to the web redirect (API rate
+        // limit or outage), which yields a tag but no asset list.
+        // The data repository's URLs are deterministic and every
+        // release ships a sha256sums.txt, so resolve the asset from
+        // the release itself — same trust anchor (GitHub over HTTPS)
+        // and the same digest verification below.
+        asset = await _fallbackAsset(tag);
+        if (asset == null) return GeoUpdateOutcome.failed;
       }
       final gz = await _installer.download(
         asset,
@@ -138,6 +183,40 @@ class GeoDataService {
       }
     } catch (_) {
       return GeoUpdateOutcome.failed;
+    }
+  }
+
+  /// Resolve the database asset straight from the release at [tag]
+  /// when the API asset list is unavailable: the download URL is
+  /// deterministic for this repository, and the expected SHA-256
+  /// comes from the release's own sha256sums.txt.
+  Future<ReleaseAsset?> _fallbackAsset(String tag) async {
+    try {
+      final base =
+          'https://github.com/$geoDataRepository/releases/download/${Uri.encodeComponent(tag)}';
+      final response = await _updates.client.get<Object?>(
+        '$base/sha256sums.txt',
+      );
+      final text = response.data?.toString();
+      if (text == null) return null;
+      String? digest;
+      for (final line in text.split('\n')) {
+        final parts = line.trim().split(RegExp(r'\s+'));
+        if (parts.length == 2 && parts[1].replaceFirst('*', '') == assetName) {
+          digest = parts[0].toLowerCase();
+          break;
+        }
+      }
+      if (digest == null || !RegExp(r'^[0-9a-f]{64}$').hasMatch(digest)) {
+        return null;
+      }
+      return ReleaseAsset(
+        name: assetName,
+        url: '$base/$assetName',
+        sha256: digest,
+      );
+    } catch (_) {
+      return null;
     }
   }
 }

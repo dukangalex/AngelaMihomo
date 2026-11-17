@@ -142,4 +142,96 @@ void main() {
     expect(GeoDataMeta.fromJson({'tag': ''}), isNull);
     expect(GeoDataMeta.fromJson({'tag': tag, 'downloadedAt': 'junk'}), isNull);
   });
+
+  test(
+    'falls back to the release sha256sums when the API list is empty',
+    () async {
+      final fallbackDio = Dio();
+      var downloads = 0;
+      fallbackDio.httpClientAdapter = StubAdapter((options) async {
+        final url = options.uri.toString();
+        if (url.startsWith('https://api.github.com/')) {
+          return ResponseBody.fromString('rate limited', 403);
+        }
+        if (url == 'https://github.com/$repo/releases/latest') {
+          return ResponseBody.fromString(
+            '',
+            302,
+            headers: {
+              'location': ['https://github.com/$repo/releases/tag/$tag'],
+            },
+          );
+        }
+        if (url ==
+            'https://github.com/$repo/releases/download/$tag/sha256sums.txt') {
+          return ResponseBody.fromString(
+            '$gzDigest  ${GeoDataService.assetName}\n',
+            200,
+          );
+        }
+        if (url ==
+            'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}') {
+          downloads++;
+          return ResponseBody.fromBytes(gzBytes, 200);
+        }
+        return ResponseBody.fromString('not found', 404);
+      });
+      final svc = GeoDataService(
+        updates: ReleaseUpdates(repository: repo, client: fallbackDio),
+        installer: UpdateInstaller(dio: fallbackDio),
+      );
+      expect(await svc.updateNow(), GeoUpdateOutcome.updated);
+      expect(downloads, 1);
+      expect(
+        await File(
+          '${home.path}/${GeoDataService.dataFileName}',
+        ).readAsBytes(),
+        raw,
+      );
+      expect((await svc.currentMeta())?.tag, tag);
+    },
+  );
+
+  test('ensureData retries within the launch until the pull lands', () async {
+    final flakyDio = Dio();
+    var apiHits = 0;
+    flakyDio.httpClientAdapter = StubAdapter((options) async {
+      final url = options.uri.toString();
+      if (url.startsWith('https://api.github.com/')) {
+        apiHits++;
+        if (apiHits < 3) return ResponseBody.fromString('boom', 500);
+        return ResponseBody.fromString(
+          jsonEncode({
+            'tag_name': tag,
+            'assets': [
+              {
+                'name': GeoDataService.assetName,
+                'browser_download_url':
+                    'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}',
+                'size': gzBytes.length,
+                'digest': 'sha256:$gzDigest',
+              },
+            ],
+          }),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json'],
+          },
+        );
+      }
+      if (url ==
+          'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}') {
+        return ResponseBody.fromBytes(gzBytes, 200);
+      }
+      return ResponseBody.fromString('boom', 500);
+    });
+    final svc = GeoDataService(
+      updates: ReleaseUpdates(repository: repo, client: flakyDio),
+      installer: UpdateInstaller(dio: flakyDio),
+      retryDelays: const [Duration.zero, Duration.zero],
+    );
+    await svc.ensureData();
+    expect(apiHits, 3);
+    expect((await svc.currentMeta())?.tag, tag);
+  });
 }
