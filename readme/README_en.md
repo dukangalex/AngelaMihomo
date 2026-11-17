@@ -63,6 +63,9 @@ Get packages for your platform from this repository's **[Releases](https://githu
 * **[HiClash](https://github.com/dukangalex/HiClash)** — the origin of the built-in managed script; the script's canonical copy now lives in this repository at `assets/scripts/managed.js`, and updates ship with app releases.
 * **[MyClash](https://github.com/AIsouler/MyClash)** — AIsouler's script and configuration sharing, the upstream lineage of HiClash.
 * **[Qure icon set](https://github.com/Koolson/Qure)** — the source of the managed mode's routing and service icons; the icons ship bundled in this repository under `assets/route_svg/`.
+* **[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)** — the source of the built-in GEO rule data: GeoSite, MMDB, ASN, and related resource files.
+* **[DB-IP](https://db-ip.com)** — the source of the city-level IP geolocation data (IP Geolocation by DB-IP, used under CC BY 4.0), distributed through this project's own data repository [angelamihomo-geo](https://github.com/dukangalex/angelamihomo-geo); the app downloads it automatically on first launch and answers all lookups locally afterwards.
+* **[Scamalytics](https://scamalytics.com)** — the data reference for the IP risk check feature; the feature is off by default and queries only when the user enables it.
 
 Inspiration and references: [Zashboard](https://github.com/Zephyruso/zashboard), [CMFA](https://github.com/MetaCubeX/ClashMetaForAndroid), [Sparkle](https://github.com/xishang0128/sparkle), [SFA](https://github.com/SagerNet/sing-box-for-android), [HUSI](https://github.com/xchacha20-poly1305/husi), [V2rayN](https://github.com/2dust/v2rayN)
 

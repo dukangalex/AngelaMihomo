@@ -41,6 +41,7 @@
 - **不忽悠**：文档、界面文案与发布说明中的每一条隐私声明，必须与代码的实际行为一致，且有实证支撑；无实证不声明。发现声明与实现不符，按缺陷处理，当期修正（改实现或改声明）。
 - **可追溯**：每一项隐私结论都要能追溯到代码落点与实测证据。本项目的全部外发端点与逐功能数据流均有清单记录，验收与复核以清单为底账。
 - **公开透明**：本仓库公开维护《数据流向清单》（什么数据、在什么时机、发给谁、为什么），随版本更新；季度隐私复扫的结论以摘要形式公开。项目本身开源，任何人可对照代码核验上述声明。
+- **引用必致谢（包括自己的）**：项目实际引用、集成、调用或借用的一切成果——第三方成果与项目作者自有其他项目的成果，一视同仁——均须在致谢区如实列全、注明出处；不因「是自己的」就默默吸收，也不以清除第三方露出为由删署名。
 
 ## 落地机制
 
@@ -91,6 +92,7 @@ Privacy is achieved through architecture and data-flow governance, never by remo
 - **No bluffing**: every privacy statement in documentation, UI copy, and release notes must match the code's actual behavior and be backed by evidence; no evidence, no statement. A statement found inconsistent with the implementation is treated as a defect and fixed in the current cycle (fix the implementation or fix the statement).
 - **Traceable**: every privacy conclusion must trace back to a code location and measured evidence. All outbound endpoints and per-feature data flows are kept in an inventory, which is the ledger for acceptance and review.
 - **Publicly transparent**: this repository publicly maintains a Data Flow Inventory (what data, at what moment, to whom, and why), updated with each release; quarterly privacy re-scan conclusions are published in summary form. The project is open source, so anyone can verify these statements against the code.
+- **Every reference is credited, including our own**: everything the project actually references, integrates, calls, or borrows — third-party work and the project author's own work from other projects alike — is listed in the acknowledgements with its source. Nothing is silently absorbed because "it is ours", and no attribution is removed in the name of clearing third-party traces.
 
 ## Enforcement
 

@@ -154,7 +154,9 @@ const Compatible_With_AngelaMihomo = {
 * **[HiClash](https://github.com/dukangalex/HiClash)**（本项目内置托管脚本的来源；脚本正本现随本仓库 `assets/scripts/managed.js` 维护，更新随 App 版本走）
 * **[MyClash](https://github.com/AIsouler/MyClash)**（AIsouler 的脚本/配置分享，HiClash 的上游谱系来源）
 * **[Qure 图标集](https://github.com/Koolson/Qure)**（托管模式的路由与服务图标来源；图标已全量收进本仓库 `assets/route_svg/` 随包分发）
+* **[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)**（内置 GEO 规则数据来源：GeoSite、MMDB、ASN 等资源文件）
 * **[DB-IP](https://db-ip.com)**（城市级 IP 地理数据来源：IP Geolocation by DB-IP；数据按 CC BY 4.0 使用，经本项目自有数据仓 [angelamihomo-geo](https://github.com/dukangalex/angelamihomo-geo) 分发，App 首启自动拉取后全本地查询）
+* **[Scamalytics](https://scamalytics.com)**（IP 风险检测功能的数据参考来源；该功能默认关闭，用户手动开启后按需查询）
 
 以及以下开源项目的启发与使用参考：
 
