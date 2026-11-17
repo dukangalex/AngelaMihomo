@@ -73,8 +73,8 @@ class ItemCard extends StatelessWidget {
 }
 
 /// The theme chooser: the 星辰大海 family name heads the card and
-/// its three series sit under it as collapsible sections — 十二星座，
-/// 人类深空探索， 黄金圣斗士. The section holding the
+/// its two series sit under it as collapsible sections — 十二星座，
+/// 人类深空探索. The section holding the
 /// active theme starts expanded; every section can be opened or
 /// closed on its own.
 class _StarrySeaThemeItem extends ConsumerStatefulWidget {
@@ -111,7 +111,6 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
     return switch (selected.series) {
       ThemeSeries.zodiac => resolveZodiacTheme(selected.id).nameZh,
       ThemeSeries.deepSpace => deepSpaceThemeById(selected.id)?.nameZh ?? '',
-      ThemeSeries.goldSaint => goldSaintThemeById(selected.id)?.nameZh ?? '',
     };
   }
 
@@ -192,23 +191,6 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
               for (final theme in deepSpaceThemes)
                 _DeepSpaceThemeRow(
                   theme: theme,
-                  isSelected: theme.id == selected.id,
-                  onTap: () => _select(theme.id),
-                ),
-            ],
-          ),
-          _SeriesSection(
-            nameZh: goldSaintSeriesNameZh,
-            nameEn: goldSaintSeriesNameEn,
-            expanded: _expanded.contains(ThemeSeries.goldSaint),
-            onToggle: () => _toggle(ThemeSeries.goldSaint),
-            children: [
-              for (final theme in goldSaintThemes)
-                _ThemeRow(
-                  glyph: resolveZodiacTheme(theme.zodiacId).sign,
-                  nameZh: theme.nameZh,
-                  nameEn: theme.nameEn,
-                  variant: theme.variant,
                   isSelected: theme.id == selected.id,
                   onTap: () => _select(theme.id),
                 ),
@@ -434,8 +416,7 @@ class _DeepSpaceThemeRow extends StatelessWidget {
   }
 }
 
-/// One theme row in the glyph-led series (the constellations and
-/// the golden saints share this chrome).
+/// One theme row in the glyph-led series (the constellations).
 class _ThemeRow extends StatelessWidget {
   final String glyph;
   final String nameZh;

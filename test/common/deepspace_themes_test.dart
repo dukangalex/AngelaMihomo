@@ -71,35 +71,16 @@ void main() {
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
   });
 
-  group('golden saints series (T184)', () {
-    test('golden saints: twelve, mirroring valid zodiac ids', () {
-      expect(goldSaintThemeDefs, hasLength(12));
-      final ids = goldSaintThemeDefs.map((d) => d.id).toSet();
-      expect(ids, hasLength(12));
-      final zodiacIds = zodiacThemes.map((d) => d.id).toSet();
-      expect(ids.intersection(zodiacIds), isEmpty);
-      for (final def in goldSaintThemeDefs) {
-        expect(zodiacIds, contains(def.zodiacId), reason: def.id);
-        expect(def.nameZh, contains('·'), reason: def.id);
+  group('withdrawn series fall back safely (T190/T192)', () {
+    test('withdrawn gold and solar ids fall back to the default theme', () {
+      // The golden-saint and solar-system series were withdrawn on
+      // 2026-11-17; a device still holding one of their ids must
+      // land on the default theme, never on a dead selection.
+      for (final id in ['gold-leo', 'sol-earth']) {
+        final fallen = resolveAppTheme(id);
+        expect(fallen.series, ThemeSeries.zodiac, reason: id);
+        expect(fallen.id, zodiacDefaultThemeId, reason: id);
       }
-    });
-
-    test('registry resolves gold selections', () {
-      final gold = resolveAppTheme('gold-leo');
-      expect(gold.series, ThemeSeries.goldSaint);
-      expect(gold.variant, goldSaintThemeById('gold-leo')!.variant);
-      expect(gold.constellation, resolveZodiacTheme('leo').constellation);
-      expect(gold.showGuardian, isFalse);
-      expect(themeGlyphFor('gold-leo'), '♌');
-    });
-
-    test('withdrawn solar-system ids fall back to the default theme', () {
-      // The solar-system series was withdrawn on 2026-11-17; a device
-      // still holding one of its ids must land on the default theme,
-      // never on a dead selection.
-      final fallen = resolveAppTheme('sol-earth');
-      expect(fallen.series, ThemeSeries.zodiac);
-      expect(fallen.id, zodiacDefaultThemeId);
     });
   });
 
@@ -122,27 +103,4 @@ void main() {
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
   });
 
-  testWidgets('gold backdrop: gilded constellation, no guardian', (
-    tester,
-  ) async {
-    final theme = ThemeData(
-      extensions: [resolveAppTheme('gold-leo').toExtension()],
-    );
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: theme,
-        home: const Scaffold(body: ZodiacBackdrop()),
-      ),
-    );
-    await tester.pump();
-    expect(
-      find.descendant(
-        of: find.byType(ZodiacBackdrop),
-        matching: find.byType(CustomPaint),
-      ),
-      findsWidgets,
-    );
-    expect(find.byType(Image), findsNothing);
-    expect(find.byType(ZodiacGuardianPlate), findsNothing);
-  });
 }

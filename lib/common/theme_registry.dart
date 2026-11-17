@@ -1,10 +1,10 @@
 import 'deepspace_themes.dart';
-import 'goldsaint_themes.dart';
 import 'zodiac_themes.dart';
 
-/// The three series under the 星辰大海 umbrella, in chooser order.
-/// (The solar-system series was withdrawn by the user on 2026-11-17.)
-enum ThemeSeries { zodiac, deepSpace, goldSaint }
+/// The two series under the 星辰大海 umbrella, in chooser order.
+/// (The golden-saint and solar-system series were withdrawn by the
+/// user on 2026-11-17.)
+enum ThemeSeries { zodiac, deepSpace }
 
 /// The single authoritative resolution of a stored theme selection
 /// (T180). Every consumer (color scheme generation, the theme
@@ -63,20 +63,6 @@ AppThemeSelection resolveAppTheme(String? id) {
       sign: '',
     );
   }
-  final gold = goldSaintThemeById(id);
-  if (gold != null) {
-    final mirror = resolveZodiacTheme(gold.zodiacId);
-    return AppThemeSelection(
-      id: gold.id,
-      series: ThemeSeries.goldSaint,
-      skeleton: mirror.skeleton,
-      variant: gold.variant,
-      motif: null,
-      constellation: mirror.constellation,
-      showGuardian: false,
-      sign: mirror.sign,
-    );
-  }
   final zodiac = resolveZodiacTheme(id);
   return AppThemeSelection(
     id: zodiac.id,
@@ -91,8 +77,7 @@ AppThemeSelection resolveAppTheme(String? id) {
 }
 
 /// The small decorative glyph for a theme: the sign for the
-/// constellation and golden-saint series, a four-point star for
-/// deep-space events.
+/// constellation series, a four-point star for deep-space events.
 String themeGlyphFor(String? id) {
   final sel = resolveAppTheme(id);
   return switch (sel.series) {
@@ -101,6 +86,6 @@ String themeGlyphFor(String? id) {
   };
 }
 
-/// The family name over all three series.
+/// The family name over both series.
 const starrySeaNameZh = '星辰大海';
 const starrySeaNameEn = 'Starry Sea';

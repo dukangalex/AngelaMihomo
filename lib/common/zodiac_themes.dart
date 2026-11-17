@@ -288,8 +288,7 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
   final DeepSpaceMotif? motif;
 
   /// The constellation painted as this theme's element layer (the
-  /// twelve-constellation and golden-saint series); empty for the
-  /// deep-space series.
+  /// twelve-constellation series); empty for the deep-space series.
   final ZodiacConstellation constellation;
 
   /// Whether the guardian figure and plate ride in the backdrop.
