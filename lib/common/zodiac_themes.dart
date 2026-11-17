@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
 
@@ -525,24 +526,45 @@ class ZodiacBackdrop extends StatelessWidget {
               ),
             ),
           ),
+        // Every painted artwork layer in the backdrop is softly
+        // blurred (T187, family-wide rule): backgrounds set the
+        // mood, they never compete with the content. Element line
+        // art gets a light defocus; the guardian figure a stronger
+        // one. The name plate is text, not artwork — it stays
+        // legible, already dimmed. Solar-system planets are blurred
+        // inside their painter by design.
         if (zodiac.motif != null)
           Positioned.fill(
-            child: CustomPaint(
-              painter: DeepSpaceMotifPainter(
-                motif: zodiac.motif!,
-                variant: variant,
-                isDark: Theme.of(context).brightness == Brightness.dark,
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: 1.3,
+                sigmaY: 1.3,
+                tileMode: ui.TileMode.mirror,
+              ),
+              child: CustomPaint(
+                painter: DeepSpaceMotifPainter(
+                  motif: zodiac.motif!,
+                  variant: variant,
+                  isDark: Theme.of(context).brightness == Brightness.dark,
+                ),
               ),
             ),
           )
         else ...[
           Positioned.fill(
-            child: CustomPaint(
-              painter: _ConstellationPainter(
-                constellation: zodiac.constellation,
-                sign: zodiac.sign,
-                variant: variant,
-                isDark: Theme.of(context).brightness == Brightness.dark,
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: 1.3,
+                sigmaY: 1.3,
+                tileMode: ui.TileMode.mirror,
+              ),
+              child: CustomPaint(
+                painter: _ConstellationPainter(
+                  constellation: zodiac.constellation,
+                  sign: zodiac.sign,
+                  variant: variant,
+                  isDark: Theme.of(context).brightness == Brightness.dark,
+                ),
               ),
             ),
           ),
@@ -552,7 +574,16 @@ class ZodiacBackdrop extends StatelessWidget {
           // Only the twelve-constellation series carries them; the
           // extension's own flag says so.
           if (showGuardian && zodiac.showGuardian)
-            const Positioned.fill(child: ZodiacGuardianBackdropFigure()),
+            Positioned.fill(
+              child: ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(
+                  sigmaX: 2.2,
+                  sigmaY: 2.2,
+                  tileMode: ui.TileMode.mirror,
+                ),
+                child: const ZodiacGuardianBackdropFigure(),
+              ),
+            ),
           if (showGuardian && zodiac.showGuardian)
             const Positioned.fill(child: ZodiacGuardianPlate()),
         ],
