@@ -294,16 +294,16 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
             ? getFloatingBottomBarFABReserveHeight(context)
             : 0,
       ),
-      child: FloatingActionButton.extended(
+      child: FloatingActionButton(
         heroTag: null,
         onPressed: _handleShowAddExtendPage,
-        // Slightly translucent so the profile card beneath stays
-        // partly visible while scrolling (user's call, 2026-11-17).
+        // Icon only, no label, and slightly translucent so the profile
+        // card beneath stays partly visible while scrolling
+        // (user's calls, 2026-11-17).
         backgroundColor: context.colorScheme.primaryContainer.withValues(
           alpha: 0.85,
         ),
-        icon: const Icon(Icons.add),
-        label: Text(appLocalizations.addProfile),
+        child: const Icon(Icons.add),
       ),
     );
   }
