@@ -1128,7 +1128,7 @@ ColorScheme genColorScheme(
   // returned for both Material slots, so a light system mode still
   // renders the same constellation theme. The [brightness] argument
   // only steers the legacy non-zodiac path above.
-  return resolveZodiacTheme(zodiacId).variant.toColorScheme();
+  return resolveAppTheme(zodiacId).variant.toColorScheme();
 }
 
 @riverpod

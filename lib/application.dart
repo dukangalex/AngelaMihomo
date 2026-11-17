@@ -389,7 +389,7 @@ class ApplicationState extends ConsumerState<Application>
             final fontFamily = themeProps.useHarmonyFont
                 ? 'HarmonyOS_Sans'
                 : null;
-            final zodiac = resolveZodiacTheme(themeProps.zodiacTheme);
+            final zodiac = resolveAppTheme(themeProps.zodiacTheme);
             final lightColorScheme = ref.read(
               genColorSchemeProvider(Brightness.light),
             );
@@ -452,16 +452,16 @@ class ApplicationState extends ConsumerState<Application>
               theme: _themeOf(
                 lightColorScheme,
                 fontFamily,
-                ZodiacThemeExtension.of(
-                  zodiac,
-                ).copyWith(solidBackground: themeProps.solidBackground),
+                zodiac.toExtension(
+                  solidBackground: themeProps.solidBackground,
+                ),
               ),
               darkTheme: _themeOf(
                 darkColorScheme,
                 fontFamily,
-                ZodiacThemeExtension.of(
-                  zodiac,
-                ).copyWith(solidBackground: themeProps.solidBackground),
+                zodiac.toExtension(
+                  solidBackground: themeProps.solidBackground,
+                ),
               ),
               home: child!,
             );

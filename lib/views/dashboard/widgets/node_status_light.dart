@@ -161,9 +161,7 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
         variant?.outline ??
         context.colorScheme.outlineVariant.withValues(alpha: 0.6);
     final haloColor = variant?.glow ?? statusColor.withValues(alpha: 0.30);
-    final sign = zodiac == null
-        ? null
-        : resolveZodiacTheme(zodiac.themeId).sign;
+    final sign = zodiac == null ? null : themeGlyphFor(zodiac.themeId);
 
     return AnimatedBuilder(
       animation: globalDelayTestController,
