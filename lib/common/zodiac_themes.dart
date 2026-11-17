@@ -289,19 +289,15 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
 
   /// The constellation painted as this theme's element layer (the
   /// twelve-constellation and golden-saint series); empty for the
-  /// deep-space and solar-system series.
+  /// deep-space series.
   final ZodiacConstellation constellation;
 
   /// Whether the guardian figure and plate ride in the backdrop.
   /// Only the twelve-constellation series carries guardians.
   final bool showGuardian;
 
-  /// The solar-system body painted, blurred, as this theme's only
-  /// background element （太阳系家园 series); null elsewhere.
-  final SolarBody? planet;
-
   /// The sign glyph watermark for constellation-bearing series;
-  /// empty for the deep-space and solar-system series.
+  /// empty for the deep-space series.
   final String sign;
 
   const ZodiacThemeExtension({
@@ -311,7 +307,6 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     this.motif,
     this.constellation = ZodiacConstellation.empty,
     this.showGuardian = true,
-    this.planet,
     this.sign = '',
   });
 
@@ -340,7 +335,6 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     DeepSpaceMotif? motif,
     ZodiacConstellation? constellation,
     bool? showGuardian,
-    SolarBody? planet,
     String? sign,
   }) {
     return ZodiacThemeExtension(
@@ -350,7 +344,6 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
       motif: motif ?? this.motif,
       constellation: constellation ?? this.constellation,
       showGuardian: showGuardian ?? this.showGuardian,
-      planet: planet ?? this.planet,
       sign: sign ?? this.sign,
     );
   }
@@ -481,27 +474,6 @@ class ZodiacBackdrop extends StatelessWidget {
     final zodiac = context.zodiac;
     if (zodiac == null) return const SizedBox.expand();
     final variant = zodiac.variant;
-    // Solar-system series （太阳系家园）: a plain base color and one
-    // blurred planet — no light field, no element layer, nothing
-    // else. This is the family's plain-background form.
-    if (zodiac.planet != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(color: variant.backgroundBase),
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: SolarPlanetPainter(
-                body: zodiac.planet!,
-                variant: variant,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
     final background = variant.background;
     return Stack(
       fit: StackFit.expand,
@@ -530,10 +502,9 @@ class ZodiacBackdrop extends StatelessWidget {
         // blurred (T187, family-wide rule): backgrounds set the
         // mood, they never compete with the content. Element line
         // art gets a light defocus; the guardian figure a stronger
-        // one. The name plate is text, not artwork — it stays
-        // legible, already dimmed. Solar-system planets are blurred
-        // inside their painter by design.
-        if (zodiac.motif != null)
+        // one. The name plates are text, not artwork — they stay
+        // legible, already dimmed.
+        if (zodiac.motif != null) ...[
           Positioned.fill(
             child: ImageFiltered(
               imageFilter: ui.ImageFilter.blur(
@@ -549,8 +520,12 @@ class ZodiacBackdrop extends StatelessWidget {
                 ),
               ),
             ),
-          )
-        else ...[
+          ),
+          // T191: deep-space themes carry an event name plate in
+          // the same seat as the guardian plate.
+          if (showGuardian)
+            const Positioned.fill(child: DeepSpacePlate()),
+        ] else ...[
           Positioned.fill(
             child: ImageFiltered(
               imageFilter: ui.ImageFilter.blur(
@@ -1384,101 +1359,4 @@ class DeepSpaceMotifPainter extends CustomPainter {
       oldDelegate.motif != motif ||
       oldDelegate.variant != variant ||
       oldDelegate.isDark != isDark;
-}
-
-/// The eight planets of the 太阳系家园 (Solar System Home) series:
-/// each theme's background is a plain base color carrying exactly
-/// one of these bodies, softly blurred.
-enum SolarBody { mercury, venus, earth, mars, jupiter, saturn, uranus, neptune }
-
-/// Paints one solar-system body as a large, defocused disc — the
-/// only element on the solar-system series' plain backgrounds. The
-/// disc is lit from the upper left in the variant's primary-to-
-/// secondary tones and blurred at both its edge and its glow, so it
-/// reads as atmosphere, not as a sticker. Saturn gets its ring.
-class SolarPlanetPainter extends CustomPainter {
-  final SolarBody body;
-  final ZodiacVariant variant;
-
-  const SolarPlanetPainter({required this.body, required this.variant});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    // T189: the first cut (centre 0.76/0.30, radius 0.33w, disc at
-    // full strength) read on the user's real device as a giant bright
-    // smudge washing over the home cards — a background presence must
-    // stay a presence. The body is now smaller, tucked into the top
-    // corner so the screen edge crops it, and the disc itself is
-    // translucent: its light tones can no longer outshine content.
-    final center = Offset(w * 0.84, h * 0.22);
-    final r = w * 0.23;
-
-    // Halo: the body's light bleeding into the plain field.
-    canvas.drawCircle(
-      center,
-      r * 1.3,
-      Paint()
-        ..color = variant.primary.withValues(alpha: 0.08)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 34),
-    );
-
-    // The disc itself, defocused: a radial light falloff (lit from
-    // the upper left, shadow side toward the lower right) with a
-    // blurred rim.
-    final rect = Rect.fromCircle(center: center, radius: r);
-    final discPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.45, -0.45),
-        radius: 1.25,
-        colors: [
-          variant.primary.withValues(alpha: 0.5),
-          variant.secondary.withValues(alpha: 0.5),
-        ],
-        stops: const [0.1, 1],
-      ).createShader(rect)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
-    canvas.drawCircle(center, r, discPaint);
-
-    if (body == SolarBody.saturn) {
-      canvas.save();
-      canvas.translate(center.dx, center.dy);
-      canvas.rotate(-0.30);
-      canvas.scale(1, 0.30);
-      canvas.drawCircle(
-        Offset.zero,
-        r * 1.45,
-        Paint()
-          ..color = variant.secondary.withValues(alpha: 0.32)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = r * 0.17
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
-      );
-      canvas.restore();
-    }
-    if (body == SolarBody.jupiter) {
-      // Blurred horizontal bands, barely there under the defocus.
-      canvas.save();
-      canvas.clipPath(Path()..addOval(rect));
-      for (var i = 0; i < 3; i++) {
-        canvas.drawRect(
-          Rect.fromLTWH(
-            center.dx - r,
-            center.dy - r * 0.45 + i * r * 0.42,
-            r * 2,
-            r * 0.17,
-          ),
-          Paint()
-            ..color = variant.secondary.withValues(alpha: 0.13)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
-        );
-      }
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(SolarPlanetPainter oldDelegate) =>
-      oldDelegate.body != body || oldDelegate.variant != variant;
 }

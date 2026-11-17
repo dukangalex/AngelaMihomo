@@ -71,7 +71,7 @@ void main() {
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
   });
 
-  group('golden saints and solar system series (T183/T184)', () {
+  group('golden saints series (T184)', () {
     test('golden saints: twelve, mirroring valid zodiac ids', () {
       expect(goldSaintThemeDefs, hasLength(12));
       final ids = goldSaintThemeDefs.map((d) => d.id).toSet();
@@ -84,35 +84,30 @@ void main() {
       }
     });
 
-    test('solar system: eight planets, one body each, solid paint', () {
-      expect(solarSystemThemeDefs, hasLength(8));
-      final bodies = solarSystemThemeDefs.map((d) => d.body).toSet();
-      expect(bodies, SolarBody.values.toSet());
-      for (final def in solarSystemThemeDefs) {
-        expect(def.variant.background.isGradient, isFalse, reason: def.id);
-      }
-    });
-
-    test('registry resolves gold and solar selections', () {
+    test('registry resolves gold selections', () {
       final gold = resolveAppTheme('gold-leo');
       expect(gold.series, ThemeSeries.goldSaint);
       expect(gold.variant, goldSaintThemeById('gold-leo')!.variant);
       expect(gold.constellation, resolveZodiacTheme('leo').constellation);
       expect(gold.showGuardian, isFalse);
-      final solar = resolveAppTheme('sol-earth');
-      expect(solar.series, ThemeSeries.solarSystem);
-      expect(solar.planet, SolarBody.earth);
       expect(themeGlyphFor('gold-leo'), '♌');
-      expect(themeGlyphFor('sol-earth'), '●');
+    });
+
+    test('withdrawn solar-system ids fall back to the default theme', () {
+      // The solar-system series was withdrawn on 2026-11-17; a device
+      // still holding one of its ids must land on the default theme,
+      // never on a dead selection.
+      final fallen = resolveAppTheme('sol-earth');
+      expect(fallen.series, ThemeSeries.zodiac);
+      expect(fallen.id, zodiacDefaultThemeId);
     });
   });
 
-  testWidgets('solar backdrop: one blurred planet, nothing else', (
+  testWidgets('deep-space backdrop carries the event name plate (T191)', (
     tester,
   ) async {
-    final def = solarSystemThemeById('sol-saturn')!;
     final theme = ThemeData(
-      extensions: [resolveAppTheme('sol-saturn').toExtension()],
+      extensions: [resolveAppTheme('apollo11').toExtension()],
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -121,26 +116,10 @@ void main() {
       ),
     );
     await tester.pump();
-    final paints = tester.widgetList<CustomPaint>(
-      find.descendant(
-        of: find.byType(ZodiacBackdrop),
-        matching: find.byType(CustomPaint),
-      ),
-    );
-    expect(paints, hasLength(1));
-    expect(paints.single.painter, isA<SolarPlanetPainter>());
-    expect(find.byType(Image), findsNothing);
+    expect(find.byType(DeepSpacePlate), findsOneWidget);
+    expect(find.text('阿波罗11号'), findsOneWidget);
+    expect(find.text('APOLLO 11 · 1969'), findsOneWidget);
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
-    final boxes = tester.widgetList<DecoratedBox>(
-      find.descendant(
-        of: find.byType(ZodiacBackdrop),
-        matching: find.byType(DecoratedBox),
-      ),
-    );
-    expect(
-      (boxes.first.decoration as BoxDecoration).color,
-      def.variant.backgroundBase,
-    );
   });
 
   testWidgets('gold backdrop: gilded constellation, no guardian', (

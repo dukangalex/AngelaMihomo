@@ -73,8 +73,8 @@ class ItemCard extends StatelessWidget {
 }
 
 /// The theme chooser: the 星辰大海 family name heads the card and
-/// its four series sit under it as collapsible sections — 十二星座，
-/// 人类深空探索， 黄金圣斗士， 太阳系家园. The section holding the
+/// its three series sit under it as collapsible sections — 十二星座，
+/// 人类深空探索， 黄金圣斗士. The section holding the
 /// active theme starts expanded; every section can be opened or
 /// closed on its own.
 class _StarrySeaThemeItem extends ConsumerStatefulWidget {
@@ -112,8 +112,6 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
       ThemeSeries.zodiac => resolveZodiacTheme(selected.id).nameZh,
       ThemeSeries.deepSpace => deepSpaceThemeById(selected.id)?.nameZh ?? '',
       ThemeSeries.goldSaint => goldSaintThemeById(selected.id)?.nameZh ?? '',
-      ThemeSeries.solarSystem =>
-        solarSystemThemeById(selected.id)?.nameZh ?? '',
     };
   }
 
@@ -216,45 +214,10 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
                 ),
             ],
           ),
-          _SeriesSection(
-            nameZh: solarSystemSeriesNameZh,
-            nameEn: solarSystemSeriesNameEn,
-            expanded: _expanded.contains(ThemeSeries.solarSystem),
-            onToggle: () => _toggle(ThemeSeries.solarSystem),
-            children: [
-              for (final theme in solarSystemThemes)
-                _ThemeRow(
-                  leading: _planetDisc(theme.variant),
-                  nameZh: theme.nameZh,
-                  nameEn: theme.nameEn,
-                  variant: theme.variant,
-                  isSelected: theme.id == selected.id,
-                  onTap: () => _select(theme.id),
-                ),
-            ],
-          ),
         ],
       ),
     );
   }
-}
-
-/// A small planet swatch for a solar-system row: the body's disc in
-/// its own lit tones.
-Widget _planetDisc(ZodiacVariant variant) {
-  return Container(
-    width: 26,
-    height: 26,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: RadialGradient(
-        center: const Alignment(-0.4, -0.4),
-        radius: 1.15,
-        colors: [variant.primary, variant.secondary],
-      ),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-    ),
-  );
 }
 
 /// One collapsible series section under the 星辰大海 header: the
@@ -472,11 +435,9 @@ class _DeepSpaceThemeRow extends StatelessWidget {
 }
 
 /// One theme row in the glyph-led series (the constellations and
-/// the golden saints share this chrome; solar-system rows pass a
-/// planet disc as [leading] instead of a glyph).
+/// the golden saints share this chrome).
 class _ThemeRow extends StatelessWidget {
   final String glyph;
-  final Widget? leading;
   final String nameZh;
   final String nameEn;
   final ZodiacVariant variant;
@@ -486,7 +447,6 @@ class _ThemeRow extends StatelessWidget {
 
   const _ThemeRow({
     this.glyph = '',
-    this.leading,
     required this.nameZh,
     required this.nameEn,
     required this.variant,
@@ -559,14 +519,13 @@ class _ThemeRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                   ],
-                  leading ??
-                      SizedBox(
-                        width: 28,
-                        child: Text(
-                          glyph,
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                      ),
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      glyph,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
