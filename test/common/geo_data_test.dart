@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/geo_data.dart';
-import 'package:bett_box/common/release_updates.dart';
-import 'package:bett_box/common/update_installer.dart';
+import 'package:angelamihomo/common/geo_data.dart';
+import 'package:angelamihomo/common/release_updates.dart';
+import 'package:angelamihomo/common/update_installer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
@@ -62,6 +62,28 @@ void main() {
     dio = Dio();
     dio.httpClientAdapter = StubAdapter((options) async {
       final url = options.uri.toString();
+      if (url == 'https://api.github.com/repos/$repo/releases?per_page=20') {
+        return ResponseBody.fromString(
+          jsonEncode([
+            {
+              'tag_name': tag,
+              'assets': [
+                {
+                  'name': GeoDataService.assetName,
+                  'browser_download_url':
+                      'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}',
+                  'size': gzBytes.length,
+                  'digest': 'sha256:$gzDigest',
+                },
+              ],
+            },
+          ]),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json'],
+          },
+        );
+      }
       if (url == 'https://api.github.com/repos/$repo/releases/latest') {
         return ResponseBody.fromString(
           jsonEncode({
@@ -201,18 +223,20 @@ void main() {
         apiHits++;
         if (apiHits < 3) return ResponseBody.fromString('boom', 500);
         return ResponseBody.fromString(
-          jsonEncode({
-            'tag_name': tag,
-            'assets': [
-              {
-                'name': GeoDataService.assetName,
-                'browser_download_url':
-                    'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}',
-                'size': gzBytes.length,
-                'digest': 'sha256:$gzDigest',
-              },
-            ],
-          }),
+          jsonEncode([
+            {
+              'tag_name': tag,
+              'assets': [
+                {
+                  'name': GeoDataService.assetName,
+                  'browser_download_url':
+                      'https://github.com/$repo/releases/download/$tag/${GeoDataService.assetName}',
+                  'size': gzBytes.length,
+                  'digest': 'sha256:$gzDigest',
+                },
+              ],
+            },
+          ]),
           200,
           headers: {
             Headers.contentTypeHeader: ['application/json'],

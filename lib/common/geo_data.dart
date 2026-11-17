@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bett_box/common/constant.dart';
-import 'package:bett_box/common/path.dart';
-import 'package:bett_box/common/release_updates.dart';
-import 'package:bett_box/common/update_installer.dart';
+import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/common/path.dart';
+import 'package:angelamihomo/common/release_updates.dart';
+import 'package:angelamihomo/common/update_installer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// AngelaMihomo (chain.26, T194): city-level geolocation data, hosted
@@ -129,6 +129,21 @@ class GeoDataService {
     } catch (_) {}
   }
 
+  /// The download URL the next default-channel pull will use, for
+  /// display on the resources page: the newest data release's asset
+  /// URL, resolved the same way the pull itself resolves it (T216),
+  /// or null when it cannot be resolved right now.
+  Future<String?> latestDataAssetUrl() async {
+    try {
+      final release = await _updates.latestWithAsset(name: assetName);
+      final tag = release?['tag_name'];
+      if (tag is! String || tag.isEmpty) return null;
+      return 'https://github.com/$geoDataRepository/releases/download/${Uri.encodeComponent(tag)}/$assetName';
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// One pull at a time, shared by every caller (first-launch
   /// auto-pull, retries and the About page button may overlap).
   static Future<GeoUpdateOutcome>? _inFlight;
@@ -213,7 +228,7 @@ class GeoDataService {
           onProgress: onProgress,
         );
       }
-      final release = await _updates.latest();
+      final release = await _updates.latestWithAsset(name: assetName);
       if (release == null) return GeoUpdateOutcome.failed;
       final tag = release['tag_name'];
       if (tag is! String || tag.isEmpty) return GeoUpdateOutcome.failed;

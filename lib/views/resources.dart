@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:bett_box/clash/clash.dart';
-import 'package:bett_box/common/geo_data.dart';
-import 'package:bett_box/common/common.dart';
-import 'package:bett_box/models/models.dart';
-import 'package:bett_box/providers/app.dart';
-import 'package:bett_box/providers/config.dart';
-import 'package:bett_box/views/proxies/providers.dart';
-import 'package:bett_box/state.dart';
-import 'package:bett_box/widgets/widgets.dart';
+import 'package:angelamihomo/clash/clash.dart';
+import 'package:angelamihomo/common/geo_data.dart';
+import 'package:angelamihomo/common/common.dart';
+import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/app.dart';
+import 'package:angelamihomo/providers/config.dart';
+import 'package:angelamihomo/views/proxies/providers.dart';
+import 'package:angelamihomo/state.dart';
+import 'package:angelamihomo/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -502,11 +502,19 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
   String _repoAssetUrl(String tag) =>
       'https://github.com/$geoDataRepository/releases/download/$tag/${GeoDataService.assetName}';
 
-  Future<(GeoDataMeta?, FileInfo?, String?)> _load() async {
+  Future<(GeoDataMeta?, FileInfo?, String?, String?)> _load() async {
     final service = GeoDataService();
     final custom = await service.customSourceUrl();
     final meta = await service.currentMeta();
-    if (meta == null) return (null, null, custom);
+    // Before the first download the row used to show the releases
+    // page URL while every sibling row shows its file URL — and the
+    // same app in a downloaded state showed the file URL, which read
+    // as a platform difference (T216). Resolve the address the pull
+    // will actually use, the same way the pull resolves it.
+    final latestUrl = meta == null && custom == null
+        ? await service.latestDataAssetUrl()
+        : null;
+    if (meta == null) return (null, null, custom, latestUrl);
     try {
       final homePath = await appPath.homeDirPath;
       final file = File(join(homePath, GeoDataService.dataFileName));
@@ -514,9 +522,9 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
         size: await file.length(),
         lastModified: await file.lastModified(),
       );
-      return (meta, info, custom);
+      return (meta, info, custom, latestUrl);
     } catch (_) {
-      return (meta, null, custom);
+      return (meta, null, custom, latestUrl);
     }
   }
 
@@ -604,7 +612,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          FutureBuilder<(GeoDataMeta?, FileInfo?, String?)>(
+          FutureBuilder<(GeoDataMeta?, FileInfo?, String?, String?)>(
             future: _load(),
             builder: (_, snapshot) {
               final height = globalState.measure.bodyMediumHeight;
@@ -613,7 +621,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                   data == null) {
                 return SizedBox(width: height, height: height);
               }
-              final (meta, info, custom) = data;
+              final (meta, info, custom, latestUrl) = data;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -630,7 +638,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                   Text(
                     custom ??
                         (meta == null
-                            ? _releasesUrl
+                            ? (latestUrl ?? _releasesUrl)
                             : _repoAssetUrl(meta.tag)),
                     style: context.textTheme.bodyMedium?.toLight,
                   ),

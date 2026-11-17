@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:bett_box/common/constant.dart';
-import 'package:bett_box/common/release_updates.dart';
+import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/common/release_updates.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +43,71 @@ void main() {
       },
     ],
   };
+
+  test('latestWithAsset skips a newer release without the asset', () async {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    final geo = ReleaseUpdates(repository: geoRepo, client: dio);
+    Map<String, dynamic> rel(String tag, List<String> names) => {
+      'tag_name': tag,
+      'assets': [
+        for (final n in names)
+          {
+            'name': n,
+            'browser_download_url':
+                'https://github.com/$geoRepo/releases/download/$tag/$n',
+          },
+      ],
+    };
+    dio.httpClientAdapter = StubAdapter((options) async {
+      expect(
+        options.uri.toString(),
+        'https://api.github.com/repos/$geoRepo/releases?per_page=20',
+      );
+      return ResponseBody.fromString(
+        jsonEncode([
+          rel('core-bundle-2026.11', ['BundleMRS.7z', 'zash.zip']),
+          rel('v2026.11.1', ['amcity.bin.gz', 'sha256sums.txt']),
+        ]),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    });
+    final data = (await geo.latestWithAsset(name: 'amcity.bin.gz'))!;
+    expect(data['tag_name'], 'v2026.11.1');
+    expect(
+      geo.assetByName(data, name: 'amcity.bin.gz')?.url,
+      'https://github.com/$geoRepo/releases/download/v2026.11.1/amcity.bin.gz',
+    );
+  });
+
+  test('latestWithAsset returns null when no release ships the asset',
+      () async {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    final geo = ReleaseUpdates(repository: geoRepo, client: dio);
+    dio.httpClientAdapter = StubAdapter((options) async {
+      return ResponseBody.fromString(
+        jsonEncode([
+          {
+            'tag_name': 'core-bundle-2026.11',
+            'assets': [
+              {
+                'name': 'BundleMRS.7z',
+                'browser_download_url':
+                    'https://github.com/$geoRepo/releases/download/core-bundle-2026.11/BundleMRS.7z',
+              },
+            ],
+          },
+        ]),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    });
+    expect(await geo.latestWithAsset(name: 'amcity.bin.gz'), isNull);
+  });
 
   test('fork checks its own repository rather than upstream', () {
     expect(repository, repo);

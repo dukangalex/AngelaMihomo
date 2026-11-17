@@ -69,6 +69,38 @@ class ReleaseUpdates {
     }
   }
 
+  /// The newest stable release that actually ships an asset named
+  /// [name]. A companion repository may publish asset-only releases
+  /// for other purposes (the geo data repository also hosts the
+  /// build bundle), and GitHub's "latest" marker follows the newest
+  /// release of any kind — selecting by it stranded the city
+  /// database the day the bundle release landed (T216). Falls back
+  /// to [latest] when the list call itself fails, leaving the
+  /// caller's own asset resolution to decide.
+  Future<Map<String, dynamic>?> latestWithAsset({required String name}) async {
+    try {
+      final response = await client.get<Object?>(
+        'https://api.github.com/repos/$repository/releases?per_page=20',
+        options: Options(headers: {'Accept': 'application/vnd.github+json'}),
+      );
+      final data = response.data;
+      if (data is! List) return latest();
+      for (final item in data) {
+        if (item is! Map) continue;
+        if (item['draft'] == true || item['prerelease'] == true) continue;
+        final release = Map<String, dynamic>.from(item);
+        final tag = release['tag_name'];
+        if (tag is! String || tag.trim().isEmpty) continue;
+        release['html_url'] =
+            '$releasesUrl/tag/${Uri.encodeComponent(tag)}';
+        if (assetByName(release, name: name) != null) return release;
+      }
+      return null;
+    } on DioException {
+      return latest();
+    }
+  }
+
   String downloadUrl(Map<String, dynamic> release, {String assetSuffix = ''}) {
     return assetFor(release, assetSuffix: assetSuffix)?.url ??
         releasesUrlFor(release);
