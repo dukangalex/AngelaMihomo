@@ -11757,6 +11757,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Recommended combination enabled`
+  String get systemExplicitRecommendEnabled {
+    return Intl.message(
+      'Recommended combination enabled',
+      name: 'systemExplicitRecommendEnabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The recommended combination is already fully enabled`
+  String get systemExplicitRecommendAlreadyOn {
+    return Intl.message(
+      'The recommended combination is already fully enabled',
+      name: 'systemExplicitRecommendAlreadyOn',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The profile chosen as the chain exit no longer exists. Please reselect the exit profile in the chain settings.`
   String get chainStaleExitProfile {
     return Intl.message(

@@ -2066,6 +2066,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitTurnOnRecommended": MessageLookupByLibrary.simpleMessage(
       "Turn on recommended",
     ),
+    "systemExplicitRecommendAlreadyOn": MessageLookupByLibrary.simpleMessage(
+      "The recommended combination is already fully enabled",
+    ),
+    "systemExplicitRecommendEnabled": MessageLookupByLibrary.simpleMessage(
+      "Recommended combination enabled",
+    ),
     "systemFont": MessageLookupByLibrary.simpleMessage("システムフォント"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("システムプロキシ"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("システムプロキシの設定"),

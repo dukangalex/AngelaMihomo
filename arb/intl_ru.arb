@@ -1385,6 +1385,8 @@
   "systemExplicitRecommend": "Recommended combination",
   "systemExplicitRecommendDesc": "One tap turns on the recommended combination: privacy protection, blocking common WebRTC leaks, and ad blocking. Every other option keeps its current state. Auto-set system DNS stays in Settings \\u2192 Network and takes effect on desktop only.",
   "systemExplicitTurnOnRecommended": "Turn on recommended",
+  "systemExplicitRecommendEnabled": "Recommended combination enabled",
+  "systemExplicitRecommendAlreadyOn": "The recommended combination is already fully enabled",
   "systemExplicitDirectExceptionModeDesc": "China direct, public DNS direct and LAN direct only work in rule mode; they contradict global/direct routing. Switching restores your saved choices. Interception options work in every mode and are unaffected.",
   "systemExplicitExceptionsInactive": "Direct exceptions are not active in this mode",
   "systemExplicitExceptionsInactiveDesc": "China direct, public DNS direct and LAN direct only apply in rule mode. Interception options (privacy, WebRTC, ads) stay active in every mode.",

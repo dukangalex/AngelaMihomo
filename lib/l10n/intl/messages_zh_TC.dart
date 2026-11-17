@@ -1861,6 +1861,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemExplicitTurnOnRecommended": MessageLookupByLibrary.simpleMessage(
       "開啟推薦組合",
     ),
+    "systemExplicitRecommendAlreadyOn": MessageLookupByLibrary.simpleMessage(
+      "推薦組合已全部開啟",
+    ),
+    "systemExplicitRecommendEnabled": MessageLookupByLibrary.simpleMessage(
+      "推薦組合已開啟",
+    ),
     "systemFont": MessageLookupByLibrary.simpleMessage("系統字體"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("系統代理"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("設定系統代理"),

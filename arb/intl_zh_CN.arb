@@ -1385,6 +1385,8 @@
   "systemExplicitRecommend": "推荐组合",
   "systemExplicitRecommendDesc": "一键开启推荐组合：防隐私、阻断常见 WebRTC 泄漏、广告拦截；其余开关的现有状态保持不变。自动设置系统 DNS 位于「设置 → 网络」，仅在桌面端生效。",
   "systemExplicitTurnOnRecommended": "开启推荐组合",
+  "systemExplicitRecommendEnabled": "推荐组合已开启",
+  "systemExplicitRecommendAlreadyOn": "推荐组合已全部开启",
   "systemExplicitDirectExceptionModeDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效，与全局/直连的路由方式冲突。切换后会恢复已保存的选择。拦截类选项在所有模式下都生效，不受影响。",
   "systemExplicitExceptionsInactive": "直连例外在当前模式下未生效",
   "systemExplicitExceptionsInactiveDesc": "中国直连、公共 DNS 直连、局域直连只在规则模式下生效。拦截类选项（防隐私、WebRTC、广告）在所有模式下都保持生效。",
