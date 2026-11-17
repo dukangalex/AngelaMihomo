@@ -40,7 +40,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     ClashCore.setHandlerForTesting(_ValidationHandler());
-    home = await Directory.systemTemp.createTemp('bettbox_profiles_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_profiles_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

@@ -240,7 +240,7 @@ jobs:
           dart setup.dart ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }} ${{ matrix.compatible == true && '--compatible' || '' }} ${{ matrix.lite == true && '--lite' || '' }}
 
       - name: Verify production APK signatures
-        if: matrix.platform == 'android' && env.BETTBOX_ALLOW_DEBUG_PREVIEW != 'true'
+        if: matrix.platform == 'android' && env.ANGELAMIHOMO_ALLOW_DEBUG_PREVIEW != 'true'
         shell: bash
         env:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}

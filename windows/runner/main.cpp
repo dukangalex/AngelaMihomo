@@ -86,7 +86,7 @@ static LONG WINAPI AngelaMihomoUnhandledExceptionFilter(
                       .count();
 
   std::wostringstream filename;
-  filename << dir << L"\\bettbox_" << ms << L".dmp";
+  filename << dir << L"\\angelamihomo_" << ms << L".dmp";
 
   HANDLE file = ::CreateFileW(filename.str().c_str(), GENERIC_WRITE, 0, nullptr,
                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);

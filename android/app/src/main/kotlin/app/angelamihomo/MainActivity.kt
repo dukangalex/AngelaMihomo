@@ -26,7 +26,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
     companion object {
-        private const val MAIN_ENGINE_ID = "bettbox_main_engine"
+        private const val MAIN_ENGINE_ID = "angelamihomo_main_engine"
     }
 
     private fun isTvDevice(context: Context): Boolean {

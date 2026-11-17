@@ -77,7 +77,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await AppLocalizations.load(const Locale('en'));
     ClashCore.setHandlerForTesting(handler);
-    home = await Directory.systemTemp.createTemp('bettbox_chain_page_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_chain_page_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

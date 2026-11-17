@@ -2804,7 +2804,7 @@ class AppController {
       final tempConfigFile = File(
         join(
           tempDir.path,
-          'bettbox_config_${DateTime.now().millisecondsSinceEpoch}.tmp',
+          'angelamihomo_config_${DateTime.now().millisecondsSinceEpoch}.tmp',
         ),
       );
       await tempConfigFile.writeAsString(configStr);

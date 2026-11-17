@@ -928,7 +928,7 @@ let currentLang = ${isZh ? "'zh'" : "'en'"};
 
 function toggleLang() {
   const next = currentLang === 'zh' ? 'en' : 'zh';
-  try { localStorage.setItem('bettbox_tv_lang', next); } catch (_) {}
+  try { localStorage.setItem('angelamihomo_tv_lang', next); } catch (_) {}
   applyLang(next);
 }
 
@@ -1067,7 +1067,7 @@ async function submitFile() {
 }
 
 try {
-  const saved = localStorage.getItem('bettbox_tv_lang');
+  const saved = localStorage.getItem('angelamihomo_tv_lang');
   if (saved === 'zh' || saved === 'en') {
     currentLang = saved;
   }

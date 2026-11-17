@@ -10,7 +10,7 @@ void main() {
   test(
     'missing Downloads support falls back to the app data directory',
     () async {
-      final home = await Directory.systemTemp.createTemp('bettbox_paths_');
+      final home = await Directory.systemTemp.createTemp('angelamihomo_paths_');
       const channel = MethodChannel('plugins.flutter.io/path_provider');
       final messenger =
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;

@@ -301,9 +301,9 @@ func TestMrsExtractCleansUpOnFailure(t *testing.T) {
 }
 
 func TestMrsRealBundle(t *testing.T) {
-	bundle := os.Getenv("BETTBOX_BUNDLE_MRS")
+	bundle := os.Getenv("ANGELAMIHOMO_BUNDLE_MRS")
 	if bundle == "" {
-		t.Skip("BETTBOX_BUNDLE_MRS not set")
+		t.Skip("ANGELAMIHOMO_BUNDLE_MRS not set")
 	}
 	dir := filepath.Join(t.TempDir(), "mrs")
 	start := time.Now()

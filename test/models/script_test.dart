@@ -11,7 +11,7 @@ void main() {
   late Directory home;
 
   setUpAll(() async {
-    home = await Directory.systemTemp.createTemp('bettbox_scripts_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_scripts_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),

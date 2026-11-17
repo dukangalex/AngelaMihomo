@@ -30,7 +30,7 @@ void main() {
   }
 
   setUpAll(() async {
-    home = await Directory.systemTemp.createTemp('bettbox_preferences_');
+    home = await Directory.systemTemp.createTemp('angelamihomo_preferences_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),
