@@ -408,6 +408,10 @@ const List<DeepSpaceThemeDef> deepSpaceThemeDefs = [
 
 List<DeepSpaceThemeDef> get deepSpaceThemes => deepSpaceThemeDefs;
 
+/// Series labels under the 星辰大海 umbrella (T182).
+const deepSpaceSeriesNameZh = '星辰大海之人类深空探索';
+const deepSpaceSeriesNameEn = 'Starry Sea · Human Deep Space Exploration';
+
 DeepSpaceThemeDef? deepSpaceThemeById(String? id) {
   for (final def in deepSpaceThemeDefs) {
     if (def.id == id) return def;

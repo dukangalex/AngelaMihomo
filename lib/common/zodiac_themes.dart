@@ -257,6 +257,11 @@ class ZodiacThemeDef {
 /// All twelve themes in zodiac order (doc section 5.1).
 List<ZodiacThemeDef> get zodiacThemes => zodiacThemeDefs;
 
+/// Series labels under the 星辰大海 umbrella (T182): the theme
+/// chooser groups its rows by series with these headers.
+const zodiacSeriesNameZh = '星辰大海之十二星座';
+const zodiacSeriesNameEn = 'Starry Sea · The Twelve Constellations';
+
 ZodiacThemeDef get zodiacDefaultTheme =>
     zodiacThemeDefs.firstWhere((theme) => theme.id == zodiacDefaultThemeId);
 

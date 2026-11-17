@@ -83,7 +83,7 @@ class _ZodiacThemeItem extends ConsumerWidget {
     final solidBackground = ref.watch(
       themeSettingProvider.select((state) => state.solidBackground),
     );
-    final selected = resolveZodiacTheme(selectedId);
+    final selected = resolveAppTheme(selectedId);
     return ItemCard(
       info: Info(label: appLocalizations.theme, iconData: Icons.auto_awesome),
       child: Column(
@@ -97,10 +97,39 @@ class _ZodiacThemeItem extends ConsumerWidget {
                   .updateState((state) => state.copyWith(solidBackground: true));
             },
           ),
+          const _SeriesHeader(
+            nameZh: zodiacSeriesNameZh,
+            nameEn: zodiacSeriesNameEn,
+          ),
           for (final theme in zodiacThemes)
             _ZodiacThemeRow(
               theme: theme,
-              isSelected: !solidBackground && theme.id == selected.id,
+              isSelected:
+                  !solidBackground &&
+                  !selected.isDeepSpace &&
+                  theme.id == selected.id,
+              onTap: () {
+                ref
+                    .read(themeSettingProvider.notifier)
+                    .updateState(
+                      (state) => state.copyWith(
+                        zodiacTheme: theme.id,
+                        solidBackground: false,
+                      ),
+                    );
+              },
+            ),
+          const _SeriesHeader(
+            nameZh: deepSpaceSeriesNameZh,
+            nameEn: deepSpaceSeriesNameEn,
+          ),
+          for (final theme in deepSpaceThemes)
+            _DeepSpaceThemeRow(
+              theme: theme,
+              isSelected:
+                  !solidBackground &&
+                  selected.isDeepSpace &&
+                  theme.id == selected.id,
               onTap: () {
                 ref
                     .read(themeSettingProvider.notifier)
@@ -113,6 +142,192 @@ class _ZodiacThemeItem extends ConsumerWidget {
               },
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// A series group header inside the theme chooser (T182): the
+/// series' full name under the 星辰大海 umbrella, Chinese primary
+/// with the English line under it — the same two-line pattern the
+/// theme rows themselves use.
+class _SeriesHeader extends StatelessWidget {
+  final String nameZh;
+  final String nameEn;
+
+  const _SeriesHeader({required this.nameZh, required this.nameEn});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+      child: Row(
+        children: [
+          Icon(
+            Icons.star_border,
+            size: 15,
+            color: colorScheme.primary.withValues(alpha: 0.8),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nameZh,
+                  style: textTheme.titleSmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                Text(
+                  nameEn,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One Human Deep Space Exploration event row (T182): the year as
+/// the leading mark, the event name in Chinese with the English
+/// line under it, the palette dots and the same selected chrome as
+/// the constellation rows.
+class _DeepSpaceThemeRow extends StatelessWidget {
+  final DeepSpaceThemeDef theme;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DeepSpaceThemeRow({
+    required this.theme,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  Widget _dot(Color color) {
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final variant = context.zodiac?.variant;
+    final selectedPaint = variant?.selected;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    color:
+                        variant?.surfaceVariant ??
+                        colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(16),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  if (isSelected &&
+                      selectedPaint != null &&
+                      !selectedPaint.isNone) ...[
+                    Container(
+                      width: 4,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: selectedPaint.isGradient
+                            ? LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: selectedPaint.stops!,
+                              )
+                            : null,
+                        color: selectedPaint.isGradient
+                            ? null
+                            : selectedPaint.solidColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      theme.year,
+                      style: textTheme.labelMedium?.copyWith(
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          theme.nameZh,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          theme.nameEn,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _dot(theme.variant.primary),
+                  const SizedBox(width: 4),
+                  _dot(theme.variant.secondary),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
