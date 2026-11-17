@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:angelamihomo/common/geo_data.dart';
 import 'package:angelamihomo/common/release_updates.dart';

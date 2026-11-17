@@ -330,7 +330,7 @@ void main() {
           'browser_download_url':
               url ??
               'https://github.com/$geoRepo/releases/download/$geoTag/$name',
-          if (digest != null) 'digest': digest,
+          'digest': ?digest,
           'size': 42,
         },
       ],
