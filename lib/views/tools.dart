@@ -229,7 +229,21 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     required List<Widget> items,
     bool isFirst = false,
   }) {
-    return SectionContainer(title: title, items: items, isFirst: isFirst);
+    // T196 (user direction): the Tools page adopts the proxy page's
+    // look — every entry is its own radius-20 subtle card, titles in
+    // titleMedium, subtitles in light labelMedium, and navigation
+    // rows carry the circular tonal chevron of the group headers.
+    return ListItemStyleScope(
+      titleStyle: context.textTheme.titleMedium,
+      subtitleStyle: context.textTheme.labelMedium?.toLight,
+      circularTrailing: true,
+      child: SectionContainer(
+        title: title,
+        items: items,
+        isFirst: isFirst,
+        cards: true,
+      ),
+    );
   }
 
   String _query = '';

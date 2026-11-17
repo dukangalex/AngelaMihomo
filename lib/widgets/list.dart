@@ -130,6 +130,63 @@ abstract interface class HasLeadingWidget {
   bool get hasLeading;
 }
 
+/// T196: page-level restyle hook for [ListItem] rows. A page wraps its
+/// list in this scope to adopt another page's row look (the Tools page
+/// uses it to match the proxy page's group headers: titleMedium title,
+/// light labelMedium subtitle, circular tonal chevron) without
+/// changing ListItem defaults anywhere else in the app.
+class ListItemStyleScope extends InheritedWidget {
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+  final bool circularTrailing;
+
+  const ListItemStyleScope({
+    super.key,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.circularTrailing = false,
+    required super.child,
+  });
+
+  static ListItemStyleScope? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<ListItemStyleScope>();
+  }
+
+  @override
+  bool updateShouldNotify(ListItemStyleScope oldWidget) {
+    return titleStyle != oldWidget.titleStyle ||
+        subtitleStyle != oldWidget.subtitleStyle ||
+        circularTrailing != oldWidget.circularTrailing;
+  }
+}
+
+/// The trailing affordance for navigation rows (next/open delegates):
+/// a plain chevron by default, or the proxy page's circular tonal
+/// button look inside a [ListItemStyleScope] that asks for it. Purely
+/// decorative — the row itself handles the tap.
+Widget listItemNavTrailing(BuildContext context) {
+  if (ListItemStyleScope.of(context)?.circularTrailing == true) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: context.colorScheme.secondaryContainer,
+      ),
+      child: Icon(
+        Icons.chevron_right_rounded,
+        size: 20,
+        color: context.colorScheme.onSecondaryContainer,
+      ),
+    );
+  }
+  return Icon(
+    Icons.chevron_right_rounded,
+    size: 20,
+    color: context.colorScheme.onSurfaceVariant.opacity60,
+  );
+}
+
 class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
   final Widget? leading;
   final Widget title;
@@ -284,6 +341,7 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
     bool enabled = true,
   }) {
     final effectiveLeading = leading ?? this.leading;
+    final styleScope = ListItemStyleScope.of(context);
     return ListTile(
       key: key,
       dense: dense,
@@ -292,12 +350,14 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
       shape: shape,
       titleTextStyle:
           titleTextStyle ??
+          styleScope?.titleStyle ??
           context.textTheme.bodyLarge?.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
       subtitleTextStyle:
           subtitleTextStyle ??
+          styleScope?.subtitleStyle ??
           context.textTheme.bodyMedium?.copyWith(
             fontSize: 12.5,
             color: context.colorScheme.onSurfaceVariant,
@@ -363,13 +423,7 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
 
           return _buildListTile(
             context,
-            trailing:
-                trailing ??
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: context.colorScheme.onSurfaceVariant.opacity60,
-                ),
+            trailing: trailing ?? listItemNavTrailing(context),
             onTap: openAction,
           );
         },
@@ -394,13 +448,7 @@ class ListItem<T> extends StatelessWidget implements HasLeadingWidget {
 
       return _buildListTile(
         context,
-        trailing:
-            trailing ??
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: context.colorScheme.onSurfaceVariant.opacity60,
-            ),
+        trailing: trailing ?? listItemNavTrailing(context),
         onTap: () {
           showExtend(
             context,
@@ -585,9 +633,7 @@ class ListHeader extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -620,6 +666,10 @@ class SectionContainer extends StatelessWidget {
   final bool plain;
   final bool isFirst;
 
+  /// T196: render every item as its own card (the proxy page's group
+  /// header look) instead of one shared panel with dividers.
+  final bool cards;
+
   const SectionContainer({
     super.key,
     this.title,
@@ -628,6 +678,7 @@ class SectionContainer extends StatelessWidget {
     this.separated = true,
     this.plain = false,
     this.isFirst = false,
+    this.cards = false,
   });
 
   @override
@@ -653,6 +704,27 @@ class SectionContainer extends StatelessWidget {
 
     final cleanItems = items.where((widget) => widget is! Divider).toList();
     if (cleanItems.isEmpty) return const SizedBox.shrink();
+
+    if (cards) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title != null)
+            ListHeader(title: title!, actions: actions, padding: headerPadding),
+          for (final item in cleanItems)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: CommonCard(
+                radius: 20,
+                subtle: true,
+                type: CommonCardType.filled,
+                child: item,
+              ),
+            ),
+        ],
+      );
+    }
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
