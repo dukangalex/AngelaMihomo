@@ -301,7 +301,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageTabKeys": MessageLookupByLibrary.simpleMessage("کلیدها"),
     "ageTool": MessageLookupByLibrary.simpleMessage("رمزنگاری و رمزگشایی Age"),
     "ageToolDesc": MessageLookupByLibrary.simpleMessage(
-      "ساخت کلید، رمزنگاری و رمزگشایی متن و پیکربندی",
+      "کلید Age می‌سازد، متن یا پیکربندی را برای گیرندهٔ مشخص رمز می‌کند و دریافتی‌ها را رمزگشایی می‌کند",
     ),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "همه‌چیز به‌صورت محلی انجام می‌شود و کلید خصوصی ذخیره یا ارسال نمی‌شود.",
@@ -337,6 +337,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "app": MessageLookupByLibrary.simpleMessage("برنامه"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage(
       "کنترل دسترسی برنامه‌ها",
+    ),
+    "appAccessControlDesc": MessageLookupByLibrary.simpleMessage(
+      "برای هر برنامه جداگانه مشخص کنید از پروکسی رد شود یا مستقیم وصل شود",
     ),
     "appDesc": MessageLookupByLibrary.simpleMessage("تنظیمات مربوط به برنامه"),
     "application": MessageLookupByLibrary.simpleMessage("برنامه"),
@@ -379,6 +382,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("سنجاق بازشده"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("بروزرسانی خودکار"),
+    "autoUpdateDesc": MessageLookupByLibrary.simpleMessage(
+      "این اشتراک را با فاصلهٔ تنظیم‌شده به‌طور خودکار به‌روز می‌کند",
+    ),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
       "فاصله بروزرسانی خودکار (دقیقه)",
     ),
@@ -718,6 +724,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "استفاده از API جانبی (صرفاً جهت اطلاع)",
     ),
     "developerMode": MessageLookupByLibrary.simpleMessage("حالت توسعه‌دهنده"),
+    "developerModeDesc": MessageLookupByLibrary.simpleMessage(
+      "گزینه‌های گزارش و اشکال‌زدایی را نشان می‌دهد؛ معمولاً لازم نیست",
+    ),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "حالت توسعه‌دهنده فعال شد.",
     ),
@@ -725,7 +734,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "فعالسازی تبدیل IP4P",
     ),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
-      "فعالسازی تبدیل IP4P شماره‌گیر",
+      "نشانی‌های قالب IP4P را پیش از اتصال به IPv6 معمولی تبدیل می‌کند؛ معمولاً نیازی به تغییر نیست",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("مستقیم"),
     "directNameserver": MessageLookupByLibrary.simpleMessage("DNS مستقیم"),
@@ -734,6 +743,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "DNS مستقیم از سیاست پیروی کند",
+    ),
+    "directNameserverFollowPolicyDesc": MessageLookupByLibrary.simpleMessage(
+      "وقتی روشن است، DNS ترافیک مستقیم هم سرور را طبق قوانین مسیریابی انتخاب می‌کند",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("غیرفعال‌سازی QUIC"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -766,7 +778,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "تفکیک هم‌زمان با قوانین، DNS سیستم و سرور منتخب برای یافتن آلودگی یا تفاوت مسیریابی",
     ),
     "dnsQueryDesc": MessageLookupByLibrary.simpleMessage(
-      "تفکیک با قوانین، سیستم یا سرور دلخواه",
+      "نشان می‌دهد دامنه واقعاً به چه IPای می‌رسد و می‌توانید DNSها را مقایسه کنید تا آلودگی را ببینید",
     ),
     "dnsQueryFakeIpOff": m13,
     "dnsQueryFakeIpOn": m14,
@@ -826,6 +838,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "آیا می‌خواهید مجوز دهید برای:",
     ),
     "domain": MessageLookupByLibrary.simpleMessage("دامنه"),
+    "fallbackDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "دامنه‌های این فهرست همیشه با DNS پشتیبان تبدیل می‌شوند",
+    ),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("جهش دوگانه"),
     "download": MessageLookupByLibrary.simpleMessage("دانلود"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("پشتیبانی از Doze"),
@@ -844,6 +859,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "ارسال گزارش خرابی در صورت لزوم",
     ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("فعالسازی اورراید"),
+    "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
+      "وقتی روشن است، بازنویسی زیر روی این پیکربندی اعمال می‌شود و بعد هسته آن را اجرا می‌کند",
+    ),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("نمایش سرعت شبکه"),
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "نمایش سرعت در نوار منو",
@@ -902,6 +920,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "تعیین حالت فیلتر FakeIP",
     ),
     "fakeipFilter": MessageLookupByLibrary.simpleMessage("لیست فیلتر FakeIP"),
+    "fakeipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "دامنه‌های این فهرست بدون IP مجازی و با نشانی واقعی وصل می‌شوند (برای دستگاه‌های شبکه محلی و بعضی بازی‌ها)",
+    ),
     "fakeipRange": MessageLookupByLibrary.simpleMessage("محدوده FakeIP"),
     "fakeipRangeV6": MessageLookupByLibrary.simpleMessage("محدوده FakeIPv6"),
     "fakeipTtl": MessageLookupByLibrary.simpleMessage("زمان اعتبار FakeIP"),
@@ -952,9 +973,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "fontFamily": MessageLookupByLibrary.simpleMessage("فونت"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("نگاشت اجباری DNS"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
-      "نگاشت اجباری نتایج DNS به اتصالات",
+      "دامنه‌های شناسایی‌شده را با نتایج DNS به اتصال‌ها وصل می‌کند تا مسیریابی دقیق‌تر شود",
     ),
     "forceDomain": MessageLookupByLibrary.simpleMessage("دامنه‌های اجباری"),
+    "forceDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "برای دامنه‌های این فهرست، ترافیک همیشه شناسایی می‌شود تا مقصد واقعی دیده شود",
+    ),
     "forceGCDesc": MessageLookupByLibrary.simpleMessage(
       "آیا آزادسازی اجباری حافظه هسته انجام شود؟ (ازمایشی)",
     ),
@@ -993,6 +1017,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "geodataUse": MessageLookupByLibrary.simpleMessage("بارگذاری GEO"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("کد GeoIP"),
+    "geoipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "پاسخ‌های DNS پشتیبان را بر اساس موقعیت IP می‌سنجد تا از نتایج آلوده جلوگیری شود",
+    ),
     "getOriginRules": MessageLookupByLibrary.simpleMessage(
       "دریافت قوانین اصلی",
     ),
@@ -1094,7 +1121,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("تغییر نمایش"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("جستجوی IP"),
     "ipLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "IP خروجی شما یا جستجوی هر IP یا دامنه",
+      "نشان می‌دهد IP خروجی فعلی شما مال کدام شهر و اپراتور است؛ هر IP یا دامنه‌ای را هم می‌توانید بررسی کنید",
     ),
     "ipLookupDomesticExit": MessageLookupByLibrary.simpleMessage(
       "IP محلی داخلی",
@@ -1191,6 +1218,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("ریسک بسیار بالا"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("پروکسی وب"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP / ماسک"),
+    "fallbackIpcidrDesc": MessageLookupByLibrary.simpleMessage(
+      "اگر DNS پیش‌فرض نشانی از این بازه‌ها برگرداند آلوده حساب می‌شود و DNS پشتیبان به کار می‌رود",
+    ),
     "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
       "نشانی سرور، مثلاً 192.168.1.5",
     ),
@@ -1280,7 +1310,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfStreams": m32,
     "iperfTest": MessageLookupByLibrary.simpleMessage("ابزار iPerf3"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "اندازه‌گیری پهنای باند بین دستگاه‌های شبکهٔ محلی، سازگار با iperf3",
+      "سرعت واقعی بین دو دستگاه را می‌سنجد، مثلاً گوشی و رایانه در شبکه محلی (سازگار با iperf3)",
     ),
     "iperfThroughput": MessageLookupByLibrary.simpleMessage("سرعت"),
     "iperfTransferred": MessageLookupByLibrary.simpleMessage("حجم"),
@@ -1292,6 +1322,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage(
       "دریافت ترافیک IPv6 فعال باشد",
+    ),
+    "dnsIpv6Desc": MessageLookupByLibrary.simpleMessage(
+      "اجازه می‌دهد DNS نشانی IPv6 برگرداند؛ اگر شبکه IPv6 ندارد خاموش کنید",
     ),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage(
       "ورودی IPv6 مجاز باشد",
@@ -1333,7 +1366,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingClosed": MessageLookupByLibrary.simpleMessage("درگاه بسته است"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("تعداد"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
-      "آزمون مستقیم تأخیر و افت بسته با ICMP، TCP و UDP",
+      "بدون پروکسی، مستقیم بررسی می‌کند نشانی پاسخ می‌دهد یا نه، تأخیر و افت بسته چقدر است",
     ),
     "localPingDone": MessageLookupByLibrary.simpleMessage("Ping تمام شد"),
     "localPingErrorDenied": MessageLookupByLibrary.simpleMessage(
@@ -1478,7 +1511,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsCopyUrl": MessageLookupByLibrary.simpleMessage("کپی URL"),
     "mrsLookup": MessageLookupByLibrary.simpleMessage("جستجوی MRS"),
     "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "یافتن مجموعه‌های GEO / RULE-SET برای دامنه یا IP",
+      "دامنه یا IP را وارد کنید تا ببینید در کدام مجموعه‌قوانین مسیریابی است و چرا سایتی از پروکسی می‌رود یا مستقیم",
     ),
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("دامنه یا IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage(
@@ -1578,7 +1611,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "natStart": MessageLookupByLibrary.simpleMessage("شروع تشخیص"),
     "natTest": MessageLookupByLibrary.simpleMessage("تشخیص NAT"),
     "natTestDesc": MessageLookupByLibrary.simpleMessage(
-      "بررسی نوع NAT، آدرس خارجی و اتصال UDP",
+      "نوع NAT شبکه شما را مشخص می‌کند؛ همین تعیین می‌کند بازی و P2P مستقیم وصل می‌شوند یا نه",
     ),
     "natType": MessageLookupByLibrary.simpleMessage("نوع NAT"),
     "natTypeBlocked": MessageLookupByLibrary.simpleMessage("UDP مسدود است"),
@@ -1733,7 +1766,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "جایگزینی آدرس مقصد",
     ),
     "overrideDestinationDesc": MessageLookupByLibrary.simpleMessage(
-      "استفاده از نتیجه اسنیفر برای آدرس مقصد",
+      "مسیریابی بر اساس دامنهٔ واقعی شناسایی‌شده انجام می‌شود، نه فقط IP مقصد",
     ),
     "overrideDns": MessageLookupByLibrary.simpleMessage("اورراید DNS"),
     "overrideDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1774,7 +1807,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "تحلیل اتصالات IP خالص",
     ),
     "parsePureIpDesc": MessageLookupByLibrary.simpleMessage(
-      "تحلیل اتصالات مستقیم IP",
+      "وقتی اتصال فقط IP دارد و دامنه ندارد، باز هم مقصدش شناسایی می‌شود",
     ),
     "password": MessageLookupByLibrary.simpleMessage("رمز عبور"),
     "paste": MessageLookupByLibrary.simpleMessage("جایگذاری"),
@@ -1887,13 +1920,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "غیرفعال‌سازی QUIC ECN",
     ),
     "quicGoDisableEcnDesc": MessageLookupByLibrary.simpleMessage(
-      "غیرفعال‌سازی ECN در QUIC",
+      "نشانه‌های ازدحام QUIC را خاموش می‌کند؛ در بعضی شبکه‌ها اتصال پایدارتر می‌شود",
     ),
     "quicGoDisableGso": MessageLookupByLibrary.simpleMessage(
       "غیرفعال‌سازی QUIC GSO",
     ),
     "quicGoDisableGsoDesc": MessageLookupByLibrary.simpleMessage(
-      "غیرفعال‌سازی GSO در QUIC",
+      "باربرداری بخش‌بندی QUIC را متوقف می‌کند؛ با بعضی کارت‌های شبکه سازگارتر است",
     ),
     "quicPortSniffer": MessageLookupByLibrary.simpleMessage("اسنیف پورت QUIC"),
     "quickResponse": MessageLookupByLibrary.simpleMessage("پاسخ سریع"),
@@ -1982,7 +2015,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "respectRules": MessageLookupByLibrary.simpleMessage("پیروی از قوانین"),
     "respectRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "اتصالات DNS از قوانین پیروی کنند",
+      "تبدیل DNS هم مثل ترافیک، سرور را طبق قوانین مسیریابی انتخاب می‌کند",
     ),
     "restart": MessageLookupByLibrary.simpleMessage("راه‌اندازی مجدد"),
     "restartApp": MessageLookupByLibrary.simpleMessage(
@@ -2032,7 +2065,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "قوانین بررسی‌شده",
     ),
     "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "روند DNS و تطبیق قوانین دامنه یا IP در هسته",
+      "مسیر یک دامنه را در برنامه دنبال می‌کند: چطور تبدیل می‌شود، به کدام قانون می‌خورد و سرانجام از پروکسی می‌رود یا مستقیم",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("تفکیک DNS"),
     "routeTraceDnsBy": m63,
@@ -2163,7 +2196,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "size": MessageLookupByLibrary.simpleMessage("اندازه"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("دامنه‌های مستثنی"),
+    "skipDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "ترافیک این دامنه‌ها شناسایی نمی‌شود و همان‌طور عبور می‌کند",
+    ),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage("IP مقصد مستثنی"),
+    "skipDstAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "اتصال‌های رو به این IPها شناسایی نمی‌شوند",
+    ),
     "skipLocalAuth": MessageLookupByLibrary.simpleMessage(
       "رد شدن از احراز هویت محلی",
     ),
@@ -2171,6 +2210,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "دسترسی بدون احراز هویت برای سیستم محلی",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("IP مبدا مستثنی"),
+    "skipSrcAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "اتصال‌های آمده از این IPها شناسایی نمی‌شوند",
+    ),
     "slow": MessageLookupByLibrary.simpleMessage("کند"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("توقف هوشمند"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
@@ -2537,7 +2579,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "همهٔ آمار ترافیک پاک شود؟",
     ),
     "trafficStatsDesc": MessageLookupByLibrary.simpleMessage(
-      "مشاهدهٔ جزئیات مقصد ترافیک به تفکیک روز، هفته و ماه",
+      "به‌صورت روزانه، هفتگی و ماهانه می‌بینید ترافیک به کدام سایت‌ها، برنامه‌ها و گره‌ها رفته است",
     ),
     "trafficStatsDetail": MessageLookupByLibrary.simpleMessage("ثبت جزئیات"),
     "trafficStatsDetailDesc": MessageLookupByLibrary.simpleMessage(
@@ -2548,6 +2590,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "trafficStatsEnable": MessageLookupByLibrary.simpleMessage(
       "فعال‌سازی آمار ترافیک",
+    ),
+    "trafficStatsEnableDesc": MessageLookupByLibrary.simpleMessage(
+      "وقتی روشن است ثبت می‌کند ترافیک به کدام سایت‌ها، برنامه‌ها و گره‌ها رفته؛ خاموش باشد فقط مجموع می‌ماند",
     ),
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage(
       "مدت نگهداری داده",
@@ -2662,8 +2707,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "اسکریپت هر پروفایل",
     ),
     "useHosts": MessageLookupByLibrary.simpleMessage("استفاده از Hosts"),
+    "useHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "هنگام تبدیل نام، ابتدا تطابق‌های ثابت فایل hosts بررسی می‌شود",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "استفاده از Hosts سیستم",
+    ),
+    "useSystemHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "فایل hosts خود سیستم‌عامل هم اعمال می‌شود",
     ),
     "userAuth": MessageLookupByLibrary.simpleMessage("احراز هویت کاربر"),
     "userAuthEmpty": MessageLookupByLibrary.simpleMessage(

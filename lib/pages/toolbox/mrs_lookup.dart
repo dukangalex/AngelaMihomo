@@ -91,6 +91,7 @@ class _MrsLookupPageState extends ConsumerState<MrsLookupPage>
         ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.mrsLookupDesc,
         children: [
           ToolSearchField(
             controller: _controller,

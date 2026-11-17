@@ -280,7 +280,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageTabKeys": MessageLookupByLibrary.simpleMessage("키"),
     "ageTool": MessageLookupByLibrary.simpleMessage("Age 암호화/복호화"),
     "ageToolDesc": MessageLookupByLibrary.simpleMessage(
-      "키 생성, 텍스트·설정 암호화 및 복호화",
+      "Age 키를 만들고, 텍스트나 설정을 지정한 상대에게만 암호화해 보내거나, 받은 것을 복호화합니다",
     ),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "모든 작업은 기기에서 처리되며 개인 키는 저장·전송되지 않습니다.",
@@ -309,6 +309,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "analyzeLogPrompt": m0,
     "app": MessageLookupByLibrary.simpleMessage("앱"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage("앱 액세스 제어"),
+    "appAccessControlDesc": MessageLookupByLibrary.simpleMessage("앱마다 프록시를 거칠지 직접 연결할지 지정합니다"),
     "appDesc": MessageLookupByLibrary.simpleMessage("앱 관련 설정 관리"),
     "application": MessageLookupByLibrary.simpleMessage("애플리케이션"),
     "applicationDesc": MessageLookupByLibrary.simpleMessage("앱 설정 변경"),
@@ -336,6 +337,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoSetSystemDns": MessageLookupByLibrary.simpleMessage("시스템 DNS 자동 설정"),
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("펼침 고정"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("자동 업데이트"),
+    "autoUpdateDesc": MessageLookupByLibrary.simpleMessage("설정한 간격으로 이 구독을 자동 업데이트합니다"),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
       "자동 업데이트 간격 (분)",
     ),
@@ -625,12 +627,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "타사 API를 사용하므로 참고용으로만 확인하세요",
     ),
     "developerMode": MessageLookupByLibrary.simpleMessage("개발자 모드"),
+    "developerModeDesc": MessageLookupByLibrary.simpleMessage("로그와 디버깅 항목이 늘어납니다. 보통은 켤 필요가 없습니다"),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "개발자 모드가 활성화되었습니다.",
     ),
     "dialerIp4pConvert": MessageLookupByLibrary.simpleMessage("IP4P 변환 활성화"),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
-      "다이얼러 IP4P 변환 활성화",
+      "IP4P 형식 주소를 일반 IPv6로 바꿔 연결합니다. 보통 건드릴 필요 없습니다",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("직접 연결"),
     "directNameserver": MessageLookupByLibrary.simpleMessage("직접 연결용 네임서버"),
@@ -639,6 +642,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "직접 연결 DNS도 정책 준수",
+    ),
+    "directNameserverFollowPolicyDesc": MessageLookupByLibrary.simpleMessage(
+      "켜면 직접 연결 트래픽의 DNS도 분기 규칙에 따라 서버를 선택합니다",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("QUIC 비활성화"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -671,7 +677,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "규칙, 시스템 DNS, 지정 서버로 동시에 확인해 오염과 분류 차이를 찾습니다",
     ),
     "dnsQueryDesc": MessageLookupByLibrary.simpleMessage(
-      "규칙, 시스템 또는 지정 서버로 확인",
+      "도메인이 실제로 어떤 IP로 해석되는지 확인하고, DNS별 결과를 비교해 오염을 찾을 수 있습니다",
     ),
     "dnsQueryFakeIpOff": m13,
     "dnsQueryFakeIpOn": m14,
@@ -721,6 +727,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS 확인"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("다음 요청을 허용하시겠습니까:"),
     "domain": MessageLookupByLibrary.simpleMessage("도메인"),
+    "fallbackDomainDesc": MessageLookupByLibrary.simpleMessage("이 목록의 도메인은 항상 예비 DNS로 해석합니다"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("더블 바운스"),
     "download": MessageLookupByLibrary.simpleMessage("다운로드"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("절전 모드 연동"),
@@ -739,6 +746,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "필요 시 앱 크래시 로그 전송",
     ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("오버라이드 활성화"),
+    "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
+      "켜면 아래 덮어쓰기 내용을 이 설정에 적용한 뒤 코어가 실행합니다",
+    ),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("속도 표시"),
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "메뉴 막대에 업/다운로드 속도 표시",
@@ -785,6 +795,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "FakeIP 필터 동작 모드 지정",
     ),
     "fakeipFilter": MessageLookupByLibrary.simpleMessage("FakeIP 필터 목록"),
+    "fakeipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "이 목록의 도메인은 FakeIP 대신 실제 주소로 연결합니다(LAN 기기, 일부 게임용)",
+    ),
     "fakeipRange": MessageLookupByLibrary.simpleMessage("FakeIP 범위"),
     "fakeipRangeV6": MessageLookupByLibrary.simpleMessage("FakeIPv6 범위"),
     "fakeipTtl": MessageLookupByLibrary.simpleMessage("FakeIP TTL"),
@@ -827,9 +840,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "fontFamily": MessageLookupByLibrary.simpleMessage("글꼴"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("강제 DNS 매핑"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
-      "DNS 쿼리 결과를 연결에 강제 매핑",
+      "식별한 도메인을 DNS 결과로 연결에 대응시켜 분기 정확도를 높입니다",
     ),
     "forceDomain": MessageLookupByLibrary.simpleMessage("강제 스니핑 도메인"),
+    "forceDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "이 목록의 도메인은 트래픽 식별을 강제해 실제 연결 대상을 확인합니다",
+    ),
     "forceGCDesc": MessageLookupByLibrary.simpleMessage(
       "코어 메모리 가비지 컬렉션을 강제 실행하시겠습니까? (실험적 기능)",
     ),
@@ -860,6 +876,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "geodataUse": MessageLookupByLibrary.simpleMessage("GEO로드"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("GeoIP 코드"),
+    "geoipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "IP 위치로 예비 DNS 결과의 신뢰 여부를 판단해 오염을 막습니다",
+    ),
     "getOriginRules": MessageLookupByLibrary.simpleMessage("원래 규칙 가져오기"),
     "global": MessageLookupByLibrary.simpleMessage("글로벌"),
     "go": MessageLookupByLibrary.simpleMessage("이동"),
@@ -941,7 +960,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("표시 전환"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP 조회"),
     "ipLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "내 출구 IP 확인 및 IP·도메인 조회",
+      "현재 출구 IP가 어느 도시, 어느 사업자인지 보여줍니다. 임의의 IP나 도메인도 조회할 수 있습니다",
     ),
     "ipLookupDomesticExit": MessageLookupByLibrary.simpleMessage("국내 로컬 IP"),
     "ipLookupHint": MessageLookupByLibrary.simpleMessage("IP 또는 도메인"),
@@ -1012,6 +1031,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("매우 높은 위험"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("웹 프록시"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP / 서브넷 마스크"),
+    "fallbackIpcidrDesc": MessageLookupByLibrary.simpleMessage(
+      "기본 DNS가 이 범위의 주소를 반환하면 오염으로 보고 예비 DNS를 사용합니다",
+    ),
     "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
       "서버 주소 (예: 192.168.1.5)",
     ),
@@ -1099,7 +1121,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfStreams": m32,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 도구"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "LAN 내 기기 간 대역폭을 측정합니다 (공식 iperf3 호환)",
+      "두 기기 사이의 실제 속도를 측정합니다. 예: LAN에서 폰과 PC 사이 속도(iperf3 호환)",
     ),
     "iperfThroughput": MessageLookupByLibrary.simpleMessage("처리량"),
     "iperfTransferred": MessageLookupByLibrary.simpleMessage("전송량"),
@@ -1108,6 +1130,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "iperfWaiting": MessageLookupByLibrary.simpleMessage("클라이언트 연결 대기 중"),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("활성화 시 IPv6 트래픽 수신 허용"),
+    "dnsIpv6Desc": MessageLookupByLibrary.simpleMessage(
+      "DNS가 IPv6 주소를 반환하도록 허용합니다. IPv6를 못 쓰는 네트워크에서는 끄는 게 좋습니다",
+    ),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("IPv6 인바운드 허용"),
     "isp": MessageLookupByLibrary.simpleMessage("통신사"),
     "itemsCount": m33,
@@ -1140,7 +1165,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingClosed": MessageLookupByLibrary.simpleMessage("포트 닫힘"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("횟수"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
-      "ICMP·TCP·UDP 지연과 손실을 직접 측정",
+      "프록시를 거치지 않고 주소의 응답 여부, 지연, 패킷 손실을 직접 측정합니다",
     ),
     "localPingDone": MessageLookupByLibrary.simpleMessage("Ping 완료"),
     "localPingErrorDenied": MessageLookupByLibrary.simpleMessage(
@@ -1253,7 +1278,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsCopyUrl": MessageLookupByLibrary.simpleMessage("URL 복사"),
     "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS 조회"),
     "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "도메인·IP가 속한 GEO / RULE-SET 규칙 집합 조회",
+      "도메인이나 IP를 입력하면 어떤 분기 규칙에 속하는지 보여줍니다. 왜 프록시를 타는지, 직접인지 확인할 수 있습니다",
     ),
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("도메인 또는 IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage(
@@ -1341,7 +1366,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "natStart": MessageLookupByLibrary.simpleMessage("감지 시작"),
     "natTest": MessageLookupByLibrary.simpleMessage("NAT 감지"),
     "natTestDesc": MessageLookupByLibrary.simpleMessage(
-      "NAT 유형, 외부 주소 및 UDP 연결 확인",
+      "NAT 유형을 측정합니다. 게임과 P2P가 직접 연결되는지는 이것으로 결정됩니다",
     ),
     "natType": MessageLookupByLibrary.simpleMessage("NAT 유형"),
     "natTypeBlocked": MessageLookupByLibrary.simpleMessage("UDP 차단됨"),
@@ -1462,7 +1487,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "overrideDesc": MessageLookupByLibrary.simpleMessage("프록시 관련 설정 오버라이드"),
     "overrideDestination": MessageLookupByLibrary.simpleMessage("대상 주소 덮어쓰기"),
     "overrideDestinationDesc": MessageLookupByLibrary.simpleMessage(
-      "스니핑 결과로 대상 주소 대체",
+      "목적지 IP만이 아니라 식별된 실제 도메인으로 분기합니다",
     ),
     "overrideDns": MessageLookupByLibrary.simpleMessage("DNS 오버라이드"),
     "overrideDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1496,7 +1521,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "palette": MessageLookupByLibrary.simpleMessage("팔레트"),
     "parsePureIp": MessageLookupByLibrary.simpleMessage("순수 IP 연결 분석"),
-    "parsePureIpDesc": MessageLookupByLibrary.simpleMessage("순수 IP 연결 분석"),
+    "parsePureIpDesc": MessageLookupByLibrary.simpleMessage("도메인 없이 IP만 있는 연결도 목적지를 식별하려고 시도합니다"),
     "password": MessageLookupByLibrary.simpleMessage("비밀번호"),
     "paste": MessageLookupByLibrary.simpleMessage("붙여넣기"),
     "pianoWave": MessageLookupByLibrary.simpleMessage("피아노 웨이브"),
@@ -1580,11 +1605,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage("QR 코드를 스캔하여 프로필 가져오기"),
     "quicGoDisableEcn": MessageLookupByLibrary.simpleMessage("QUIC ECN 비활성화"),
     "quicGoDisableEcnDesc": MessageLookupByLibrary.simpleMessage(
-      "QUIC ECN 비활성화",
+      "QUIC의 혼잡 알림 표시를 끕니다. 일부 네트워크에서 연결이 안정됩니다",
     ),
     "quicGoDisableGso": MessageLookupByLibrary.simpleMessage("QUIC GSO 비활성화"),
     "quicGoDisableGsoDesc": MessageLookupByLibrary.simpleMessage(
-      "QUIC GSO 비활성화",
+      "QUIC의 세그먼트 오프로드를 끕니다. 일부 랜카드에서 호환성 문제가 있을 때 안정적입니다",
     ),
     "quicPortSniffer": MessageLookupByLibrary.simpleMessage("QUIC 포트 스니핑"),
     "quickResponse": MessageLookupByLibrary.simpleMessage("빠른 응답"),
@@ -1648,9 +1673,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "resources": MessageLookupByLibrary.simpleMessage("외부 리소스"),
     "resourcesDesc": MessageLookupByLibrary.simpleMessage("외부 리소스 및 규칙 세트 보기"),
     "respectRules": MessageLookupByLibrary.simpleMessage("규칙 준수"),
-    "respectRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "DNS 연결 시 Rules 설정 적용",
-    ),
+    "respectRulesDesc": MessageLookupByLibrary.simpleMessage("DNS 해석도 트래픽과 같은 분기 규칙으로 서버를 선택합니다"),
     "restart": MessageLookupByLibrary.simpleMessage("재시작"),
     "restartApp": MessageLookupByLibrary.simpleMessage("앱 재시작"),
     "restartCoreDesc": MessageLookupByLibrary.simpleMessage(
@@ -1683,7 +1706,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeTraceChain": MessageLookupByLibrary.simpleMessage("프록시 체인"),
     "routeTraceCheckedRules": MessageLookupByLibrary.simpleMessage("확인한 규칙"),
     "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "도메인/IP의 코어 내 DNS 및 규칙 매칭 확인",
+      "도메인이 앱에서 어떻게 해석되고, 어떤 규칙에 걸려, 마지막에 프록시인지 직접인지 추적합니다",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 확인"),
     "routeTraceDnsBy": m63,
@@ -1784,12 +1807,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "size": MessageLookupByLibrary.simpleMessage("크기"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("제외 도메인"),
+    "skipDomainDesc": MessageLookupByLibrary.simpleMessage("이 목록의 도메인은 식별하지 않고 그대로 통과시킵니다"),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage("제외 목적지 IP"),
+    "skipDstAddressDesc": MessageLookupByLibrary.simpleMessage("이 IP로 가는 연결은 식별하지 않습니다"),
     "skipLocalAuth": MessageLookupByLibrary.simpleMessage("로컬 인증 건너뛰기"),
     "skipLocalAuthDesc": MessageLookupByLibrary.simpleMessage(
       "로컬 기기 무인증 프록시 접근 허용",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("제외 출발지 IP"),
+    "skipSrcAddressDesc": MessageLookupByLibrary.simpleMessage("이 IP에서 온 연결은 식별하지 않습니다"),
     "slow": MessageLookupByLibrary.simpleMessage("느림"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("스마트 자동 정지"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
@@ -2116,7 +2142,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "모든 트래픽 통계를 삭제할까요?",
     ),
     "trafficStatsDesc": MessageLookupByLibrary.simpleMessage(
-      "일·주·월별 트래픽의 구체적인 사용처 보기",
+      "일, 주, 월 단위로 트래픽이 어떤 사이트, 앱, 노드로 갔는지 봅니다",
     ),
     "trafficStatsDetail": MessageLookupByLibrary.simpleMessage("상세 기록"),
     "trafficStatsDetailDesc": MessageLookupByLibrary.simpleMessage(
@@ -2126,6 +2152,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "기본값은 꺼짐입니다. 켜면 기록을 시작하며 데이터는 이 기기에만 저장됩니다",
     ),
     "trafficStatsEnable": MessageLookupByLibrary.simpleMessage("트래픽 통계 사용"),
+    "trafficStatsEnableDesc": MessageLookupByLibrary.simpleMessage(
+      "켜면 트래픽이 어떤 사이트, 앱, 노드로 갔는지 기록합니다. 끄면 합계만 남습니다",
+    ),
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("데이터 보관 기간"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("사이트 아이콘 표시"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
@@ -2219,7 +2248,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "프로필별 스크립트",
     ),
     "useHosts": MessageLookupByLibrary.simpleMessage("Hosts 사용"),
+    "useHostsDesc": MessageLookupByLibrary.simpleMessage("도메인을 해석할 때 hosts 파일에 적힌 고정 대응을 먼저 확인합니다"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("시스템 Hosts 사용"),
+    "useSystemHostsDesc": MessageLookupByLibrary.simpleMessage("운영체제에 내장된 hosts 파일도 함께 적용합니다"),
     "userAuth": MessageLookupByLibrary.simpleMessage("사용자 인증"),
     "userAuthEmpty": MessageLookupByLibrary.simpleMessage(
       "인증 사용자가 설정되지 않았습니다. LAN 연결에는 자격 증명이 필요하지 않습니다",

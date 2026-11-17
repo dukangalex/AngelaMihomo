@@ -291,6 +291,7 @@ class _LocalPingPageState extends ConsumerState<LocalPingPage>
           ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.localPingDesc,
         bottom: SizedBox(
           height: 52,
           child: _running

@@ -228,6 +228,7 @@ class _NatTestPageState extends ConsumerState<NatTestPage>
           ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.natTestDesc,
         bottom: SizedBox(
           height: 52,
           child: _testing

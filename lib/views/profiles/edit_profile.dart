@@ -393,6 +393,7 @@ class EditProfileViewState extends State<EditProfileView> {
             radius: 16,
             child: ListItem.switchItem(
               title: Text(appLocalizations.autoUpdate),
+              subtitle: Text(appLocalizations.autoUpdateDesc),
               delegate: SwitchDelegate<bool>(
                 value: autoUpdate,
                 onChanged: _setAutoUpdate,

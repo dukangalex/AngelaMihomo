@@ -310,7 +310,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageTabKeys": MessageLookupByLibrary.simpleMessage("Keys"),
     "ageTool": MessageLookupByLibrary.simpleMessage("Age Encrypt / Decrypt"),
     "ageToolDesc": MessageLookupByLibrary.simpleMessage(
-      "Generate keys, encrypt or decrypt text and configs",
+      "Generate Age keys, encrypt text or configs for a chosen recipient, and decrypt what you receive",
     ),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "Everything runs locally. Private keys are never stored or uploaded.",
@@ -342,6 +342,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "app": MessageLookupByLibrary.simpleMessage("App"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage(
       "App Access Control",
+    ),
+    "appAccessControlDesc": MessageLookupByLibrary.simpleMessage(
+      "Choose per app whether it goes through the proxy or direct",
     ),
     "appDesc": MessageLookupByLibrary.simpleMessage("App-related settings"),
     "application": MessageLookupByLibrary.simpleMessage("Application"),
@@ -384,6 +387,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("Pin Expanded"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("Auto Update"),
+    "autoUpdateDesc": MessageLookupByLibrary.simpleMessage(
+      "Update this subscription automatically at the set interval",
+    ),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
       "Auto update interval (min)",
     ),
@@ -721,6 +727,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Third-party API result (for reference only)",
     ),
     "developerMode": MessageLookupByLibrary.simpleMessage("Developer Mode"),
+    "developerModeDesc": MessageLookupByLibrary.simpleMessage(
+      "Shows extra logging and debugging options; most people never need this",
+    ),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Developer mode is enabled.",
     ),
@@ -728,7 +737,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enable Dialer IP4P Conversion",
     ),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
-      "Enable dialer IP4P conversion",
+      "Converts IP4P-format addresses to plain IPv6 before dialing; rarely needs changing",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("Direct"),
     "directNameserver": MessageLookupByLibrary.simpleMessage(
@@ -739,6 +748,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "Direct DNS Follows Policy",
+    ),
+    "directNameserverFollowPolicyDesc": MessageLookupByLibrary.simpleMessage(
+      "When on, DNS for direct traffic also picks its server by the routing rules",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("Disable QUIC"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -771,7 +783,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Resolve with rules, system DNS and the chosen server side by side to spot pollution or routing differences",
     ),
     "dnsQueryDesc": MessageLookupByLibrary.simpleMessage(
-      "Resolve with rules, system or a chosen server",
+      "Find which IP a domain really resolves to and compare DNS servers to spot pollution",
     ),
     "dnsQueryFakeIpOff": m13,
     "dnsQueryFakeIpOn": m14,
@@ -829,6 +841,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Do you want to pass",
     ),
     "domain": MessageLookupByLibrary.simpleMessage("Domain"),
+    "fallbackDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Domains on this list are always resolved with the fallback DNS",
+    ),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("Double Bounce"),
     "download": MessageLookupByLibrary.simpleMessage("Download"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("Doze Support"),
@@ -849,6 +864,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Upload crash logs when needed",
     ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("Enable Override"),
+    "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
+      "Apply the override below to this profile before the core runs it",
+    ),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("Tray Speed"),
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "Show network speed in menu bar",
@@ -907,6 +925,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Specify FakeIP filter mode",
     ),
     "fakeipFilter": MessageLookupByLibrary.simpleMessage("FakeIP Filter"),
+    "fakeipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "Domains on this list skip FakeIP and connect with their real addresses (needed for LAN devices and some games)",
+    ),
     "fakeipRange": MessageLookupByLibrary.simpleMessage("FakeIP Range"),
     "fakeipRangeV6": MessageLookupByLibrary.simpleMessage("FakeIPv6 Range"),
     "fakeipTtl": MessageLookupByLibrary.simpleMessage("FakeIP TTL"),
@@ -957,9 +978,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Force DNS Mapping",
     ),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
-      "Force mapping DNS results to connections",
+      "Maps sniffed domains back to connections using DNS results for more accurate routing",
     ),
     "forceDomain": MessageLookupByLibrary.simpleMessage("Force Sniff Domain"),
+    "forceDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Always inspect traffic for these domains to see where it really goes",
+    ),
     "forceGCDesc": MessageLookupByLibrary.simpleMessage(
       "Force kernel garbage collection? Experimental, use with caution.",
     ),
@@ -998,6 +1022,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "geodataUse": MessageLookupByLibrary.simpleMessage("GEO Load"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("GeoIP Code"),
+    "geoipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "Judge fallback DNS answers by IP location to guard against polluted results",
+    ),
     "getOriginRules": MessageLookupByLibrary.simpleMessage("Original Rules"),
     "global": MessageLookupByLibrary.simpleMessage("Global"),
     "go": MessageLookupByLibrary.simpleMessage("Go"),
@@ -1093,7 +1120,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("Toggle Display"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP Lookup"),
     "ipLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "Your exit IPs, or look up any IP or domain",
+      "See which city and provider your current exit IP belongs to, or look up any IP or domain",
     ),
     "ipLookupDomesticExit": MessageLookupByLibrary.simpleMessage(
       "Domestic Local IP",
@@ -1190,6 +1217,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("Very high risk"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web proxy"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP/CIDR"),
+    "fallbackIpcidrDesc": MessageLookupByLibrary.simpleMessage(
+      "Answers in these ranges from the default DNS count as polluted; the fallback DNS is used instead",
+    ),
     "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
       "Server address, e.g. 192.168.1.5",
     ),
@@ -1279,7 +1309,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfStreams": m32,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 Tool"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "Measure bandwidth between devices on your LAN, compatible with iperf3",
+      "Measure the real speed between two devices, e.g. phone and PC on your LAN (iperf3 compatible)",
     ),
     "iperfThroughput": MessageLookupByLibrary.simpleMessage("Throughput"),
     "iperfTransferred": MessageLookupByLibrary.simpleMessage("Data"),
@@ -1291,6 +1321,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage(
       "Enable IPv6 traffic routing",
+    ),
+    "dnsIpv6Desc": MessageLookupByLibrary.simpleMessage(
+      "Allow DNS answers with IPv6 addresses; turn off if your network has no IPv6",
     ),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage(
       "Allow IPv6 inbound",
@@ -1330,7 +1363,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingClosed": MessageLookupByLibrary.simpleMessage("Port closed"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("Count"),
     "localPingDesc": MessageLookupByLibrary.simpleMessage(
-      "Direct ICMP, TCP and UDP latency and loss test",
+      "Without the proxy, test whether an address answers, its latency and packet loss",
     ),
     "localPingDone": MessageLookupByLibrary.simpleMessage("Ping finished"),
     "localPingErrorDenied": MessageLookupByLibrary.simpleMessage(
@@ -1467,7 +1500,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsCopyUrl": MessageLookupByLibrary.simpleMessage("Copy URL"),
     "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS Lookup"),
     "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "Find the GEO / RULE-SET rule sets for a domain or IP",
+      "Enter a domain or IP to see which routing rule sets cover it — and why a site goes via proxy or direct",
     ),
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("Domain or IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage(
@@ -1573,7 +1606,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "natStart": MessageLookupByLibrary.simpleMessage("Start Detection"),
     "natTest": MessageLookupByLibrary.simpleMessage("NAT Detection"),
     "natTestDesc": MessageLookupByLibrary.simpleMessage(
-      "Check NAT type, external address and UDP connectivity",
+      "Find your NAT type — it decides whether games and P2P can connect directly",
     ),
     "natType": MessageLookupByLibrary.simpleMessage("NAT Type"),
     "natTypeBlocked": MessageLookupByLibrary.simpleMessage("UDP Blocked"),
@@ -1722,7 +1755,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Override Destination",
     ),
     "overrideDestinationDesc": MessageLookupByLibrary.simpleMessage(
-      "Override destination with sniffed result",
+      "Route by the sniffed real domain instead of only the destination IP",
     ),
     "overrideDns": MessageLookupByLibrary.simpleMessage("Override DNS"),
     "overrideDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1759,7 +1792,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "parsePureIp": MessageLookupByLibrary.simpleMessage("Parse Pure IP"),
     "parsePureIpDesc": MessageLookupByLibrary.simpleMessage(
-      "Parse pure IP connections",
+      "When a connection has only an IP and no domain, still try to identify its target",
     ),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
@@ -1866,13 +1899,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Disable QUIC ECN",
     ),
     "quicGoDisableEcnDesc": MessageLookupByLibrary.simpleMessage(
-      "Disable QUIC ECN",
+      "Stops QUIC from using congestion-notification marks; can steady connections on some networks",
     ),
     "quicGoDisableGso": MessageLookupByLibrary.simpleMessage(
       "Disable QUIC GSO",
     ),
     "quicGoDisableGsoDesc": MessageLookupByLibrary.simpleMessage(
-      "Disable QUIC GSO",
+      "Stops QUIC from using segmentation offload; helps on network cards with compatibility issues",
     ),
     "quicPortSniffer": MessageLookupByLibrary.simpleMessage(
       "QUIC Port Sniffing",
@@ -1959,7 +1992,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "respectRules": MessageLookupByLibrary.simpleMessage("Respect Rules"),
     "respectRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "DNS connections follow Rules",
+      "DNS resolution also picks its server by the routing rules, same as traffic",
     ),
     "restart": MessageLookupByLibrary.simpleMessage("Restart"),
     "restartApp": MessageLookupByLibrary.simpleMessage("Restart App"),
@@ -1999,7 +2032,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Checked Rules",
     ),
     "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "See how the core resolves and matches a domain or IP",
+      "Trace a domain through the app: how it resolves, which rule it hits, and whether it ends up proxied or direct",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS Resolution"),
     "routeTraceDnsBy": m63,
@@ -2126,8 +2159,14 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "size": MessageLookupByLibrary.simpleMessage("Size"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("Skip Domain"),
+    "skipDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "Traffic for these domains is not inspected and passes as-is",
+    ),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage(
       "Skip Destination IP",
+    ),
+    "skipDstAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "Connections to these IPs are not inspected",
     ),
     "skipLocalAuth": MessageLookupByLibrary.simpleMessage(
       "Skip Local Authentication",
@@ -2136,6 +2175,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow local access without credentials",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("Skip Source IP"),
+    "skipSrcAddressDesc": MessageLookupByLibrary.simpleMessage(
+      "Connections from these IPs are not inspected",
+    ),
     "slow": MessageLookupByLibrary.simpleMessage("Slow"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("Smart Auto-Stop"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
@@ -2506,7 +2548,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Clear all traffic statistics?",
     ),
     "trafficStatsDesc": MessageLookupByLibrary.simpleMessage(
-      "See exactly where your traffic goes by day, week and month",
+      "See by day, week and month which sites, apps and nodes your traffic went to",
     ),
     "trafficStatsDetail": MessageLookupByLibrary.simpleMessage(
       "Record details",
@@ -2519,6 +2561,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "trafficStatsEnable": MessageLookupByLibrary.simpleMessage(
       "Traffic statistics",
+    ),
+    "trafficStatsEnableDesc": MessageLookupByLibrary.simpleMessage(
+      "Record which sites, apps and nodes your traffic goes to; when off, only totals are kept",
     ),
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage(
       "Data retention",
@@ -2627,7 +2672,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Script per Profile",
     ),
     "useHosts": MessageLookupByLibrary.simpleMessage("Use Hosts"),
+    "useHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "When resolving, first check the fixed mappings in the hosts file",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use System Hosts"),
+    "useSystemHostsDesc": MessageLookupByLibrary.simpleMessage(
+      "Also apply the operating system's own hosts file",
+    ),
     "userAuth": MessageLookupByLibrary.simpleMessage("User Authentication"),
     "userAuthEmpty": MessageLookupByLibrary.simpleMessage(
       "No authentication configured, LAN connections do not require credentials",

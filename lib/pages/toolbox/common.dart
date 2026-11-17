@@ -452,11 +452,18 @@ class ToolPageBody extends StatelessWidget {
   final Widget? bottom;
   final double maxWidth;
 
+  /// One plain-language line at the top of the page saying what
+  /// this tool is for (T219, the user's call: every option and tool
+  /// must be understandable at a glance). Pages pass the same
+  /// description the toolbox index shows — one text, two surfaces.
+  final String? intro;
+
   const ToolPageBody({
     super.key,
     required this.children,
     this.bottom,
     this.maxWidth = 720,
+    this.intro,
   });
 
   @override
@@ -476,7 +483,13 @@ class ToolPageBody extends StatelessWidget {
               constrain(
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: children,
+                  children: [
+                    if (intro case final intro?) ...[
+                      ToolNote(icon: Icons.info_outline_rounded, text: intro),
+                      const SizedBox(height: 12),
+                    ],
+                    ...children,
+                  ],
                 ),
               ),
             ],

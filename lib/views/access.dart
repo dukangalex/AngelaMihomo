@@ -515,6 +515,7 @@ class _AccessViewState extends ConsumerState<AccessView>
               type: CommonCardType.filled,
               child: ListItem.switchItem(
                 title: Text(appLocalizations.appAccessControl),
+                subtitle: Text(appLocalizations.appAccessControlDesc),
                 trailing: accessControl.enable ? _buildRefreshButton() : null,
                 delegate: SwitchDelegate(
                   value: accessControl.enable,
@@ -970,7 +971,9 @@ class _PackagePickerPanelState extends ConsumerState<PackagePickerPanel> {
                       return RepaintBoundary(
                         key: Key(package.packageName),
                         child: ListItem(
-                          leading: PackageIcon(packageName: package.packageName),
+                          leading: PackageIcon(
+                            packageName: package.packageName,
+                          ),
                           title: EmojiText(
                             package.label,
                             style: const TextStyle(

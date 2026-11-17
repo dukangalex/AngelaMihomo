@@ -19,6 +19,7 @@ class DeveloperView extends ConsumerWidget {
         items: [
           ListItem.switchItem(
             title: Text(appLocalizations.developerMode),
+            subtitle: Text(appLocalizations.developerModeDesc),
             delegate: SwitchDelegate(
               value: enable,
               onChanged: (value) {

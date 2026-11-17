@@ -172,6 +172,7 @@ class _AgeToolPageState extends ConsumerState<AgeToolPage> {
     return CommonScaffold(
       title: appLocalizations.ageTool,
       body: ToolPageBody(
+        intro: appLocalizations.ageToolDesc,
         children: [
           ToolSegmented<_AgeTab>(
             values: _AgeTab.values,

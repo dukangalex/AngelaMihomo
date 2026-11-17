@@ -460,6 +460,7 @@ class _IperfPageState extends ConsumerState<IperfPage>
           ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.iperfTestDesc,
         bottom: SizedBox(
           height: 52,
           child: isServer ? _buildServerButton() : _buildClientButton(),

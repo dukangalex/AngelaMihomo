@@ -174,6 +174,7 @@ class _DnsQueryPageState extends ConsumerState<DnsQueryPage>
         ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.dnsQueryDesc,
         children: [
           ToolSearchField(
             controller: _controller,

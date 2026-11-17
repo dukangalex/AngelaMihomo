@@ -276,7 +276,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ageTabEncrypt": MessageLookupByLibrary.simpleMessage("暗号化"),
     "ageTabKeys": MessageLookupByLibrary.simpleMessage("鍵"),
     "ageTool": MessageLookupByLibrary.simpleMessage("Age 暗号化・復号"),
-    "ageToolDesc": MessageLookupByLibrary.simpleMessage("鍵の生成、テキストや設定の暗号化・復号"),
+    "ageToolDesc": MessageLookupByLibrary.simpleMessage(
+      "Age の鍵を作り、テキストや設定を選んだ相手向けに暗号化したり、受け取ったものを復号したりできます",
+    ),
     "ageToolTip": MessageLookupByLibrary.simpleMessage(
       "すべて端末内で処理され、秘密鍵は保存・送信されません。",
     ),
@@ -300,6 +302,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "analyzeLogPrompt": m0,
     "app": MessageLookupByLibrary.simpleMessage("アプリ"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage("アプリのアクセス制御"),
+    "appAccessControlDesc": MessageLookupByLibrary.simpleMessage("アプリごとにプロキシ経由か直接接続かを指定します"),
     "appDesc": MessageLookupByLibrary.simpleMessage("アプリ設定を管理"),
     "application": MessageLookupByLibrary.simpleMessage("アプリケーション"),
     "applicationDesc": MessageLookupByLibrary.simpleMessage("アプリ設定の変更"),
@@ -329,6 +332,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoSetSystemDns": MessageLookupByLibrary.simpleMessage("システムDNSを自動設定"),
     "autoStickyHeader": MessageLookupByLibrary.simpleMessage("展開を固定"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("自動更新"),
+    "autoUpdateDesc": MessageLookupByLibrary.simpleMessage("設定した間隔でこのサブスクリプションを自動更新します"),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage("自動更新間隔（分）"),
     "back": MessageLookupByLibrary.simpleMessage("戻る"),
     "backgroundWatermark": MessageLookupByLibrary.simpleMessage("背景ウォーターマーク"),
@@ -616,18 +620,22 @@ class MessageLookup extends MessageLookupByLibrary {
       "サードパーティAPIを使用しているため、参考値です",
     ),
     "developerMode": MessageLookupByLibrary.simpleMessage("開発者モード"),
+    "developerModeDesc": MessageLookupByLibrary.simpleMessage("ログやデバッグ用の項目が増えます。通常は不要です"),
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "開発者モードが有効になりました。",
     ),
     "dialerIp4pConvert": MessageLookupByLibrary.simpleMessage("IP4P変換有効化"),
     "dialerIp4pConvertDesc": MessageLookupByLibrary.simpleMessage(
-      "ダイヤラーのIP4P変換を有効化",
+      "IP4P 形式のアドレスを通常の IPv6 に変換してから接続します。通常は変更不要",
     ),
     "direct": MessageLookupByLibrary.simpleMessage("ダイレクト"),
     "directNameserver": MessageLookupByLibrary.simpleMessage("直連用DNS"),
     "directNameserverDesc": MessageLookupByLibrary.simpleMessage("直連ドメインの解決"),
     "directNameserverFollowPolicy": MessageLookupByLibrary.simpleMessage(
       "直連DNSもポリシーに従う",
+    ),
+    "directNameserverFollowPolicyDesc": MessageLookupByLibrary.simpleMessage(
+      "オンにすると、直接接続の DNS も振り分けルールに従ってサーバーを選びます",
     ),
     "disableQuic": MessageLookupByLibrary.simpleMessage("QUIC無効化"),
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
@@ -657,7 +665,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsQueryCompareDesc": MessageLookupByLibrary.simpleMessage(
       "ルール・システム DNS・指定サーバーで同時に解決し、汚染や分流の差を確認",
     ),
-    "dnsQueryDesc": MessageLookupByLibrary.simpleMessage("ルール・システム・指定サーバーで解決"),
+    "dnsQueryDesc": MessageLookupByLibrary.simpleMessage(
+      "ドメインが実際にどの IP に解決されるかを確認。DNS ごとに比べて汚染もチェックできます",
+    ),
     "dnsQueryFakeIpOff": m13,
     "dnsQueryFakeIpOn": m14,
     "dnsQueryFilterBlackHit": MessageLookupByLibrary.simpleMessage("ブラックリスト該当"),
@@ -706,6 +716,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS解決"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("許可しますか："),
     "domain": MessageLookupByLibrary.simpleMessage("ドメイン"),
+    "fallbackDomainDesc": MessageLookupByLibrary.simpleMessage("このリストのドメインは常に予備 DNS で解決します"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("ダブルバウンス"),
     "download": MessageLookupByLibrary.simpleMessage("受信"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("スリープ連携"),
@@ -724,6 +735,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "必要に応じてクラッシュログを送信",
     ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("オーバーライド有効化"),
+    "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
+      "オンにすると、下の上書き内容をこの設定に適用してからコアで実行します",
+    ),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("速度表示"),
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "メニューバーに通信速度を表示",
@@ -772,6 +786,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "FakeIPフィルターの動作モードを指定",
     ),
     "fakeipFilter": MessageLookupByLibrary.simpleMessage("FakeIPフィルターリスト"),
+    "fakeipFilterDesc": MessageLookupByLibrary.simpleMessage(
+      "このリストのドメインは FakeIP を使わず実アドレスで接続します（LAN 機器や一部のゲーム用）",
+    ),
     "fakeipRange": MessageLookupByLibrary.simpleMessage("FakeIP範囲"),
     "fakeipRangeV6": MessageLookupByLibrary.simpleMessage("FakeIPv6範囲"),
     "fakeipTtl": MessageLookupByLibrary.simpleMessage("FakeIP TTL"),
@@ -814,9 +831,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "fontFamily": MessageLookupByLibrary.simpleMessage("フォント"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("強制DNSマッピング"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
-      "DNSクエリ結果を接続に強制マッピング",
+      "識別したドメインを DNS 結果で接続に対応付け、振り分け精度を上げます",
     ),
     "forceDomain": MessageLookupByLibrary.simpleMessage("対象ドメイン"),
+    "forceDomainDesc": MessageLookupByLibrary.simpleMessage(
+      "このリストのドメインは必ずトラフィック識別を行い、実際の接続先を確認します",
+    ),
     "forceGCDesc": MessageLookupByLibrary.simpleMessage(
       "カーネルのメモリGCを強制実行しますか？（実験的機能）",
     ),
@@ -847,6 +867,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "geodataUse": MessageLookupByLibrary.simpleMessage("GEO読込"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("GeoIPコード"),
+    "geoipFilterDesc": MessageLookupByLibrary.simpleMessage("IP の所在地で予備 DNS の結果が信頼できるか判断し、汚染を防ぎます"),
     "getOriginRules": MessageLookupByLibrary.simpleMessage("元のルールを取得"),
     "global": MessageLookupByLibrary.simpleMessage("グローバル"),
     "go": MessageLookupByLibrary.simpleMessage("移動"),
@@ -928,7 +949,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipClickBehavior": MessageLookupByLibrary.simpleMessage("表示切替"),
     "ipLookup": MessageLookupByLibrary.simpleMessage("IP 検索"),
     "ipLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "自分の出口 IP、任意の IP・ドメインを検索",
+      "今の出口 IP がどの都市・事業者かを表示。任意の IP やドメインも調べられます",
     ),
     "ipLookupDomesticExit": MessageLookupByLibrary.simpleMessage("国内ローカル IP"),
     "ipLookupHint": MessageLookupByLibrary.simpleMessage("IP またはドメイン"),
@@ -1003,6 +1024,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipRiskVeryHigh": MessageLookupByLibrary.simpleMessage("非常に高いリスク"),
     "ipRiskWebProxy": MessageLookupByLibrary.simpleMessage("Web プロキシ"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP / サブネットマスク"),
+    "fallbackIpcidrDesc": MessageLookupByLibrary.simpleMessage(
+      "既定 DNS がこれらの範囲のアドレスを返したら汚染とみなし、予備 DNS を使います",
+    ),
     "iperfAddressHint": MessageLookupByLibrary.simpleMessage(
       "サーバーアドレス（例：192.168.1.5）",
     ),
@@ -1090,7 +1114,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "iperfStreams": m32,
     "iperfTest": MessageLookupByLibrary.simpleMessage("iPerf3 ツール"),
     "iperfTestDesc": MessageLookupByLibrary.simpleMessage(
-      "LAN 内のデバイス間の帯域幅を測定（公式 iperf3 互換）",
+      "端末同士の実速度を測ります。たとえば LAN 内のスマホと PC の速度（iperf3 互換）",
     ),
     "iperfThroughput": MessageLookupByLibrary.simpleMessage("スループット"),
     "iperfTransferred": MessageLookupByLibrary.simpleMessage("転送量"),
@@ -1099,6 +1123,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "iperfWaiting": MessageLookupByLibrary.simpleMessage("クライアントの接続を待機中"),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("IPv6トラフィックの受信を有効化"),
+    "dnsIpv6Desc": MessageLookupByLibrary.simpleMessage(
+      "DNS が IPv6 アドレスを返すことを許可します。IPv6 が使えない回線ではオフ推奨",
+    ),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("IPv6インバウンド通信を許可"),
     "isp": MessageLookupByLibrary.simpleMessage("プロバイダ"),
     "itemsCount": m33,
@@ -1132,9 +1159,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localPingBytes": m34,
     "localPingClosed": MessageLookupByLibrary.simpleMessage("ポート閉鎖"),
     "localPingCount": MessageLookupByLibrary.simpleMessage("回数"),
-    "localPingDesc": MessageLookupByLibrary.simpleMessage(
-      "ICMP・TCP・UDP の遅延とパケットロスを直接測定",
-    ),
+    "localPingDesc": MessageLookupByLibrary.simpleMessage("プロキシを通さず、そのまま到達可否・遅延・パケットロスを測ります"),
     "localPingDone": MessageLookupByLibrary.simpleMessage("Ping 完了"),
     "localPingErrorDenied": MessageLookupByLibrary.simpleMessage(
       "このシステムでは ICMP を送信できません。TCP または UDP Ping を使用してください",
@@ -1248,7 +1273,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mrsCopyUrl": MessageLookupByLibrary.simpleMessage("URL をコピー"),
     "mrsLookup": MessageLookupByLibrary.simpleMessage("MRS 検索"),
     "mrsLookupDesc": MessageLookupByLibrary.simpleMessage(
-      "ドメインや IP が属する GEO / RULE-SET を検索",
+      "ドメインや IP を入れると、どの振り分けルールに含まれるか分かります。なぜプロキシ経由か直接かを確認できます",
     ),
     "mrsLookupHint": MessageLookupByLibrary.simpleMessage("ドメインまたは IP"),
     "mrsMissing": MessageLookupByLibrary.simpleMessage("内蔵 BundleMRS が見つかりません"),
@@ -1333,9 +1358,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "natStart": MessageLookupByLibrary.simpleMessage("検出を開始"),
     "natTest": MessageLookupByLibrary.simpleMessage("NAT 検出"),
-    "natTestDesc": MessageLookupByLibrary.simpleMessage(
-      "NAT タイプ、外部アドレス、UDP 接続性を検査",
-    ),
+    "natTestDesc": MessageLookupByLibrary.simpleMessage("NAT の種類を測ります。ゲームや P2P が直接つながるかはこれで決まります"),
     "natType": MessageLookupByLibrary.simpleMessage("NAT タイプ"),
     "natTypeBlocked": MessageLookupByLibrary.simpleMessage("UDP ブロック"),
     "natTypeCone": MessageLookupByLibrary.simpleMessage("コーン NAT"),
@@ -1455,7 +1478,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "overrideDesc": MessageLookupByLibrary.simpleMessage("プロキシ関連設定のオーバーライド"),
     "overrideDestination": MessageLookupByLibrary.simpleMessage("宛先アドレス上書き"),
     "overrideDestinationDesc": MessageLookupByLibrary.simpleMessage(
-      "スニッフィング結果で宛先アドレスを置換",
+      "宛先 IP だけでなく、識別した実際のドメインで振り分けます",
     ),
     "overrideDns": MessageLookupByLibrary.simpleMessage("DNSオーバーライド"),
     "overrideDnsDesc": MessageLookupByLibrary.simpleMessage(
@@ -1489,7 +1512,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "palette": MessageLookupByLibrary.simpleMessage("パレット"),
     "parsePureIp": MessageLookupByLibrary.simpleMessage("IP直接接続の解析"),
-    "parsePureIpDesc": MessageLookupByLibrary.simpleMessage("IP直接接続を解析"),
+    "parsePureIpDesc": MessageLookupByLibrary.simpleMessage("ドメインがなく IP だけの接続でも、行き先の特定を試みます"),
     "password": MessageLookupByLibrary.simpleMessage("パスワード"),
     "paste": MessageLookupByLibrary.simpleMessage("貼り付け"),
     "pianoWave": MessageLookupByLibrary.simpleMessage("ピアノウェーブ"),
@@ -1575,11 +1598,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "qrcodeDesc": MessageLookupByLibrary.simpleMessage("QRコードをスキャンして設定をインポート"),
     "quicGoDisableEcn": MessageLookupByLibrary.simpleMessage("QUIC ECN無効化"),
     "quicGoDisableEcnDesc": MessageLookupByLibrary.simpleMessage(
-      "QUICのECNを無効化",
+      "QUIC の輻輳通知マークを使いません。一部の回線で接続が安定します",
     ),
     "quicGoDisableGso": MessageLookupByLibrary.simpleMessage("QUIC GSO無効化"),
     "quicGoDisableGsoDesc": MessageLookupByLibrary.simpleMessage(
-      "QUICのGSOを無効化",
+      "QUIC のセグメント化オフロードを止めます。NIC の相性が悪いときに安定します",
     ),
     "quicPortSniffer": MessageLookupByLibrary.simpleMessage("QUICポート解析"),
     "quickResponse": MessageLookupByLibrary.simpleMessage("高速レスポンス"),
@@ -1645,9 +1668,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "resources": MessageLookupByLibrary.simpleMessage("外部リソース"),
     "resourcesDesc": MessageLookupByLibrary.simpleMessage("外部リソースやルールセットを表示"),
     "respectRules": MessageLookupByLibrary.simpleMessage("ルールに従う"),
-    "respectRulesDesc": MessageLookupByLibrary.simpleMessage(
-      "DNS接続でRules設定を適用",
-    ),
+    "respectRulesDesc": MessageLookupByLibrary.simpleMessage("DNS 解決もトラフィックと同じ振り分けルールでサーバーを選びます"),
     "restart": MessageLookupByLibrary.simpleMessage("再起動"),
     "restartApp": MessageLookupByLibrary.simpleMessage("アプリ再起動"),
     "restartCoreDesc": MessageLookupByLibrary.simpleMessage("カーネルを手動で再起動しますか？"),
@@ -1678,7 +1699,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeTraceChain": MessageLookupByLibrary.simpleMessage("プロキシチェーン"),
     "routeTraceCheckedRules": MessageLookupByLibrary.simpleMessage("確認したルール"),
     "routeTraceDesc": MessageLookupByLibrary.simpleMessage(
-      "ドメインや IP のコア内 DNS・ルール照合を確認",
+      "ドメインがアプリ内でどう解決され、どのルールに当たって、最後はプロキシか直接かを通して見ます",
     ),
     "routeTraceDns": MessageLookupByLibrary.simpleMessage("DNS 解決"),
     "routeTraceDnsBy": m63,
@@ -1791,10 +1812,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "size": MessageLookupByLibrary.simpleMessage("サイズ"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("除外ドメイン"),
+    "skipDomainDesc": MessageLookupByLibrary.simpleMessage("このリストのドメインは識別せず、そのまま通します"),
     "skipDstAddress": MessageLookupByLibrary.simpleMessage("除外宛先IP"),
+    "skipDstAddressDesc": MessageLookupByLibrary.simpleMessage("これらの IP への接続は識別しません"),
     "skipLocalAuth": MessageLookupByLibrary.simpleMessage("ローカル認証をスキップ"),
     "skipLocalAuthDesc": MessageLookupByLibrary.simpleMessage("ローカル端末の認証をスキップ"),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("除外送信元IP"),
+    "skipSrcAddressDesc": MessageLookupByLibrary.simpleMessage("これらの IP からの接続は識別しません"),
     "slow": MessageLookupByLibrary.simpleMessage("遅い"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("スマート自動停止"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
@@ -2122,9 +2146,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficStatsClearTip": MessageLookupByLibrary.simpleMessage(
       "すべての通信量統計を削除しますか？",
     ),
-    "trafficStatsDesc": MessageLookupByLibrary.simpleMessage(
-      "日・週・月ごとに通信量の具体的な行き先を確認",
-    ),
+    "trafficStatsDesc": MessageLookupByLibrary.simpleMessage("日・週・月ごとに、通信がどのサイト・アプリ・ノードに使われたか見られます"),
     "trafficStatsDetail": MessageLookupByLibrary.simpleMessage("詳細を記録"),
     "trafficStatsDetailDesc": MessageLookupByLibrary.simpleMessage(
       "ドメイン・プロセス・ノード・ルール別に記録します。オフにすると合計のみ記録します",
@@ -2133,6 +2155,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "既定ではオフです。オンにすると記録を開始し、データはこの端末にのみ保存されます",
     ),
     "trafficStatsEnable": MessageLookupByLibrary.simpleMessage("通信量統計を有効化"),
+    "trafficStatsEnableDesc": MessageLookupByLibrary.simpleMessage(
+      "オンにすると、どのサイト・アプリ・ノードに通信したか記録します。オフでは合計のみ",
+    ),
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("データ保持期間"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("サイトアイコンを表示"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
@@ -2224,7 +2249,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "プロファイルごとのスクリプト",
     ),
     "useHosts": MessageLookupByLibrary.simpleMessage("Hostsを使用"),
+    "useHostsDesc": MessageLookupByLibrary.simpleMessage("名前解決のとき、まず hosts ファイルの固定対応を確認します"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムHostsを使用"),
+    "useSystemHostsDesc": MessageLookupByLibrary.simpleMessage("OS 標準の hosts ファイルも一緒に使います"),
     "userAuth": MessageLookupByLibrary.simpleMessage("ユーザー認証"),
     "userAuthEmpty": MessageLookupByLibrary.simpleMessage(
       "認証ユーザーが設定されていません。LAN接続には資格情報が不要です",

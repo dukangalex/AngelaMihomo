@@ -242,6 +242,7 @@ class _IpLookupPageState extends ConsumerState<IpLookupPage>
         ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.ipLookupDesc,
         children: [
           ToolSearchField(
             controller: _controller,

@@ -94,6 +94,7 @@ class _RouteTracePageState extends ConsumerState<RouteTracePage>
     return CommonScaffold(
       title: appLocalizations.routeTrace,
       body: ToolPageBody(
+        intro: appLocalizations.routeTraceDesc,
         children: [
           ToolSearchField(
             controller: _controller,

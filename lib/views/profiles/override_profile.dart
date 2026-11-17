@@ -261,6 +261,7 @@ class OverrideSwitch extends ConsumerWidget {
       child: ListItem.switchItem(
         padding: const EdgeInsets.only(left: 16, right: 16),
         title: Text(appLocalizations.enableOverride),
+        subtitle: Text(appLocalizations.enableOverrideDesc),
         delegate: SwitchDelegate(
           value: enable ?? false,
           onChanged: (value) {
@@ -986,7 +987,9 @@ class _AddRuleDialogState extends State<AddRuleDialog> {
                   ),
                   validator: (_) {
                     if (_contentController.text.isEmpty) {
-                      return appLocalizations.emptyTip(appLocalizations.content);
+                      return appLocalizations.emptyTip(
+                        appLocalizations.content,
+                      );
                     }
                     return null;
                   },

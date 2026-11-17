@@ -1310,6 +1310,16 @@ class AppLocalizations {
     return Intl.message('Auto Update', name: 'autoUpdate', desc: '', args: []);
   }
 
+
+  /// `Update this subscription automatically at the set interval`
+  String get autoUpdateDesc {
+    return Intl.message(
+      'Update this subscription automatically at the set interval',
+      name: 'autoUpdateDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Auto update interval (min)`
   String get autoUpdateInterval {
     return Intl.message(
@@ -1580,6 +1590,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Choose per app whether it goes through the proxy or direct`
+  String get appAccessControlDesc {
+    return Intl.message(
+      'Choose per app whether it goes through the proxy or direct',
+      name: 'appAccessControlDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Only route selected apps through VPN`
   String get accessControlAllowDesc {
     return Intl.message(
@@ -2429,6 +2449,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Allow DNS answers with IPv6 addresses; turn off if your network has no IPv6`
+  String get dnsIpv6Desc {
+    return Intl.message(
+      'Allow DNS answers with IPv6 addresses; turn off if your network has no IPv6',
+      name: 'dnsIpv6Desc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `App`
   String get app {
     return Intl.message('App', name: 'app', desc: '', args: []);
@@ -3777,7 +3807,7 @@ class AppLocalizations {
   /// `Force mapping DNS results to connections`
   String get forceDnsMappingDesc {
     return Intl.message(
-      'Force mapping DNS results to connections',
+      'Maps sniffed domains back to connections using DNS results for more accurate routing',
       name: 'forceDnsMappingDesc',
       desc: '',
       args: [],
@@ -3797,7 +3827,7 @@ class AppLocalizations {
   /// `Parse pure IP connections`
   String get parsePureIpDesc {
     return Intl.message(
-      'Parse pure IP connections',
+      'When a connection has only an IP and no domain, still try to identify its target',
       name: 'parsePureIpDesc',
       desc: '',
       args: [],
@@ -3817,7 +3847,7 @@ class AppLocalizations {
   /// `Override destination with sniffed result`
   String get overrideDestinationDesc {
     return Intl.message(
-      'Override destination with sniffed result',
+      'Route by the sniffed real domain instead of only the destination IP',
       name: 'overrideDestinationDesc',
       desc: '',
       args: [],
@@ -3864,11 +3894,31 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Always inspect traffic for these domains to see where it really goes`
+  String get forceDomainDesc {
+    return Intl.message(
+      'Always inspect traffic for these domains to see where it really goes',
+      name: 'forceDomainDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Skip Domain`
   String get skipDomain {
     return Intl.message('Skip Domain', name: 'skipDomain', desc: '', args: []);
   }
 
+
+  /// `Traffic for these domains is not inspected and passes as-is`
+  String get skipDomainDesc {
+    return Intl.message(
+      'Traffic for these domains is not inspected and passes as-is',
+      name: 'skipDomainDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Skip Source IP`
   String get skipSrcAddress {
     return Intl.message(
@@ -3879,6 +3929,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Connections from these IPs are not inspected`
+  String get skipSrcAddressDesc {
+    return Intl.message(
+      'Connections from these IPs are not inspected',
+      name: 'skipSrcAddressDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Skip Destination IP`
   String get skipDstAddress {
     return Intl.message(
@@ -3889,6 +3949,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Connections to these IPs are not inspected`
+  String get skipDstAddressDesc {
+    return Intl.message(
+      'Connections to these IPs are not inspected',
+      name: 'skipDstAddressDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Ports`
   String get snifferPorts {
     return Intl.message('Ports', name: 'snifferPorts', desc: '', args: []);
@@ -4127,7 +4197,7 @@ class AppLocalizations {
   /// `Disable QUIC GSO`
   String get quicGoDisableGsoDesc {
     return Intl.message(
-      'Disable QUIC GSO',
+      'Stops QUIC from using segmentation offload; helps on network cards with compatibility issues',
       name: 'quicGoDisableGsoDesc',
       desc: '',
       args: [],
@@ -4147,7 +4217,7 @@ class AppLocalizations {
   /// `Disable QUIC ECN`
   String get quicGoDisableEcnDesc {
     return Intl.message(
-      'Disable QUIC ECN',
+      'Stops QUIC from using congestion-notification marks; can steady connections on some networks',
       name: 'quicGoDisableEcnDesc',
       desc: '',
       args: [],
@@ -4167,7 +4237,7 @@ class AppLocalizations {
   /// `Enable dialer IP4P conversion`
   String get dialerIp4pConvertDesc {
     return Intl.message(
-      'Enable dialer IP4P conversion',
+      'Converts IP4P-format addresses to plain IPv6 before dialing; rarely needs changing',
       name: 'dialerIp4pConvertDesc',
       desc: '',
       args: [],
@@ -4194,11 +4264,31 @@ class AppLocalizations {
     return Intl.message('IP/CIDR', name: 'ipcidr', desc: '', args: []);
   }
 
+
+  /// `Answers in these ranges from the default DNS count as polluted; the fallback DNS is used instead`
+  String get fallbackIpcidrDesc {
+    return Intl.message(
+      'Answers in these ranges from the default DNS count as polluted; the fallback DNS is used instead',
+      name: 'fallbackIpcidrDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Domain`
   String get domain {
     return Intl.message('Domain', name: 'domain', desc: '', args: []);
   }
 
+
+  /// `Domains on this list are always resolved with the fallback DNS`
+  String get fallbackDomainDesc {
+    return Intl.message(
+      'Domains on this list are always resolved with the fallback DNS',
+      name: 'fallbackDomainDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Reset`
   String get reset {
     return Intl.message('Reset', name: 'reset', desc: '', args: []);
@@ -4964,6 +5054,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Apply the override below to this profile before the core runs it`
+  String get enableOverrideDesc {
+    return Intl.message(
+      'Apply the override below to this profile before the core runs it',
+      name: 'enableOverrideDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Save changes?`
   String get saveChanges {
     return Intl.message(
@@ -5114,6 +5214,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Shows extra logging and debugging options; most people never need this`
+  String get developerModeDesc {
+    return Intl.message(
+      'Shows extra logging and debugging options; most people never need this',
+      name: 'developerModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Developer mode is enabled.`
   String get developerModeEnableTip {
     return Intl.message(
@@ -7165,7 +7275,7 @@ class AppLocalizations {
   /// `Check NAT type, external address and UDP connectivity`
   String get natTestDesc {
     return Intl.message(
-      'Check NAT type, external address and UDP connectivity',
+      'Find your NAT type — it decides whether games and P2P can connect directly',
       name: 'natTestDesc',
       desc: '',
       args: [],
@@ -7572,7 +7682,7 @@ class AppLocalizations {
   /// `See how the core resolves and matches a domain or IP`
   String get routeTraceDesc {
     return Intl.message(
-      'See how the core resolves and matches a domain or IP',
+      'Trace a domain through the app: how it resolves, which rule it hits, and whether it ends up proxied or direct',
       name: 'routeTraceDesc',
       desc: '',
       args: [],
@@ -7822,7 +7932,7 @@ class AppLocalizations {
   /// `Your exit IPs, or look up any IP or domain`
   String get ipLookupDesc {
     return Intl.message(
-      'Your exit IPs, or look up any IP or domain',
+      'See which city and provider your current exit IP belongs to, or look up any IP or domain',
       name: 'ipLookupDesc',
       desc: '',
       args: [],
@@ -7907,7 +8017,7 @@ class AppLocalizations {
   /// `Find the GEO / RULE-SET rule sets for a domain or IP`
   String get mrsLookupDesc {
     return Intl.message(
-      'Find the GEO / RULE-SET rule sets for a domain or IP',
+      'Enter a domain or IP to see which routing rule sets cover it — and why a site goes via proxy or direct',
       name: 'mrsLookupDesc',
       desc: '',
       args: [],
@@ -8017,7 +8127,7 @@ class AppLocalizations {
   /// `Resolve with rules, system or a chosen server`
   String get dnsQueryDesc {
     return Intl.message(
-      'Resolve with rules, system or a chosen server',
+      'Find which IP a domain really resolves to and compare DNS servers to spot pollution',
       name: 'dnsQueryDesc',
       desc: '',
       args: [],
@@ -8277,7 +8387,7 @@ class AppLocalizations {
   /// `Generate keys, encrypt or decrypt text and configs`
   String get ageToolDesc {
     return Intl.message(
-      'Generate keys, encrypt or decrypt text and configs',
+      'Generate Age keys, encrypt text or configs for a chosen recipient, and decrypt what you receive',
       name: 'ageToolDesc',
       desc: '',
       args: [],
@@ -8553,7 +8663,7 @@ class AppLocalizations {
   /// `Measure bandwidth between devices on your LAN, compatible with iperf3`
   String get iperfTestDesc {
     return Intl.message(
-      'Measure bandwidth between devices on your LAN, compatible with iperf3',
+      'Measure the real speed between two devices, e.g. phone and PC on your LAN (iperf3 compatible)',
       name: 'iperfTestDesc',
       desc: '',
       args: [],
@@ -8898,7 +9008,7 @@ class AppLocalizations {
   /// `Direct ICMP, TCP and UDP latency and loss test`
   String get localPingDesc {
     return Intl.message(
-      'Direct ICMP, TCP and UDP latency and loss test',
+      'Without the proxy, test whether an address answers, its latency and packet loss',
       name: 'localPingDesc',
       desc: '',
       args: [],
@@ -9343,7 +9453,7 @@ class AppLocalizations {
   /// `See exactly where your traffic goes by day, week and month`
   String get trafficStatsDesc {
     return Intl.message(
-      'See exactly where your traffic goes by day, week and month',
+      'See by day, week and month which sites, apps and nodes your traffic went to',
       name: 'trafficStatsDesc',
       desc: '',
       args: [],
@@ -9412,6 +9522,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Record which sites, apps and nodes your traffic goes to; when off, only totals are kept`
+  String get trafficStatsEnableDesc {
+    return Intl.message(
+      'Record which sites, apps and nodes your traffic goes to; when off, only totals are kept',
+      name: 'trafficStatsEnableDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Record details`
   String get trafficStatsDetail {
     return Intl.message(
@@ -10845,7 +10965,7 @@ class AppLocalizations {
   /// `DNS connections follow Rules`
   String get respectRulesDesc {
     return Intl.message(
-      'DNS connections follow Rules',
+      'DNS resolution also picks its server by the routing rules, same as traffic',
       name: 'respectRulesDesc',
       desc: '',
       args: [],
@@ -10902,6 +11022,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Domains on this list skip FakeIP and connect with their real addresses (needed for LAN devices and some games)`
+  String get fakeipFilterDesc {
+    return Intl.message(
+      'Domains on this list skip FakeIP and connect with their real addresses (needed for LAN devices and some games)',
+      name: 'fakeipFilterDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `FakeIP TTL`
   String get fakeipTtl {
     return Intl.message('FakeIP TTL', name: 'fakeipTtl', desc: '', args: []);
@@ -10947,6 +11077,16 @@ class AppLocalizations {
     return Intl.message('Use Hosts', name: 'useHosts', desc: '', args: []);
   }
 
+
+  /// `When resolving, first check the fixed mappings in the hosts file`
+  String get useHostsDesc {
+    return Intl.message(
+      'When resolving, first check the fixed mappings in the hosts file',
+      name: 'useHostsDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Use System Hosts`
   String get useSystemHosts {
     return Intl.message(
@@ -10957,6 +11097,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Also apply the operating system's own hosts file`
+  String get useSystemHostsDesc {
+    return Intl.message(
+      'Also apply the operating system\'s own hosts file',
+      name: 'useSystemHostsDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Nameserver Policy`
   String get nameserverPolicy {
     return Intl.message(
@@ -11027,6 +11177,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `When on, DNS for direct traffic also picks its server by the routing rules`
+  String get directNameserverFollowPolicyDesc {
+    return Intl.message(
+      'When on, DNS for direct traffic also picks its server by the routing rules',
+      name: 'directNameserverFollowPolicyDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Fallback`
   String get fallback {
     return Intl.message('Fallback', name: 'fallback', desc: '', args: []);
@@ -11077,6 +11237,16 @@ class AppLocalizations {
     return Intl.message('GeoIP Code', name: 'geoipCode', desc: '', args: []);
   }
 
+
+  /// `Judge fallback DNS answers by IP location to guard against polluted results`
+  String get geoipFilterDesc {
+    return Intl.message(
+      'Judge fallback DNS answers by IP location to guard against polluted results',
+      name: 'geoipFilterDesc',
+      desc: '',
+      args: [],
+    );
+  }
   /// `Congestion Controller`
   String get congestionController {
     return Intl.message(

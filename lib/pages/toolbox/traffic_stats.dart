@@ -171,6 +171,7 @@ class _TrafficStatsPageState extends ConsumerState<TrafficStatsPage> {
         ),
       ],
       body: ToolPageBody(
+        intro: appLocalizations.trafficStatsDesc,
         children: [
           if (!enable) ...[
             ToolSurface(
@@ -1075,6 +1076,7 @@ class _TrafficStatsSettingsDialog extends ConsumerWidget {
         children: [
           ListItem.switchItem(
             title: Text(appLocalizations.trafficStatsEnable),
+            subtitle: Text(appLocalizations.trafficStatsEnableDesc),
             delegate: SwitchDelegate(
               value: props.enable,
               onChanged: (value) =>
