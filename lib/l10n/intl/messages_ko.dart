@@ -848,6 +848,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateSecret": MessageLookupByLibrary.simpleMessage("생성"),
     "geoBuiltInResources": MessageLookupByLibrary.simpleMessage("GEO 내장 리소스"),
     "geoData": MessageLookupByLibrary.simpleMessage("Geo 데이터"),
+    "geoDataNotDownloaded": MessageLookupByLibrary.simpleMessage("아직 다운로드되지 않음"),
+    "geoDataUpdate": MessageLookupByLibrary.simpleMessage("지리 데이터 업데이트"),
+    "geoDataUpdated": MessageLookupByLibrary.simpleMessage("지리 데이터가 업데이트되었습니다"),
+    "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("지리 데이터가 최신 상태입니다"),
+    "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("지리 데이터 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도하세요"),
+    "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("다운로드한 지리 데이터의 검증에 실패하여 삭제했습니다. 다시 시도하세요"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO 절전 메모리"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "메모리 사용량이 적은 GEO 로더 사용",

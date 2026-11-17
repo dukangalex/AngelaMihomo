@@ -2099,8 +2099,6 @@ class AppLocalizations {
     );
   }
 
-
-
   /// `Only English letters, digits and symbols are supported`
   String get backupPasswordTip {
     return Intl.message(
@@ -2244,6 +2242,66 @@ class AppLocalizations {
   /// `GeoData`
   String get geoData {
     return Intl.message('GeoData', name: 'geoData', desc: '', args: []);
+  }
+
+  /// `Not downloaded yet`
+  String get geoDataNotDownloaded {
+    return Intl.message(
+      'Not downloaded yet',
+      name: 'geoDataNotDownloaded',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update geo data`
+  String get geoDataUpdate {
+    return Intl.message(
+      'Update geo data',
+      name: 'geoDataUpdate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo data updated`
+  String get geoDataUpdated {
+    return Intl.message(
+      'Geo data updated',
+      name: 'geoDataUpdated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo data is up to date`
+  String get geoDataUpToDate {
+    return Intl.message(
+      'Geo data is up to date',
+      name: 'geoDataUpToDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Geo data update failed. Check your network and try again.`
+  String get geoDataUpdateFailed {
+    return Intl.message(
+      'Geo data update failed. Check your network and try again.',
+      name: 'geoDataUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The downloaded geo data failed verification and was discarded. Please try again.`
+  String get geoDataVerifyFailed {
+    return Intl.message(
+      'The downloaded geo data failed verification and was discarded. Please try again.',
+      name: 'geoDataVerifyFailed',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `External Resources`
@@ -2608,12 +2666,7 @@ class AppLocalizations {
 
   /// `Current`
   String get profileCurrent {
-    return Intl.message(
-      'Current',
-      name: 'profileCurrent',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Current', name: 'profileCurrent', desc: '', args: []);
   }
 
   /// `Current node available`
@@ -9967,7 +10020,12 @@ class AppLocalizations {
 
   /// `Aphrodite`
   String get guardianAphrodite {
-    return Intl.message('Aphrodite', name: 'guardianAphrodite', desc: '', args: []);
+    return Intl.message(
+      'Aphrodite',
+      name: 'guardianAphrodite',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Hermes`
@@ -10012,7 +10070,12 @@ class AppLocalizations {
 
   /// `Poseidon`
   String get guardianPoseidon {
-    return Intl.message('Poseidon', name: 'guardianPoseidon', desc: '', args: []);
+    return Intl.message(
+      'Poseidon',
+      name: 'guardianPoseidon',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `{latin} · Guardian of {sign}`

@@ -38,6 +38,7 @@ import 'common/archive.dart'
 import 'common/common.dart';
 import 'common/dav_client.dart';
 import 'common/release_updates.dart';
+import 'common/geo_data.dart';
 import 'common/update_installer.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
@@ -409,8 +410,7 @@ class AppController {
     bool Function(T)? accepted,
   }) async {
     final rebuild = system.isAndroid && await _isServiceRunning();
-    if (system.isAndroid &&
-        (rebuild || globalState.vpnTransitionUnconfirmed)) {
+    if (system.isAndroid && (rebuild || globalState.vpnTransitionUnconfirmed)) {
       await globalState.handleStop();
     }
     final value = await configure();
@@ -473,7 +473,7 @@ class AppController {
       appEventLog.record(
         'core',
         'scripted setup config failed for profile '
-        '${currentProfile.label ?? currentProfile.id}: $message',
+            '${currentProfile.label ?? currentProfile.id}: $message',
       );
       globalState.showNotifier(
         '${appLocalizations.profileParseErrorDesc}: ${redactSensitiveText(message)}',
@@ -494,7 +494,7 @@ class AppController {
       appEventLog.record(
         'core',
         'setup config failed for profile '
-        '${currentProfile.label ?? currentProfile.id}: $message',
+            '${currentProfile.label ?? currentProfile.id}: $message',
       );
       throw message;
     }
@@ -1235,7 +1235,7 @@ class AppController {
           appEventLog.record(
             'profile-switch',
             'switch to profile $requestedProfileId failed (full rebuild): '
-            '${err.formatErrorLog}',
+                '${err.formatErrorLog}',
           );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
@@ -1308,7 +1308,7 @@ class AppController {
           appEventLog.record(
             'profile-switch',
             'switch to profile $requestedProfileId failed (hot path): '
-            '${err.formatErrorLog}',
+                '${err.formatErrorLog}',
           );
           final fallback = _rollbackProfileSwitch(
             profileChanged: profileChanged,
@@ -1389,7 +1389,7 @@ class AppController {
         appEventLog.record(
           'profile-update',
           'auto update failed for profile ${profile.label ?? profile.id}: '
-          '${e.formatErrorLog}',
+              '${e.formatErrorLog}',
         );
         failures.add((profile.label ?? profile.id, e));
       }
@@ -1405,7 +1405,8 @@ class AppController {
     final (name, error) = failures.first;
     var text = profileUpdateFailureNotice(name, error, automatic: true);
     if (failures.length > 1) {
-      text = '$text ${appLocalizations.profileAutoUpdateFailedMore(failures.length - 1)}';
+      text =
+          '$text ${appLocalizations.profileAutoUpdateFailedMore(failures.length - 1)}';
     }
     globalState.showNotifier(text);
   }
@@ -1430,7 +1431,7 @@ class AppController {
           appEventLog.record(
             'profile-update',
             'missed update failed for profile ${profile.label ?? profile.id}: '
-            '${e.formatErrorLog}',
+                '${e.formatErrorLog}',
           );
           failures.add((profile.label ?? profile.id, e));
         }
@@ -1801,6 +1802,12 @@ class AppController {
     await prefs?.setInt('last_check_update_time', now);
   }
 
+  /// T194: manual geo data refresh from the About page. The outcome
+  /// drives the feedback shown to the user.
+  Future<GeoUpdateOutcome> updateGeoData() {
+    return GeoDataService().updateNow();
+  }
+
   Future<void> checkUpdateResultHandle({
     Map<String, dynamic>? data,
     bool handleError = false,
@@ -1896,8 +1903,9 @@ class AppController {
                 const SizedBox(height: 16),
                 ValueListenableBuilder<double?>(
                   valueListenable: progress,
-                  builder: (context, value, _) =>
-                      LinearProgressIndicator(value: isVerifying ? null : value),
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: isVerifying ? null : value,
+                  ),
                 ),
               ],
             ),
@@ -2112,6 +2120,9 @@ class AppController {
       autoUpdateProfiles();
     });
     autoCheckUpdate();
+    // T194: pull the city database on first launch (silent; a failed
+    // attempt simply retries on the next launch).
+    unawaited(GeoDataService().ensureData());
 
     final isWindowVisible = await window?.isVisible ?? false;
     if (isWindowVisible) {

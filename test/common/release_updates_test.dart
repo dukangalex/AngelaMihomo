@@ -244,4 +244,76 @@ void main() {
       expect(updates.assetFor(release()), isNull);
     });
   });
+
+  group('assetByName (T194 geo data)', () {
+    const geoRepo = 'dukangalex/angelamihomo-geo';
+    const geoTag = 'v2026.11.1';
+    late ReleaseUpdates geoUpdates;
+    setUp(() {
+      geoUpdates = ReleaseUpdates(repository: geoRepo, client: Dio());
+    });
+
+    Map<String, dynamic> geoRelease({
+      String name = 'amcity.bin.gz',
+      String? url,
+      Object? digest = 'sha256:abc123',
+    }) => {
+      'tag_name': geoTag,
+      'assets': [
+        {
+          'name': name,
+          'browser_download_url':
+              url ??
+              'https://github.com/$geoRepo/releases/download/$geoTag/$name',
+          if (digest != null) 'digest': digest,
+          'size': 42,
+        },
+      ],
+    };
+
+    test('returns the exact-name asset with its digest', () {
+      final asset = geoUpdates.assetByName(geoRelease(), name: 'amcity.bin.gz');
+      expect(asset, isNotNull);
+      expect(asset!.name, 'amcity.bin.gz');
+      expect(asset.sha256, 'abc123');
+      expect(asset.size, 42);
+    });
+
+    test('rejects a download URL outside this repo and tag', () {
+      final asset = geoUpdates.assetByName(
+        geoRelease(
+          url:
+              'https://github.com/other/repo/releases/download/$geoTag/amcity.bin.gz',
+        ),
+        name: 'amcity.bin.gz',
+      );
+      expect(asset, isNull);
+    });
+
+    test('returns null when the asset is absent or duplicated', () {
+      expect(
+        geoUpdates.assetByName(
+          geoRelease(name: 'other.bin'),
+          name: 'amcity.bin.gz',
+        ),
+        isNull,
+      );
+      final dup = geoRelease();
+      (dup['assets'] as List).add({
+        'name': 'amcity.bin.gz',
+        'browser_download_url':
+            'https://github.com/$geoRepo/releases/download/$geoTag/amcity.bin.gz',
+      });
+      expect(geoUpdates.assetByName(dup, name: 'amcity.bin.gz'), isNull);
+    });
+
+    test('asset without a digest still resolves, sha256 null', () {
+      final asset = geoUpdates.assetByName(
+        geoRelease(digest: null),
+        name: 'amcity.bin.gz',
+      );
+      expect(asset, isNotNull);
+      expect(asset!.sha256, isNull);
+    });
+  });
 }

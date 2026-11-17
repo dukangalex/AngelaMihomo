@@ -986,6 +986,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "GEO Built-in Resources",
     ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
+    "geoDataNotDownloaded": MessageLookupByLibrary.simpleMessage("Not downloaded yet"),
+    "geoDataUpdate": MessageLookupByLibrary.simpleMessage("Update geo data"),
+    "geoDataUpdated": MessageLookupByLibrary.simpleMessage("Geo data updated"),
+    "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("Geo data is up to date"),
+    "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("Geo data update failed. Check your network and try again."),
+    "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("The downloaded geo data failed verification and was discarded. Please try again."),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "Use GEO low memory loader",

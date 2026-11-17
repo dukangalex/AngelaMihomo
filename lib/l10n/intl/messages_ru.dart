@@ -1019,6 +1019,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Встроенные ресурсы GEO",
     ),
     "geoData": MessageLookupByLibrary.simpleMessage("Геоданные"),
+    "geoDataNotDownloaded": MessageLookupByLibrary.simpleMessage("Ещё не загружено"),
+    "geoDataUpdate": MessageLookupByLibrary.simpleMessage("Обновить геоданные"),
+    "geoDataUpdated": MessageLookupByLibrary.simpleMessage("Геоданные обновлены"),
+    "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("Геоданные актуальны"),
+    "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("Не удалось обновить геоданные. Проверьте сеть и повторите попытку"),
+    "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("Загруженные геоданные не прошли проверку и были удалены. Повторите попытку"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage(
       "Экономия памяти GEO",
     ),

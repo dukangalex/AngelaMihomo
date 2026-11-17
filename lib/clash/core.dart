@@ -512,9 +512,16 @@ class ClashCore {
       if (countryCode.isEmpty) return null;
       final asnNumber = decoded['asn']?.toString() ?? '';
       final org = decoded['org']?.toString() ?? '';
+      // T194: region/city from the project-hosted city database; the
+      // core only sends them when its country agrees with the kernel
+      // country database, so they are safe to surface as-is.
+      final region = decoded['region']?.toString() ?? '';
+      final city = decoded['city']?.toString() ?? '';
       return IpInfo(
         ip: ip,
         countryCode: countryCode,
+        province: region.isEmpty ? null : region,
+        city: city.isEmpty ? null : city,
         asn: asnNumber.isEmpty ? null : 'AS$asnNumber',
         asName: org.isEmpty ? null : org,
         isp: org.isEmpty ? null : org,

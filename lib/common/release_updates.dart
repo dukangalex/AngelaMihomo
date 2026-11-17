@@ -70,7 +70,8 @@ class ReleaseUpdates {
   }
 
   String downloadUrl(Map<String, dynamic> release, {String assetSuffix = ''}) {
-    return assetFor(release, assetSuffix: assetSuffix)?.url ?? releasesUrlFor(release);
+    return assetFor(release, assetSuffix: assetSuffix)?.url ??
+        releasesUrlFor(release);
   }
 
   String releasesUrlFor(Map<String, dynamic> release) {
@@ -107,10 +108,37 @@ class ReleaseUpdates {
         .toList();
     if (matches.length != 1) return null;
     final asset = matches.single;
+    return _validatedAsset(tag, asset);
+  }
+
+  /// AngelaMihomo (chain.26, T194): the validated asset with exactly
+  /// this [name] — for companion repositories whose assets do not
+  /// follow the app package naming scheme (the geo data repository
+  /// ships a single amcity.bin.gz). Same strict URL and digest
+  /// handling as [assetFor].
+  ReleaseAsset? assetByName(
+    Map<String, dynamic> release, {
+    required String name,
+  }) {
+    final tag = release['tag_name'];
+    if (tag is! String || tag.isEmpty) return null;
+    final assets = release['assets'];
+    if (assets is! List) return null;
+    final matches = assets
+        .whereType<Map>()
+        .where((asset) => asset['name'] == name)
+        .toList();
+    if (matches.length != 1) return null;
+    return _validatedAsset(tag, matches.single);
+  }
+
+  /// Shared tail of [assetFor] and [assetByName]: only accept the
+  /// asset when its download URL is exactly this repository's URL for
+  /// this tag and name, and surface the digest GitHub reports.
+  ReleaseAsset? _validatedAsset(String tag, Map asset) {
     final url = asset['browser_download_url'];
     if (url is! String) return null;
     final uri = Uri.tryParse(url);
-    // Only open an exact asset from this repository and this release tag.
     final expected = Uri.parse(
       'https://github.com/$repository/releases/download/${Uri.encodeComponent(tag)}/${Uri.encodeComponent(asset['name'] as String)}',
     );

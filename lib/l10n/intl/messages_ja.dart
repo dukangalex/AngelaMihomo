@@ -835,6 +835,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateSecret": MessageLookupByLibrary.simpleMessage("生成"),
     "geoBuiltInResources": MessageLookupByLibrary.simpleMessage("GEO 組み込みリソース"),
     "geoData": MessageLookupByLibrary.simpleMessage("Geoデータ"),
+    "geoDataNotDownloaded": MessageLookupByLibrary.simpleMessage("未ダウンロード"),
+    "geoDataUpdate": MessageLookupByLibrary.simpleMessage("地理データを更新"),
+    "geoDataUpdated": MessageLookupByLibrary.simpleMessage("地理データを更新しました"),
+    "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("地理データは最新です"),
+    "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("地理データの更新に失敗しました。ネットワークを確認して再試行してください"),
+    "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("ダウンロードした地理データの検証に失敗したため破棄しました。再試行してください"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO省メモリ"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "メモリ消費を抑えたGEOローダーを使用",

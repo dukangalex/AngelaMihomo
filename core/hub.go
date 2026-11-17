@@ -783,6 +783,8 @@ type ipGeoResult struct {
 	CountryCode string `json:"countryCode"`
 	ASN         string `json:"asn"`
 	Org         string `json:"org"`
+	Region      string `json:"region"`
+	City        string `json:"city"`
 }
 
 // AngelaMihomo (chain.26, T100): all IP geolocation enrichment is
@@ -808,6 +810,18 @@ func handleGetIpGeo(ip string, fn func(value string)) {
 			if asn, org := mmdb.ASNInstance().LookupASN(parsed); asn != "" && asn != "0" {
 				result.ASN = asn
 				result.Org = org
+			}
+		}
+		// AngelaMihomo (chain.26, T194): city/region come from the
+		// project-hosted city database (amcity.bin in the home dir).
+		// The kernel's country database stays authoritative: the city
+		// is only adopted when both sources agree on the country, so a
+		// stale or mismatched city cell can never move an IP across
+		// borders.
+		if result.CountryCode != "" {
+			if cc, region, city, ok := lookupCity(parsed); ok && cc == result.CountryCode {
+				result.Region = region
+				result.City = city
 			}
 		}
 		data, err := json.Marshal(result)
