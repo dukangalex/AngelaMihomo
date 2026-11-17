@@ -356,6 +356,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateVerifying": MessageLookupByLibrary.simpleMessage("ダウンロードしたファイルを検証中"),
     "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("ダウンロードしたファイルが検証に失敗したため削除しました。もう一度ダウンロードしてください。繰り返し失敗する場合は、GitHub のリリースページからパッケージを取得してください。"),
     "updateDownloadFailedReason": m87,
+    "solidBackground": MessageLookupByLibrary.simpleMessage("単色背景"),
+    "solidBackgroundDesc": MessageLookupByLibrary.simpleMessage("選択中のテーマの基調色のみ。星図・グロー・守護神なし"),
     "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("バックアップ成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("カーネル設定"),

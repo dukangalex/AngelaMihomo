@@ -243,9 +243,31 @@
   "updateVerifying": "در حال بررسی فایل دانلودشده",
   "updateVerifyFailed": "فایل دانلودشده در بررسی رد شد و حذف شد. دوباره دانلود کنید؛ اگر باز هم نشد، بسته را از صفحه انتشار GitHub بگیرید.",
   "updateDownloadFailedReason": "دانلود به‌روزرسانی ناموفق بود. دلیل: {reason}. چه باید کرد: شبکه را بررسی کنید و از بخش بررسی به‌روزرسانی دوباره تلاش کنید؛ اگر باز هم نشد، بسته را از صفحه انتشار GitHub دانلود کنید.",
-  "@updateDownloadFailedReason": {"placeholders": {"reason": {"type": "String"}}},
+  "@updateDownloadFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "updateInstallLaunchFailed": "نصب‌کننده اجرا نشد. دلیل: {reason}. چه باید کرد: فایل دانلودشده را خودتان از پوشه حافظه پنهان برنامه باز کنید، یا بسته را از صفحه انتشار GitHub دانلود و دستی نصب کنید.",
-  "@updateInstallLaunchFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "solidBackground": "پس‌زمینه ساده",
+  "@solidBackground": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "solidBackgroundDesc": "فقط رنگ پایه تم انتخاب‌شده — بدون نقشه ستاره، هاله نور و نگهبان",
+  "@solidBackgroundDesc": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "@updateInstallLaunchFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "backupPasswordTip": "فقط حروف انگلیسی، اعداد و نمادها پشتیبانی می‌شوند",
   "backupEncryptedTip": "پشتیبان با AES-256 رمزگذاری شد",
   "recoveryDecryptedTip": "با رمز عبور فعلی رمزگشایی و بازیابی شد",

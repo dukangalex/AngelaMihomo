@@ -80,24 +80,163 @@ class _ZodiacThemeItem extends ConsumerWidget {
     final selectedId = ref.watch(
       themeSettingProvider.select((state) => state.zodiacTheme),
     );
+    final solidBackground = ref.watch(
+      themeSettingProvider.select((state) => state.solidBackground),
+    );
     final selected = resolveZodiacTheme(selectedId);
     return ItemCard(
       info: Info(label: appLocalizations.theme, iconData: Icons.auto_awesome),
       child: Column(
         children: [
+          _SolidBackgroundRow(
+            isSelected: solidBackground,
+            baseColor: selected.variant.backgroundBase,
+            onTap: () {
+              ref
+                  .read(themeSettingProvider.notifier)
+                  .updateState((state) => state.copyWith(solidBackground: true));
+            },
+          ),
           for (final theme in zodiacThemes)
             _ZodiacThemeRow(
               theme: theme,
-              isSelected: theme.id == selected.id,
+              isSelected: !solidBackground && theme.id == selected.id,
               onTap: () {
                 ref
                     .read(themeSettingProvider.notifier)
                     .updateState(
-                      (state) => state.copyWith(zodiacTheme: theme.id),
+                      (state) => state.copyWith(
+                        zodiacTheme: theme.id,
+                        solidBackground: false,
+                      ),
                     );
               },
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The solid background option (T178), listed as a peer of the twelve
+/// themes: selecting it keeps the active theme's colors but paints
+/// every page background as the plain base color — no light field,
+/// star chart or guardian. Selecting any theme turns it back off.
+class _SolidBackgroundRow extends StatelessWidget {
+  final bool isSelected;
+  final Color baseColor;
+  final VoidCallback onTap;
+
+  const _SolidBackgroundRow({
+    required this.isSelected,
+    required this.baseColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final variant = context.zodiac?.variant;
+    final selectedPaint = variant?.selected;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    color:
+                        variant?.surfaceVariant ??
+                        colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(16),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  if (isSelected &&
+                      selectedPaint != null &&
+                      !selectedPaint.isNone) ...[
+                    Container(
+                      width: 4,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: selectedPaint.isGradient
+                            ? LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: selectedPaint.stops!,
+                              )
+                            : null,
+                        color: selectedPaint.isGradient
+                            ? null
+                            : selectedPaint.solidColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  SizedBox(
+                    width: 28,
+                    child: Center(
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: baseColor,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          appLocalizations.solidBackground,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          appLocalizations.solidBackgroundDesc,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

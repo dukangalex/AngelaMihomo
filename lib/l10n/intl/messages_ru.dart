@@ -432,6 +432,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateVerifying": MessageLookupByLibrary.simpleMessage("Проверка загруженного файла"),
     "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("Загруженный файл не прошёл проверку и был удалён. Скачайте его снова; если ошибка повторяется, возьмите пакет со страницы релизов GitHub."),
     "updateDownloadFailedReason": m87,
+    "solidBackground": MessageLookupByLibrary.simpleMessage("Однотонный фон"),
+    "solidBackgroundDesc": MessageLookupByLibrary.simpleMessage("Только базовый цвет выбранной темы — без звёздной карты, свечения и хранителя"),
     "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование успешно",

@@ -337,6 +337,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateVerifying": MessageLookupByLibrary.simpleMessage("正在校驗下載檔案"),
     "updateVerifyFailed": MessageLookupByLibrary.simpleMessage("下載檔案校驗未通過，已刪除。請重新下載；若一直失敗，改從 GitHub 發布頁取得安裝包。"),
     "updateDownloadFailedReason": m87,
+    "solidBackground": MessageLookupByLibrary.simpleMessage("純色背景"),
+    "solidBackgroundDesc": MessageLookupByLibrary.simpleMessage("只用所選主題的底色，沒有星圖、光暈和守護神"),
     "updateInstallLaunchFailed": m88,
     "backupSuccess": MessageLookupByLibrary.simpleMessage("備份成功"),
     "basicConfig": MessageLookupByLibrary.simpleMessage("內核配置"),

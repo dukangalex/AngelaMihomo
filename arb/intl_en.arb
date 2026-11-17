@@ -243,9 +243,31 @@
   "updateVerifying": "Verifying the downloaded file",
   "updateVerifyFailed": "The downloaded file failed verification and was deleted. Download it again; if it keeps failing, get the package from the GitHub release page.",
   "updateDownloadFailedReason": "The update download failed. Reason: {reason}. What to do: check the network, then try again from Check for updates; if it keeps failing, download the package from the GitHub release page instead.",
-  "@updateDownloadFailedReason": {"placeholders": {"reason": {"type": "String"}}},
+  "@updateDownloadFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "updateInstallLaunchFailed": "The installer could not be started. Reason: {reason}. What to do: open the downloaded file yourself from the app cache folder, or download the package from the GitHub release page and install it manually.",
-  "@updateInstallLaunchFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "solidBackground": "Solid background",
+  "@solidBackground": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "solidBackgroundDesc": "Only the selected theme's base color — no star chart, glow or guardian",
+  "@solidBackgroundDesc": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "@updateInstallLaunchFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "backupPasswordTip": "Only English letters, digits and symbols are supported",
   "backupEncryptedTip": "Backup encrypted with AES-256",
   "recoveryDecryptedTip": "Decrypted and restored with the current password",

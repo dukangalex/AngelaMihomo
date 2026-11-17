@@ -243,9 +243,31 @@
   "updateVerifying": "Проверка загруженного файла",
   "updateVerifyFailed": "Загруженный файл не прошёл проверку и был удалён. Скачайте его снова; если ошибка повторяется, возьмите пакет со страницы релизов GitHub.",
   "updateDownloadFailedReason": "Не удалось загрузить обновление. Причина: {reason}. Что делать: проверьте сеть и повторите из раздела проверки обновлений; если снова не получится, скачайте пакет со страницы релизов GitHub.",
-  "@updateDownloadFailedReason": {"placeholders": {"reason": {"type": "String"}}},
+  "@updateDownloadFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "updateInstallLaunchFailed": "Не удалось запустить установщик. Причина: {reason}. Что делать: откройте загруженный файл сами из папки кэша приложения или скачайте пакет со страницы релизов GitHub и установите вручную.",
-  "@updateInstallLaunchFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "solidBackground": "Однотонный фон",
+  "@solidBackground": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "solidBackgroundDesc": "Только базовый цвет выбранной темы — без звёздной карты, свечения и хранителя",
+  "@solidBackgroundDesc": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "@updateInstallLaunchFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "backupPasswordTip": "Поддерживаются только латинские буквы, цифры и символы",
   "backupEncryptedTip": "Резервная копия зашифрована AES-256",
   "recoveryDecryptedTip": "Расшифровано и восстановлено с текущим паролем",

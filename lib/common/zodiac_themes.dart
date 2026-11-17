@@ -275,10 +275,16 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
   final ZodiacSkeleton skeleton;
   final ZodiacVariant variant;
 
+  /// Solid background mode (T178): the backdrop paints only the
+  /// variant's base color. Carried on the extension so the backdrop
+  /// stays a pure function of the active theme data.
+  final bool solidBackground;
+
   const ZodiacThemeExtension({
     required this.themeId,
     required this.skeleton,
     required this.variant,
+    this.solidBackground = false,
   });
 
   factory ZodiacThemeExtension.of(ZodiacThemeDef def) {
@@ -301,11 +307,13 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     String? themeId,
     ZodiacSkeleton? skeleton,
     ZodiacVariant? variant,
+    bool? solidBackground,
   }) {
     return ZodiacThemeExtension(
       themeId: themeId ?? this.themeId,
       skeleton: skeleton ?? this.skeleton,
       variant: variant ?? this.variant,
+      solidBackground: solidBackground ?? this.solidBackground,
     );
   }
 
@@ -435,6 +443,13 @@ class ZodiacBackdrop extends StatelessWidget {
     final zodiac = context.zodiac;
     if (zodiac == null) return const SizedBox.expand();
     final variant = zodiac.variant;
+    // T178 solid background mode: the plain base color and nothing
+    // else — no light field, no constellation, no guardian.
+    if (zodiac.solidBackground) {
+      return DecoratedBox(
+        decoration: BoxDecoration(color: variant.backgroundBase),
+      );
+    }
     final background = variant.background;
     final def = resolveZodiacTheme(zodiac.themeId);
     return Stack(

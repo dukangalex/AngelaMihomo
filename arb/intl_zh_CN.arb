@@ -243,9 +243,31 @@
   "updateVerifying": "正在校验下载文件",
   "updateVerifyFailed": "下载文件校验未通过，已删除。请重新下载；若一直失败，改从 GitHub 发布页获取安装包。",
   "updateDownloadFailedReason": "更新下载失败。原因：{reason}。怎么办：检查网络后，在检查更新里重试；若一直失败，改从 GitHub 发布页下载安装包。",
-  "@updateDownloadFailedReason": {"placeholders": {"reason": {"type": "String"}}},
+  "@updateDownloadFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "updateInstallLaunchFailed": "安装程序未能启动。原因：{reason}。怎么办：到应用缓存目录里手动打开已下载的文件，或从 GitHub 发布页下载安装包手动安装。",
-  "@updateInstallLaunchFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "solidBackground": "纯色背景",
+  "@solidBackground": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "solidBackgroundDesc": "只用所选主题的底色，没有星图、光晕和守护神",
+  "@solidBackgroundDesc": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "@updateInstallLaunchFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "backupPasswordTip": "仅支持英文字母、数字和符号",
   "backupEncryptedTip": "已使用 AES-256 加密备份",
   "recoveryDecryptedTip": "已使用当前密码解密恢复",

@@ -243,9 +243,31 @@
   "updateVerifying": "ダウンロードしたファイルを検証中",
   "updateVerifyFailed": "ダウンロードしたファイルが検証に失敗したため削除しました。もう一度ダウンロードしてください。繰り返し失敗する場合は、GitHub のリリースページからパッケージを取得してください。",
   "updateDownloadFailedReason": "アップデートのダウンロードに失敗しました。理由：{reason}。対処：ネットワークを確認し、「アップデートを確認」から再試行してください。繰り返し失敗する場合は、GitHub のリリースページからパッケージをダウンロードしてください。",
-  "@updateDownloadFailedReason": {"placeholders": {"reason": {"type": "String"}}},
+  "@updateDownloadFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "updateInstallLaunchFailed": "インストーラーを起動できませんでした。理由：{reason}。対処：アプリのキャッシュフォルダーからダウンロードしたファイルを自分で開くか、GitHub のリリースページからパッケージをダウンロードして手動でインストールしてください。",
-  "@updateInstallLaunchFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "solidBackground": "単色背景",
+  "@solidBackground": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "solidBackgroundDesc": "選択中のテーマの基調色のみ。星図・グロー・守護神なし",
+  "@solidBackgroundDesc": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "@updateInstallLaunchFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "backupPasswordTip": "英字、数字、記号のみ使用できます",
   "backupEncryptedTip": "AES-256 でバックアップを暗号化しました",
   "recoveryDecryptedTip": "現在のパスワードで復号して復元しました",

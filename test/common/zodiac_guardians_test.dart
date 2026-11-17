@@ -87,18 +87,23 @@ void main() {
     WidgetTester tester, {
     PageLabel label = PageLabel.dashboard,
     bool showGuardian = true,
+    bool solid = false,
   }) async {
     await AppLocalizations.load(
       const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN'),
     );
     final theme = ThemeData(
-      extensions: [ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'))],
+      extensions: [
+        ZodiacThemeExtension.of(
+          resolveZodiacTheme('sagittarius'),
+        ).copyWith(solidBackground: solid),
+      ],
     );
     await tester.pumpWidget(
       ProviderScope(
         // A fresh scope per pump: an existing scope keeps its first
         // overrides, so re-pumping with another label needs a new key.
-        key: ValueKey((label, showGuardian)),
+        key: ValueKey((label, showGuardian, solid)),
         overrides: [
           currentPageLabelProvider.overrideWith(
             () => _FixedPageLabel(label),
@@ -184,6 +189,37 @@ void main() {
     expect(find.byType(CustomPaint), findsWidgets);
     expect(find.byType(Image), findsNothing);
     expect(find.text('宙斯'), findsNothing);
+  });
+
+  testWidgets('solid background mode paints only the base color', (
+    tester,
+  ) async {
+    await pumpBackdrop(tester, solid: true);
+    // No light field layers at all: no constellation paint, no
+    // guardian figure, no name plate — one flat base-color box.
+    expect(
+      find.descendant(
+        of: find.byType(ZodiacBackdrop),
+        matching: find.byType(CustomPaint),
+      ),
+      findsNothing,
+    );
+    expect(find.byType(Image), findsNothing);
+    expect(find.byType(ZodiacGuardianPlate), findsNothing);
+    expect(find.text('宙斯'), findsNothing);
+    final boxes = tester.widgetList<DecoratedBox>(
+      find.descendant(
+        of: find.byType(ZodiacBackdrop),
+        matching: find.byType(DecoratedBox),
+      ),
+    );
+    expect(boxes, hasLength(1));
+    final decoration = boxes.single.decoration as BoxDecoration;
+    expect(
+      decoration.color,
+      resolveZodiacTheme('sagittarius').variant.backgroundBase,
+    );
+    expect(decoration.gradient, isNull);
   });
 
   test('page variants pose the same guardian differently per page', () {
