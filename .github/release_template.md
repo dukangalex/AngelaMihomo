@@ -1,25 +1,26 @@
 # Angela Mihomo 正式版本发布 / Stable Release
 
-### ⚠️ 升级必读：应用标识已变更，先导出再安装 / Important: new app identity — export before installing
+### 🖥️ 本版专项：Windows 安装焕新 / This release: a clean Windows install experience
 
-本版起应用标识改为自有的 app.angelamihomo，新版会作为一个全新的应用安装，不会覆盖旧版。升级步骤：① 在旧版中导出配置（备份与恢复）② 安装本版 ③ 在新版中导入配置 ④ 确认一切正常后再卸载旧版。这是一次性迁移，之后的版本恢复覆盖升级。
-(From this release on, the app uses its own identity, app.angelamihomo, and installs as a new app instead of updating the old one. To upgrade: export your configuration from the old app, install this release, import the configuration, and remove the old app only after everything checks out. This is a one-time migration; later releases update in place again.)
+Windows 安装器此前会沿用旧版的安装目录（装过 Bettbox 时代版本的用户会被装回 Bettbox 文件夹）。本版起：安装时弹出路径选择页、默认装入 Angela Mihomo 目录、升级安装自动清理旧 Bettbox 助手服务与旧安装目录（配置与数据不受影响）；静默卸载不再被数据确认弹窗卡住。应用功能与 chain.26 相同，内核保持 Mihomo v1.19.34。
+(Windows installers used to inherit the previous install folder, which sent users coming from Bettbox-era builds back into a Bettbox directory. From this release: the installer always shows the destination page, defaults to an Angela Mihomo folder, and cleans up the legacy Bettbox helper service and old install directory on upgrade — configuration and data are untouched. Silent uninstalls no longer hang on the data-removal prompt. App features are unchanged from chain.26; the core stays at Mihomo v1.19.34.)
+
+> 仍在 chain.25 或更早版本的用户请注意 chain.26 的一次性迁移：应用标识已改为 app.angelamihomo，升级前请先在旧版导出配置、装新版后导入。详见 chain.26 发布说明。
+> (Still on chain.25 or earlier? See the chain.26 release notes for the one-time app-identity migration: export your configuration before upgrading and import it afterwards.)
 
 ### ✨ 本版亮点 / What's new in this build
 
-- **星辰大海主题家族 / The Starry Seas theme family**：两大系列共 27 套主题——十二星座（每套带本星座守护神与名牌，守护神仰望顶部星图）与人类深空探索（从东方一号到 DART 共 15 件深空事件，各带事件名牌）；默认主题射手座·靛夜飞箭
-  (Two series, 27 themes in total: the twelve zodiac signs, each with its guardian and nameplate beneath its own star chart, and fifteen landmark events of human deep-space exploration from Vostok 1 to DART, each with its event nameplate. Default: Sagittarius, Indigo Night Arrow)
-- **隐私本地化 / Privacy, kept on-device**：地理信息全部本地查询（城市库经项目自有数据仓分发、校验后落盘本地查询），移除全部在线地理问询；图标改走项目自有仓；WebDAV 凭据改为 AES-256-GCM 加密存储
-  (All geo lookups are local now: the city database ships through the project's own data repository, is verified and stored on-device, and every online geo query is gone. Icons come from the project's own repository, and WebDAV credentials are stored with AES-256-GCM encryption)
-- **应用内更新 / In-app update**：发现新版后可在应用内下载，校验 SHA-256 后直接调起安装，失败自动回落浏览器
-  (New releases can be downloaded inside the app, verified against their SHA-256, and installed directly; any failure falls back to the browser)
-- **每个选项都有说明 / Every option explains itself**：全 App 选项补齐通俗说明，工具箱各页加页内说明；选项小字常亮易读；失败提示逐条写明原因与解决办法
-  (Every option across the app now carries a plain-language explanation, the toolbox pages explain themselves, option captions stay lit and readable, and failure notices state the cause and the fix)
-- **界面与手感 / Interface touches**：配置页添加按钮移入顶栏；测速提示统一 5 秒消失；链式代理切换去掉迟滞；城市库改内存映射，内存占用更低
-  (The add button moved into the profiles top bar, speed-test notices dismiss after five seconds, chain-proxy switching lost its lag, and the city database is memory-mapped to cut memory use)
-- **沿用并完善 / Carried forward**：首页合并卡与提示灯、开启自动测速、配置卡状态标记、按配置文件链式代理、系统显式规则三模式生效、DNS 悬空引用热修与存量自动迁移
-  (The merged home card and status light, auto speed test on start, profile card badges, per-profile chain proxy, system-explicit rules in all three modes, and the DNS dangling-reference hotfix with automatic migration of stored settings)
-- **内核 / Core**：Mihomo v1.19.34
+- **安装路径自由选 / Choose your install path**：安装向导必定显示目标目录页，预填 Angela Mihomo 默认目录，可自由更改到任何位置
+  (The destination page always appears, pre-filled with the Angela Mihomo default; pick any folder you like)
+- **旧残留自动清理 / Legacy cleanup**：升级安装自动删除旧的 BettboxHelperService 服务注册与旧安装目录，不再留下 Bettbox 痕迹
+  (Upgrades remove the stale BettboxHelperService registration and the old install directory automatically)
+- **静默卸载不卡住 / Silent uninstall never hangs**：非交互卸载默认保留用户数据，不再等待确认弹窗
+  (Non-interactive uninstalls keep user data by default instead of waiting on a prompt)
+- **回环工具自有化 / Loopback tool renamed**：WindowsLoopbackManager 更名为 AngelaMihomoLoopbackManager
+  (WindowsLoopbackManager is now AngelaMihomoLoopbackManager)
+- **构建流水线加固 / Pipeline hardening**：全部第三方 GitHub Action 固定到提交哈希，工作流令牌权限收紧到最小
+  (Every third-party GitHub Action is pinned to a commit hash and workflow token permissions are reduced to the minimum)
+- **内核 / Core**：Mihomo v1.19.34（与 chain.26 相同，本版为安装与维护专项）
 
 ### ✍️ 签名说明 / Signing
 

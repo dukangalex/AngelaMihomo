@@ -7,6 +7,11 @@ AppPublisherURL={{PUBLISHER_URL}}
 AppSupportURL={{PUBLISHER_URL}}
 AppUpdatesURL={{PUBLISHER_URL}}
 DefaultDirName={{INSTALL_DIR_NAME}}
+; Never silently inherit a previous install location (older builds lived
+; under a Bettbox folder): always show the destination page pre-filled
+; with the AngelaMihomo default so the user chooses the path.
+UsePreviousAppDir=no
+DisableDirPage=no
 DisableProgramGroupPage=yes
 OutputDir=.
 OutputBaseFilename={{OUTPUT_BASE_FILENAME}}
@@ -25,6 +30,7 @@ SetupLogging=yes
 [Code]
 var
   ShouldCleanUserData: Boolean;
+  PreviousAppDir: String;
 
 function IsProcessRunning(ProcessName: String): Boolean;
 var
@@ -285,15 +291,59 @@ begin
   end;
 end;
 
+procedure RemoveLegacyHelperService;
+var
+  ResultCode: Integer;
+begin
+  { Pre-rename builds registered a BettboxHelperService; drop that stale
+    registration whenever it is still around. }
+  Exec('sc', 'stop BettboxHelperService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Exec('sc', 'delete BettboxHelperService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
+procedure CleanPreviousInstallDir;
+var
+  CurrentDir: String;
+begin
+  if PreviousAppDir = '' then
+    Exit;
+  CurrentDir := ExpandConstant('{app}');
+  if CompareText(RemoveBackslashUnlessRoot(PreviousAppDir), RemoveBackslashUnlessRoot(CurrentDir)) = 0 then
+    Exit;
+  { Only remove a directory that really holds a previous copy of this app:
+    it must contain the main executable. }
+  if not FileExists(PreviousAppDir + '\{{EXECUTABLE_NAME}}') then
+    Exit;
+  DelTree(PreviousAppDir, True, True, True);
+  RemoveDir(PreviousAppDir);
+end;
+
 function InitializeSetup(): Boolean;
+var
+  PrevDir: String;
 begin
   Result := True;
+  PreviousAppDir := '';
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{APP_ID}}_is1', 'Inno Setup: App Path', PrevDir) then
+    PreviousAppDir := PrevDir
+  else if RegQueryStringValue(HKEY_CURRENT_USER, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{APP_ID}}_is1', 'Inno Setup: App Path', PrevDir) then
+    PreviousAppDir := PrevDir;
 end;
 
 function InitializeUninstall(): Boolean;
 var
   Response: Integer;
 begin
+  { A silent uninstall must never block on the data-removal prompt (in a
+    non-interactive session the dialog can wait forever); keep user data
+    in that case, exactly like answering No. }
+  if UninstallSilent() then
+  begin
+    ShouldCleanUserData := False;
+    Result := True;
+    Exit;
+  end;
+
   Response := MsgBox(CustomMessage('RemoveUserDataPrompt'), mbConfirmation, MB_YESNOCANCEL);
   
   if Response = IDCANCEL then
@@ -318,6 +368,8 @@ begin
   if CurStep = ssPostInstall then
   begin
     RegisterHelperService;
+    RemoveLegacyHelperService;
+    CleanPreviousInstallDir;
   end;
 end;
 
