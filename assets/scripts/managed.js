@@ -1,4 +1,4 @@
-// @version 2026111403
+// @version 2026111404
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---
@@ -977,49 +977,49 @@ const baseRuleProviders = {
 
   private: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-private.mrs',
     path: './ruleset/private.mrs',
     'path-in-bundle': 'geo/geosite/private.mrs',
   },
   private_ip: {
     ...ruleProviderCommonIpcidr,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-private.mrs',
     path: './ruleset/private_ip.mrs',
     'path-in-bundle': 'geo/geoip/private.mrs',
   },
   games_cn: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-games@cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-games@cn.mrs',
     path: './ruleset/category-games@cn.mrs',
     'path-in-bundle': 'geo/geosite/category-games@cn.mrs',
   },
   nvidia_cn: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/nvidia@cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-nvidia@cn.mrs',
     path: './ruleset/nvidia@cn.mrs',
     'path-in-bundle': 'geo/geosite/nvidia@cn.mrs',
   },
   apple_cn: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple@cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-apple@cn.mrs',
     path: './ruleset/apple@cn.mrs',
     'path-in-bundle': 'geo/geosite/apple@cn.mrs',
   },
   microsoft_cn: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft@cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-microsoft@cn.mrs',
     path: './ruleset/microsoft@cn.mrs',
     'path-in-bundle': 'geo/geosite/microsoft@cn.mrs',
   },
   'geolocation-cn': {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-geolocation-cn.mrs',
     path: './ruleset/geolocation-cn.mrs',
     'path-in-bundle': 'geo/geosite/geolocation-cn.mrs',
   },
   cn_ip: {
     ...ruleProviderCommonIpcidr,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-cn.mrs',
     path: './ruleset/cn_ip.mrs',
     'path-in-bundle': 'geo/geoip/cn.mrs',
   },
@@ -1028,7 +1028,7 @@ const baseRuleProviders = {
 
   'geolocation-!cn': {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-geolocation-!cn.mrs',
     path: './ruleset/geolocation-!cn.mrs',
     'path-in-bundle': 'geo/geosite/geolocation-!cn.mrs',
   },
@@ -1037,31 +1037,31 @@ const baseRuleProviders = {
 
   fakeip_filter: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-stun.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-stun.mrs',
     path: './ruleset/category-stun.mrs',
     'path-in-bundle': 'geo/geosite/category-stun.mrs',
   },
   cn: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-cn.mrs',
     path: './ruleset/cn.mrs',
     'path-in-bundle': 'geo/geosite/cn.mrs',
   },
   bilibili: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-bilibili.mrs',
     path: './ruleset/bilibili.mrs',
     'path-in-bundle': 'geo/geosite/bilibili.mrs',
   },
   biliintl: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-biliintl.mrs',
     path: './ruleset/biliintl.mrs',
     'path-in-bundle': 'geo/geosite/biliintl.mrs',
   },
   disney: {
     ...ruleProviderCommonDomain,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/disney.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-disney.mrs',
     path: './ruleset/disney.mrs',
     'path-in-bundle': 'geo/geosite/disney.mrs',
   },
@@ -1151,7 +1151,7 @@ const serviceConfigs = [
     providers: {
       googlefcm: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/googlefcm.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-googlefcm.mrs',
         path: './ruleset/googlefcm.mrs',
         'path-in-bundle': 'geo/geosite/googlefcm.mrs',
       },
@@ -1165,7 +1165,7 @@ const serviceConfigs = [
     providers: {
       youtube: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-youtube.mrs',
         path: './ruleset/youtube.mrs',
         'path-in-bundle': 'geo/geosite/youtube.mrs',
       },
@@ -1179,13 +1179,13 @@ const serviceConfigs = [
     providers: {
       google: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-google.mrs',
         path: './ruleset/google.mrs',
         'path-in-bundle': 'geo/geosite/google.mrs',
       },
       google_ip: {
         ...ruleProviderCommonIpcidr,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-google.mrs',
         path: './ruleset/google_ip.mrs',
         'path-in-bundle': 'geo/geoip/google.mrs',
       },
@@ -1201,7 +1201,7 @@ const serviceConfigs = [
     providers: {
       anthropic: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/anthropic.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-anthropic.mrs',
         path: './ruleset/anthropic.mrs',
         'path-in-bundle': 'geo/geosite/anthropic.mrs',
       },
@@ -1229,7 +1229,7 @@ const serviceConfigs = [
     providers: {
       ai: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-ai-!cn.mrs',
         path: './ruleset/ai.mrs',
         'path-in-bundle': 'geo/geosite/category-ai-!cn.mrs',
       },
@@ -1248,7 +1248,7 @@ const serviceConfigs = [
     providers: {
       github: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-github.mrs',
         path: './ruleset/github.mrs',
         'path-in-bundle': 'geo/geosite/github.mrs',
       },
@@ -1262,7 +1262,7 @@ const serviceConfigs = [
     providers: {
       microsoft: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-microsoft.mrs',
         path: './ruleset/microsoft.mrs',
         'path-in-bundle': 'geo/geosite/microsoft.mrs',
       },
@@ -1276,7 +1276,7 @@ const serviceConfigs = [
     providers: {
       apple: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-apple.mrs',
         path: './ruleset/apple.mrs',
         'path-in-bundle': 'geo/geosite/apple.mrs',
       },
@@ -1290,13 +1290,13 @@ const serviceConfigs = [
     providers: {
       telegram: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-telegram.mrs',
         path: './ruleset/telegram.mrs',
         'path-in-bundle': 'geo/geosite/telegram.mrs',
       },
       telegram_ip: {
         ...ruleProviderCommonIpcidr,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-telegram.mrs',
         path: './ruleset/telegram_ip.mrs',
         'path-in-bundle': 'geo/geoip/telegram.mrs',
       },
@@ -1310,7 +1310,7 @@ const serviceConfigs = [
     providers: {
       steam: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-steam.mrs',
         path: './ruleset/steam.mrs',
         'path-in-bundle': 'geo/geosite/steam.mrs',
       },
@@ -1325,7 +1325,7 @@ const serviceConfigs = [
     providers: {
       tiktok: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-tiktok.mrs',
         path: './ruleset/tiktok.mrs',
         'path-in-bundle': 'geo/geosite/tiktok.mrs',
       },
@@ -1339,13 +1339,13 @@ const serviceConfigs = [
     providers: {
       twitter: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-twitter.mrs',
         path: './ruleset/twitter.mrs',
         'path-in-bundle': 'geo/geosite/twitter.mrs',
       },
       twitter_ip: {
         ...ruleProviderCommonIpcidr,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-twitter.mrs',
         path: './ruleset/twitter_ip.mrs',
         'path-in-bundle': 'geo/geoip/twitter.mrs',
       },
@@ -1359,13 +1359,13 @@ const serviceConfigs = [
     providers: {
       meta: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/meta.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-meta.mrs',
         path: './ruleset/meta.mrs',
         'path-in-bundle': 'geo/geosite/meta.mrs',
       },
       facebook_ip: {
         ...ruleProviderCommonIpcidr,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/facebook.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-facebook.mrs',
         path: './ruleset/facebook_ip.mrs',
         'path-in-bundle': 'geo/geoip/facebook.mrs',
       },
@@ -1379,7 +1379,7 @@ const serviceConfigs = [
     providers: {
       line: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/line.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-line.mrs',
         path: './ruleset/line.mrs',
         'path-in-bundle': 'geo/geosite/line.mrs',
       },
@@ -1393,13 +1393,13 @@ const serviceConfigs = [
     providers: {
       netflix: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-netflix.mrs',
         path: './ruleset/netflix.mrs',
         'path-in-bundle': 'geo/geosite/netflix.mrs',
       },
       netflix_ip: {
         ...ruleProviderCommonIpcidr,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip-netflix.mrs',
         path: './ruleset/netflix_ip.mrs',
         'path-in-bundle': 'geo/geoip/netflix.mrs',
       },
@@ -1413,7 +1413,7 @@ const serviceConfigs = [
     providers: {
       emby: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-emby.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-emby.mrs',
         path: './ruleset/category-emby.mrs',
         'path-in-bundle': 'geo/geosite/category-emby.mrs',
       },
@@ -1439,7 +1439,7 @@ const serviceConfigs = [
     providers: {
       pikpak: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/pikpak.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-pikpak.mrs',
         path: './ruleset/pikpak.mrs',
         'path-in-bundle': 'geo/geosite/pikpak.mrs',
       },
@@ -1453,7 +1453,7 @@ const serviceConfigs = [
     providers: {
       spotify: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-spotify.mrs',
         path: './ruleset/spotify.mrs',
         'path-in-bundle': 'geo/geosite/spotify.mrs',
       },
@@ -1468,7 +1468,7 @@ const serviceConfigs = [
     providers: {
       cryptocurrency: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-cryptocurrency.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-cryptocurrency.mrs',
         path: './ruleset/cryptocurrency.mrs',
         'path-in-bundle': 'geo/geosite/category-cryptocurrency.mrs',
       },
@@ -1483,7 +1483,7 @@ const serviceConfigs = [
     providers: {
       ehentai: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/ehentai.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-ehentai.mrs',
         path: './ruleset/ehentai.mrs',
         'path-in-bundle': 'geo/geosite/ehentai.mrs',
       },
@@ -1519,7 +1519,7 @@ const serviceConfigs = [
     providers: {
       adblockmihomolite: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-ads-all.mrs',
         path: './ruleset/category-ads-all.mrs',
         'path-in-bundle': 'geo/geosite/category-ads-all.mrs',
       },
@@ -2596,17 +2596,17 @@ const securityBaseline = {
   'etag-support': true,
   'external-controller': '127.0.0.1:19090',
   'external-ui': 'ui',
-  'external-ui-url': 'https://github.com/Zephyruso/zashboard/releases/download/v3.29.1/dist.zip',
+  'external-ui-url': 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
   'geodata-mode': false,
   'geodata-loader': 'memconservative',
   'geosite-matcher': 'succinct',
   'geo-auto-update': true,
   'geo-update-interval': 168,
   'geox-url': {
-    geoip: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat',
-    geosite: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
-    mmdb: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
-    asn: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+    geoip: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.dat',
+    geosite: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
+    mmdb: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb',
+    asn: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb',
   },
   profile: {
     'store-selected': true,

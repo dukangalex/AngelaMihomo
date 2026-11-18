@@ -79,14 +79,14 @@ Profile profileWithScriptChoice(Profile profile, String? choice) {
 const _managedScriptAsset = 'assets/scripts/managed.js';
 const _routeCatalogAsset = 'assets/scripts/routing.json';
 const _routeIconBaseUrl =
-    'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
+    'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/';
 
 /// Pre-T214 icon base under the upstream org. Stored profiles and
 /// group configs still carry URLs with this prefix; they keep
 /// resolving to the bundled assets so existing setups do not lose
 /// their icons. New URLs are always built on [_routeIconBaseUrl].
 const _legacyRouteIconBaseUrl =
-    'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+    'https://raw.githubusercontent.com/appshubcc/Qure_Style_SVG/main/icon/svg/';
 
 String? _routeIconBaseOf(String url) {
   if (url.startsWith(_routeIconBaseUrl)) return _routeIconBaseUrl;
@@ -138,21 +138,13 @@ String bundlePrefixOf(String label) {
   return _prefixPattern.firstMatch(text.substring(start))?.group(0) ?? text;
 }
 
-const _mirrorHost = 'cdn.jsdelivr.net';
-const _jsdelivrHosts = {
-  'cdn.jsdelivr.net',
-  'fastly.jsdelivr.net',
-  'gcore.jsdelivr.net',
-  'testingcf.jsdelivr.net',
-  'cdn.jsdmirror.com',
-};
-
+/// Normalizes a user-supplied GitHub URL to its canonical
+/// raw.githubusercontent.com form. Non-GitHub URLs (including any
+/// jsDelivr URL a user pasted themselves) are returned unchanged —
+/// the app never rewrites user URLs onto a CDN mirror.
 String mirrorUrl(String url) {
   final uri = Uri.tryParse(url.trim());
   if (uri == null || !uri.hasScheme) return url;
-  if (_jsdelivrHosts.contains(uri.host)) {
-    return uri.replace(scheme: 'https', host: _mirrorHost).toString();
-  }
   final segments = uri.pathSegments;
   final (owner, repo, rest) = switch (uri.host) {
     'raw.githubusercontent.com' when segments.length >= 4 => (
@@ -170,7 +162,7 @@ String mirrorUrl(String url) {
   final heads = rest.length >= 4 && rest[0] == 'refs' && rest[1] == 'heads';
   final branch = heads ? rest[2] : rest[0];
   final path = (heads ? rest.sublist(3) : rest.sublist(1)).join('/');
-  return 'https://$_mirrorHost/gh/$owner/$repo@$branch/$path';
+  return 'https://raw.githubusercontent.com/$owner/$repo/$branch/$path';
 }
 
 String? routeIconUrl(String? icon) {

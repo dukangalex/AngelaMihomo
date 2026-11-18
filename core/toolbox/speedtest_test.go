@@ -498,28 +498,26 @@ func TestSpeedTesterResolvesExitIP(t *testing.T) {
 }
 
 func TestSpeedTesterProbeFetchesExitInfo(t *testing.T) {
-	var gotQuery string
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotQuery = r.URL.RawQuery
-		_, _ = w.Write([]byte(`{"status":"success","country":"Hong Kong","countryCode":"HK","city":"Central","isp":"HKT","query":"203.0.113.9"}`))
+		_, _ = w.Write([]byte("fl=1\nip=203.0.113.9\nloc=HK\ncolo=HKG\n"))
 	}))
 	t.Cleanup(api.Close)
-	old := speedTestExitInfoURL
-	speedTestExitInfoURL = api.URL + "/json/"
-	t.Cleanup(func() { speedTestExitInfoURL = old })
+	old := speedTestExitIPURLs
+	speedTestExitIPURLs = []string{api.URL + "/cdn-cgi/trace"}
+	t.Cleanup(func() { speedTestExitIPURLs = old })
 
 	tester := newTestSpeedTester(newSpeedTestServer(t))
-	tester.params.Lang = "zh-CN"
 	tester.probeOnly(context.Background())
 	state := tester.snapshot()
-	if gotQuery != "lang=zh-CN" || !strings.Contains(string(state.ExitInfo), "203.0.113.9") {
-		t.Fatalf("exit info not fetched: query=%q info=%s", gotQuery, state.ExitInfo)
+	if !strings.Contains(string(state.ExitInfo), "203.0.113.9") ||
+		!strings.Contains(string(state.ExitInfo), `"countryCode":"HK"`) {
+		t.Fatalf("exit info not derived from trace: info=%s", state.ExitInfo)
 	}
 
-	speedTestExitInfoURL = "http://127.0.0.1:1/json/"
+	speedTestExitIPURLs = []string{"http://127.0.0.1:1/cdn-cgi/trace"}
 	failing := newTestSpeedTester(newSpeedTestServer(t))
 	failing.probeOnly(context.Background())
 	if state := failing.snapshot(); state.ExitInfo != nil || state.Error != "" {
-		t.Fatalf("unreachable api must not fail the probe: %+v", state)
+		t.Fatalf("unreachable echo must not fail the probe: %+v", state)
 	}
 }

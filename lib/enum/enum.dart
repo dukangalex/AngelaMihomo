@@ -708,6 +708,10 @@ enum DelayAnimationType {
 }
 
 enum MrsRawSource {
+  angelamihomoGeo(
+    'angelamihomo-geo',
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/',
+  ),
   metaRulesDat(
     'meta-rules-dat',
     'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/',

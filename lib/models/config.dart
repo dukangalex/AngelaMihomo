@@ -223,8 +223,8 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool dashboardWatermark,
     @Default(<String>[]) List<String> toolboxTiles,
     @Default(false) bool mrsCopyRawLink,
-    @JsonKey(unknownEnumValue: MrsRawSource.metaRulesDat)
-    @Default(MrsRawSource.metaRulesDat)
+    @JsonKey(unknownEnumValue: MrsRawSource.angelamihomoGeo)
+    @Default(MrsRawSource.angelamihomoGeo)
     MrsRawSource mrsRawSource,
     @JsonKey(unknownEnumValue: MrsTapAction.viewRules)
     @Default(MrsTapAction.viewRules)
@@ -661,33 +661,40 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
-    // Migrate stored geo data URLs that still point at the legacy
-    // upstream mirror to the official MetaCubeX/meta-rules-dat source.
-    // Only exact legacy defaults are rewritten; custom URLs are kept.
+    // Migrate stored geo data URLs that still point at a previous
+    // default source (the legacy bett-rules mirror or the MetaCubeX
+    // meta-rules-dat releases) to the project's own data repository.
+    // Only exact previous defaults are rewritten; custom URLs are kept.
     try {
       const legacyGeoUrls = {
-        'mmdb':
-            'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
-        'asn':
-            'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN.mmdb',
-        'geosite':
-            'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
+        'mmdb': {
+          'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
+        },
+        'asn': {
+          'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN.mmdb',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+        },
+        'geosite': {
+          'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
+          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
+        },
       };
-      const officialGeoUrls = {
+      const ownGeoUrls = {
         'mmdb':
-            'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
+            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb',
         'asn':
-            'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb',
         'geosite':
-            'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
+            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
       };
       final patchConfig = json['patchClashConfig'];
       if (patchConfig is Map) {
         final geoXUrl = patchConfig['geox-url'];
         if (geoXUrl is Map) {
-          for (final key in legacyGeoUrls.keys) {
-            if (geoXUrl[key] == legacyGeoUrls[key]) {
-              geoXUrl[key] = officialGeoUrls[key];
+          for (final entry in legacyGeoUrls.entries) {
+            if (entry.value.contains(geoXUrl[entry.key])) {
+              geoXUrl[entry.key] = ownGeoUrls[entry.key];
             }
           }
         }

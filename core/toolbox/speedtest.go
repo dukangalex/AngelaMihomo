@@ -74,9 +74,11 @@ var speedTestExitIPURLs = []string{
 	"https://api.ip.sb/cdn-cgi/trace",
 }
 
-var speedTestExitInfoURL = "http://ip-api.com/json/"
-
 var (
+	// User-invoked, feature-inherent third-party call: the Ookla
+	// speed-test feature cannot work without the speedtest.net
+	// server-list API, and it is only queried when the user opens
+	// or runs that feature.
 	speedtestNetServersURL = "https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true"
 	speedtestNetScheme     = "https"
 )
@@ -485,25 +487,36 @@ func (t *speedTester) probeOnly(ctx context.Context) {
 	}
 }
 
+// fetchExitInfo derives the exit-info payload from the standing
+// minimal-echo trace endpoints (speedTestExitIPURLs) instead of a
+// third-party geo-IP API. The trace response only carries the exit
+// IP and its country code, so the richer fields the old ip-api
+// payload provided (city, ISP, ...) stay empty; the Dart side parses
+// this reduced shape through the same query/countryCode branch.
 func (t *speedTester) fetchExitInfo(ctx context.Context) json.RawMessage {
-	url := speedTestExitInfoURL
-	if t.params.Lang != "" {
-		url += "?lang=" + t.params.Lang
+	for _, url := range speedTestExitIPURLs {
+		fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		resp, body, err := t.fetch(fetchCtx, t.probe, url, 4096)
+		cancel()
+		if err != nil || resp.StatusCode != http.StatusOK {
+			continue
+		}
+		trace := parseCloudflareTrace(string(body))
+		ip := trace["ip"]
+		if net.ParseIP(ip) == nil {
+			continue
+		}
+		info, err := json.Marshal(map[string]string{
+			"status":      "success",
+			"query":       ip,
+			"countryCode": strings.ToUpper(trace["loc"]),
+		})
+		if err != nil {
+			return nil
+		}
+		return json.RawMessage(info)
 	}
-	fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	resp, body, err := t.fetch(fetchCtx, t.probe, url, 16*1024)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil
-	}
-	var info struct {
-		Status string `json:"status"`
-		Query  string `json:"query"`
-	}
-	if json.Unmarshal(body, &info) != nil || info.Status == "fail" || info.Query == "" {
-		return nil
-	}
-	return json.RawMessage(body)
+	return nil
 }
 
 func (t *speedTester) run(ctx context.Context, push func(SpeedTestState)) {

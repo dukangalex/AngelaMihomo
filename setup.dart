@@ -432,20 +432,24 @@ class Build {
     }
   }
 
+  // Geo data is downloaded from the project's own data repository
+  // (angelamihomo-geo, geo-data-2026.11), which mirrors the official
+  // sources: MetaCubeX/meta-rules-dat for geoip.metadb and geosite.dat,
+  // and the DB-IP ASN Lite database for ASN.mmdb.
   static const List<AssetDownloadItem> assetDownloadItems = [
     AssetDownloadItem(
       url:
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
       fileName: 'GeoSite.dat',
     ),
     AssetDownloadItem(
       url:
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb',
       fileName: 'geoip.metadb',
     ),
     AssetDownloadItem(
       url:
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb',
       fileName: 'ASN.mmdb',
     ),
     AssetDownloadItem(

@@ -1203,7 +1203,7 @@ class GlobalState {
         'secret': secret,
       'external-ui': await appPath.uiPath,
       'external-ui-url':
-          'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
       'external-ui-name': '',
       'tcp-concurrent': patchConfig.tcpConcurrent,
       if (!system.isAndroid && patchConfig.interfaceName.isNotEmpty)

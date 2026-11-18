@@ -45,7 +45,7 @@ void main() {
 
   test('route icons resolve to Qure paths and bundled assets', () async {
     const base =
-        'https://cdn.jsdelivr.net/gh/dukangalex/angelamihomo-icons@main/icon/svg/';
+        'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/';
     expect(routeIconUrl('YouTube.svg'), '${base}common/YouTube.svg');
     expect(routeIconUrl('flag/Japan.svg'), '${base}flag/Japan.svg');
     expect(
@@ -69,7 +69,7 @@ void main() {
 
   test('legacy upstream icon URLs still resolve to bundled assets', () async {
     const legacy =
-        'https://cdn.jsdelivr.net/gh/appshubcc/Qure_Style_SVG@main/icon/svg/';
+        'https://raw.githubusercontent.com/appshubcc/Qure_Style_SVG/main/icon/svg/';
     await loadBundledRouteIcons();
     expect(isRouteIconUrl('${legacy}common/YouTube.svg'), isTrue);
     expect(
@@ -387,18 +387,18 @@ void main() {
     );
   });
 
-  test('remote links go through the jsDelivr mirror', () {
+  test('remote links normalize to raw.githubusercontent.com, no CDN mirror', () {
     expect(
       mirrorUrl('https://raw.githubusercontent.com/a/b/main/icons/x.svg'),
-      'https://cdn.jsdelivr.net/gh/a/b@main/icons/x.svg',
+      'https://raw.githubusercontent.com/a/b/main/icons/x.svg',
     );
     expect(
       mirrorUrl('https://raw.githubusercontent.com/a/b/refs/heads/dev/x.mrs'),
-      'https://cdn.jsdelivr.net/gh/a/b@dev/x.mrs',
+      'https://raw.githubusercontent.com/a/b/dev/x.mrs',
     );
     expect(
       mirrorUrl('https://github.com/a/b/blob/main/rules/x.mrs'),
-      'https://cdn.jsdelivr.net/gh/a/b@main/rules/x.mrs',
+      'https://raw.githubusercontent.com/a/b/main/rules/x.mrs',
     );
     expect(
       mirrorUrl('https://cdn.jsdelivr.net/gh/a/b@main/x.svg'),
@@ -406,7 +406,7 @@ void main() {
     );
     expect(
       mirrorUrl('https://cdn.jsdmirror.com/gh/a/b@main/x.svg'),
-      'https://cdn.jsdelivr.net/gh/a/b@main/x.svg',
+      'https://cdn.jsdmirror.com/gh/a/b@main/x.svg',
     );
     expect(
       mirrorUrl('https://example.com/icon.svg'),
@@ -415,7 +415,7 @@ void main() {
     expect(mirrorUrl('https://github.com/a/b'), 'https://github.com/a/b');
     expect(
       routeIconUrl('https://raw.githubusercontent.com/a/b/main/x.svg'),
-      'https://cdn.jsdelivr.net/gh/a/b@main/x.svg',
+      'https://raw.githubusercontent.com/a/b/main/x.svg',
     );
   });
 

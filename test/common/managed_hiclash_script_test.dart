@@ -10,8 +10,9 @@ import '../plugins/code_forge/support.dart';
 
 /// T95: the bundled managed script is the HiClash full script carried by the
 /// upstream managed-scripts mechanism. It must declare the AngelaMihomo
-/// compatibility marker, point its rule providers at the official
-/// MetaCubeX source, and stay off until the user enables it per profile.
+/// compatibility marker, point its rule providers at the project's own
+/// data repository (angelamihomo-geo, which mirrors the official
+/// MetaCubeX source), and stay off until the user enables it per profile.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -21,20 +22,22 @@ void main() {
     expect(content, contains('function main(config, context)'));
     expect(content, contains('const ruleOptionsEnable'));
     expect(ManagedScript.parseVersion(content), matches(RegExp(r'^\d{10}$')));
-    // Rule providers come from the official MetaCubeX source, not a mirror.
+    // Rule providers come from the project's own data repository,
+    // not the upstream MetaCubeX source or a CDN mirror.
     expect(
       content,
       contains(
-        'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-cn.mrs',
+        'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-geolocation-cn.mrs',
       ),
     );
+    expect(content, isNot(contains('MetaCubeX')));
     expect(content, isNot(contains('fastly.jsdelivr.net/gh/MetaCubeX')));
     expect(content, isNot(contains('cdn.jsdelivr.net/gh/MetaCubeX')));
-    // GeoX defaults align with the app's own official defaults.
+    // GeoX defaults align with the app's own defaults.
     expect(
       content,
       contains(
-        'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
+        'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
       ),
     );
     // Group icons are served from this repo; kernel UA pins follow the core.
@@ -144,7 +147,9 @@ void main() {
     expect(providers, isNotEmpty);
     expect(
       providers.values.map((p) => (p as Map)['url']).join(' '),
-      contains('raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/'),
+      contains(
+        'github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/',
+      ),
     );
   });
 }

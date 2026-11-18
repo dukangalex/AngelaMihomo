@@ -84,9 +84,9 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(
             _$MrsRawSourceEnumMap,
             json['mrsRawSource'],
-            unknownValue: MrsRawSource.metaRulesDat,
+            unknownValue: MrsRawSource.angelamihomoGeo,
           ) ??
-          MrsRawSource.metaRulesDat,
+          MrsRawSource.angelamihomoGeo,
       mrsTapAction:
           $enumDecodeNullable(
             _$MrsTapActionEnumMap,
@@ -192,7 +192,10 @@ const _$SidebarFlyoutDelayEnumMap = {
   SidebarFlyoutDelay.slow: 'slow',
 };
 
-const _$MrsRawSourceEnumMap = {MrsRawSource.metaRulesDat: 'metaRulesDat'};
+const _$MrsRawSourceEnumMap = {
+  MrsRawSource.angelamihomoGeo: 'angelamihomoGeo',
+  MrsRawSource.metaRulesDat: 'metaRulesDat',
+};
 
 const _$MrsTapActionEnumMap = {
   MrsTapAction.viewRules: 'viewRules',
