@@ -31,21 +31,37 @@ class AppPath {
       }
       tempDir.complete(portableTempDir);
     } else {
-      getApplicationSupportDirectory().then((value) {
-        if (system.isWindows && AppIdentity.isDev) {
-          final dir = Directory(
-            join(value.parent.path, AppIdentity.dataDirName),
-          );
-          _resolvedDataDirPath = dir.path;
-          dataDir.complete(dir);
-        } else {
-          _resolvedDataDirPath = value.path;
-          dataDir.complete(value);
-        }
-      });
-      getTemporaryDirectory().then((value) {
-        tempDir.complete(value);
-      });
+      getApplicationSupportDirectory().then(
+        (value) {
+          if (system.isWindows && AppIdentity.isDev) {
+            final dir = Directory(
+              join(value.parent.path, AppIdentity.dataDirName),
+            );
+            _resolvedDataDirPath = dir.path;
+            dataDir.complete(dir);
+          } else {
+            _resolvedDataDirPath = value.path;
+            dataDir.complete(value);
+          }
+        },
+        onError: (Object e, StackTrace st) {
+          // Swallow the plugin error: completing the completer with
+          // an error nobody may be listening to would surface as an
+          // unhandled async error, and leaving it pending is the
+          // pre-existing behavior. In plugin-less environments (unit
+          // tests) the completers simply stay pending, and consumers
+          // that cannot wait — the managed-script data channel —
+          // check isCompleted and fall back instead of awaiting.
+        },
+      );
+      getTemporaryDirectory().then(
+        (value) {
+          tempDir.complete(value);
+        },
+        onError: (Object e, StackTrace st) {
+          // See the dataDir note above.
+        },
+      );
     }
     downloadDir.complete(_resolveDownloadDirectory());
   }

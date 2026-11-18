@@ -6,6 +6,7 @@ import 'package:angelamihomo/models/models.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
+import 'managed_script_update.dart';
 import 'path.dart';
 import 'route_icon.dart';
 import 'string.dart';
@@ -484,6 +485,31 @@ class ManagedScript {
   static Future<String> readBundled() =>
       rootBundle.loadString(_managedScriptAsset);
 
+  /// The bundled script as refreshed by the data channel (chain.28,
+  /// T199): the channel copy stored by ManagedScriptUpdateService
+  /// wins when it exists and its @version is at least the bundled
+  /// asset's, otherwise the bundled asset itself. Any channel-side
+  /// problem falls back to the bundled asset — the bundled copy is
+  /// the floor and always works.
+  static Future<String> readEffective() async {
+    final bundled = await readBundled();
+    // The channel copy lives under the app support directory, whose
+    // resolution starts in AppPath's constructor. Only consult it
+    // once that resolution has landed: before it (app startup race,
+    // plugin-less test environments) the bundled asset applies, and
+    // awaiting the directory here could stall script loading.
+    if (!appPath.dataDir.isCompleted) return bundled;
+    try {
+      final channel = await ManagedScriptUpdateService().readChannelCopy();
+      return ManagedScriptUpdateService.resolveEffectiveContent(
+        bundledContent: bundled,
+        channelContent: channel,
+      );
+    } catch (_) {
+      return bundled;
+    }
+  }
+
   static Future<void> loadBundledVersion() async {
     final content = await readBundled();
     _bundledVersion = parseVersion(content) ?? '';
@@ -520,7 +546,7 @@ class ManagedScript {
       final file = File(await appPath.getScriptPath(managedScriptId));
       if (await file.exists()) return file.readAsString();
     }
-    return readBundled();
+    return readEffective();
   }
 
   static Future<Script> script(

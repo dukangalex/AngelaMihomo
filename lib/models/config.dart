@@ -203,6 +203,9 @@ abstract class AppSettingProps with _$AppSettingProps {
     String? startSwitchOffLabel,
     @Default(true) bool enableNavBarHapticFeedback,
     @Default(true) bool autoCheckUpdate,
+    // chain.28 (T199): the single authoritative switch for every
+    // data-channel auto update (city database + managed script).
+    @Default(true) bool dataAutoUpdate,
     @Default(false) bool showLabel,
     @Default(false) bool disclaimerAccepted,
     @Default(true) bool minimizeOnExit,

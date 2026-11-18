@@ -1263,6 +1263,10 @@ class GlobalState {
     return {
       'general': general,
       'geox-url': patchConfig.geoXUrl.toJson(),
+      // chain.28 (T199): the core-side geo auto-update follows the
+      // same single switch as the app-side data channels, daily.
+      'geo-auto-update': config.appSetting.dataAutoUpdate,
+      'geo-update-interval': 24,
       'hosts': [
         for (final host in patchConfig.hosts.entries)
           if (system.isAndroid || host.key != 'services.googleapis.cn')

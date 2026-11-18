@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:angelamihomo/common/constant.dart';
+import 'package:angelamihomo/common/data_signature.dart';
 import 'package:angelamihomo/common/path.dart';
 import 'package:angelamihomo/common/release_updates.dart';
 import 'package:angelamihomo/common/update_installer.dart';
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// AngelaMihomo (chain.26, T194): city-level geolocation data, hosted
@@ -14,9 +16,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// home directory as amcity.bin, where the core's local reader picks
 /// it up; lookups never leave the device. The channel is the same
 /// GitHub-releases-only channel the in-app updater (T179) uses, with
-/// the same digest verification. The user may point the pull at a
-/// source of their own instead (T201); a custom source must ship a
-/// sha256sums.txt next to the file and passes the same verification.
+/// the same digest verification. Since chain.28 (T220) the digest on
+/// the project-repository path comes from the release's
+/// sha256sums.txt, and when that manifest ships its Ed25519 signature
+/// (sha256sums.txt.sig) the signature must verify before anything is
+/// installed — see data_signature.dart. The user may point the pull at
+/// a source of their own instead (T201); a custom source must ship a
+/// sha256sums.txt next to the file and passes the same digest
+/// verification (custom sources stay hash-only: they are the user's
+/// own choice, and no project key signs for them).
 
 enum GeoUpdateOutcome { updated, alreadyLatest, failed, verifyFailed }
 
@@ -83,18 +91,32 @@ class GeoDataService {
   final Future<String?> Function() _loadSourceUrl;
   final Future<void> Function(String? url) _saveSourceUrl;
 
+  /// Fetches the raw bytes of a manifest file (sha256sums.txt or its
+  /// .sig) for the project-repository path (T220). Returns null when
+  /// the file is absent (HTTP 404); other failures throw. Injectable
+  /// for tests, following the loader/saver pattern above.
+  final Future<List<int>?> Function(String url)? _manifestBytesFetcher;
+
+  /// Public key the manifest signature must verify against (T220);
+  /// null uses the embedded release key. Injectable for tests.
+  final List<int>? _manifestPublicKeyBytes;
+
   GeoDataService({
     ReleaseUpdates? updates,
     UpdateInstaller? installer,
     List<Duration>? retryDelays,
     Future<String?> Function()? sourceUrlLoader,
     Future<void> Function(String? url)? sourceUrlSaver,
+    Future<List<int>?> Function(String url)? manifestBytesFetcher,
+    List<int>? manifestPublicKeyBytes,
   }) : _updates = updates ?? ReleaseUpdates(repository: geoDataRepository),
        _installer = installer ?? UpdateInstaller(),
        _retryDelays =
            retryDelays ?? const [Duration(seconds: 20), Duration(seconds: 60)],
        _loadSourceUrl = sourceUrlLoader ?? _prefsSourceUrl,
-       _saveSourceUrl = sourceUrlSaver ?? _savePrefsSourceUrl;
+       _saveSourceUrl = sourceUrlSaver ?? _savePrefsSourceUrl,
+       _manifestBytesFetcher = manifestBytesFetcher,
+       _manifestPublicKeyBytes = manifestPublicKeyBytes;
 
   static Future<String?> _prefsSourceUrl() async {
     final prefs = await SharedPreferences.getInstance();
@@ -236,17 +258,15 @@ class GeoDataService {
       if (current != null && current.tag == tag) {
         return GeoUpdateOutcome.alreadyLatest;
       }
-      var asset = _updates.assetByName(release, name: assetName);
-      if (asset == null || asset.sha256 == null) {
-        // The release lookup fell back to the web redirect (API rate
-        // limit or outage), which yields a tag but no asset list.
-        // The data repository's URLs are deterministic and every
-        // release ships a sha256sums.txt, so resolve the asset from
-        // the release itself — same trust anchor (GitHub over HTTPS)
-        // and the same digest verification in _install.
-        asset = await _fallbackAsset(tag);
-        if (asset == null) return GeoUpdateOutcome.failed;
-      }
+      // T220: on the project-repository path the asset — and with it
+      // the trusted digest — is derived from the release's
+      // sha256sums.txt, signature-verified whenever the release ships
+      // a signature. The GitHub API path above now only discovers
+      // the target tag.
+      final resolved = await _projectAsset(release, tag);
+      if (resolved.verifyFailed) return GeoUpdateOutcome.verifyFailed;
+      final asset = resolved.asset;
+      if (asset == null) return GeoUpdateOutcome.failed;
       return await _install(asset, tag: tag, onProgress: onProgress);
     } catch (_) {
       return GeoUpdateOutcome.failed;
@@ -296,6 +316,115 @@ class GeoDataService {
     }
   }
 
+  /// Fetch the raw bytes at [url] through the release client's
+  /// connection, for the manifest files of the project-repository
+  /// path (T220). A 404 maps to null (the file is absent); every
+  /// other failure throws, so callers can tell "absent" apart from
+  /// "could not be checked".
+  Future<List<int>?> _fetchManifestBytes(String url) async {
+    final injected = _manifestBytesFetcher;
+    if (injected != null) return injected(url);
+    try {
+      final response = await _updates.client.get<List<int>>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Resolve the project-repository asset for [tag] from the
+  /// release's sha256sums.txt (T220), which is the authoritative
+  /// digest source on this path:
+  ///
+  /// - The manifest ships a signature (sha256sums.txt.sig):
+  ///   verification is mandatory. A bad signature yields
+  ///   `verifyFailed: true` and no asset — nothing is installed.
+  /// - The manifest ships no signature: TRANSITION RULE — releases
+  ///   published before manifest signing have no .sig; their
+  ///   manifest-derived digest is accepted hash-only, exactly as
+  ///   every release was before signing existed. Once every live
+  ///   release is signed, a missing signature can be made fatal and
+  ///   this branch removed.
+  /// - The manifest itself is unreachable: fall back to the pre-T220
+  ///   resolution (the GitHub-API asset with its reported digest, or
+  ///   [_fallbackAsset], which fails on its own when there is no
+  ///   manifest either).
+  Future<({ReleaseAsset? asset, bool verifyFailed})> _projectAsset(
+    Map<String, dynamic> release,
+    String tag,
+  ) async {
+    final base =
+        'https://github.com/$geoDataRepository/releases/download/${Uri.encodeComponent(tag)}';
+    List<int>? sumsBytes;
+    try {
+      sumsBytes = await _fetchManifestBytes('$base/sha256sums.txt');
+    } catch (_) {
+      sumsBytes = null;
+    }
+    if (sumsBytes == null) {
+      var asset = _updates.assetByName(release, name: assetName);
+      if (asset == null || asset.sha256 == null) {
+        asset = await _fallbackAsset(tag);
+      }
+      return (asset: asset, verifyFailed: false);
+    }
+    List<int>? sigBytes;
+    try {
+      sigBytes = await _fetchManifestBytes('$base/sha256sums.txt.sig');
+    } catch (_) {
+      // Whether a signature exists could not be determined; do not
+      // install on a manifest whose verification state is unknown.
+      return (asset: null, verifyFailed: false);
+    }
+    if (sigBytes != null) {
+      final verified = await verifyManifestSignature(
+        sumsBytes,
+        sigBytes,
+        publicKeyBytes: _manifestPublicKeyBytes,
+      );
+      if (!verified) return (asset: null, verifyFailed: true);
+    }
+    final asset = _assetFromSumsBytes(sumsBytes, fileUrl: '$base/$assetName');
+    return (asset: asset, verifyFailed: false);
+  }
+
+  /// The expected SHA-256 for the file named [name] in a
+  /// sha256sums.txt body, or null when the manifest does not carry a
+  /// well-formed entry for it.
+  static String? _digestFromSums(String text, String name) {
+    for (final line in text.split('\n')) {
+      final parts = line.trim().split(RegExp(r'\s+'));
+      if (parts.length == 2 && parts[1].replaceFirst('*', '') == name) {
+        final digest = parts[0].toLowerCase();
+        return RegExp(r'^[0-9a-f]{64}$').hasMatch(digest) ? digest : null;
+      }
+    }
+    return null;
+  }
+
+  /// Pair the file at [fileUrl] with the digest a (verified, on the
+  /// project path) sha256sums.txt body carries for it.
+  ReleaseAsset? _assetFromSumsBytes(
+    List<int> sumsBytes, {
+    required String fileUrl,
+  }) {
+    try {
+      final uri = Uri.parse(fileUrl);
+      if (uri.pathSegments.isEmpty) return null;
+      final name = uri.pathSegments.last;
+      if (name.isEmpty) return null;
+      final digest = _digestFromSums(utf8.decode(sumsBytes), name);
+      if (digest == null) return null;
+      return ReleaseAsset(name: name, url: fileUrl, sha256: digest);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Resolve the database asset straight from the release at [tag]
   /// when the API asset list is unavailable: the download URL is
   /// deterministic for this repository, and the expected SHA-256
@@ -327,17 +456,8 @@ class GeoDataService {
       final response = await _updates.client.get<Object?>(sumsUrl);
       final text = response.data?.toString();
       if (text == null) return null;
-      String? digest;
-      for (final line in text.split('\n')) {
-        final parts = line.trim().split(RegExp(r'\s+'));
-        if (parts.length == 2 && parts[1].replaceFirst('*', '') == name) {
-          digest = parts[0].toLowerCase();
-          break;
-        }
-      }
-      if (digest == null || !RegExp(r'^[0-9a-f]{64}$').hasMatch(digest)) {
-        return null;
-      }
+      final digest = _digestFromSums(text, name);
+      if (digest == null) return null;
       return ReleaseAsset(name: name, url: fileUrl, sha256: digest);
     } catch (_) {
       return null;

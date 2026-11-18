@@ -1,4 +1,4 @@
-// @version 2026111404
+// @version 2026111405
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---
@@ -2601,7 +2601,7 @@ const securityBaseline = {
   'geodata-loader': 'memconservative',
   'geosite-matcher': 'succinct',
   'geo-auto-update': true,
-  'geo-update-interval': 168,
+  'geo-update-interval': 24,
   'geox-url': {
     geoip: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.dat',
     geosite: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',

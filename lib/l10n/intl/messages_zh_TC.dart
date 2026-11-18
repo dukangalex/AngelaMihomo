@@ -780,6 +780,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("地理資料已是最新"),
     "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("地理資料更新失敗，請檢查網路後重試"),
     "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("下載的地理資料校驗不通過，已丟棄，請重試"),
+    "dataAutoUpdate": MessageLookupByLibrary.simpleMessage("資料自動更新"),
+    "dataAutoUpdateDesc": MessageLookupByLibrary.simpleMessage("每天自動更新地理資料與內置腳本"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO 節能"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage("使用 GEO 低記憶體載入器"),
     "geodataUse": MessageLookupByLibrary.simpleMessage("GEO載入"),

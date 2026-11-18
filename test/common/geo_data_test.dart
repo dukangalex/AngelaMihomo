@@ -5,6 +5,7 @@ import 'package:angelamihomo/common/geo_data.dart';
 import 'package:angelamihomo/common/release_updates.dart';
 import 'package:angelamihomo/common/update_installer.dart';
 import 'package:crypto/crypto.dart';
+import 'package:cryptography/cryptography.dart' as cryptography;
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -342,6 +343,90 @@ void main() {
       final back = GeoDataMeta.fromJson(meta.toJson());
       expect(back?.sourceUrl, customUrl);
       expect(back?.tag, GeoDataService.customTag);
+    });
+  });
+
+  group('signed manifest (T220)', () {
+    final sumsBytes = utf8.encode(
+      '$gzDigest  ${GeoDataService.assetName}\n',
+    );
+    const sumsUrl =
+        'https://github.com/$repo/releases/download/$tag/sha256sums.txt';
+    const sigUrl =
+        'https://github.com/$repo/releases/download/$tag/sha256sums.txt.sig';
+
+    Future<(List<int> publicKey, List<int> signature)> signSums() async {
+      final algorithm = cryptography.Ed25519();
+      final keyPair = await algorithm.newKeyPair();
+      final publicKey = await keyPair.extractPublicKey();
+      final signature = await algorithm.sign(sumsBytes, keyPair: keyPair);
+      return (publicKey.bytes, signature.bytes);
+    }
+
+    GeoDataService signedService({
+      required List<int> publicKey,
+      required List<int>? Function(String url) manifest,
+    }) => GeoDataService(
+      updates: ReleaseUpdates(repository: repo, client: dio),
+      installer: UpdateInstaller(dio: dio),
+      manifestPublicKeyBytes: publicKey,
+      manifestBytesFetcher: (url) async => manifest(url),
+    );
+
+    test('a valid signature lets the update proceed', () async {
+      final (publicKey, signature) = await signSums();
+      final svc = signedService(
+        publicKey: publicKey,
+        manifest: (url) => switch (url) {
+          sumsUrl => sumsBytes,
+          sigUrl => signature,
+          _ => null,
+        },
+      );
+      expect(await svc.updateNow(), GeoUpdateOutcome.updated);
+      expect(
+        await File(
+          '${home.path}/${GeoDataService.dataFileName}',
+        ).readAsBytes(),
+        raw,
+      );
+      expect((await svc.currentMeta())?.tag, tag);
+      expect(downloadCount, 1);
+    });
+
+    test('an invalid signature blocks the install entirely', () async {
+      final (publicKey, signature) = await signSums();
+      final forged = [...signature];
+      forged[0] = forged[0] ^ 0xFF;
+      final svc = signedService(
+        publicKey: publicKey,
+        manifest: (url) => switch (url) {
+          sumsUrl => sumsBytes,
+          sigUrl => forged,
+          _ => null,
+        },
+      );
+      expect(await svc.updateNow(), GeoUpdateOutcome.verifyFailed);
+      expect(downloadCount, 0);
+      expect(await svc.currentMeta(), isNull);
+      expect(
+        await File('${home.path}/${GeoDataService.dataFileName}').exists(),
+        isFalse,
+      );
+    });
+
+    test('a missing signature falls back to hash-only (legacy)', () async {
+      final (publicKey, _) = await signSums();
+      final svc = signedService(
+        publicKey: publicKey,
+        manifest: (url) => switch (url) {
+          sumsUrl => sumsBytes,
+          _ => null,
+        },
+      );
+      expect(await svc.updateNow(), GeoUpdateOutcome.updated);
+      expect((await svc.currentMeta())?.tag, tag);
+      expect(downloadCount, 1);
     });
   });
 }

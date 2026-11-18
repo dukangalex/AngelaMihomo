@@ -1009,6 +1009,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("داده‌های جغرافیایی به‌روز است"),
     "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("به‌روزرسانی داده‌های جغرافیایی ناموفق بود. شبکه را بررسی و دوباره تلاش کنید"),
     "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("داده‌های جغرافیایی دانلودشده در راستی‌آزمایی رد و حذف شد. دوباره تلاش کنید"),
+    "dataAutoUpdate": MessageLookupByLibrary.simpleMessage("به‌روزرسانی خودکار داده‌ها"),
+    "dataAutoUpdateDesc": MessageLookupByLibrary.simpleMessage("به‌روزرسانی روزانه داده‌های جغرافیایی و اسکریپت داخلی"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage(
       "کاهش مصرف حافظه GEO",
     ),
