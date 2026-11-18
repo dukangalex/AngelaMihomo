@@ -111,7 +111,7 @@ install(PROGRAMS "${CLASH_DIR}/AngelaMihomoHelperService.exe" DESTINATION "${INS
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
 
-install(FILES "WindowsLoopbackManager.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+install(FILES "AngelaMihomoLoopbackManager.exe" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   COMPONENT Runtime)
 
 if(PLUGIN_BUNDLED_LIBRARIES)

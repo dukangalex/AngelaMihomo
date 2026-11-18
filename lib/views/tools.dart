@@ -151,7 +151,7 @@ List<ToolsShortcut> getToolsShortcuts(
             subtitle: appLocalizations.loopbackDesc,
             onTap: () {
               windows?.runas(
-                '"${join(dirname(Platform.resolvedExecutable), "WindowsLoopbackManager.exe")}"',
+                '"${join(dirname(Platform.resolvedExecutable), "AngelaMihomoLoopbackManager.exe")}"',
                 '',
                 showWindow: true,
               );
@@ -382,7 +382,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           leading: const Icon(Icons.lock_outlined),
           onTap: (context, _) {
             windows?.runas(
-              '"${join(dirname(Platform.resolvedExecutable), "WindowsLoopbackManager.exe")}"',
+              '"${join(dirname(Platform.resolvedExecutable), "AngelaMihomoLoopbackManager.exe")}"',
               '',
               showWindow: true,
             );
@@ -1568,7 +1568,7 @@ class _LoopbackItem extends _ToolsItem {
       subtitle: Text(appLocalizations.loopbackDesc),
       onTap: () {
         windows?.runas(
-          '"${join(dirname(Platform.resolvedExecutable), "WindowsLoopbackManager.exe")}"',
+          '"${join(dirname(Platform.resolvedExecutable), "AngelaMihomoLoopbackManager.exe")}"',
           '',
           showWindow: true,
         );
