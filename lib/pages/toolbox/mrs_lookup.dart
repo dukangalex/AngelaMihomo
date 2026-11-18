@@ -307,9 +307,11 @@ class _MatchList extends ConsumerWidget {
     // 'geo/geosite/cn.mrs'); kind/name come from the Go lookup
     // (core/toolbox/mrs_lookup.go listMrsFiles: kind from the geoip/
     // path segment, name = file base name without the .mrs suffix).
-    Clipboard.setData(
-      ClipboardData(text: '$bundleMRSRawUrl${match.kind}-${match.name}.mrs'),
-    );
+    // GitHub strips '!' from release asset names, so the flat asset name
+    // drops it as well (name 'category-ai-!cn' is served as
+    // 'geosite-category-ai-.cn.mrs').
+    final assetName = '${match.kind}-${match.name.replaceAll('!', '')}.mrs';
+    Clipboard.setData(ClipboardData(text: '$bundleMRSRawUrl$assetName'));
     context.showNotifier(appLocalizations.copySuccess);
   }
 

@@ -1,4 +1,4 @@
-// @version 2026111405
+// @version 2026111406
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---
@@ -1028,7 +1028,7 @@ const baseRuleProviders = {
 
   'geolocation-!cn': {
     ...ruleProviderCommonDomain,
-    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-geolocation-!cn.mrs',
+    url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-geolocation-.cn.mrs',
     path: './ruleset/geolocation-!cn.mrs',
     'path-in-bundle': 'geo/geosite/geolocation-!cn.mrs',
   },
@@ -1229,7 +1229,7 @@ const serviceConfigs = [
     providers: {
       ai: {
         ...ruleProviderCommonDomain,
-        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-ai-!cn.mrs',
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-category-ai-.cn.mrs',
         path: './ruleset/ai.mrs',
         'path-in-bundle': 'geo/geosite/category-ai-!cn.mrs',
       },
