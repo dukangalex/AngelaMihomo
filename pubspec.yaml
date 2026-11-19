@@ -97,6 +97,7 @@ flutter:
   assets:
     - assets/data/
     - assets/fonts/
+    - assets/fonts/licenses/
     - assets/images/
     - assets/images/avatars/
     - assets/images/guardians/
