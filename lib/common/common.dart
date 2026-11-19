@@ -8,6 +8,7 @@ export 'data_signature.dart';
 export 'converter.dart';
 export 'datetime.dart';
 export 'event_log.dart';
+export 'runtime_log_store.dart';
 export 'failure_notice.dart';
 export 'fixed.dart';
 export 'identity.dart';
