@@ -29,6 +29,7 @@ class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
   Timer? _autoUpdateGroupTaskTimer;
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _autoUpdateDataTaskTimer;
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
@@ -290,6 +291,8 @@ class ApplicationState extends ConsumerState<Application>
       if (!system.isDesktop) {
         _autoUpdateProfilesTaskTimer?.cancel();
         _autoUpdateProfilesTaskTimer = null;
+        _autoUpdateDataTaskTimer?.cancel();
+        _autoUpdateDataTaskTimer = null;
       }
       return;
     }
@@ -298,6 +301,9 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (_autoUpdateProfilesTaskTimer == null) {
       _autoUpdateProfilesTask();
+    }
+    if (_autoUpdateDataTaskTimer == null) {
+      _autoUpdateDataTask();
     }
   }
 
@@ -313,6 +319,40 @@ class ApplicationState extends ConsumerState<Application>
       const Duration(hours: 24),
       (_) => unawaited(globalState.appController.autoUpdateProfiles()),
     );
+  }
+
+  /// chain.28 (T199): the daily data-channel refresh — the city
+  /// database and the managed script — gated by the single
+  /// dataAutoUpdate switch. The first run lands shortly after start
+  /// (the app controller and the stored config need a moment to
+  /// settle), then the task repeats every 24 hours like the profile
+  /// task above. Both services record their own outcomes and never
+  /// throw; the guards here keep a not-yet-initialized controller
+  /// from turning the tick into an error.
+  void _autoUpdateDataTask() {
+    Future.delayed(
+      const Duration(seconds: 30),
+      () => unawaited(_runDataAutoUpdate()),
+    );
+    _autoUpdateDataTaskTimer = Timer.periodic(
+      const Duration(hours: 24),
+      (_) => unawaited(_runDataAutoUpdate()),
+    );
+  }
+
+  Future<void> _runDataAutoUpdate() async {
+    if (!globalState.isInit) return;
+    if (!globalState.config.appSetting.dataAutoUpdate) return;
+    try {
+      await globalState.appController.updateGeoData();
+    } catch (_) {
+      // GeoDataService records/reports its own outcomes.
+    }
+    try {
+      await ManagedScriptUpdateService().checkAndUpdate();
+    } catch (_) {
+      // ManagedScriptUpdateService records its own outcomes.
+    }
   }
 
   Widget _buildPlatformState(Widget child) {
@@ -476,6 +516,7 @@ class ApplicationState extends ConsumerState<Application>
     linkManager.destroy();
     _autoUpdateGroupTaskTimer?.cancel();
     _autoUpdateProfilesTaskTimer?.cancel();
+    _autoUpdateDataTaskTimer?.cancel();
     ExternalControl.stop();
     if (!system.isAndroid && !globalState.isExiting) {
       unawaited(globalState.appController.handleExit());

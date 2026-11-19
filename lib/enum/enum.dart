@@ -708,9 +708,16 @@ enum DelayAnimationType {
 }
 
 enum MrsRawSource {
+  angelamihomoGeo(
+    'angelamihomo-geo',
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/',
+  ),
+  // Legacy identifier retained so stored configs still parse; its
+  // URL points at the project's own mirror (geo-data-2026.11) so no
+  // code path can ever fetch rule data from the third-party source.
   metaRulesDat(
     'meta-rules-dat',
-    'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/',
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/',
   );
 
   const MrsRawSource(this.value, this.url);

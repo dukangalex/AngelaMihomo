@@ -38,7 +38,7 @@ const asnFileName = 'ASN.mmdb';
 const geoSiteFileName = 'GeoSite.dat';
 const bundleMRSFileName = 'BundleMRS.7z';
 const bundleMRSRawUrl =
-    'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/';
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/';
 final double kHeaderHeight = system.isDesktop ? 40 : 0;
 const profilesDirectoryName = 'profiles';
 const localhost = '127.0.0.1';

@@ -284,6 +284,8 @@
   "geoDataUpToDate": "地理資料已是最新",
   "geoDataUpdateFailed": "地理資料更新失敗，請檢查網路後重試",
   "geoDataVerifyFailed": "下載的地理資料校驗不通過，已丟棄，請重試",
+  "dataAutoUpdate": "資料自動更新",
+  "dataAutoUpdateDesc": "每天自動更新地理資料與內置腳本",
   "externalResources": "外部資源",
   "checking": "檢測中...",
   "country": "區域",

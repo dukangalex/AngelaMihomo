@@ -1203,7 +1203,7 @@ class GlobalState {
         'secret': secret,
       'external-ui': await appPath.uiPath,
       'external-ui-url':
-          'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
       'external-ui-name': '',
       'tcp-concurrent': patchConfig.tcpConcurrent,
       if (!system.isAndroid && patchConfig.interfaceName.isNotEmpty)
@@ -1263,6 +1263,10 @@ class GlobalState {
     return {
       'general': general,
       'geox-url': patchConfig.geoXUrl.toJson(),
+      // chain.28 (T199): the core-side geo auto-update follows the
+      // same single switch as the app-side data channels, daily.
+      'geo-auto-update': config.appSetting.dataAutoUpdate,
+      'geo-update-interval': 24,
       'hosts': [
         for (final host in patchConfig.hosts.entries)
           if (system.isAndroid || host.key != 'services.googleapis.cn')

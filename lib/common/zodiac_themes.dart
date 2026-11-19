@@ -299,6 +299,10 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
   /// empty for the deep-space series.
   final String sign;
 
+  /// The solid series' full-canvas artwork, painted by the backdrop
+  /// as a full-bleed cover layer; null for the other series.
+  final String? solidAssetPath;
+
   const ZodiacThemeExtension({
     required this.themeId,
     required this.skeleton,
@@ -307,6 +311,7 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     this.constellation = ZodiacConstellation.empty,
     this.showGuardian = true,
     this.sign = '',
+    this.solidAssetPath,
   });
 
   factory ZodiacThemeExtension.of(ZodiacThemeDef def) {
@@ -335,6 +340,7 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     ZodiacConstellation? constellation,
     bool? showGuardian,
     String? sign,
+    String? solidAssetPath,
   }) {
     return ZodiacThemeExtension(
       themeId: themeId ?? this.themeId,
@@ -344,6 +350,7 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
       constellation: constellation ?? this.constellation,
       showGuardian: showGuardian ?? this.showGuardian,
       sign: sign ?? this.sign,
+      solidAssetPath: solidAssetPath ?? this.solidAssetPath,
     );
   }
 
@@ -472,6 +479,9 @@ Color? zodiacDelayColor(ZodiacVariant? variant, int? delay) {
 /// the theme's constellation element layer — its asterism and a faint
 /// sign-glyph watermark — so every theme, not only the immersive
 /// family, sits in its own light field with its own sign in it.
+/// The solid series (T224) replaces the element layer with its
+/// full-canvas artwork image, painted unblurred over the same
+/// background and glow layers.
 ///
 /// The backdrop also composes the theme's guardian (T159) as its two
 /// top layers — the figure above the light field, the name plate
@@ -527,7 +537,17 @@ class ZodiacBackdrop extends StatelessWidget {
         // sits at a light defocus (sigma 1.2–1.3; the guardian's
         // strength was recalibrated by T193). The name plates are
         // text, not artwork — they stay legible, already dimmed.
-        if (zodiac.motif != null) ...[
+        // The solid series is the one exception to the blur rule
+        // (T224): its artwork is a finished full-canvas image whose
+        // solid base and faint watermark are already at their
+        // approved strength, so it is painted as-is — full-bleed
+        // cover, no blur, no opacity reduction — with no
+        // constellation, guardian, motif or name plate over it.
+        if (zodiac.solidAssetPath != null) ...[
+          Positioned.fill(
+            child: Image.asset(zodiac.solidAssetPath!, fit: BoxFit.cover),
+          ),
+        ] else if (zodiac.motif != null) ...[
           Positioned.fill(
             child: ImageFiltered(
               imageFilter: ui.ImageFilter.blur(

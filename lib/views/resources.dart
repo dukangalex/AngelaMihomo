@@ -284,6 +284,12 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
                 const CityDataListItem(),
               ],
             ),
+            ...generateSection(
+              items: const [
+                DataAutoUpdateListItem(),
+                ManagedScriptChannelListItem(),
+              ],
+            ),
           ],
         ),
       ),
@@ -431,7 +437,7 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 const SizedBox(height: 4),
                 Text(
                   isBundleMRS
-                      ? 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/BundleMRS.7z'
+                      ? 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/BundleMRS.7z'
                       : url!,
                   style: context.textTheme.bodyMedium?.toLight,
                 ),
@@ -757,6 +763,126 @@ class _UpdateGeoUrlFormDialogState extends State<UpdateGeoUrlFormDialog> {
             minLines: 1,
             controller: urlController,
             decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// chain.28 (T199): the single switch for every data-channel auto
+/// update — the city database above and the managed script below,
+/// plus the core-side geo update interval. Mirrors the
+/// AutoCheckUpdateItem pattern from the application settings page.
+class DataAutoUpdateListItem extends ConsumerWidget {
+  const DataAutoUpdateListItem({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dataAutoUpdate = ref.watch(
+      appSettingProvider.select((state) => state.dataAutoUpdate),
+    );
+    return ListItem.switchItem(
+      title: Text(appLocalizations.dataAutoUpdate),
+      subtitle: Text(appLocalizations.dataAutoUpdateDesc),
+      delegate: SwitchDelegate(
+        value: dataAutoUpdate,
+        onChanged: (bool value) {
+          ref
+              .read(appSettingProvider.notifier)
+              .updateState((state) => state.copyWith(dataAutoUpdate: value));
+        },
+      ),
+    );
+  }
+}
+
+/// chain.28 (T199/T220): the managed script's data-channel status,
+/// listed with the other external resources. Shows the script
+/// version actually in effect (the channel copy when it is at least
+/// the bundled one, otherwise the bundled asset), when the channel
+/// copy last landed, and the last check's outcome — a failure is
+/// shown with its recorded reason, never hidden.
+class ManagedScriptChannelListItem extends StatelessWidget {
+  const ManagedScriptChannelListItem({super.key});
+
+  Future<
+    ({
+      ManagedScriptChannelStatus status,
+      String? bundledVersion,
+      String? effectiveVersion,
+    })
+  >
+  _load() {
+    final bundled = ManagedScript.bundledVersion;
+    return ManagedScriptUpdateService().currentStatus(
+      bundledVersion: bundled.isEmpty ? null : bundled,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: const Text('managed.js'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          FutureBuilder<
+            ({
+              ManagedScriptChannelStatus status,
+              String? bundledVersion,
+              String? effectiveVersion,
+            })
+          >(
+            future: _load(),
+            builder: (_, snapshot) {
+              final height = globalState.measure.bodyMediumHeight;
+              final data = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  data == null) {
+                return SizedBox(width: height, height: height);
+              }
+              final status = data.status;
+              final effective = data.effectiveVersion;
+              final fromChannel =
+                  status.channelVersion != null &&
+                  effective == status.channelVersion;
+              final failed =
+                  status.lastOutcome == 'failed' && status.lastError != null;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: height,
+                    child: Text(
+                      [
+                        if (effective != null) 'v$effective',
+                        fromChannel ? 'Channel' : 'Bundled',
+                        if (status.updatedAt != null)
+                          status.updatedAt!.lastUpdateTimeDesc,
+                      ].join('  ·  '),
+                      style: context.textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${bundleMRSRawUrl}managed.js',
+                    style: context.textTheme.bodyMedium?.toLight,
+                  ),
+                  if (failed) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${appLocalizations.geoDataUpdateFailed}: ${status.lastError}',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ],
       ),

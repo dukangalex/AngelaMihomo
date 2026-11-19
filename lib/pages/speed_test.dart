@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -214,29 +213,16 @@ class _SpeedTestPageState extends ConsumerState<SpeedTestPage>
   }
 
   Future<String?> _resolveSystemDnsFallback() async {
+    // System DNS only: this refines the Apple server's display info,
+    // it is not part of the measurement path, so a third-party DoH
+    // resolver is not worth the extra outbound dependency. When the
+    // system resolver yields no public address the caller keeps the
+    // core-provided server IP unchanged.
     try {
       final addresses = await InternetAddress.lookup('mensura.cdn-apple.com');
       for (final addr in addresses) {
         if (utils.classifyIp(addr.address) == IpCategory.public) {
           return addr.address;
-        }
-      }
-    } catch (_) {}
-    try {
-      final response = await request.getTextResponseForUrl(
-        'https://223.5.5.5/resolve?name=mensura.cdn-apple.com&type=A',
-      );
-      final body = response.data;
-      final json = body is Map
-          ? body as Map<String, dynamic>
-          : (body is String ? jsonDecode(body) as Map<String, dynamic> : null);
-      final answers = json?['Answer'];
-      if (answers is List) {
-        for (final item in answers) {
-          final data = item is Map ? item['data']?.toString() ?? '' : '';
-          if (utils.classifyIp(data) == IpCategory.public) {
-            return data;
-          }
         }
       }
     } catch (_) {}

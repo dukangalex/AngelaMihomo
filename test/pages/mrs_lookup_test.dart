@@ -68,11 +68,10 @@ void main() {
     expect(const AppSettingProps().mrsTapAction, MrsTapAction.viewRules);
   });
 
-  testWidgets('选择复制链接时复制 GitHub Raw 链接', (tester) async {
+  testWidgets('选择复制链接时复制自有数据仓链接', (tester) async {
     expect(
-
       await _tap(tester, MrsTapAction.copyUrl),
-      'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs',
+      'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-telegram.mrs',
     );
   });
 }

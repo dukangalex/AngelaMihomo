@@ -2324,6 +2324,27 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Data auto-update`
+  String get dataAutoUpdate {
+    return Intl.message(
+      'Data auto-update',
+      name: 'dataAutoUpdate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update geo data and the built-in script daily`
+  String get dataAutoUpdateDesc {
+    return Intl.message(
+      'Update geo data and the built-in script daily',
+      name: 'dataAutoUpdateDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `External Resources`
   String get externalResources {
     return Intl.message(

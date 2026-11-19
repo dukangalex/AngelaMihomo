@@ -73,8 +73,8 @@ class ItemCard extends StatelessWidget {
 }
 
 /// The theme chooser: the 星辰大海 family name heads the card and
-/// its two series sit under it as collapsible sections — 十二星座，
-/// 人类深空探索. The section holding the
+/// its three series sit under it as collapsible sections — 十二星座，
+/// 人类深空探索, 纯色生肖. The section holding the
 /// active theme starts expanded; every section can be opened or
 /// closed on its own.
 class _StarrySeaThemeItem extends ConsumerStatefulWidget {
@@ -111,6 +111,7 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
     return switch (selected.series) {
       ThemeSeries.zodiac => resolveZodiacTheme(selected.id).nameZh,
       ThemeSeries.deepSpace => deepSpaceThemeById(selected.id)?.nameZh ?? '',
+      ThemeSeries.solid => solidThemeById(selected.id)?.nameZh ?? '',
     };
   }
 
@@ -191,6 +192,23 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
               for (final theme in deepSpaceThemes)
                 _DeepSpaceThemeRow(
                   theme: theme,
+                  isSelected: theme.id == selected.id,
+                  onTap: () => _select(theme.id),
+                ),
+            ],
+          ),
+          _SeriesSection(
+            nameZh: solidSeriesNameZh,
+            nameEn: solidSeriesNameEn,
+            expanded: _expanded.contains(ThemeSeries.solid),
+            onToggle: () => _toggle(ThemeSeries.solid),
+            children: [
+              for (final theme in solidThemes)
+                _ThemeRow(
+                  glyph: theme.nameZh,
+                  nameZh: theme.nameZh,
+                  nameEn: theme.nameEn,
+                  variant: theme.variant,
                   isSelected: theme.id == selected.id,
                   onTap: () => _select(theme.id),
                 ),
@@ -416,7 +434,8 @@ class _DeepSpaceThemeRow extends StatelessWidget {
   }
 }
 
-/// One theme row in the glyph-led series (the constellations).
+/// One theme row in the glyph-led series (the constellations, and
+/// the solid zodiac whose glyph is the animal's Chinese name).
 class _ThemeRow extends StatelessWidget {
   final String glyph;
   final String nameZh;

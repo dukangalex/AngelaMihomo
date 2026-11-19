@@ -302,7 +302,16 @@ class _MatchList extends ConsumerWidget {
   }
 
   void _copyUrl(BuildContext context, MrsMatch match) {
-    Clipboard.setData(ClipboardData(text: '$bundleMRSRawUrl${match.file}'));
+    // The own-repo release stores .mrs files flat as '<kind>-<name>.mrs',
+    // while match.file is the BundleMRS-internal path (e.g.
+    // 'geo/geosite/cn.mrs'); kind/name come from the Go lookup
+    // (core/toolbox/mrs_lookup.go listMrsFiles: kind from the geoip/
+    // path segment, name = file base name without the .mrs suffix).
+    // GitHub strips '!' from release asset names, so the flat asset name
+    // drops it as well (name 'category-ai-!cn' is served as
+    // 'geosite-category-ai-.cn.mrs').
+    final assetName = '${match.kind}-${match.name.replaceAll('!', '')}.mrs';
+    Clipboard.setData(ClipboardData(text: '$bundleMRSRawUrl$assetName'));
     context.showNotifier(appLocalizations.copySuccess);
   }
 

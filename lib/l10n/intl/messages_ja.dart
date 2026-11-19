@@ -861,6 +861,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "geoDataUpToDate": MessageLookupByLibrary.simpleMessage("地理データは最新です"),
     "geoDataUpdateFailed": MessageLookupByLibrary.simpleMessage("地理データの更新に失敗しました。ネットワークを確認して再試行してください"),
     "geoDataVerifyFailed": MessageLookupByLibrary.simpleMessage("ダウンロードした地理データの検証に失敗したため破棄しました。再試行してください"),
+    "dataAutoUpdate": MessageLookupByLibrary.simpleMessage("データ自動更新"),
+    "dataAutoUpdateDesc": MessageLookupByLibrary.simpleMessage("地理データと組み込みスクリプトを毎日自動更新"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO省メモリ"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "メモリ消費を抑えたGEOローダーを使用",

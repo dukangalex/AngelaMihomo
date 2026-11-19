@@ -43,6 +43,7 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
       enableNavBarHapticFeedback:
           json['enableNavBarHapticFeedback'] as bool? ?? true,
       autoCheckUpdate: json['autoCheckUpdate'] as bool? ?? true,
+      dataAutoUpdate: json['dataAutoUpdate'] as bool? ?? true,
       showLabel: json['showLabel'] as bool? ?? false,
       disclaimerAccepted: json['disclaimerAccepted'] as bool? ?? false,
       minimizeOnExit: json['minimizeOnExit'] as bool? ?? true,
@@ -84,9 +85,9 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(
             _$MrsRawSourceEnumMap,
             json['mrsRawSource'],
-            unknownValue: MrsRawSource.metaRulesDat,
+            unknownValue: MrsRawSource.angelamihomoGeo,
           ) ??
-          MrsRawSource.metaRulesDat,
+          MrsRawSource.angelamihomoGeo,
       mrsTapAction:
           $enumDecodeNullable(
             _$MrsTapActionEnumMap,
@@ -144,6 +145,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'startSwitchOffLabel': instance.startSwitchOffLabel,
       'enableNavBarHapticFeedback': instance.enableNavBarHapticFeedback,
       'autoCheckUpdate': instance.autoCheckUpdate,
+      'dataAutoUpdate': instance.dataAutoUpdate,
       'showLabel': instance.showLabel,
       'disclaimerAccepted': instance.disclaimerAccepted,
       'minimizeOnExit': instance.minimizeOnExit,
@@ -192,7 +194,10 @@ const _$SidebarFlyoutDelayEnumMap = {
   SidebarFlyoutDelay.slow: 'slow',
 };
 
-const _$MrsRawSourceEnumMap = {MrsRawSource.metaRulesDat: 'metaRulesDat'};
+const _$MrsRawSourceEnumMap = {
+  MrsRawSource.angelamihomoGeo: 'angelamihomoGeo',
+  MrsRawSource.metaRulesDat: 'metaRulesDat',
+};
 
 const _$MrsTapActionEnumMap = {
   MrsTapAction.viewRules: 'viewRules',

@@ -284,6 +284,8 @@
   "geoDataUpToDate": "Geo data is up to date",
   "geoDataUpdateFailed": "Geo data update failed. Check your network and try again.",
   "geoDataVerifyFailed": "The downloaded geo data failed verification and was discarded. Please try again.",
+  "dataAutoUpdate": "Data auto-update",
+  "dataAutoUpdateDesc": "Update geo data and the built-in script daily",
   "externalResources": "External Resources",
   "checking": "Checking...",
   "country": "Country",

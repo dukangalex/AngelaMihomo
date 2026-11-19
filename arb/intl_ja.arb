@@ -284,6 +284,8 @@
   "geoDataUpToDate": "地理データは最新です",
   "geoDataUpdateFailed": "地理データの更新に失敗しました。ネットワークを確認して再試行してください",
   "geoDataVerifyFailed": "ダウンロードした地理データの検証に失敗したため破棄しました。再試行してください",
+  "dataAutoUpdate": "データ自動更新",
+  "dataAutoUpdateDesc": "地理データと組み込みスクリプトを毎日自動更新",
   "externalResources": "外部リソース",
   "checking": "確認中...",
   "country": "地域",

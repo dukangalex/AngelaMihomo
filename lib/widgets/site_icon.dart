@@ -192,7 +192,6 @@ class SiteIconCache {
   static List<String> candidates(String domain, int size) => [
     'https://$domain/apple-touch-icon.png',
     'https://$domain/favicon.ico',
-    'https://www.google.com/s2/favicons?domain=${Uri.encodeComponent(domain)}&sz=$size',
   ];
 
   Future<Uint8List?> _fetch(String domain, int size) async {
