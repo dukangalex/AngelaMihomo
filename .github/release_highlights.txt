@@ -1,6 +1,4 @@
-🖥️ Windows 安装焕新：安装时弹出路径选择、默认装入 AngelaMihomo 目录，不再沿用旧 Bettbox 文件夹
-🧹 残留自动清理：升级安装自动清掉旧 Bettbox 助手服务与旧安装目录，配置与数据不受影响
-🔕 静默卸载不再卡住：非交互卸载默认保留用户数据，不再被确认弹窗挂起
-🔁 回环工具自有化：WindowsLoopbackManager 更名为 AngelaMihomoLoopbackManager
-🔒 构建流水线加固：全部第三方 Action 固定到提交哈希、令牌权限收紧到最小
-⚙️ 内核保持 Mihomo v1.19.34，本版为安装与维护专项更新
+TODO_FILL_HIGHLIGHT_1_ZH
+TODO_FILL_HIGHLIGHT_2_ZH
+TODO_FILL_HIGHLIGHT_3_ZH
+TODO_FILL_CORE_LINE_ZH

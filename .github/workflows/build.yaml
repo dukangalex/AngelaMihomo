@@ -606,6 +606,10 @@ jobs:
           else
             sed -e "s|BASE_VERSION|$base_version|g" -e "s|VERSION|$version|g" ./.github/release_template.md >> release.md
           fi
+          if grep -q 'TODO_FILL_' release.md || grep -q 'TODO_FILL_' ./.github/release_highlights.txt; then
+            echo "::error::Release copy still contains TODO_FILL_ placeholders; fill in .github/release_template.md and .github/release_highlights.txt for this release before tagging."
+            exit 1
+          fi
 
       - name: Release
         if: ${{ env.SHOULD_RELEASE == 'true' }}

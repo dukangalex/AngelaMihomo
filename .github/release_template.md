@@ -1,26 +1,32 @@
+<!--
+  发布说明模板：每版必填，不许留空。
+  TODO_FILL_ 开头的占位符必须在打 tag 之前逐项换成本版文案；
+  构建流水线会检查成稿与频道公告稿，残留任何 TODO_FILL_ 都会直接失败，
+  防止旧版文案再次随新版发出（chain.28 发布说明带旧文的教训）。
+  下载链接中的版本号记号由流水线自动替换，不要改动。
+-->
+
 # Angela Mihomo 正式版本发布 / Stable Release
 
-### 🖥️ 本版专项：Windows 安装焕新 / This release: a clean Windows install experience
+### TODO_FILL_HEADLINE_ZH / TODO_FILL_HEADLINE_EN
 
-Windows 安装器此前会沿用旧版的安装目录（装过 Bettbox 时代版本的用户会被装回 Bettbox 文件夹）。本版起：安装时弹出路径选择页、默认装入 Angela Mihomo 目录、升级安装自动清理旧 Bettbox 助手服务与旧安装目录（配置与数据不受影响）；静默卸载不再被数据确认弹窗卡住。应用功能与 chain.26 相同，内核保持 Mihomo v1.19.34。
-(Windows installers used to inherit the previous install folder, which sent users coming from Bettbox-era builds back into a Bettbox directory. From this release: the installer always shows the destination page, defaults to an Angela Mihomo folder, and cleans up the legacy Bettbox helper service and old install directory on upgrade — configuration and data are untouched. Silent uninstalls no longer hang on the data-removal prompt. App features are unchanged from chain.26; the core stays at Mihomo v1.19.34.)
+TODO_FILL_SUMMARY_ZH
+(TODO_FILL_SUMMARY_EN)
 
 > 仍在 chain.25 或更早版本的用户请注意 chain.26 的一次性迁移：应用标识已改为 app.angelamihomo，升级前请先在旧版导出配置、装新版后导入。详见 chain.26 发布说明。
 > (Still on chain.25 or earlier? See the chain.26 release notes for the one-time app-identity migration: export your configuration before upgrading and import it afterwards.)
 
 ### ✨ 本版亮点 / What's new in this build
 
-- **安装路径自由选 / Choose your install path**：安装向导必定显示目标目录页，预填 Angela Mihomo 默认目录，可自由更改到任何位置
-  (The destination page always appears, pre-filled with the Angela Mihomo default; pick any folder you like)
-- **旧残留自动清理 / Legacy cleanup**：升级安装自动删除旧的 BettboxHelperService 服务注册与旧安装目录，不再留下 Bettbox 痕迹
-  (Upgrades remove the stale BettboxHelperService registration and the old install directory automatically)
-- **静默卸载不卡住 / Silent uninstall never hangs**：非交互卸载默认保留用户数据，不再等待确认弹窗
-  (Non-interactive uninstalls keep user data by default instead of waiting on a prompt)
-- **回环工具自有化 / Loopback tool renamed**：WindowsLoopbackManager 更名为 AngelaMihomoLoopbackManager
-  (WindowsLoopbackManager is now AngelaMihomoLoopbackManager)
-- **构建流水线加固 / Pipeline hardening**：全部第三方 GitHub Action 固定到提交哈希，工作流令牌权限收紧到最小
-  (Every third-party GitHub Action is pinned to a commit hash and workflow token permissions are reduced to the minimum)
-- **内核 / Core**：Mihomo v1.19.34（与 chain.26 相同，本版为安装与维护专项）
+- **TODO_FILL_1_TITLE_ZH / TODO_FILL_1_TITLE_EN**：TODO_FILL_1_DESC_ZH
+  (TODO_FILL_1_DESC_EN)
+- **TODO_FILL_2_TITLE_ZH / TODO_FILL_2_TITLE_EN**：TODO_FILL_2_DESC_ZH
+  (TODO_FILL_2_DESC_EN)
+- **TODO_FILL_3_TITLE_ZH / TODO_FILL_3_TITLE_EN**：TODO_FILL_3_DESC_ZH
+  (TODO_FILL_3_DESC_EN)
+- **TODO_FILL_4_TITLE_ZH / TODO_FILL_4_TITLE_EN**：TODO_FILL_4_DESC_ZH
+  (TODO_FILL_4_DESC_EN)
+- **内核 / Core**：Mihomo TODO_FILL_CORE_VERSION
 
 ### ✍️ 签名说明 / Signing
 
