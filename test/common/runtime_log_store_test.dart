@@ -233,5 +233,41 @@ void main() {
       expect(remaining, isEmpty);
       expect(await log.readTail(), isEmpty);
     });
+
+    test('readAllRetained returns every day, oldest first', () async {
+      final log = store();
+      await log.appendBatch([entry('day one', time: now)]);
+      now = DateTime(2026, 11, 16, 9, 0);
+      await log.appendBatch([entry('day two', time: now)]);
+      final all = await log.readAllRetained();
+      expect(all, contains('day one'));
+      expect(all, contains('day two'));
+      expect(all.indexOf('day one'), lessThan(all.indexOf('day two')));
+      expect(all, isNot(contains('omitted')));
+    });
+
+    test('readAllRetained byte cap keeps the newest and marks it', () async {
+      final log = store();
+      await log.appendBatch([
+        for (var i = 0; i < 20; i++) entry('line number $i', time: now),
+      ]);
+      final all = await log.readAllRetained(maxBytes: 200);
+      expect(all, startsWith('(export size cap:'));
+      expect(all, contains('line number 19'));
+      expect(all, isNot(contains('\tline number 0\n')));
+    });
+
+    test('readAllRetained on a missing directory is empty', () async {
+      final missing = RuntimeLogStore(
+        directoryProvider: () async =>
+            Directory(p.join(dir.path, 'does-not-exist')),
+        clock: () => now,
+        eventLog: AppEventLog(
+          directoryProvider: () async => dir,
+          clock: () => now,
+        ),
+      );
+      expect(await missing.readAllRetained(), '');
+    });
   });
 }

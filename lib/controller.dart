@@ -2737,11 +2737,20 @@ class AppController {
     // every export, so switch failures and their reasons stay visible
     // even after the in-memory log list has rolled over.
     final eventLogRaw = await appEventLog.readAllRetained();
+    // T263: the persisted runtime log (the flight recorder's full
+    // retained window) is part of every export too, so a failure can
+    // be reconstructed after the fact even when the in-memory list
+    // has long rolled over.
+    final runtimeLogRaw = await runtimeLogStore.readAllRetained();
     final data = await Isolate.run<List<int>>(() async {
       var logsRawString = logsRaw.join('\n');
       if (eventLogRaw.isNotEmpty) {
         logsRawString =
             '$logsRawString\n\n===== App event log (3 days) =====\n$eventLogRaw';
+      }
+      if (runtimeLogRaw.isNotEmpty) {
+        logsRawString =
+            '$logsRawString\n\n===== Runtime log (3 days) =====\n$runtimeLogRaw';
       }
       return utf8.encode(logsRawString);
     });

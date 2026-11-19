@@ -217,6 +217,56 @@ class RuntimeLogStore {
     });
   }
 
+  /// All retained runtime log text, oldest day first, for log
+  /// export — the black box retrieval path, mirroring
+  /// [AppEventLog.readAllRetained]. Newest-priority under a total
+  /// byte budget: when the retained files exceed [maxBytes], the
+  /// oldest content is dropped and a marker line says so, because a
+  /// post-incident export cares most about the run-up to the
+  /// failure, which is the newest part.
+  Future<String> readAllRetained({int maxBytes = 32 * 1024 * 1024}) {
+    return _lock.synchronized(() async {
+      final dir = await _directoryProvider();
+      if (!await dir.exists()) return '';
+      final files = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File &&
+            _dayFilePattern.hasMatch(p.basename(entity.path))) {
+          files.add(entity);
+        }
+      }
+      files.sort((a, b) => a.path.compareTo(b.path));
+      final chunks = <String>[];
+      var remaining = maxBytes;
+      var truncated = false;
+      for (final file in files.reversed) {
+        if (remaining <= 0) {
+          truncated = true;
+          break;
+        }
+        try {
+          final text = await file.readAsString();
+          final bytes = utf8.encode(text).length;
+          if (bytes <= remaining) {
+            chunks.add(text);
+            remaining -= bytes;
+          } else {
+            final encoded = utf8.encode(text);
+            var slice = encoded.sublist(encoded.length - remaining);
+            final newline = slice.indexOf(10);
+            if (newline >= 0) slice = slice.sublist(newline + 1);
+            chunks.add(utf8.decode(slice, allowMalformed: true));
+            truncated = true;
+            remaining = 0;
+          }
+        } catch (_) {}
+      }
+      final body = chunks.reversed.join();
+      if (!truncated) return body;
+      return '(export size cap: oldest runtime log lines omitted)\n$body';
+    });
+  }
+
   /// Deletes all retained runtime day files (the log page's clear
   /// action), and resets the size accounting with them.
   Future<void> clear() {
