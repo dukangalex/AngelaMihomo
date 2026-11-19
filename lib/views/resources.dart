@@ -437,7 +437,7 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
                 const SizedBox(height: 4),
                 Text(
                   isBundleMRS
-                      ? 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/BundleMRS.7z'
+                      ? 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/BundleMRS.7z'
                       : url!,
                   style: context.textTheme.bodyMedium?.toLight,
                 ),

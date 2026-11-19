@@ -704,6 +704,19 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
+    // Migrate a stored external UI URL that still points at the
+    // previous core bundle release to the current one. Only the
+    // exact previous default is rewritten; custom URLs are kept.
+    try {
+      final patchConfig = json['patchClashConfig'];
+      if (patchConfig is Map &&
+          patchConfig['external-ui-url'] ==
+              'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip') {
+        patchConfig['external-ui-url'] =
+            'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/zash.zip';
+      }
+    } catch (_) {}
+
     // Migrate a stored TUN device name that still carries the legacy
     // product name to the current one. Only the exact legacy value is
     // rewritten; a device name set on purpose is kept.

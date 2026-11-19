@@ -1,4 +1,4 @@
-// @version 2026111406
+// @version 2026111901
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---
@@ -2596,7 +2596,7 @@ const securityBaseline = {
   'etag-support': true,
   'external-controller': '127.0.0.1:19090',
   'external-ui': 'ui',
-  'external-ui-url': 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
+  'external-ui-url': 'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/zash.zip',
   'geodata-mode': false,
   'geodata-loader': 'memconservative',
   'geosite-matcher': 'succinct',

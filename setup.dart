@@ -453,20 +453,31 @@ class Build {
       fileName: 'ASN.mmdb',
     ),
     AssetDownloadItem(
-      // Mirrored into the project's own data repo (T214) from the
-      // MetaCubeX rule set bundle; see angelamihomo-geo release notes.
+      // The official MetaCubeX rule set bundle, mirrored into the
+      // project's own data repo; see the angelamihomo-geo release
+      // notes. The pinned digest is the mirrored file's SHA-256 from
+      // the signed core-bundle-2026.12 manifest; a download (or a
+      // cached copy) that does not match it fails the build.
       url:
-          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/BundleMRS.7z',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/BundleMRS.7z',
       fileName: 'BundleMRS.7z',
+      sha256:
+          '6d357bde4bb37cfc7708cae0843c365950b171e755842912a24ae0febf8832c3',
     ),
     AssetDownloadItem(
       // zashboard v3.29.1 dist-no-fonts, mirrored into the project's
-      // own data repo (T214); original: Zephyruso/zashboard.
+      // own data repo (T214); original: Zephyruso/zashboard. Pinned
+      // to the mirrored file's SHA-256, like BundleMRS.7z above.
       url:
-          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.11/zash.zip',
+          'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/zash.zip',
       fileName: 'zash.zip',
+      sha256:
+          '21371cd111b6b3d87774f3ea3ddeacdcb0f6aff8690a16d652daa3ea6e3b0145',
     ),
   ];
+
+  static String _fileSha256(File file) =>
+      sha256.convert(file.readAsBytesSync()).toString();
 
   static Future<void> ensureAssets({bool force = false}) async {
     final dataDir = Directory(join(current, 'assets', 'data'));
@@ -484,6 +495,16 @@ class Build {
       if (!shouldDownload) {
         if (!targetFile.existsSync() || targetFile.lengthSync() == 0) {
           shouldDownload = true;
+        } else if (item.sha256 != null &&
+            _fileSha256(targetFile) != item.sha256) {
+          // A pinned asset whose bytes differ from the pin — e.g. a
+          // cached copy of the previous bundle release, which ships
+          // under the same file name — is never trusted as current.
+          print(
+            '${item.fileName} does not match its pinned SHA-256, '
+            'downloading again.',
+          );
+          shouldDownload = true;
         } else {
           final lastModified = targetFile.lastModifiedSync();
           final age = now.difference(lastModified);
@@ -496,6 +517,14 @@ class Build {
       if (shouldDownload) {
         print('Downloading ${item.fileName} from ${item.url} ...');
         await _downloadAsset(item.url, targetFile.path);
+        if (item.sha256 != null && _fileSha256(targetFile) != item.sha256) {
+          targetFile.deleteSync();
+          throw StateError(
+            'SHA-256 mismatch for ${item.fileName} downloaded from '
+            '${item.url}: expected ${item.sha256}. Refusing to build '
+            'with an unverified bundle asset.',
+          );
+        }
         print('Downloaded ${item.fileName} successfully.');
       } else {
         final ageHours = now.difference(targetFile.lastModifiedSync()).inHours;
@@ -563,7 +592,16 @@ class AssetDownloadItem {
   final String url;
   final String fileName;
 
-  const AssetDownloadItem({required this.url, required this.fileName});
+  /// Pinned SHA-256 for assets whose bytes are part of the build's
+  /// integrity contract (the core bundle). Null for the geo data
+  /// files, whose freshness is the data channel's business instead.
+  final String? sha256;
+
+  const AssetDownloadItem({
+    required this.url,
+    required this.fileName,
+    this.sha256,
+  });
 }
 
 final _managedVersionPattern = RegExp(
