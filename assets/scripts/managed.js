@@ -1,4 +1,4 @@
-// @version 2026111901
+// @version 2026111902
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---
@@ -920,13 +920,13 @@ const rateRegionDefinitions = [
     name: lowRateRegionName,
     regex:
       /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])0[*×✕✖⨯⨉x倍])|(?:(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])[*×✕✖⨯⨉x]0(?=[ \)\]]|倍|$))|^(?!.*(?:客户端|软件)).*下载|低倍|免费|(?<![A-Za-z])free(?![A-Za-z])/i,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Available.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Available.svg',
   },
   {
     name: highRateRegionName,
     regex:
       /(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])((?:[*×✕✖⨯⨉x]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*×✕✖⨯⨉x])))/i,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Airport.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Airport.svg',
   },
 ];
 // @shared:end rateRegionDefinitions
@@ -938,7 +938,7 @@ const homeRegionDefinitions = [
   {
     name: homeRegionName,
     regex: /家宽|住宅|原生\s*IP|家庭宽带|\bISP\b|\bRES\b|residential/i,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Server.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Server.svg',
   },
 ];
 
@@ -1094,7 +1094,7 @@ const urlTestBaseOption = {
   type: 'url-test',
   tolerance: 50,
   'exclude-type': 'DIRECT',
-  icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Auto.svg',
+  icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Auto.svg',
   hidden: true,
 };
 // @shared:end urlTestBaseOption
@@ -1105,7 +1105,7 @@ const loadBalanceBaseOption = {
   type: 'load-balance',
   strategy: 'sticky-sessions',
   'exclude-type': 'DIRECT',
-  icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/RoundRobin.svg',
+  icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/RoundRobin.svg',
   hidden: true,
 };
 
@@ -1115,19 +1115,19 @@ const baseGroups = [
     name: '手动选择',
     baseOption: selectBaseOption,
     includeAll: true,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Static.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Static.svg',
   },
   {
     name: '自动选择',
     baseOption: urlTestBaseOption,
     includeAll: true,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Auto.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Auto.svg',
   },
   {
     name: '负载均衡',
     baseOption: loadBalanceBaseOption,
     includeAll: true,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/RoundRobin.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/RoundRobin.svg',
   },
   {
     name: '故障转移',
@@ -1135,10 +1135,10 @@ const baseGroups = [
       ...groupBaseOption,
       type: 'fallback',
       'exclude-type': 'DIRECT',
-      icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Auto.svg',
+      icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Auto.svg',
     },
     includeAll: true,
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Auto.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Auto.svg',
   },
 ];
 
@@ -1156,7 +1156,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/googlefcm.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Fcm.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/FCM.svg',
     rules: ['RULE-SET,googlefcm,FCM'],
   },
   {
@@ -1170,7 +1170,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/youtube.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/YouTube.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/YouTube.svg',
     rules: ['RULE-SET,youtube,YouTube'],
   },
   {
@@ -1190,7 +1190,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geoip/google.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Google.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Google.svg',
     rules: ['RULE-SET,google,Google', 'RULE-SET,google_ip,Google,no-resolve'],
   },
   {
@@ -1206,7 +1206,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/anthropic.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Proxy.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Proxy.svg',
     rules: [
       // 官方 geosite:anthropic：anthropic.com、claude.ai/com/dev、clau.de、mcp、usercontent。
       'RULE-SET,anthropic,Claude',
@@ -1234,7 +1234,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/category-ai-!cn.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/ChatGPT.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/ChatGPT.svg',
     rules: [
       'RULE-SET,ai,AI',
       'DOMAIN,cdn.usefathom.com,AI',
@@ -1253,7 +1253,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/github.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/GitHub.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/GitHub.svg',
     rules: ['RULE-SET,github,GitHub'],
   },
   {
@@ -1267,7 +1267,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/microsoft.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Microsoft.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Microsoft.svg',
     rules: ['RULE-SET,microsoft,Microsoft'],
   },
   {
@@ -1281,7 +1281,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/apple.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Apple.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Apple.svg',
     rules: ['RULE-SET,apple,Apple'],
   },
   {
@@ -1301,7 +1301,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geoip/telegram.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Telegram.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Telegram.svg',
     rules: ['RULE-SET,telegram,Telegram', 'RULE-SET,telegram_ip,Telegram,no-resolve'],
   },
   {
@@ -1315,7 +1315,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/steam.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Steam.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Steam.svg',
     rules: ['RULE-SET,steam,Steam'],
   },
   {
@@ -1330,7 +1330,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/tiktok.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/TikTok.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/TikTok.svg',
     rules: ['RULE-SET,tiktok,TikTok'],
   },
   {
@@ -1350,7 +1350,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geoip/twitter.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Twitter.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Twitter.svg',
     rules: ['RULE-SET,twitter,Twitter', 'RULE-SET,twitter_ip,Twitter,no-resolve'],
   },
   {
@@ -1370,7 +1370,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geoip/facebook.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Meta.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Meta.svg',
     rules: ['RULE-SET,meta,Meta', 'RULE-SET,facebook_ip,Meta,no-resolve'],
   },
   {
@@ -1384,7 +1384,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/line.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Line.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Line.svg',
     rules: ['RULE-SET,line,Line'],
   },
   {
@@ -1404,7 +1404,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geoip/netflix.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Netflix.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Netflix.svg',
     rules: ['RULE-SET,netflix,Netflix', 'RULE-SET,netflix_ip,Netflix,no-resolve'],
   },
   {
@@ -1418,7 +1418,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/category-emby.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Emby.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Emby.svg',
     rules: [
       'RULE-SET,emby,Emby',
       'DOMAIN-SUFFIX,mb3admin.com,Emby',
@@ -1444,7 +1444,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/pikpak.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Pikpak.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/PikPak.svg',
     rules: ['RULE-SET,pikpak,PikPak'],
   },
   {
@@ -1458,7 +1458,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/spotify.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Spotify.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Spotify.svg',
     rules: ['RULE-SET,spotify,Spotify'],
   },
   {
@@ -1473,7 +1473,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/category-cryptocurrency.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Bitcoin.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Bitcoin.svg',
     rules: ['RULE-SET,cryptocurrency,Crypto'],
   },
   {
@@ -1488,7 +1488,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/ehentai.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Ehentai.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/EHentai.svg',
     rules: ['RULE-SET,ehentai,EHentai'],
   },
   {
@@ -1524,7 +1524,7 @@ const serviceConfigs = [
         'path-in-bundle': 'geo/geosite/category-ads-all.mrs',
       },
     },
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/AdBlock.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/AdBlock.svg',
     rules: ['RULE-SET,adblockmihomolite,AdBlock'],
   },
 ];
@@ -1925,7 +1925,7 @@ function buildRegionGroups(filteredProxies) {
     generatedRegionGroups.push(
       ...createRegionGroup(
         '其他节点',
-        'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/WorldMap.svg',
+        'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/WorldMap.svg',
         otherProxies,
       ),
     );
@@ -1959,21 +1959,21 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
       ...selectBaseOption,
       name: '默认代理',
       proxies: allProxiesNames,
-      icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Proxy.svg',
+      icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Proxy.svg',
     };
     const finalRuleProviders = { ...baseRuleProviders };
     const directGroup = {
       ...selectBaseOption,
       name: '直连',
       proxies: [...directProxies.map((p) => p.name)],
-      icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/China.svg',
+      icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/flag/China.svg',
       hidden: true,
     };
     const globalGroup = {
       ...selectBaseOption,
       name: 'GLOBAL',
       proxies: ['默认代理'],
-      icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Global.svg',
+      icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Global.svg',
     };
     return {
       globalGroup,
@@ -1988,7 +1988,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
     ...selectBaseOption,
     name: '默认代理',
     proxies: [...groupNamesOfSelect, ...baseGroupNames],
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Proxy.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Proxy.svg',
   });
 
   const orderedServiceConfigs = [
@@ -2034,14 +2034,14 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
     name: '漏网之鱼',
     proxies: ['默认代理', ...groupNamesOfSelect],
     'default-selected': '默认代理',
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Stack.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Stack.svg',
   });
 
   const directGroup = {
     ...selectBaseOption,
     name: '直连',
     proxies: [...directProxies.map((p) => p.name)],
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/China.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/flag/China.svg',
     hidden: hideManualSelectGroupEnabled,
   };
 
@@ -2052,7 +2052,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
       ...functionalGroups.map((g) => g.name),
       ...generatedRegionGroups.map((g) => g.name),
     ],
-    icon: 'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/Global.svg',
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Global.svg',
   };
 
   return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, directGroup };
