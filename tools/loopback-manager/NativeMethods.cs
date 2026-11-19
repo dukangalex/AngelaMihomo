@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace AngelaMihomo.LoopbackManager
 {
@@ -130,5 +131,22 @@ namespace AngelaMihomo.LoopbackManager
         [DllImport("kernel32.dll", ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AttachConsole(int dwProcessId);
+
+        // HRESULT SHLoadIndirectString(
+        //   [in]  PCWSTR pszSource,
+        //   [out] PWSTR  pszOutBuf,
+        //   [in]  UINT   cchOutBuf,
+        //   void         **ppvReserved);
+        // Resolves an indirect resource string (the
+        // "@{Package_...?ms-resource://Package/Resources/Name}" form the
+        // enumeration API returns for packaged apps, or the classic
+        // "@file,-id" form) to the localized text it points at.
+        // Returns an HRESULT; S_OK (0) on success.
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        internal static extern int SHLoadIndirectString(
+            string pszSource,
+            [Out] StringBuilder pszOutBuf,
+            uint cchOutBuf,
+            IntPtr ppvReserved);
     }
 }

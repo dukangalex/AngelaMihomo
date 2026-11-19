@@ -21,6 +21,13 @@ assets were used.
   and print its resulting state line. Both are idempotent.
 - Exit codes: 0 success, 1 usage error, 2 target not found, 3 system call
   failed.
+- The enumeration API reports most packaged apps' display names and
+  descriptions as indirect resource strings
+  (`@{Package_...?ms-resource://...}`). Both the GUI and the CLI resolve
+  those through `SHLoadIndirectString` (shlwapi.dll), so the last `list`
+  field is the readable app name (for example `Notepad`). When resolution
+  fails or yields nothing, the raw string is kept; a container with no
+  display name at all is shown under its package family name.
 - The executable requests administrator elevation via its manifest, because
   the exemption configuration is machine-wide.
 - UI text is bilingual: Simplified Chinese on Chinese UI cultures, English
