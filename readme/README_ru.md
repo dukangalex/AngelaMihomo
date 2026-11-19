@@ -29,7 +29,6 @@
 * **[Bettbox](https://github.com/appshubcc/Bettbox)** — проект, от которого происходит эта кодовая база; спасибо appshubcc и всем участникам.
 * **[FlClash](https://github.com/chen08209/FlClash)** — исток линии разработки.
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)** — ядро.
-* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)** — инструмент освобождения UWP от изоляции loopback, входящий в состав Windows-сборки.
 
 ## Лицензия
 

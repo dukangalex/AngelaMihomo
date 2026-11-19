@@ -36,7 +36,6 @@
 * **[Bettbox](https://github.com/appshubcc/Bettbox)**（本项目代码谱系的源头，感谢 appshubcc 与所有贡献者）
 * **[FlClash](https://github.com/chen08209/FlClash)**（谱系起源）
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)**（核心引擎）
-* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)**（Windows 版随包分发的 UWP 回环豁免工具）
 
 ## 开源协议
 

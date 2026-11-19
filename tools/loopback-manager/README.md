@@ -55,9 +55,12 @@ CI: `.github/workflows/loopback-manager.yaml` builds the exe on
 
 ## Delivery
 
-The shipping copy is `windows/AngelaMihomoLoopbackManager.exe`, installed
-next to the main executable by `windows/CMakeLists.txt` and launched
-elevated (no arguments) from the Tools page. The self-built binary keeps
-the same file name and launch contract; swapping it in is a separate,
-verified step once the CI-built artifact has been validated on a real
-machine.
+The binary is a build product and is not committed (the path is listed
+in `.gitignore`). The main build workflow (`.github/workflows/build.yaml`)
+compiles this project on its Windows legs and stages the exe at
+`windows/AngelaMihomoLoopbackManager.exe`, where the existing
+`windows/CMakeLists.txt` install rule places it next to the main
+executable; the Tools page launches it elevated with no arguments.
+Building the Windows app locally therefore needs the same `dotnet build`
+step first: without the staged exe, the CMake install step fails on the
+missing file.

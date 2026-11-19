@@ -29,7 +29,6 @@
 * **[Bettbox](https://github.com/appshubcc/Bettbox)** — 이 코드베이스의 원류가 된 프로젝트. appshubcc와 모든 기여자에게 감사합니다.
 * **[FlClash](https://github.com/chen08209/FlClash)** — 계보의 기원.
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)** — 코어 엔진.
-* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)** — Windows 빌드에 포함되는 UWP 루프백 면제 도구.
 
 ## 라이선스
 

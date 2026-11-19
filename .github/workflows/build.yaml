@@ -402,6 +402,13 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: 'libclash/windows'
 
+      - name: Build Loopback Manager (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          dotnet build tools/loopback-manager/AngelaMihomoLoopbackManager.csproj -c Release
+          Copy-Item tools/loopback-manager/bin/Release/net48/AngelaMihomoLoopbackManager.exe windows/AngelaMihomoLoopbackManager.exe -Force
+
       - name: Build AngelaMihomo (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
