@@ -1142,7 +1142,7 @@
   "trafficStatsDetail": "記錄明細",
   "trafficStatsDetailDesc": "記錄網域、進程、節點和規則的去向，關閉後只記錄總量",
   "trafficStatsSiteIcon": "顯示網站圖示",
-  "trafficStatsSiteIconDesc": "優先從對應網站取得圖示，網站沒有清晰圖示時改用 Google 圖示服務，並快取到本機",
+  "trafficStatsSiteIconDesc": "從網站自身取得圖示，並快取到本機",
   "trafficStatsRetention": "資料保留",
   "trafficStatsClearTip": "確定清除全部流量統計資料嗎？",
   "trafficStatsDisabledTip": "預設關閉，開啟後開始記錄，資料只儲存在本機",

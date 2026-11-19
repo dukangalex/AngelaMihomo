@@ -1142,7 +1142,7 @@
   "trafficStatsDetail": "记录明细",
   "trafficStatsDetailDesc": "记录域名、进程、节点和规则的去向，关闭后只记录总量",
   "trafficStatsSiteIcon": "显示网站图标",
-  "trafficStatsSiteIconDesc": "优先从对应网站获取图标，网站没有清晰图标时改用 Google 图标服务，并缓存到本地",
+  "trafficStatsSiteIconDesc": "从网站自身获取图标，并缓存到本地",
   "trafficStatsRetention": "数据保留",
   "trafficStatsClearTip": "确定清除全部流量统计数据吗？",
   "trafficStatsDisabledTip": "默认关闭，开启后开始记录，数据只保存在本机",

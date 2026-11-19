@@ -2160,7 +2160,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("데이터 보관 기간"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("사이트 아이콘 표시"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "먼저 각 사이트에서 아이콘을 가져오고, 선명한 아이콘이 없으면 Google 아이콘 서비스를 사용해 로컬에 저장합니다",
+      "각 사이트 자체에서 아이콘을 가져와 로컬에 저장합니다",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("추이"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("트래픽 사용량"),

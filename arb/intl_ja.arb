@@ -1142,7 +1142,7 @@
   "trafficStatsDetail": "詳細を記録",
   "trafficStatsDetailDesc": "ドメイン・プロセス・ノード・ルール別に記録します。オフにすると合計のみ記録します",
   "trafficStatsSiteIcon": "サイトアイコンを表示",
-  "trafficStatsSiteIconDesc": "まず各サイトからアイコンを取得し、鮮明なアイコンがない場合は Google のアイコンサービスを使用してローカルに保存します",
+  "trafficStatsSiteIconDesc": "アイコンは各サイト自体から取得し、ローカルに保存します",
   "trafficStatsRetention": "データ保持期間",
   "trafficStatsClearTip": "すべての通信量統計を削除しますか？",
   "trafficStatsDisabledTip": "既定ではオフです。オンにすると記録を開始し、データはこの端末にのみ保存されます",

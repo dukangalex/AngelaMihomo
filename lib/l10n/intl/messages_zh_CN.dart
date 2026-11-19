@@ -1912,7 +1912,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("数据保留"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("显示网站图标"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "优先从对应网站获取图标，网站没有清晰图标时改用 Google 图标服务，并缓存到本地",
+      "从网站自身获取图标，并缓存到本地",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("趋势"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("流量统计"),

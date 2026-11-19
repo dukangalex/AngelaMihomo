@@ -9586,7 +9586,7 @@ class AppLocalizations {
   /// `Fetch icons from the sites first, use Google's icon service when a site has no sharp icon, and cache them locally`
   String get trafficStatsSiteIconDesc {
     return Intl.message(
-      'Fetch icons from the sites first, use Google\'s icon service when a site has no sharp icon, and cache them locally',
+      'Fetch icons from the sites themselves and cache them locally',
       name: 'trafficStatsSiteIconDesc',
       desc: '',
       args: [],

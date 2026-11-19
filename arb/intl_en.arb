@@ -1142,7 +1142,7 @@
   "trafficStatsDetail": "Record details",
   "trafficStatsDetailDesc": "Record domains, processes, nodes and rules. When off, only totals are kept",
   "trafficStatsSiteIcon": "Show site icons",
-  "trafficStatsSiteIconDesc": "Fetch icons from the sites first, use Google's icon service when a site has no sharp icon, and cache them locally",
+  "trafficStatsSiteIconDesc": "Fetch icons from the sites themselves and cache them locally",
   "trafficStatsRetention": "Data retention",
   "trafficStatsClearTip": "Clear all traffic statistics?",
   "trafficStatsDisabledTip": "Off by default. Once on, traffic is recorded on this device only",
