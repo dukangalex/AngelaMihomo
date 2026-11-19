@@ -431,10 +431,10 @@ jobs:
 
       - name: Upload Unsigned AngelaMihomo
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
-        id: upload-bettbox
+        id: upload-angelamihomo
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: unsigned-bettbox-${{ matrix.arch }}-${{ matrix.compatible }}
+          name: unsigned-angelamihomo-${{ matrix.arch }}-${{ matrix.compatible }}
           path: build/windows/${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}/runner/Release/AngelaMihomo.exe
           if-no-files-found: error
           retention-days: 1
@@ -444,7 +444,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/wait-artifact.sh '${{ steps.upload-bettbox.outputs.artifact-id }}'
+        run: bash .github/scripts/wait-artifact.sh '${{ steps.upload-angelamihomo.outputs.artifact-id }}'
 
       - name: Sign AngelaMihomo (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
@@ -456,7 +456,7 @@ jobs:
           organization-id: '0d3f8e8e-3f4d-4ac8-ab3f-d6c5c110ab0d'
           project-slug: 'AngelaMihomo'
           signing-policy-slug: '${{ env.EXE_SIGNING_POLICY_SLUG }}'
-          github-artifact-id: '${{ steps.upload-bettbox.outputs.artifact-id }}'
+          github-artifact-id: '${{ steps.upload-angelamihomo.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: 'build/windows/${{ matrix.arch == ''arm64'' && ''arm64'' || ''x64'' }}/runner/Release'
 
@@ -514,7 +514,7 @@ jobs:
           name: |
             unsigned-core-${{ matrix.arch }}-${{ matrix.compatible }}
             unsigned-helper-${{ matrix.arch }}-${{ matrix.compatible }}
-            unsigned-bettbox-${{ matrix.arch }}-${{ matrix.compatible }}
+            unsigned-angelamihomo-${{ matrix.arch }}-${{ matrix.compatible }}
             unsigned-installer-${{ matrix.arch }}-${{ matrix.compatible }}
           failOnError: false
       
