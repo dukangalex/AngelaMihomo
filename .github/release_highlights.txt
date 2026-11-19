@@ -1,4 +1,4 @@
-TODO_FILL_HIGHLIGHT_1_ZH
-TODO_FILL_HIGHLIGHT_2_ZH
-TODO_FILL_HIGHLIGHT_3_ZH
-TODO_FILL_CORE_LINE_ZH
+红线清零：TV 横幅、macOS 版权、默认标识全面自有化
+隐私加固：Android 系统云备份显式关闭，配置不再随备份离机
+官方整包：内置规则换官方整包，数据带 SHA-256 清单与签名校验
+内核 Mihomo 1.19.34（与 chain.28 同内核，本版为审计整改补丁）
