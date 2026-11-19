@@ -11,7 +11,7 @@
         "--dart-define",
         "APP_DEV=true"
       ],
-      "preLaunchTask": "bettbox: ensure dev core"
+      "preLaunchTask": "angelamihomo: ensure dev core"
     }
   ]
 }
