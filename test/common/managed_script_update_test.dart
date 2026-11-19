@@ -148,6 +148,44 @@ void main() {
     expect(status.lastError, contains('sha256 mismatch'));
   });
 
+  test(
+    'a channel copy with no recorded digest is ignored, reason recorded',
+    () async {
+      final (publicKey, _) = await sign(sumsBytes);
+      await channelFile.writeAsString(channelScript);
+      // Meta exists (a version is on record) but carries no digest:
+      // the copy cannot be tied to the verified manifest, so it must
+      // not be served even though its version looks current.
+      storedMeta = json.encode(
+        ManagedScriptChannelStatus(
+          channelVersion: '2026111405',
+          updatedAt: DateTime.utc(2026, 11, 14),
+          lastOutcome: 'updated',
+        ).toJson(),
+      );
+      final svc = service(publicKey: publicKey, fetch: (_) => null);
+      expect(await svc.readChannelCopy(), isNull);
+      final (:status, bundledVersion: _, effectiveVersion: _) = await svc
+          .currentStatus();
+      expect(status.lastOutcome, 'failed');
+      expect(status.lastError, contains('no recorded digest'));
+      expect(status.channelVersion, isNull);
+      expect(status.sha256, isNull);
+    },
+  );
+
+  test('a channel copy with no meta at all is ignored', () async {
+    final (publicKey, _) = await sign(sumsBytes);
+    await channelFile.writeAsString(channelScript);
+    storedMeta = null;
+    final svc = service(publicKey: publicKey, fetch: (_) => null);
+    expect(await svc.readChannelCopy(), isNull);
+    final (:status, bundledVersion: _, effectiveVersion: _) = await svc
+        .currentStatus();
+    expect(status.lastOutcome, 'failed');
+    expect(status.lastError, contains('no recorded digest'));
+  });
+
   group('effective content resolution', () {
     const bundled = '// @version 2026111404\nconst bundled = true;\n';
 

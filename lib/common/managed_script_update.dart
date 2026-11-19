@@ -265,8 +265,13 @@ class ManagedScriptUpdateService {
   }
 
   /// The stored channel copy's content, or null when there is none
-  /// (or it no longer matches the digest recorded for it — a
-  /// corrupted copy is never served).
+  /// usable. A copy is served only against the digest recorded for
+  /// it from the verified manifest: a copy whose bytes no longer
+  /// match is never served, and a copy with NO recorded digest —
+  /// meta lost or cleared while the file remained, or a file placed
+  /// there out of band — is unverified by definition, so it is
+  /// ignored the same way (fail closed) and the reason is recorded
+  /// in the channel status the resources page displays.
   Future<String?> readChannelCopy() async {
     try {
       final file = await _channelFile();
@@ -274,7 +279,19 @@ class ManagedScriptUpdateService {
       final bytes = await file.readAsBytes();
       final status = await _readStatus();
       final recorded = status.sha256;
-      if (recorded != null && sha256.convert(bytes).toString() != recorded) {
+      if (recorded == null) {
+        await _writeStatus(
+          ManagedScriptChannelStatus(
+            updatedAt: status.updatedAt,
+            lastOutcome: 'failed',
+            lastError:
+                'stored channel copy has no recorded digest; '
+                'treated as unverified and ignored',
+          ),
+        );
+        return null;
+      }
+      if (sha256.convert(bytes).toString() != recorded) {
         return null;
       }
       return utf8.decode(bytes);
