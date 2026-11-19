@@ -582,10 +582,14 @@ func DefaultRawConfig() *RawConfig {
 			StoreSelected: true,
 		},
 		GeoXUrl: RawGeoXUrl{
-			Mmdb:    "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb",
-			ASN:     "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb",
-			GeoIp:   "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat",
-			GeoSite: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat",
+			// AngelaMihomo: fallback defaults point at the project's own
+			// data repo, mirroring the app layer's assembled values, so the
+			// kernel never fetches geo data from a third-party repo even
+			// when driven without the app's config assembly.
+			Mmdb:    "https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb",
+			ASN:     "https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb",
+			GeoIp:   "https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.dat",
+			GeoSite: "https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat",
 		},
 		Sniffer: RawSniffer{
 			Enable:          false,
@@ -597,7 +601,8 @@ func DefaultRawConfig() *RawConfig {
 			ParsePureIp:     true,
 			OverrideDest:    true,
 		},
-		ExternalUIURL: "https://github.com/Zephyruso/zashboard/releases/latest/download/dist-no-fonts.zip",
+		// AngelaMihomo: own-repo mirror of the dashboard package (see GeoXUrl note).
+		ExternalUIURL: "https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/zash.zip",
 		ExternalControllerCors: RawCors{
 			AllowOrigins:        []string{"*"},
 			AllowPrivateNetwork: true,
