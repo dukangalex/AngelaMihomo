@@ -264,11 +264,14 @@ namespace AngelaMihomo.LoopbackManager
         /// apps report their display name and description as indirect
         /// resource strings ("@{Package_...?ms-resource://...}"), which are
         /// resolved through the documented SHLoadIndirectString. A resolved
-        /// value wins; when resolution fails or yields nothing, the
-        /// original string is kept; when there is no string at all, the
-        /// fallback applies (the package family name for display names,
-        /// empty for descriptions). Both the GUI and the CLI consume the
-        /// entries built here, so they always show the same text.
+        /// value wins; when the outcome would still be an unresolved
+        /// indirect string (the "@{...}" form — some system-internal
+        /// containers' references do not resolve in this context), the
+        /// fallback applies instead of exposing the raw reference (the
+        /// package family name for display names, empty for descriptions);
+        /// when there is no string at all, the fallback applies as well.
+        /// Both the GUI and the CLI consume the entries built here, so they
+        /// always show the same text.
         /// </summary>
         private static string ResolveDisplayText(string value, string fallback)
         {
@@ -281,7 +284,12 @@ namespace AngelaMihomo.LoopbackManager
                 return value;
             }
             string resolved = TryLoadIndirectString(value);
-            return string.IsNullOrEmpty(resolved) ? value : resolved;
+            string candidate = string.IsNullOrEmpty(resolved) ? value : resolved;
+            if (candidate.StartsWith("@{", StringComparison.Ordinal))
+            {
+                return fallback ?? string.Empty;
+            }
+            return candidate;
         }
 
         private static string TryLoadIndirectString(string source)

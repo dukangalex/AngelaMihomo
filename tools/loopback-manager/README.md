@@ -25,9 +25,12 @@ assets were used.
   descriptions as indirect resource strings
   (`@{Package_...?ms-resource://...}`). Both the GUI and the CLI resolve
   those through `SHLoadIndirectString` (shlwapi.dll), so the last `list`
-  field is the readable app name (for example `Notepad`). When resolution
-  fails or yields nothing, the raw string is kept; a container with no
-  display name at all is shown under its package family name.
+  field is the readable app name (for example `Notepad`). Some
+  system-internal containers' references do not resolve in this context;
+  when the outcome would still be an unresolved `@{...}` string, the
+  display name falls back to the package family name and the description
+  to empty, rather than exposing the raw reference. A container with no
+  display name at all is likewise shown under its package family name.
 - The executable requests administrator elevation via its manifest, because
   the exemption configuration is machine-wide.
 - UI text is bilingual: Simplified Chinese on Chinese UI cultures, English
