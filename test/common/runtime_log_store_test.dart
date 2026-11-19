@@ -257,6 +257,42 @@ void main() {
       expect(all, isNot(contains('\tline number 0\n')));
     });
 
+    test(
+      'black box pipeline: secrets never reach disk or export text',
+      () async {
+        final log = store();
+        // A realistic worst-case core line: subscription URL with a
+        // query token, a full share link (payload is the credential)
+        // and a bare UUID, next to diagnostic content that must stay.
+        final raw = Log.core({
+          'LogLevel': 'error',
+          'Payload':
+              '[TCP] fetch https://sub.example.com/api/subscribe'
+              '?token=tok-secret-123 failed; fallback '
+              'vless://b831381d-6324-4d53-ad4f-8cda48b30811'
+              '@node.example.com:443?security=reality#n1; uuid '
+              'b831381d-6324-4d53-ad4f-8cda48b30811 seen',
+          'time': now.millisecondsSinceEpoch,
+        });
+        await log.appendBatch([raw]);
+        final exported = await log.readAllRetained();
+        final seeded = await log.readTail();
+        for (final text in [exported, seeded.single.payload]) {
+          expect(text, isNot(contains('tok-secret-123')));
+          expect(text, isNot(contains('b831381d-6324')));
+          expect(text, contains('sub.example.com'));
+          expect(text, contains('failed'));
+        }
+        // The file on disk itself must not carry the secrets either.
+        final dayText = await RuntimeLogStore.dayFile(
+          dir,
+          now,
+        ).readAsString();
+        expect(dayText, isNot(contains('tok-secret-123')));
+        expect(dayText, isNot(contains('b831381d-6324')));
+      },
+    );
+
     test('readAllRetained on a missing directory is empty', () async {
       final missing = RuntimeLogStore(
         directoryProvider: () async =>
