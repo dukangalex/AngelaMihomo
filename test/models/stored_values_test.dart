@@ -74,14 +74,14 @@ void main() {
       );
     });
 
-    test('the current default is the core-bundle-2026.12 package', () {
+    test('an absent external-ui URL stays unset at the model layer', () {
+      // The model carries no default of its own (nullable field); the
+      // current core-bundle-2026.12 default is applied at assembly
+      // time. Nothing at this layer rewrites or invents a value.
       final config = Config.compatibleFromJson(
         _configJson((patch) => patch.remove('external-ui-url')),
       );
-      expect(
-        config.patchClashConfig.externalUiUrl,
-        'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/zash.zip',
-      );
+      expect(config.patchClashConfig.externalUiUrl, isNull);
     });
   });
 }
