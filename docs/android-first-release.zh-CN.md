@@ -1,5 +1,7 @@
 # Android 首次正式签名
 
+> **历史文档标注（chain.29 补注）**：本文写于本项目首次正式发布之时，文中 `com.appshub.bettbox`、`appshubcc`、`bettbox` 等字样均为成文时的真实名称与参数，属史料原文，不作修订。项目现名 AngelaMihomo，包名自 chain.26 起为 `app.angelamihomo`，现行口径以仓库 README 为准。特别提醒：文中 keytool 命令的 `-alias bettbox-release` 是现行正式签名 keystore 的真实别名，自首次发布沿用至今，切勿当作旧品牌字样顺手改名——改名会使签名配置与 keystore 对不上。
+
 这是首次正式发布，无需寻找历史正式 APK 或原签名。现有预览 APK 使用 Android Debug 证书，不能当作正式版；若已安装该预览包，正式签名不同，通常需先备份应用内配置，再卸载预览包后安装正式包（卸载可能清除数据）。包名保持 `com.appshub.bettbox` 不变。（注：chain.26 起包名已改为 `app.angelamihomo`，老用户需先在旧版导出配置再到新版导入，一次迁移后恢复覆盖升级。）正式发布后请永久保留同一签名密钥，以支持后续覆盖升级。
 
 ## 只需在自己的电脑完成一次

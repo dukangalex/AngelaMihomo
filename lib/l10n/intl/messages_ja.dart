@@ -2163,7 +2163,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("データ保持期間"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("サイトアイコンを表示"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "まず各サイトからアイコンを取得し、鮮明なアイコンがない場合は Google のアイコンサービスを使用してローカルに保存します",
+      "アイコンは各サイト自体から取得し、ローカルに保存します",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("推移"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("通信量統計"),

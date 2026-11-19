@@ -2603,7 +2603,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "نمایش آیکون سایت‌ها",
     ),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "ابتدا آیکون از خود سایت‌ها دریافت می‌شود و اگر آیکون واضحی نباشد از سرویس آیکون Google استفاده و به‌صورت محلی ذخیره می‌شود",
+      "آیکون از خود سایت‌ها دریافت و به‌صورت محلی ذخیره می‌شود",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("روند"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("مصرف ترافیک"),

@@ -137,6 +137,7 @@ const defaultPrimaryColor = 0xFF00897B;
 
 const maxLength = 1024;
 const maxLogLength = 512;
+const maxSeededLogLength = 2000;
 
 final mainIsolate = 'AngelaMihomoMainIsolate';
 

@@ -664,59 +664,6 @@ abstract class Config with _$Config {
       }
     } catch (_) {}
 
-    // Migrate stored geo data URLs that still point at a previous
-    // default source (the legacy bett-rules mirror or the MetaCubeX
-    // meta-rules-dat releases) to the project's own data repository.
-    // Only exact previous defaults are rewritten; custom URLs are kept.
-    try {
-      const legacyGeoUrls = {
-        'mmdb': {
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/geoip.metadb',
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
-        },
-        'asn': {
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/GeoLite2-ASN.mmdb',
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
-        },
-        'geosite': {
-          'https://github.com/appshubcc/bett-rules/releases/download/latest/geosite.dat',
-          'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
-        },
-      };
-      const ownGeoUrls = {
-        'mmdb':
-            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb',
-        'asn':
-            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb',
-        'geosite':
-            'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
-      };
-      final patchConfig = json['patchClashConfig'];
-      if (patchConfig is Map) {
-        final geoXUrl = patchConfig['geox-url'];
-        if (geoXUrl is Map) {
-          for (final entry in legacyGeoUrls.entries) {
-            if (entry.value.contains(geoXUrl[entry.key])) {
-              geoXUrl[entry.key] = ownGeoUrls[entry.key];
-            }
-          }
-        }
-      }
-    } catch (_) {}
-
-    // Migrate a stored TUN device name that still carries the legacy
-    // product name to the current one. Only the exact legacy value is
-    // rewritten; a device name set on purpose is kept.
-    try {
-      final patchConfig = json['patchClashConfig'];
-      if (patchConfig is Map) {
-        final tun = patchConfig['tun'];
-        if (tun is Map && tun['device'] == 'Bettbox') {
-          tun['device'] = 'AngelaMihomo';
-        }
-      }
-    } catch (_) {}
-
     return Config.fromJson(json);
   }
 }

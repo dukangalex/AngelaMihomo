@@ -402,6 +402,12 @@ class ClashService extends ClashHandlerInterface {
     _coreLost = true;
     if (_isDestroying || isStarting || globalState.isExiting) return;
     commonPrint.error('Core disconnected unexpectedly');
+    // T263 black box: an unexpected core death must leave a trace in
+    // the persistent event log even if nothing else survives.
+    appEventLog.record(
+      'core',
+      'core disconnected unexpectedly (socket closed)',
+    );
     final now = DateTime.now();
     final last = _lastAutoRestartAt;
     if (!globalState.isInit ||

@@ -1924,7 +1924,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "trafficStatsRetention": MessageLookupByLibrary.simpleMessage("資料保留"),
     "trafficStatsSiteIcon": MessageLookupByLibrary.simpleMessage("顯示網站圖示"),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "優先從對應網站取得圖示，網站沒有清晰圖示時改用 Google 圖示服務，並快取到本機",
+      "從網站自身取得圖示，並快取到本機",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("趨勢"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("流量統計"),

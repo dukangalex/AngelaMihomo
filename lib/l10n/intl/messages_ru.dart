@@ -2687,7 +2687,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Значки сайтов",
     ),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "Сначала загружать значки с сайтов, а если чёткого значка нет — через сервис значков Google, и хранить локально",
+      "Загружать значки с самих сайтов и хранить локально",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("Динамика"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Трафик"),

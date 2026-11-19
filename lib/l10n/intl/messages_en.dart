@@ -2574,7 +2574,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Show site icons",
     ),
     "trafficStatsSiteIconDesc": MessageLookupByLibrary.simpleMessage(
-      "Fetch icons from the sites first, use Google\'s icon service when a site has no sharp icon, and cache them locally",
+      "Fetch icons from the sites themselves and cache them locally",
     ),
     "trafficTrend": MessageLookupByLibrary.simpleMessage("Trend"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Traffic Usage"),

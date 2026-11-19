@@ -123,7 +123,7 @@ var
 begin
   PowerShellScript := 
     '$ErrorActionPreference = ''SilentlyContinue'';' + #13#10 +
-    'Write-Host "Cleaning old Wintun/AngelaMihomo/Bettbox/LiClash network adapters...";' + #13#10 +
+    'Write-Host "Cleaning legacy tunnel network adapters...";' + #13#10 +
     '$adapters = Get-NetAdapter | Where-Object {' + #13#10 +
     '$_.InterfaceDescription -like "*AngelaMihomo*" -or' + #13#10 +
     '  $_.Name -like "*AngelaMihomo*" -or' + #13#10 +

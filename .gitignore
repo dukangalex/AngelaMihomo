@@ -87,3 +87,7 @@ app.*.map.json
 /assets/data/zash.zip
 /assets/data/BundleMRS.7z
 /test/private/
+
+# Self-built in CI from tools/loopback-manager; staged here for the
+# windows/CMakeLists.txt install rule, never committed.
+/windows/AngelaMihomoLoopbackManager.exe

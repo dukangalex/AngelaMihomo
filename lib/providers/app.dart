@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
@@ -42,6 +43,24 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
       next.add(value);
     }
     state = next;
+  }
+
+  /// T263: seed persisted runtime-log history (read back from disk
+  /// on startup) ahead of whatever the live stream has already
+  /// delivered. Entries at or after the earliest live entry are
+  /// dropped, so seeded and live entries never overlap. The list
+  /// capacity grows to fit the seed; live appends keep truncating
+  /// against that capacity.
+  void seedHistory(List<Log> history) {
+    if (history.isEmpty) return;
+    final current = state.list;
+    final earliest = current.isEmpty ? null : current.first.time;
+    final seed = earliest == null
+        ? history
+        : history.where((log) => log.time.isBefore(earliest)).toList();
+    if (seed.isEmpty) return;
+    final capacity = max(maxLogLength, seed.length);
+    state = FixedList(capacity, list: [...seed, ...current]);
   }
 
   void mergeHistory(List<Log> history) {

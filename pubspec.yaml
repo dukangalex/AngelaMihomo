@@ -1,7 +1,7 @@
 name: angelamihomo
 description: A multi-platform proxy client based on Mihomo, simple and easy to use, open-source and ad-free.
 publish_to: 'none'
-version: 1.19.8-chain.28+2026111801
+version: 1.19.8-chain.29+2026111901
 environment:
   sdk: '>=3.9.0 <4.0.0'
 
@@ -97,6 +97,7 @@ flutter:
   assets:
     - assets/data/
     - assets/fonts/
+    - assets/fonts/licenses/
     - assets/images/
     - assets/images/avatars/
     - assets/images/guardians/
@@ -114,9 +115,9 @@ flutter:
     - family: Icons
       fonts:
         - asset: assets/fonts/Icons.ttf
-    - family: HarmonyOS_Sans
+    - family: NotoSansSC
       fonts:
-        - asset: assets/fonts/HarmonyOS_Sans_SC_Regular.ttf
+        - asset: assets/fonts/NotoSansSC-Regular.ttf
 ffigen:
   name: "ClashFFI"
   output: 'lib/clash/generated/clash_ffi.dart'

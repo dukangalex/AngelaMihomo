@@ -12,9 +12,10 @@ import 'path.dart';
 /// App-level events (core start/stop, profile switches and their failure
 /// reasons, config setup failures, profile updates, core restarts) are
 /// appended to per-day files under the app data directory. Unlike the
-/// in-memory log list — which a profile-switch rollback floods and the
-/// switch flow itself resets — these files survive process death and
-/// rollback storms, so a failure stays diagnosable after the fact.
+/// in-memory log list, these files survive process death and profile
+/// switches, so a failure stays diagnosable after the fact. Runtime
+/// (core) logs are persisted the same way by RuntimeLogStore (T263);
+/// this store keeps the app-level events.
 ///
 /// Retention is a rolling three days: day files older than the cutoff
 /// (today minus three days) are deleted opportunistically on write.

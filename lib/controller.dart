@@ -998,6 +998,11 @@ class AppController {
     final logs = List.of(_pendingLogs);
     _pendingLogs.clear();
     _ref.read(logsProvider.notifier).addLogs(logs);
+    // T263 black box: persist the same (already redacted) batch, so
+    // the run-up to a failure survives profile switches, core
+    // restarts and the process being killed. Fire-and-forget: disk
+    // trouble must never block or break the live log flow.
+    unawaited(runtimeLogStore.appendBatch(logs).catchError((_) {}));
   }
 
   void updateOrAddHotKeyAction(HotKeyAction hotKeyAction) {
@@ -1336,7 +1341,6 @@ class AppController {
         await clashCore.flushFakeIP();
         await clashCore.flushDnsCache();
       }
-      _ref.read(logsProvider.notifier).value = FixedList(maxLogLength);
       _ref.read(requestsProvider.notifier).value = FixedList(maxLength);
       globalState.computeHeightMapCache = {};
       addCheckIpNumDebounce();
@@ -2080,6 +2084,21 @@ class AppController {
     await WakelockPlus.enable();
   }
 
+  /// T263: seed the in-memory log list from the on-disk runtime log
+  /// store, so history from before a restart — or a process kill —
+  /// is visible again. Runs before the core starts; seedHistory
+  /// additionally drops anything not older than the earliest live
+  /// entry, so seeded and live entries never overlap. A read failure
+  /// degrades silently to no seed and never affects startup.
+  Future<void> _seedRuntimeLogs() async {
+    try {
+      final history = await runtimeLogStore.readTail(
+        maxLines: maxSeededLogLength,
+      );
+      _ref.read(logsProvider.notifier).seedHistory(history);
+    } catch (_) {}
+  }
+
   Future<void> init() async {
     FlutterError.onError = (details) {
       if (kDebugMode) {
@@ -2114,6 +2133,7 @@ class AppController {
 
     await updateTray(true);
 
+    await _seedRuntimeLogs();
     await _initCore();
     try {
       await _initStatus();
@@ -2717,11 +2737,20 @@ class AppController {
     // every export, so switch failures and their reasons stay visible
     // even after the in-memory log list has rolled over.
     final eventLogRaw = await appEventLog.readAllRetained();
+    // T263: the persisted runtime log (the flight recorder's full
+    // retained window) is part of every export too, so a failure can
+    // be reconstructed after the fact even when the in-memory list
+    // has long rolled over.
+    final runtimeLogRaw = await runtimeLogStore.readAllRetained();
     final data = await Isolate.run<List<int>>(() async {
       var logsRawString = logsRaw.join('\n');
       if (eventLogRaw.isNotEmpty) {
         logsRawString =
             '$logsRawString\n\n===== App event log (3 days) =====\n$eventLogRaw';
+      }
+      if (runtimeLogRaw.isNotEmpty) {
+        logsRawString =
+            '$logsRawString\n\n===== Runtime log (3 days) =====\n$runtimeLogRaw';
       }
       return utf8.encode(logsRawString);
     });

@@ -69,6 +69,57 @@ void main() {
     });
   });
 
+  group('Logs.seedHistory', () {
+    test('空列表时回种全部历史且容量随回种条数扩大', () {
+      final notifier = container.read(logsProvider.notifier);
+      notifier.seedHistory([
+        for (var i = 0; i < maxSeededLogLength + 100; i++)
+          _core('seed-$i', i),
+      ]);
+
+      final list = container.read(logsProvider).list;
+      expect(list.length, maxSeededLogLength + 100);
+      expect(list.first.payload, 'seed-0');
+      expect(list.last.payload, 'seed-${maxSeededLogLength + 99}');
+    });
+
+    test('只回种早于最早实时条目的历史，两边不重叠', () {
+      final notifier = container.read(logsProvider.notifier);
+      notifier.addLogs([_app('live', 1000)]);
+
+      notifier.seedHistory([
+        _core('old', 500),
+        _core('same-time', 1000),
+        _core('newer', 1500),
+      ]);
+
+      expect(payloads(), ['old', 'live']);
+    });
+
+    test('空历史不改变现状', () {
+      final notifier = container.read(logsProvider.notifier);
+      notifier.addLogs([_app('live', 1000)]);
+
+      notifier.seedHistory([]);
+
+      expect(payloads(), ['live']);
+    });
+
+    test('回种后实时追加仍按扩大后的容量截断', () {
+      final notifier = container.read(logsProvider.notifier);
+      notifier.seedHistory([
+        for (var i = 0; i < 600; i++) _core('seed-$i', i),
+      ]);
+
+      notifier.addLogs([_core('live', 10000)]);
+
+      final list = container.read(logsProvider).list;
+      expect(list.length, 600);
+      expect(list.first.payload, 'seed-1');
+      expect(list.last.payload, 'live');
+    });
+  });
+
   group('LogsFilter', () {
     test('toggleLevel 切换等级集合', () {
       final notifier = container.read(logsFilterProvider.notifier);

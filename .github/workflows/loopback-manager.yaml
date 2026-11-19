@@ -1,0 +1,32 @@
+name: loopback-manager
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/loopback-manager/**'
+      - '.github/workflows/loopback-manager.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      # The windows-latest image ships a .NET SDK; the net48 target builds
+      # against the Microsoft.NETFramework.ReferenceAssemblies package.
+      - name: Build loopback manager (Release)
+        shell: pwsh
+        run: dotnet build tools/loopback-manager/AngelaMihomoLoopbackManager.csproj -c Release
+
+      - name: Upload loopback manager
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: AngelaMihomoLoopbackManager
+          path: tools/loopback-manager/bin/Release/net48/AngelaMihomoLoopbackManager.exe
+          if-no-files-found: error

@@ -1,0 +1,11 @@
+# Bundled font licenses
+
+This directory ships with the app and records the license and attribution
+for each font bundled under `assets/fonts/`:
+
+| Font file | Family | Copyright holder | License | Terms kept in |
+|---|---|---|---|---|
+| `JetBrainsMono-Regular.ttf` | JetBrains Mono 2.304 | The JetBrains Mono Project Authors | SIL Open Font License 1.1 | `JetBrainsMono-OFL.txt` |
+| `Twemoji.Mozilla.ttf` | Twemoji COLRv0 | Twitter, Inc and other contributors (artwork); Mozilla Foundation (build code) | CC BY 4.0 (artwork); Apache-2.0 (code) | `Twemoji-Attribution.txt` |
+| `Icons.ttf` | Icons (single glyph) | Keyamoon / IcoMoon | CC BY 4.0 attribution basis | `Icons-IcoMoon-Attribution.txt` |
+| `NotoSansSC-Regular.ttf` | Noto Sans SC 2.004 (subset) | Google / Adobe (Noto CJK) | SIL Open Font License 1.1 | `NotoSansSC-OFL.txt` |

@@ -78,7 +78,7 @@ suspend fun Service.createNotificationBuilder(
         val priority = if (isSuspended || isHighPriority) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_LOW
 
         NotificationCompat.Builder(this@createNotificationBuilder, channelId).apply {
-            setSmallIcon(R.drawable.ic)
+            setSmallIcon(R.drawable.ic_notification_dark)
             if (largeIconBitmap != null) {
                 setLargeIcon(largeIconBitmap)
             }
@@ -106,7 +106,7 @@ fun Service.ensureNotificationChannel(
         isHighPriority -> GlobalState.NOTIFICATION_CHANNEL_HIGH
         else -> GlobalState.NOTIFICATION_CHANNEL
     }
-    deleteLegacyBettboxChannels(manager)
+    deleteLegacyChannels(manager)
     val name = when {
         isSuspended -> "Angela Mihomo Suspended Service"
         isHighPriority -> "Angela Mihomo High Priority Service"
@@ -143,7 +143,7 @@ private val currentNotificationChannelIds = setOf(
     GlobalState.NOTIFICATION_CHANNEL_SUSPENDED,
 )
 
-private fun deleteLegacyBettboxChannels(manager: NotificationManager) {
+private fun deleteLegacyChannels(manager: NotificationManager) {
     // Channels under retired ids linger in system settings forever because
     // nothing posts to them anymore. Current builds never create channels
     // with upstream branding, so any that remain are pre-rebrand leftovers.

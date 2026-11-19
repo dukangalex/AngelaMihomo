@@ -58,7 +58,7 @@ import kotlin.concurrent.withLock
 
 data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     @Volatile
-    private var bettBoxService: BaseServiceInterface? = null
+    private var coreService: BaseServiceInterface? = null
     @Volatile
     private var options: VpnOptions? = null
 
@@ -136,7 +136,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 bindTimeoutJob = null
                 isBind = true
                 isBinding.set(false)
-                bettBoxService = when (service) {
+                coreService = when (service) {
                     is AngelaMihomoVpnService.LocalBinder -> service.getService()
                     is AngelaMihomoService.LocalBinder -> service.getService()
                     else -> { completeStart(requestSerial.get(), false); return }
@@ -165,7 +165,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             if (ticket != bindSerial.get()) return
             isBind = false
             isBinding.set(false)
-            bettBoxService = null
+            coreService = null
             val disconnectedEpoch = retireLifecycle()
             vpnTeardownComplete = false
             completeStart(requestSerial.get(), false)
@@ -182,8 +182,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     // before connection would discard the only destruction identity we can await.
     private fun cleanupRetiredBinding(retired: RetiredBinding, instance: BaseServiceInterface, oldConnection: ServiceConnection) {
         val accepted = synchronized(activeEpoch) {
-            if (!current(retired.epoch) || retiredBinding !== retired || bettBoxService != null) false
-            else { bettBoxService = instance; retiredBinding = null; true }
+            if (!current(retired.epoch) || retiredBinding !== retired || coreService != null) false
+            else { coreService = instance; retiredBinding = null; true }
         }
         if (!accepted) return
         teardownScope.launch {
@@ -242,7 +242,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             }
         }
 
-        if (GlobalState.currentRunState == RunState.START && bettBoxService == null) {
+        if (GlobalState.currentRunState == RunState.START && coreService == null) {
             android.util.Log.d("VpnPlugin", "VPN is running but service connection lost, rebinding...")
             options?.let { bindService() }
         }
@@ -671,7 +671,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         if (!shouldUpdate) return
 
         try {
-            bettBoxService?.startForeground()
+            coreService?.startForeground()
         } catch (e: Exception) {
             android.util.Log.e("VpnPlugin", "startForeground error: ${e.message}")
         }
@@ -684,9 +684,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val context = AngelaMihomoApplication.getAppContext()
                 val notificationManager = context.getSystemService(android.app.NotificationManager::class.java)
                 notificationManager?.cancel(GlobalState.NOTIFICATION_ID)
-                (bettBoxService as? AngelaMihomoService)?.resetNotificationBuilder()
-                (bettBoxService as? AngelaMihomoVpnService)?.resetNotificationBuilder()
-                bettBoxService?.startForeground()
+                (coreService as? AngelaMihomoService)?.resetNotificationBuilder()
+                (coreService as? AngelaMihomoVpnService)?.resetNotificationBuilder()
+                coreService?.startForeground()
             }.onFailure {
                 android.util.Log.e("VpnPlugin", "updateNotificationIcon error: ${it.message}")
             }
@@ -716,7 +716,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     delay(1000)
                     if (!GlobalState.isSpeedNotificationEnabled ||
                         GlobalState.currentRunState != RunState.START ||
-                        bettBoxService == null ||
+                        coreService == null ||
                         !isInteractive()
                     ) {
                         break
@@ -738,7 +738,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     fun updateNotificationSpeed(profileName: String, speedInfo: String) {
         scope.launch {
             runCatching {
-                when (val service = bettBoxService) {
+                when (val service = coreService) {
                     is AngelaMihomoVpnService -> service.updateNotificationSpeed(profileName, speedInfo)
                     is AngelaMihomoService -> service.updateNotificationSpeed(profileName, speedInfo)
                     else -> Unit
@@ -753,7 +753,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         stopSpeedTicker()
         scope.launch {
             runCatching {
-                when (val service = bettBoxService) {
+                when (val service = coreService) {
                     is AngelaMihomoVpnService -> service.restoreNotification()
                     is AngelaMihomoService -> service.restoreNotification()
                     else -> Unit
@@ -766,8 +766,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     fun setHighPriorityNotification(enabled: Boolean) {
         GlobalState.isNotificationHighPriority = enabled
-        (bettBoxService as? AngelaMihomoService)?.resetNotificationBuilder()
-        (bettBoxService as? AngelaMihomoVpnService)?.resetNotificationBuilder()
+        (coreService as? AngelaMihomoService)?.resetNotificationBuilder()
+        (coreService as? AngelaMihomoVpnService)?.resetNotificationBuilder()
         if (GlobalState.currentRunState == RunState.START) {
             scope.launch {
                 startForeground()
@@ -777,7 +777,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     fun getStatus(): Boolean {
         return GlobalState.runLock.withLock {
-            GlobalState.currentRunState == RunState.START && bettBoxService != null
+            GlobalState.currentRunState == RunState.START && coreService != null
         }
     }
 
@@ -787,7 +787,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             android.util.Log.w("VpnPlugin", "VPN is in stopping state, ignore start request")
             return
         }
-        if (bettBoxService == null) {
+        if (coreService == null) {
             teardownScope.launch(Dispatchers.Main) {
                 synchronized(activeEpoch) {
                     if (startRequest == requestSerial.get() && !GlobalState.isCurrentlyStopping()) bindService()
@@ -889,11 +889,11 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         synchronized(activeEpoch) {
             // retireLifecycle uses the same monitor, so an old waiter cannot
             // clear stopping between a newer epoch's retirement and teardown.
-            if (!current(epoch) || bettBoxService !== service) return@synchronized false
+            if (!current(epoch) || coreService !== service) return@synchronized false
             if (service != null && !service.destructionComplete.isCompleted) return@synchronized false
             if (service == null && !vpnTeardownComplete) return@synchronized false
             vpnTeardownComplete = true
-            bettBoxService = null
+            coreService = null
             GlobalState.updateIsStopping(false)
             true
         }
@@ -922,7 +922,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     // Called after onDestroy resource cleanup. Unexpected destruction retires
     // the gate; expected teardown already owns a closed gate and must keep epoch.
     fun onVpnServiceDestroyed(service: AngelaMihomoVpnService) {
-        if (bettBoxService === service && !GlobalState.isCurrentlyStopping()) stopUnconfirmed(force = true)
+        if (coreService === service && !GlobalState.isCurrentlyStopping()) stopUnconfirmed(force = true)
     }
 
     private suspend fun performStartCore(
@@ -935,7 +935,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         // Opening non-VPN is legal only after the previous actual VPN service
         // called onDestroy; a timeout/failure deliberately stays fail-closed.
         if (!currentOptions.enable && !vpnTeardownComplete) return false
-        val service = bettBoxService ?: return false
+        val service = coreService ?: return false
         if (currentOptions.enable) vpnTeardownComplete = false
         resumeCore()
         var fd: Int? = 0
@@ -1016,7 +1016,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private fun startStickyService() {
         GlobalState.runLock.withLock {
             if (GlobalState.currentRunState != RunState.START) return
-            if (bettBoxService !is AngelaMihomoVpnService) return
+            if (coreService !is AngelaMihomoVpnService) return
             val context = AngelaMihomoApplication.getAppContext()
             runCatching {
                 context.startService(Intent(context, AngelaMihomoVpnService::class.java))
@@ -1030,7 +1030,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         var retries = 0
         while (retries < 5) {
             val success = runCatching {
-                (bettBoxService as? AngelaMihomoVpnService)?.protect(fd) == true
+                (coreService as? AngelaMihomoVpnService)?.protect(fd) == true
             }.getOrDefault(false)
             
             if (success) return true
@@ -1077,7 +1077,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             isBinding.set(false)
             val resumeAfterStop = { if (requestSerial.get() == stopRequest) onStopped?.invoke(); Unit }
             val epoch = retireLifecycle() // closes gate before any asynchronous teardown
-            val serviceRef = bettBoxService
+            val serviceRef = coreService
             val wasBound = isBind || hadBinding
             // A pending binding with no known service identity cannot be declared
             // destroyed merely because stopService/unbindService returned.

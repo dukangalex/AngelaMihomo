@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:angelamihomo/clash/clash.dart';
@@ -343,6 +344,9 @@ class _LogsViewState extends ConsumerState<LogsView>
   void _handleClearLogs() {
     ref.read(logsProvider.notifier).clearLogs();
     clashCore.clearLogs();
+    // T263: clearing must also wipe the persisted runtime log, or
+    // the cleared history would be seeded back on the next start.
+    unawaited(runtimeLogStore.clear().catchError((_) {}));
   }
 
   @override

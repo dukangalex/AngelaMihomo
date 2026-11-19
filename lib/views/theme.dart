@@ -19,7 +19,7 @@ class ThemeView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final shouldShowHarmonyFont = ref.watch(
+    final shouldShowBuiltinFont = ref.watch(
       appSettingProvider.select(
         (state) => switch (state.locale) {
           final locale? => locale.startsWith('zh') || locale.startsWith('en'),
@@ -29,7 +29,7 @@ class ThemeView extends ConsumerWidget {
     );
 
     final toggleItems = <Widget>[
-      if (shouldShowHarmonyFont) const _HarmonyFontItem(),
+      if (shouldShowBuiltinFont) const _BuiltinFontItem(),
       if (system.isAndroid) const _DarkIconItem(),
       if (system.isWindows) const _TrayIconInvertItem(),
       const _TextScaleFactorItem(),
@@ -604,8 +604,8 @@ class _ThemeRow extends StatelessWidget {
   }
 }
 
-class _HarmonyFontItem extends ConsumerWidget {
-  const _HarmonyFontItem();
+class _BuiltinFontItem extends ConsumerWidget {
+  const _BuiltinFontItem();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

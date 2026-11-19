@@ -422,7 +422,7 @@ class ApplicationState extends ConsumerState<Application>
             );
             final themeProps = ref.watch(themeSettingProvider);
             final fontFamily = themeProps.useHarmonyFont
-                ? 'HarmonyOS_Sans'
+                ? 'NotoSansSC'
                 : null;
             final zodiac = resolveAppTheme(themeProps.zodiacTheme);
             final lightColorScheme = ref.read(

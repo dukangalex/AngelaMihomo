@@ -65,7 +65,7 @@ void main() {
       );
       return ResponseBody.fromString(
         jsonEncode([
-          rel('core-bundle-2026.11', ['BundleMRS.7z', 'zash.zip']),
+          rel('core-bundle-2026.12', ['BundleMRS.7z', 'zash.zip']),
           rel('v2026.11.1', ['amcity.bin.gz', 'sha256sums.txt']),
         ]),
         200,
@@ -90,12 +90,12 @@ void main() {
       return ResponseBody.fromString(
         jsonEncode([
           {
-            'tag_name': 'core-bundle-2026.11',
+            'tag_name': 'core-bundle-2026.12',
             'assets': [
               {
                 'name': 'BundleMRS.7z',
                 'browser_download_url':
-                    'https://github.com/$geoRepo/releases/download/core-bundle-2026.11/BundleMRS.7z',
+                    'https://github.com/$geoRepo/releases/download/core-bundle-2026.12/BundleMRS.7z',
               },
             ],
           },

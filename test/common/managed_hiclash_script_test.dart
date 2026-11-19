@@ -40,12 +40,13 @@ void main() {
         'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
       ),
     );
-    // Group icons are served from this repo; kernel UA pins follow the core.
+    // Group icons are served from the project's icons repo (T236);
+    // kernel UA pins follow the core.
     expect(content, isNot(contains('HiClash@assets-v1')));
     expect(
       content,
       contains(
-        'https://raw.githubusercontent.com/dukangalex/AngelaMihomo/main/Icons/svg/',
+        'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/',
       ),
     );
     expect(content, contains('mihomo/1.19.34'));
@@ -53,21 +54,23 @@ void main() {
   });
 
   test(
-    'every icon referenced by the bundled script exists in the repo',
+    'every icon referenced by the bundled script is bundled locally',
     () async {
       final content = await ManagedScript.readBundled();
       final pattern = RegExp(
-        r'AngelaMihomo/main/Icons/svg/([A-Za-z0-9_.-]+\.svg)',
+        r'angelamihomo-icons/main/icon/svg/(?:[A-Za-z0-9_.-]+/)?([A-Za-z0-9_.-]+\.svg)',
       );
       final names = {
         for (final match in pattern.allMatches(content)) match.group(1)!,
       };
       expect(names.length, greaterThanOrEqualTo(30));
+      // routeIconAsset resolves these URLs by basename against the
+      // bundled route_svg set, so every referenced icon must be there.
       for (final name in names) {
         expect(
-          File('Icons/svg/$name').existsSync(),
+          File('assets/route_svg/$name').existsSync(),
           isTrue,
-          reason: 'Icons/svg/$name is referenced but missing',
+          reason: 'assets/route_svg/$name is referenced but missing',
         );
       }
     },
@@ -104,7 +107,7 @@ void main() {
     final options = decoded['options'] as Map;
     expect(options.keys, containsAll(['手动选择', '自动选择', 'AdBlock', 'GitHub']));
     final icons = decoded['icons'] as Map;
-    expect(icons['GitHub'], contains('Icons/svg/GitHub.svg'));
+    expect(icons['GitHub'], contains('icon/svg/common/GitHub.svg'));
   });
 
   test('the bundled script transforms a minimal profile end to end', () async {
