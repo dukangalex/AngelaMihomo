@@ -54,7 +54,7 @@ class HomeWidgetSquareProvider : HomeWidgetProvider() {
 object HomeWidgets {
     private const val PREFS = "home_widget"
     private const val KEY_SNAPSHOT = "snapshot"
-    const val EXTRA_ACTION = "bettbox.home_widget.action"
+    const val EXTRA_ACTION = "app.angelamihomo.home_widget.action"
     const val ACTION_REFRESH = "refresh"
 
     @Volatile
