@@ -78,7 +78,7 @@ suspend fun Service.createNotificationBuilder(
         val priority = if (isSuspended || isHighPriority) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_LOW
 
         NotificationCompat.Builder(this@createNotificationBuilder, channelId).apply {
-            setSmallIcon(R.drawable.ic)
+            setSmallIcon(R.drawable.ic_notification_dark)
             if (largeIconBitmap != null) {
                 setLargeIcon(largeIconBitmap)
             }
