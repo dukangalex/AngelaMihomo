@@ -29,6 +29,7 @@
 * **[Bettbox](https://github.com/appshubcc/Bettbox)** — 本コードベースの源流となったプロジェクト。appshubcc とすべての貢献者に感謝します。
 * **[FlClash](https://github.com/chen08209/FlClash)** — 系譜の起源。
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)** — コアエンジン。
+* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)** — Windows ビルドに同梱される UWP ループバック免除ツール。
 
 ## ライセンス
 

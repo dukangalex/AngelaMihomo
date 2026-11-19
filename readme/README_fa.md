@@ -29,6 +29,7 @@
 * **[Bettbox](https://github.com/appshubcc/Bettbox)** — پروژه‌ای که این کدبیس از آن سرچشمه گرفته است؛ سپاس از appshubcc و همهٔ مشارکت‌کنندگان.
 * **[FlClash](https://github.com/chen08209/FlClash)** — سرچشمهٔ تبار.
 * **[Mihomo](https://github.com/MetaCubeX/mihomo)** — موتور هسته.
+* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)** — ابزار معافیت لوپ‌بک UWP که همراه نسخهٔ ویندوز توزیع می‌شود.
 
 ## مجوز
 

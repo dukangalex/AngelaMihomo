@@ -168,6 +168,7 @@ const Compatible_With_AngelaMihomo = {
 * **[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)**（GeoSite、MMDB 等 GEO 规则数据的官方源头；数据经本项目自有数据仓校验签名后分发）
 * **[DB-IP](https://db-ip.com)**（城市级 IP 地理数据与 ASN 数据来源（City Lite / ASN Lite）：IP Geolocation by DB-IP；数据按 CC BY 4.0 使用，经本项目自有数据仓 [angelamihomo-geo](https://github.com/dukangalex/angelamihomo-geo) 分发，App 自动拉取后全本地查询）
 * **[Scamalytics](https://scamalytics.com)**（IP 风险检测功能的数据参考来源；该功能默认关闭，用户手动开启后按需查询）
+* **[Windows Loopback Manager](https://github.com/appshubcc/Windows-Loopback-Manager)**（Windows 版随包分发的 UWP 回环豁免工具）
 
 以及以下开源项目的启发与使用参考：
 
