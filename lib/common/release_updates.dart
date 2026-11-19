@@ -125,7 +125,17 @@ class ReleaseUpdates {
     if (tag is! String || tag.isEmpty) return null;
     if (assetSuffix.isEmpty) return null;
     final version = tag.replaceFirst(RegExp(r'^v'), '');
-    final names = {'AngelaMihomo-$version-$assetSuffix'};
+    final names = {
+      'AngelaMihomo-$version-$assetSuffix',
+      // Legacy asset names from before the rebrand, kept so update
+      // checks can still deep-link downloads of older releases.
+      // Covered by a named test (release_updates_test.dart:
+      // 'accepts existing Bettbox build names without renaming them');
+      // removal was attempted in c7b99590 and reverted under the
+      // no-function-weakening rule (T261) — see the residue inventory.
+      'Bettbox-$version-$assetSuffix',
+      'AngelaBettbox-$version-$assetSuffix',
+    };
     final assets = release['assets'];
     if (assets is! List) return null;
     final matches = assets
