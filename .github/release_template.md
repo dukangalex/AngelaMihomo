@@ -8,24 +8,28 @@
 
 # Angela Mihomo 正式版本发布 / Stable Release
 
-### 红线清零：品牌、版权与备份隐私一次扫净 / Red-line sweep: branding, copyright and backup privacy cleaned in one pass
+### 自有化定型：数据、字体、图标、工具全部自有自研 / Fully self-owned: data, fonts, icons and tools — all in-house
 
-本版是 chain.28 之后地毯式审计的整改补丁版：Android TV 横幅与 macOS 版权署名换回自有、Android 系统云备份显式关闭、脚本更新通道改为校验失败即拒用、内置规则包换用官方整包并全量签名校验、内核兜底数据源与脚本图标全部改指自有仓。功能一项不少，变的全是干净程度。
-(A remediation patch release following the full-repo audit after chain.28: the Android TV banner and macOS copyright now carry our own identity, Android system cloud backup is explicitly off, the script update channel fails closed on any verification error, the bundled rule set is now the official package with full signature verification, and all kernel fallback data sources and script icons point at our own repositories. No feature removed — everything changed is about cleanliness.)
+本版是 AngelaMihomo 的自有化定型版：chain.28 已把数据收归自有仓分发，本版再进一步——随包字体换成开源授权的 Noto Sans SC、Windows 回环豁免工具改为完全自研、Android TV 横幅与 macOS 版权署名归位、Android 系统云备份显式关闭、脚本更新通道改为校验失败即拒用、桌面小部件协议键换自有命名。至此，运行时依赖与随包组件全部自有，或采用授权清晰的开源成果，不再依赖任何无授权的第三方组件。功能一项不少：自有化靠替换与自研完成，不靠砍功能。
+(This release is the self-ownership definitive edition of AngelaMihomo. chain.28 already moved all data distribution to our own repositories; this release goes further — the bundled font is now the openly licensed Noto Sans SC, the Windows loopback-exemption tool is now fully developed in-house, the Android TV banner and macOS copyright carry our own identity, Android system cloud backup is explicitly off, the script update channel fails closed on any verification error, and the home-widget protocol keys moved to our own namespace. Runtime dependencies and bundled components are now all our own, or openly licensed with clear terms — no unauthorized third-party component remains. No feature removed: self-ownership was achieved by replacement and in-house development, never by cutting features.)
 
 > 仍在 chain.25 或更早版本的用户请注意 chain.26 的一次性迁移：应用标识已改为 app.angelamihomo，升级前请先在旧版导出配置、装新版后导入。详见 chain.26 发布说明。
 > (Still on chain.25 or earlier? See the chain.26 release notes for the one-time app-identity migration: export your configuration before upgrading and import it afterwards.)
 
 ### ✨ 本版亮点 / What's new in this build
 
-- **全面自有化清零 / Fully self-hosted, zero residue**：内核兜底数据源、脚本组图标全部改指自有仓，运行时不再依赖任何第三方在线服务，代码与安装包内不再有上游品牌残留（致谢区署名除外）。
-  (Kernel fallback data sources and script group icons now all point at our own repositories; the app no longer depends on any third-party online service at runtime, and no upstream branding remains in the code or packages (credits in the acknowledgements excepted).)
+- **自有化定型 / Fully self-owned**：内核兜底数据源、脚本组图标全部改指自有仓，运行时不依赖任何第三方在线服务；随包组件全部自有或授权清晰，第三方只出现在致谢里。
+  (Kernel fallback data sources and script group icons all point at our own repositories, and the app depends on no third-party online service at runtime; every bundled component is our own or clearly licensed, with third parties appearing only in the acknowledgements.)
+- **Windows 回环工具自研 / Loopback tool, now in-house (Windows)**：用于放行商店应用访问本机代理端口的回环豁免工具改为完全自研（20 KB，另带命令行模式），不再随包分发来源与授权不明的第三方二进制。
+  (The loopback-exemption tool that lets Store apps reach the local proxy port is now fully developed in-house (20 KB, with a command-line mode besides the GUI); the Windows package no longer ships a third-party binary of unclear provenance and licensing.)
+- **字体换新 / A new bundled font**：随包中文字体由 HarmonyOS Sans SC 换为 Noto Sans SC（SIL 开源字体授权 OFL-1.1，可自由分发），字形观感与字距、行高略有变化。原随包副本是经子集化修改的版本、不满足其授权的分发条件，本版一并改正，许可全文随包附带。
+  (The bundled Chinese font changes from HarmonyOS Sans SC to Noto Sans SC (SIL Open Font License 1.1, freely redistributable); glyph shapes and text metrics differ slightly. The previously bundled copy was a subsetted, modified build that did not meet its licence's redistribution terms — now corrected, with the full licence text shipped in the package.)
 - **隐私再加固 / Privacy hardened**：Android 系统备份显式关闭，含订阅与凭据的明文配置不再随系统云备份离开设备；脚本与数据通道校验失败一律拒用，绝不将就加载未验签内容。
   (Android system backup is explicitly disabled, so plaintext configuration (subscriptions, credentials) never leaves the device via cloud backup; script and data channels fail closed — unverified content is never loaded.)
-- **品牌与版权归位 / Branding and copyright set right**：Android TV 横幅换自有标识、macOS 版权署名更正为 AngelaMihomo、默认 User-Agent 改为自有标识、站点图标等文案与实现对齐。
-  (The Android TV banner carries our own artwork, the macOS copyright now names AngelaMihomo, the default User-Agent leads with our own identity, and site-icon copy matches the implementation.)
-- **官方整包＋签名校验 / Official bundle, signature-verified**：内置规则包换成 MetaCubeX 官方整包（来源链完整可查），数据文件附 SHA-256 清单与 Ed25519 签名，构建与运行时双重校验。
-  (The bundled rule set is now the official MetaCubeX package with a fully traceable source chain; data files ship with a SHA-256 manifest and Ed25519 signature, verified at build time and at runtime.)
+- **品牌与版权归位 / Branding and copyright set right**：Android TV 横幅换自有标识、macOS 版权署名更正为 AngelaMihomo、默认 User-Agent 改为自有标识、站点图标等文案与实现对齐；桌面小部件的内部协议键同步换成自有命名，用户无感。
+  (The Android TV banner carries our own artwork, the macOS copyright now names AngelaMihomo, the default User-Agent leads with our own identity, and site-icon copy matches the implementation; internal home-widget protocol keys moved to our own namespace as well — invisible to users.)
+- **官方整包＋签名校验 / Official bundle, signature-verified**：内置规则数据包改指 core-bundle-2026.12，采用 MetaCubeX 官方整包（来源链完整可查），数据文件附 SHA-256 清单与 Ed25519 签名，构建与运行时双重校验。
+  (The bundled rule data package now points at core-bundle-2026.12, built on the official MetaCubeX package with a fully traceable source chain; data files ship with a SHA-256 manifest and Ed25519 signature, verified at build time and at runtime.)
 - **内核 / Core**：Mihomo 1.19.34
 
 ### ✍️ 签名说明 / Signing
