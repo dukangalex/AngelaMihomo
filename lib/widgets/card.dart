@@ -169,6 +169,7 @@ class CommonCard extends StatelessWidget {
         states.contains(WidgetState.pressed)) {
       return BorderSide(
         color: hoverColor,
+        width: isSelected ? 2.0 : 1.0,
         strokeAlign: BorderSide.strokeAlignInside,
       );
     }
@@ -192,6 +193,7 @@ class CommonCard extends StatelessWidget {
       color: isSelected
           ? colorScheme.primary
           : colorScheme.outlineVariant.withValues(alpha: alpha),
+      width: isSelected ? 2.0 : 1.0,
       strokeAlign: BorderSide.strokeAlignInside,
     );
   }
@@ -204,8 +206,19 @@ class CommonCard extends StatelessWidget {
     // Zodiac variants paint the raw translucent surface tokens so the
     // light field shows through the card (design doc 3.4.2); the opaque
     // composited container tones would flatten the atmosphere to a slab.
+    // T266 (user feedback 2026-11-20): the selected card additionally
+    // blends the primary colour over the surfaceVariant token — surface
+    // and surfaceVariant sit in the same 3-12% white glass band, so the
+    // selected proxy was not recognisable at a glance on a real device.
+    // The unselected fill stays the raw token; only the selected state
+    // takes the tint, together with the 2px primary border above.
     final base = glass
-        ? (isSelected ? zodiac.variant.surfaceVariant : zodiac.variant.surface)
+        ? (isSelected
+              ? Color.alphaBlend(
+                  colorScheme.primary.withValues(alpha: 0.30),
+                  zodiac.variant.surfaceVariant,
+                )
+              : zodiac.variant.surface)
         : isSelected
         ? (type == CommonCardType.filled
               ? colorScheme.secondaryContainer.opacity80

@@ -92,6 +92,7 @@ void main() {
         final card = await pumpCard(tester, themeFor(def));
         expect(card.fill, def.variant.surface, reason: def.id);
         expect(card.side?.color, def.variant.outline, reason: def.id);
+        expect(card.side?.width, 1.0, reason: def.id);
         expect(
           card.shadows,
           0,
@@ -99,11 +100,26 @@ void main() {
         );
       });
 
-      testWidgets('${def.id} selected card fill is the surfaceVariant', (
+      testWidgets('${def.id} selected card fill is the tinted surfaceVariant', (
         tester,
       ) async {
         final card = await pumpCard(tester, themeFor(def), selected: true);
-        expect(card.fill, def.variant.surfaceVariant, reason: def.id);
+        // T266: the selected fill blends the primary colour over the
+        // surfaceVariant token so the selected card reads at a glance;
+        // the raw token alone sat in the same glass band as the
+        // unselected surface and was not recognisable on a real device.
+        final scheme = def.variant.toColorScheme();
+        expect(
+          card.fill,
+          Color.alphaBlend(
+            scheme.primary.withValues(alpha: 0.30),
+            def.variant.surfaceVariant,
+          ),
+          reason: def.id,
+        );
+        expect(card.fill, isNot(def.variant.surface), reason: def.id);
+        expect(card.side?.color, scheme.primary, reason: def.id);
+        expect(card.side?.width, 2.0, reason: def.id);
       });
 
       testWidgets('${def.id} list item frame paints the surface token', (
