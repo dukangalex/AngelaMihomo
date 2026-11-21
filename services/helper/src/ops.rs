@@ -2,13 +2,13 @@ pub mod core {
     use once_cell::sync::Lazy;
     use serde::{Deserialize, Serialize};
     use sha2::{Digest, Sha256};
-    use std::fs::{File, Metadata, OpenOptions};
+    use std::fs::{File, OpenOptions};
     use std::io::{BufRead, BufReader, Error, Read};
     use std::process::{Command, Stdio};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::{Arc, Mutex};
     use std::thread;
-    use std::time::{Duration, UNIX_EPOCH};
+    use std::time::Duration;
 
     use super::logs::log_message;
 
@@ -19,14 +19,6 @@ pub mod core {
         pub path: String,
         pub arg: String,
         pub home_dir: Option<String>,
-    }
-
-    #[derive(Debug, Clone)]
-    struct CachedFileHash {
-        path: String,
-        size: u64,
-        modified_nanos: u128,
-        hash: String,
     }
 
     #[cfg(windows)]
@@ -83,8 +75,6 @@ pub mod core {
 
     static PROCESS: Lazy<Arc<Mutex<Option<ManagedProcess>>>> =
         Lazy::new(|| Arc::new(Mutex::new(None)));
-    static FILE_HASH_CACHE: Lazy<Arc<Mutex<Option<CachedFileHash>>>> =
-        Lazy::new(|| Arc::new(Mutex::new(None)));
 
     pub fn start_core(start_params: StartParams) -> String {
         if let Err(e) = validate_absolute_path(&start_params.path) {
@@ -123,7 +113,11 @@ pub mod core {
             return msg;
         }
 
-        let sha256 = match sha256_file_with_lock(&file, &start_params.path) {
+        // Security: the hash is always computed from the actual bytes of
+        // the locked handle (never cached by path/size/mtime), and the lock
+        // is held until the process has been spawned, so the file that was
+        // verified is the file that gets executed.
+        let sha256 = match sha256_file(&file) {
             Ok(hash) => hash,
             Err(e) => {
                 let _ = file.unlock();
@@ -140,9 +134,6 @@ pub mod core {
             return msg;
         }
 
-        let _ = file.unlock();
-        drop(file);
-
         stop_core();
         let mut process = PROCESS.lock().unwrap_or_else(|e| e.into_inner());
 
@@ -153,7 +144,7 @@ pub mod core {
             command.env("SAFE_PATHS", home_dir);
         }
 
-        match command.spawn() {
+        let result = match command.spawn() {
             Ok(child) => {
                 #[cfg(windows)]
                 let job = CoreJob::bind(&child).ok();
@@ -183,7 +174,11 @@ pub mod core {
                 log_message(e.to_string());
                 e.to_string()
             }
-        }
+        };
+
+        let _ = file.unlock();
+        drop(file);
+        result
     }
 
     static WATCHER_STARTED: AtomicBool = AtomicBool::new(false);
@@ -284,30 +279,7 @@ pub mod core {
         "".to_string()
     }
 
-    fn metadata_signature(metadata: &Metadata) -> Result<(u64, u128), Error> {
-        let modified_nanos = metadata
-            .modified()?
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos();
-        Ok((metadata.len(), modified_nanos))
-    }
-
-    fn sha256_file_with_lock(file: &File, path: &str) -> Result<String, Error> {
-        let metadata = file.metadata()?;
-        let (size, modified_nanos) = metadata_signature(&metadata)?;
-
-        if let Ok(cache_guard) = FILE_HASH_CACHE.lock() {
-            if let Some(cache) = cache_guard.as_ref() {
-                if cache.path == path
-                    && cache.size == size
-                    && cache.modified_nanos == modified_nanos
-                {
-                    return Ok(cache.hash.clone());
-                }
-            }
-        }
-
+    fn sha256_file(file: &File) -> Result<String, Error> {
         let mut hasher = Sha256::new();
         let mut buffer = [0; HASH_BUFFER_SIZE];
         let mut reader = BufReader::new(file);
@@ -320,16 +292,7 @@ pub mod core {
             hasher.update(&buffer[..bytes_read]);
         }
 
-        let hash = format!("{:x}", hasher.finalize());
-        if let Ok(mut cache_guard) = FILE_HASH_CACHE.lock() {
-            *cache_guard = Some(CachedFileHash {
-                path: path.to_string(),
-                size,
-                modified_nanos,
-                hash: hash.clone(),
-            });
-        }
-        Ok(hash)
+        Ok(format!("{:x}", hasher.finalize()))
     }
 }
 
