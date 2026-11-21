@@ -40,6 +40,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Verify tag matches pubspec version
         run: |
           if [[ "${GITHUB_REF}" != refs/tags/v* ]]; then
@@ -90,6 +92,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Rust (Windows)
         if: matrix.platform == 'windows'
@@ -591,6 +594,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Download
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
