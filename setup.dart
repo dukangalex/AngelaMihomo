@@ -198,8 +198,9 @@ class Build {
 
     // AngelaMihomo: the vendored Mihomo tree carries no version of its
     // own, so the snapshot identity is pinned in core/CORE_VERSION.
-    // The pinned file wins over the network probe below; update it
-    // whenever the vendored core is synced.
+    // The upstream commit the snapshot was taken from is recorded in
+    // core/CORE_SOURCE. The pinned file wins over the network probe
+    // below; update both files whenever the vendored core is synced.
     try {
       final coreVersionFile = File(join(_coreDir, 'CORE_VERSION'));
       if (coreVersionFile.existsSync()) {

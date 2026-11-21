@@ -1,0 +1,8 @@
+Upstream: https://github.com/MetaCubeX/mihomo
+Release: v1.19.34
+Commit: 0455d0d28c4526937380505153e65a843d8612e8
+
+The vendored tree under core/Clash.Meta is a snapshot of the upstream
+repository at the commit above (the v1.19.34 tag is a lightweight tag
+pointing directly at that commit). Update this file whenever the
+vendored core is synced to a new upstream release.
