@@ -2,6 +2,16 @@
 
 This document defines the code signing policy for the **AngelaMihomo** project, specifically utilizing the free open-source code signing service provided by the [SignPath Foundation](https://signpath.org/).
 
+> **Current status (2026-11-21):** This policy describes the intended signing
+> arrangement. It is **not yet in effect** for this repository: the SignPath
+> steps in the release workflow are currently disabled (the upstream project's
+> SignPath account was suspended by the provider's risk controls, and this
+> fork's own SignPath open-source application has not been submitted yet).
+> Until signing is activated, **Windows artifacts are unsigned** and Windows
+> will show an "unknown publisher" prompt on install, and **macOS artifacts
+> are ad-hoc signed and not notarized**. The README states the same. This
+> notice will be removed in the same change that enables signing.
+
 ## 1. Scope
 
 This policy applies to all Windows executable artifacts distributed by the AngelaMihomo project, including but not limited to:
