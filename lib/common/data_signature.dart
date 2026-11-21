@@ -15,6 +15,17 @@ import 'package:cryptography/cryptography.dart';
 const String manifestSigningPublicKeyBase64 =
     'L3lU2XPCir+gbj4wvHllAUiRta2YIsGznvIoUmMPzFA=';
 
+/// AngelaMihomo (T273): the separate signing key for app release
+/// artifacts. Every app release ships a `sha256sums.txt` covering its
+/// assets next to a detached `sha256sums.txt.sig`, signed with this
+/// key; the in-app updater only installs a package whose digest comes
+/// from a manifest that verifies against this public key (see
+/// UpdateInstaller.verifiedDigest). Kept separate from the data
+/// manifest key above so the two trust domains can rotate
+/// independently. The private half never leaves the release machine.
+const String updateSigningPublicKeyBase64 =
+    '1G9pV+rGbniklK890UnYbHaEkf+aWdoQ0pqfewge7ko=';
+
 /// Verify the detached Ed25519 [signatureBytes] over [manifestBytes].
 ///
 /// [publicKeyBytes] is the raw 32-byte public key to verify against;

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:angelamihomo/common/data_signature.dart';
 import 'package:angelamihomo/common/path.dart';
 import 'package:angelamihomo/common/release_updates.dart';
 import 'package:crypto/crypto.dart';
@@ -11,10 +13,55 @@ import 'package:open_filex/open_filex.dart';
 /// against the SHA-256 digest GitHub reports for that exact asset,
 /// then hand it to the platform installer. The update channel stays
 /// limited to this repository's GitHub releases, as before.
+///
+/// T273: the in-app path additionally requires the release's signed
+/// checksum manifest (`sha256sums.txt` + `sha256sums.txt.sig`, see
+/// [updateSigningPublicKeyBase64]). The digest used for verification
+/// must come from that signature-verified manifest and agree with the
+/// digest GitHub reports; a release without a valid signed manifest
+/// is not installed in-app (the browser download path stays
+/// available, as for any asset without a digest).
 class UpdateInstaller {
   final Dio _dio;
 
   UpdateInstaller({Dio? dio}) : _dio = dio ?? Dio();
+
+  /// Downloads a small release asset (the checksum manifest or its
+  /// signature) into memory through the same validated URL.
+  Future<List<int>> downloadBytes(ReleaseAsset asset) async {
+    final response = await _dio.get<List<int>>(
+      asset.url,
+      options: Options(
+        responseType: ResponseType.bytes,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(minutes: 2),
+        followRedirects: true,
+      ),
+    );
+    return response.data ?? const [];
+  }
+
+  /// Returns the SHA-256 digest for [assetName] from a release's
+  /// checksum manifest, but only when the manifest's detached Ed25519
+  /// signature verifies against the update signing key. Any failure —
+  /// bad signature, malformed manifest, asset not listed — returns
+  /// null (fail closed).
+  Future<String?> verifiedDigest({
+    required List<int> manifestBytes,
+    required List<int> signatureBytes,
+    required String assetName,
+    List<int>? publicKeyBytes,
+  }) async {
+    final keyBytes =
+        publicKeyBytes ?? base64.decode(updateSigningPublicKeyBase64);
+    final ok = await verifyManifestSignature(
+      manifestBytes,
+      signatureBytes,
+      publicKeyBytes: keyBytes,
+    );
+    if (!ok) return null;
+    return sha256DigestFromManifest(manifestBytes, assetName);
+  }
 
   Future<File> download(
     ReleaseAsset asset, {
@@ -73,4 +120,23 @@ class UpdateInstaller {
       return e.toString();
     }
   }
+}
+
+/// Looks up [assetName] in a `sha256sums.txt` body and returns its
+/// lowercase hex SHA-256 digest, or null when the asset is not listed
+/// with a well-formed digest. Line format follows the coreutils
+/// convention shared with the geo data manifest:
+/// `<64 hex chars><whitespace>[*]<file name>`.
+String? sha256DigestFromManifest(List<int> manifestBytes, String assetName) {
+  final text = utf8.decode(manifestBytes, allowMalformed: true);
+  for (final line in text.split('\n')) {
+    final parts = line.trim().split(RegExp(r'\s+'));
+    if (parts.length != 2) continue;
+    final digest = parts[0].toLowerCase();
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(digest)) continue;
+    var name = parts[1];
+    if (name.startsWith('*')) name = name.substring(1);
+    if (name == assetName) return digest;
+  }
+  return null;
 }

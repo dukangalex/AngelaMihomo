@@ -1863,8 +1863,23 @@ class AppController {
       final asset = updates.assetFor(data, assetSuffix: finalSuffix);
       // T179: when the exact asset and its GitHub digest are known,
       // download and install in-app; otherwise keep the browser path.
-      if (asset != null && asset.sha256 != null) {
-        await _downloadAndInstallUpdate(asset);
+      // T273: the in-app path also requires the release's signed
+      // checksum manifest (sha256sums.txt + .sig); a release without
+      // one keeps the browser path.
+      final manifestAsset = updates.assetByName(data, name: 'sha256sums.txt');
+      final signatureAsset = updates.assetByName(
+        data,
+        name: 'sha256sums.txt.sig',
+      );
+      if (asset != null &&
+          asset.sha256 != null &&
+          manifestAsset != null &&
+          signatureAsset != null) {
+        await _downloadAndInstallUpdate(
+          asset,
+          manifestAsset: manifestAsset,
+          signatureAsset: signatureAsset,
+        );
         return;
       }
       final downloadUrl = updates.downloadUrl(data, assetSuffix: finalSuffix);
@@ -1883,7 +1898,16 @@ class AppController {
   /// cancellable progress dialog, verify its SHA-256 against the
   /// digest GitHub reports, then hand it to the platform installer.
   /// Every failure says what happened and what to do instead.
-  Future<void> _downloadAndInstallUpdate(ReleaseAsset asset) async {
+  ///
+  /// T273: before the package downloads, the release's signed
+  /// checksum manifest is fetched and its Ed25519 signature verified;
+  /// the package is only installed when its digest comes from that
+  /// manifest and agrees with the digest GitHub reports.
+  Future<void> _downloadAndInstallUpdate(
+    ReleaseAsset asset, {
+    required ReleaseAsset manifestAsset,
+    required ReleaseAsset signatureAsset,
+  }) async {
     final dialogContext = globalState.navigatorKey.currentState?.context;
     if (dialogContext == null || !dialogContext.mounted) {
       globalState.openUrl(asset.url);
@@ -1941,6 +1965,29 @@ class AppController {
       ).whenComplete(() => dialogOpen = false),
     );
 
+    // T273: fetch and verify the signed checksum manifest first, so
+    // an untrusted release is rejected before the package downloads.
+    final String signedDigest;
+    try {
+      final manifestBytes = await installer.downloadBytes(manifestAsset);
+      final signatureBytes = await installer.downloadBytes(signatureAsset);
+      final digest = await installer.verifiedDigest(
+        manifestBytes: manifestBytes,
+        signatureBytes: signatureBytes,
+        assetName: asset.name,
+      );
+      if (digest == null || digest != asset.sha256!.toLowerCase()) {
+        closeDialog();
+        globalState.showNotifier(appLocalizations.updateVerifyFailed);
+        return;
+      }
+      signedDigest = digest;
+    } catch (_) {
+      closeDialog();
+      globalState.showNotifier(appLocalizations.updateVerifyFailed);
+      return;
+    }
+
     File? file;
     try {
       file = await installer.download(
@@ -1966,7 +2013,7 @@ class AppController {
     }
 
     verifying.value = true;
-    final verified = await installer.verify(file, asset.sha256!);
+    final verified = await installer.verify(file, signedDigest);
     if (!verified) {
       try {
         await file.delete();
