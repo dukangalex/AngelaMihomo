@@ -1075,7 +1075,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("定位"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("鎖定節點"),
     "log": MessageLookupByLibrary.simpleMessage("日誌"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜尋"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日誌等級"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("日誌捕獲"),

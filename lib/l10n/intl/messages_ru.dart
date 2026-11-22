@@ -1482,7 +1482,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("Найти"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("Закрепить узел"),
     "log": MessageLookupByLibrary.simpleMessage("Лог"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("Поиск с ИИ"),
     "logLevel": MessageLookupByLibrary.simpleMessage("Уровень логов"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("Сбор логов"),

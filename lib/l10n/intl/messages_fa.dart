@@ -1422,7 +1422,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("موقعیت"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("قفل کردن گره"),
     "log": MessageLookupByLibrary.simpleMessage("گزارش"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("جستجوی هوش مصنوعی"),
     "logLevel": MessageLookupByLibrary.simpleMessage("سطح گزارش"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("ثبت گزارش‌ها"),
