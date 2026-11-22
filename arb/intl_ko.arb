@@ -107,8 +107,6 @@
   "autoRunDesc": "앱 실행 시 자동으로 프록시 연결",
   "logcat": "로그 캡처",
   "logcatDesc": "활성화 시 로그 진입점 표시",
-  "enableCrashReport": "크래시 분석",
-  "enableCrashReportDesc": "필요 시 앱 크래시 로그 전송",
   "autoCheckUpdate": "자동 업데이트 확인",
   "autoCheckUpdateDesc": "앱 실행 시 업데이트 자동 확인",
   "accessControl": "액세스 제어",

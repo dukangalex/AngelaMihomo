@@ -107,8 +107,6 @@
   "autoRunDesc": "应用打开后自动连接",
   "logcat": "日志捕获",
   "logcatDesc": "开启后将会显示日志入口",
-  "enableCrashReport": "应用崩溃分析",
-  "enableCrashReportDesc": "必要时上传应用崩溃日志",
   "autoCheckUpdate": "自动检查更新",
   "autoCheckUpdateDesc": "应用启动时自动检查更新",
   "accessControl": "分应用代理",

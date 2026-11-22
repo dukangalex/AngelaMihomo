@@ -107,8 +107,6 @@
   "autoRunDesc": "Подключаться при запуске приложения",
   "logcat": "Сбор логов",
   "logcatDesc": "Показать раздел логов",
-  "enableCrashReport": "Анализ сбоев",
-  "enableCrashReportDesc": "Отправка отчётов о сбоях при необходимости",
   "autoCheckUpdate": "Автообновление",
   "autoCheckUpdateDesc": "Проверка обновлений при запуске",
   "accessControl": "Маршрутизация приложений",

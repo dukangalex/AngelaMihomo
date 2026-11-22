@@ -854,10 +854,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("ویرایش هدایت"),
     "editUser": MessageLookupByLibrary.simpleMessage("ویرایش کاربر"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("تحلیل خرابی‌ها"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "ارسال گزارش خرابی در صورت لزوم",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("فعالسازی اورراید"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "وقتی روشن است، بازنویسی زیر روی این پیکربندی اعمال می‌شود و بعد هسته آن را اجرا می‌کند",

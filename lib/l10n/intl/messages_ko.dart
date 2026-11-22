@@ -741,10 +741,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("포워딩 편집"),
     "editUser": MessageLookupByLibrary.simpleMessage("사용자 편집"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("크래시 분석"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "필요 시 앱 크래시 로그 전송",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("오버라이드 활성화"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "켜면 아래 덮어쓰기 내용을 이 설정에 적용한 뒤 코어가 실행합니다",

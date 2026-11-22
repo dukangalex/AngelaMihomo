@@ -960,25 +960,7 @@ class AppLocalizations {
     );
   }
 
-  /// `Crash Analytics`
-  String get enableCrashReport {
-    return Intl.message(
-      'Crash Analytics',
-      name: 'enableCrashReport',
-      desc: '',
-      args: [],
-    );
-  }
 
-  /// `Upload crash logs when needed`
-  String get enableCrashReportDesc {
-    return Intl.message(
-      'Upload crash logs when needed',
-      name: 'enableCrashReportDesc',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Auto Check Updates`
   String get autoCheckUpdate {

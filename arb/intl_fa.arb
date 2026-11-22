@@ -107,8 +107,6 @@
   "autoRunDesc": "اتصال خودکار پروکسی پس از باز شدن برنامه",
   "logcat": "ثبت گزارش‌ها",
   "logcatDesc": "نمایش ورودی گزارش‌ها در صورت فعال بودن",
-  "enableCrashReport": "تحلیل خرابی‌ها",
-  "enableCrashReportDesc": "ارسال گزارش خرابی در صورت لزوم",
   "autoCheckUpdate": "بررسی خودکار بروزرسانی",
   "autoCheckUpdateDesc": "بررسی خودکار بروزرسانی هنگام اجرای برنامه",
   "accessControl": "کنترل دسترسی",

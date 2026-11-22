@@ -107,8 +107,6 @@
   "autoRunDesc": "アプリ起動時に自動でプロキシに接続",
   "logcat": "ログキャプチャ",
   "logcatDesc": "有効にするとログエントリを表示",
-  "enableCrashReport": "クラッシュ分析",
-  "enableCrashReportDesc": "必要に応じてクラッシュログを送信",
   "autoCheckUpdate": "自動更新確認",
   "autoCheckUpdateDesc": "起動時にアップデートを自動確認",
   "accessControl": "アクセス制御",

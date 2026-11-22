@@ -730,10 +730,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("転送編集"),
     "editUser": MessageLookupByLibrary.simpleMessage("ユーザーを編集"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("クラッシュ分析"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "必要に応じてクラッシュログを送信",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("オーバーライド有効化"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "オンにすると、下の上書き内容をこの設定に適用してからコアで実行します",

@@ -884,10 +884,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Редактировать пользователя",
     ),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("Анализ сбоев"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "Отправка отчётов о сбоях при необходимости",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage(
       "Включить переопределение",
     ),

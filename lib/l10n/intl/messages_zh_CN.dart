@@ -659,10 +659,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("编辑转发"),
     "editUser": MessageLookupByLibrary.simpleMessage("编辑用户"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("应用崩溃分析"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "必要时上传应用崩溃日志",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("启用覆写"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage("开启后，先用下面的覆写内容改一遍这份配置，再交给内核运行"),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("网速显示"),

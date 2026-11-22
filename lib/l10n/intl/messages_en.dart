@@ -857,12 +857,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("Edit Forwarding"),
     "editUser": MessageLookupByLibrary.simpleMessage("Edit User"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage(
-      "Crash Analytics",
-    ),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "Upload crash logs when needed",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("Enable Override"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "Apply the override below to this profile before the core runs it",

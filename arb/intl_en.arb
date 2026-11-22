@@ -107,8 +107,6 @@
   "autoRunDesc": "Connect on app launch",
   "logcat": "Log Capture",
   "logcatDesc": "Show log capture entry",
-  "enableCrashReport": "Crash Analytics",
-  "enableCrashReportDesc": "Upload crash logs when needed",
   "autoCheckUpdate": "Auto Check Updates",
   "autoCheckUpdateDesc": "Check updates on app launch",
   "accessControl": "Access Control",
