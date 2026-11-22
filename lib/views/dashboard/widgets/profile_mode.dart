@@ -37,20 +37,20 @@ const List<double> _emptySegments = [0];
 /// on this card.
 ///
 /// Layout (T286, user directive: every item fully visible, nothing
-/// ellipsized): the profile zone stacks its items on separate rows —
-/// the profile name gets a full-width row of its own (up to two
-/// lines), the status light moved into the node pill — its first
-/// line, beside the delay number, with the node name on the pill's
-/// own full-width second line (superseding the T211 top-right
-/// placement, which starved the name row) — and the usage numbers
-/// sit on their own line above the
-/// segment bar instead of sharing a row with the node pill, which
-/// used to truncate both. No field in the card ellipsizes and no font
-/// shrinks. The card's height follows its content with the old
-/// two-grid-row height as a floor (the dashboard grid fits tiles to
-/// their content height), so long names simply make a taller card
-/// instead of a clipped one; the empty-profile placeholder keeps the
-/// exact fixed-height form it always had.
+/// ellipsized): the profile zone stacks its rows — the profile name
+/// gets a full-width row of its own (up to two lines); the meta row
+/// joins the update time, the expiry and the usage numbers on one
+/// wrapping line with the segment bar directly under it; the node
+/// pill follows, its first line carrying the status light beside
+/// the delay number and the node name on the pill's own full-width
+/// second line (superseding the T211 top-right placement of the
+/// light, which starved the name row). No field in the card
+/// ellipsizes and no font shrinks. The card's height follows its
+/// content with the old two-grid-row height as a floor (the
+/// dashboard grid fits tiles to their content height), so long
+/// names simply make a taller card instead of a clipped one; the
+/// empty-profile placeholder keeps the exact fixed-height form it
+/// always had.
 class ProfileModeCard extends ConsumerWidget {
   final DashboardTileSize? size;
 
@@ -163,11 +163,12 @@ class _ProfileZone extends ConsumerWidget {
       ?profile.lastUpdateDate?.lastUpdateTimeDesc,
       ?profile.usageExpireText(usage),
     ].join(' · ');
-    // Stacked rows (T286): every item gets the full card width on a
-    // row of its own, so no field ever has to ellipsize — the name
-    // row (up to two lines), the update/expire subtitle, the node
-    // row carrying the status light, then the usage numbers above
-    // their segment bar.
+    // Stacked rows (T286): every item gets the full card width, so
+    // no field ever has to ellipsize — the name row (up to two
+    // lines), the meta row joining update time, expiry and the
+    // usage numbers on one wrapping line, the usage segment bar
+    // directly under that row, then the node pill carrying the
+    // status light.
     return Padding(
       padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 16.ap, 6.ap),
       child: Column(
@@ -202,45 +203,64 @@ class _ProfileZone extends ConsumerWidget {
               ],
             ],
           ),
-          if (subtitle.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: context.textTheme.labelSmall?.copyWith(
-                color: usage?.isExpired == true
-                    ? colorScheme.error
-                    : colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
+          _SubtitleUsageRow(subtitle: subtitle, usage: usage),
           if (tall) ...[
-            Text(
-              usage?.usageText ?? appLocalizations.noUsageData,
-              style: context.textTheme.labelMedium?.copyWith(
-                color: usage == null ? colorScheme.onSurfaceVariant : null,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
             const SizedBox(height: 2),
             const _CurrentNode(style: _NodeStyle.plain),
           ] else ...[
-            const _CurrentNodeRow(),
-            const SizedBox(height: 8),
-            Text(
-              usage?.usageText ?? appLocalizations.noUsageData,
-              style: context.textTheme.labelMedium?.copyWith(
-                color: usage == null ? colorScheme.onSurfaceVariant : null,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
             if (segments.isNotEmpty) ...[
               const SizedBox(height: 4),
               UsageSegmentBar(segments: segments, height: 4),
             ],
+            const SizedBox(height: 8),
+            const _CurrentNodeRow(),
           ],
         ],
       ),
+    );
+  }
+}
+
+/// The meta line under the profile name (T286): last-update time,
+/// expiry and the subscription usage presented as one row —
+/// "time · expire · used / total". The usage is a single Wrap
+/// child, so when the row runs out of width it moves to the next
+/// line as a whole instead of truncating; nothing on the row
+/// ellipsizes or shrinks, and the usage segment bar sits directly
+/// under the row so the numbers and their bar stay adjacent.
+class _SubtitleUsageRow extends StatelessWidget {
+  final String subtitle;
+  final ProfileUsage? usage;
+
+  const _SubtitleUsageRow({required this.subtitle, required this.usage});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final usage = this.usage;
+    return Wrap(
+      spacing: 4,
+      runSpacing: 2,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (subtitle.isNotEmpty)
+          Text(
+            '$subtitle ·',
+            style: context.textTheme.labelSmall?.copyWith(
+              color: usage?.isExpired == true
+                  ? colorScheme.error
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        Text(
+          usage?.usageText ?? appLocalizations.noUsageData,
+          style: context.textTheme.labelMedium?.copyWith(
+            color: usage == null ? colorScheme.onSurfaceVariant : null,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -624,6 +644,19 @@ class _GroupNode extends ConsumerWidget {
 /// keeps its own tap (the card's sole delay-test trigger); the rest
 /// of the pill opens the group sheet, exactly as the old
 /// right-aligned pill did.
+///
+/// Round 2 (user screenshot): the light's label was ellipsized
+/// ("当前节...") because the light sat in a Flexible beside a
+/// Spacer — flex split the leftover width evenly between them, so
+/// the label only ever got half of what was free. The light now
+/// takes the whole row minus the delay's intrinsic width (the most
+/// any layout can give it) and the delay keeps its intrinsic width
+/// at the right edge, so the label renders in full at any realistic
+/// width; the light's own ellipsis remains only as a guard for
+/// widths where label + delay physically exceed the row. The
+/// pill's bottom padding is deeper than its top (8 vs 5) so Latin
+/// descenders in the node name keep clear of the pill's edge with
+/// fonts whose ink runs past the descent metric.
 class _CurrentNodeRow extends ConsumerWidget {
   const _CurrentNodeRow();
 
@@ -679,16 +712,15 @@ class _NodePillRow extends ConsumerWidget {
             ? null
             : () => showGroupProxySheet(context, groupName!),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
-                  const Flexible(child: NodeStatusLight()),
-                  if (delayValue != null) ...[
-                    const Spacer(),
+                  const Expanded(child: NodeStatusLight()),
+                  if (delayValue != null)
                     Text(
                       delayValue > 0 ? '$delayValue ms' : 'Timeout',
                       style: context.textTheme.labelSmall?.copyWith(
@@ -699,7 +731,6 @@ class _NodePillRow extends ConsumerWidget {
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
-                  ],
                 ],
               ),
               const SizedBox(height: 2),
