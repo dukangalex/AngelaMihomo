@@ -35,6 +35,22 @@ const List<double> _emptySegments = [0];
 /// profiles page, because a refresh makes the core re-test delays
 /// through the upstream path and would read as a second test entry
 /// on this card.
+///
+/// Layout (T286, user directive: every item fully visible, nothing
+/// ellipsized): the profile zone stacks its rows — the profile name
+/// gets a full-width row of its own (up to two lines); the meta row
+/// joins the update time, the expiry and the usage numbers on one
+/// wrapping line with the segment bar directly under it; the node
+/// pill follows, its first line carrying the status light beside
+/// the delay number and the node name on the pill's own full-width
+/// second line (superseding the T211 top-right placement of the
+/// light, which starved the name row). No field in the card
+/// ellipsizes and no font shrinks. The card's height follows its
+/// content with the old two-grid-row height as a floor (the
+/// dashboard grid fits tiles to their content height), so long
+/// names simply make a taller card instead of a clipped one; the
+/// empty-profile placeholder keeps the exact fixed-height form it
+/// always had.
 class ProfileModeCard extends ConsumerWidget {
   final DashboardTileSize? size;
 
@@ -44,22 +60,38 @@ class ProfileModeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final size = this.size ?? DashboardTileSize.large;
     final tall = size == DashboardTileSize.tall;
-    return SizedBox(
-      height: getWidgetHeight(context, size.rows),
+    final floor = getWidgetHeight(context, size.rows);
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      indent: 16.ap,
+      endIndent: 16.ap,
+      color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+    );
+    if (ref.watch(currentProfileProvider) == null) {
+      return SizedBox(
+        height: floor,
+        child: CommonCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              Expanded(child: _ProfileZone(tall: tall)),
+              divider,
+              _ModeZone(tall: tall),
+            ],
+          ),
+        ),
+      );
+    }
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: floor),
       child: CommonCard(
         padding: EdgeInsets.zero,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(child: _ProfileZone(tall: tall)),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 16.ap,
-              endIndent: 16.ap,
-              color: context.colorScheme.outlineVariant.withValues(
-                alpha: 0.5,
-              ),
-            ),
+            _ProfileZone(tall: tall),
+            divider,
             _ModeZone(tall: tall),
           ],
         ),
@@ -131,19 +163,26 @@ class _ProfileZone extends ConsumerWidget {
       ?profile.lastUpdateDate?.lastUpdateTimeDesc,
       ?profile.usageExpireText(usage),
     ].join(' · ');
-    // Compact two-row form, like the former wide profile card: the
-    // name row doubles as the zone header, so the merged card's two
-    // zones fit the two grid rows the pair of cards used to occupy.
+    // Stacked rows (T286): every item gets the full card width, so
+    // no field ever has to ellipsize — the name row (up to two
+    // lines), the meta row joining update time, expiry and the
+    // usage numbers on one wrapping line, the usage segment bar
+    // directly under that row, then the node pill carrying the
+    // status light.
     return Padding(
       padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 16.ap, 6.ap),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.description_outlined,
-                color: colorScheme.onSurfaceVariant,
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Icon(
+                  Icons.description_outlined,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -158,77 +197,70 @@ class _ProfileZone extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              // The status light lives at the card's top-right (T211):
-              // in the mode header row it crowded out the running-mode
-              // label on narrow screens.
-              tall
-                  ? const NodeStatusLight(compact: true)
-                  : const NodeStatusLight(),
+              if (tall) ...[
+                const SizedBox(width: 8),
+                const NodeStatusLight(compact: true),
+              ],
             ],
           ),
-          if (subtitle.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.labelSmall?.copyWith(
-                color: usage?.isExpired == true
-                    ? colorScheme.error
-                    : colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-          const Spacer(),
+          const SizedBox(height: 2),
+          _SubtitleUsageRow(subtitle: subtitle, usage: usage),
           if (tall) ...[
-            Text(
-              usage?.usageText ?? appLocalizations.noUsageData,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.labelMedium?.copyWith(
-                color: usage == null ? colorScheme.onSurfaceVariant : null,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
             const SizedBox(height: 2),
             const _CurrentNode(style: _NodeStyle.plain),
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        usage?.usageText ?? appLocalizations.noUsageData,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.textTheme.labelMedium?.copyWith(
-                          color: usage == null
-                              ? colorScheme.onSurfaceVariant
-                              : null,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                      if (segments.isNotEmpty) ...[
-                        const SizedBox(height: 5),
-                        UsageSegmentBar(segments: segments, height: 4),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 220),
-                  child: const _CurrentNode(style: _NodeStyle.pill),
-                ),
-              ],
-            ),
+          ] else ...[
+            if (segments.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              UsageSegmentBar(segments: segments, height: 4),
+            ],
+            const SizedBox(height: 8),
+            const _CurrentNodeRow(),
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// The meta line under the profile name (T286): last-update time,
+/// expiry and the subscription usage presented as one row —
+/// "time · expire · used / total". The usage is a single Wrap
+/// child, so when the row runs out of width it moves to the next
+/// line as a whole instead of truncating; nothing on the row
+/// ellipsizes or shrinks, and the usage segment bar sits directly
+/// under the row so the numbers and their bar stay adjacent.
+class _SubtitleUsageRow extends StatelessWidget {
+  final String subtitle;
+  final ProfileUsage? usage;
+
+  const _SubtitleUsageRow({required this.subtitle, required this.usage});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final usage = this.usage;
+    return Wrap(
+      spacing: 4,
+      runSpacing: 2,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (subtitle.isNotEmpty)
+          Text(
+            '$subtitle ·',
+            style: context.textTheme.labelSmall?.copyWith(
+              color: usage?.isExpired == true
+                  ? colorScheme.error
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        Text(
+          usage?.usageText ?? appLocalizations.noUsageData,
+          style: context.textTheme.labelMedium?.copyWith(
+            color: usage == null ? colorScheme.onSurfaceVariant : null,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -240,7 +272,7 @@ class _ModeZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The status light moved to the profile zone's top-right (T211),
+    // The status light lives in the profile zone's node row (T286),
     // so this header row carries only the mode label and, in the wide
     // form, the status chips; the segmented mode switch is shared
     // with the tall form, which does not repeat the chips.
@@ -248,7 +280,7 @@ class _ModeZone extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         InfoHeader(
-          padding: EdgeInsets.fromLTRB(16.ap, 9.ap, 12.ap, 0),
+          padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 12.ap, 0),
           info: Info(
             label: appLocalizations.runningMode,
             iconData: Icons.call_split_sharp,
@@ -256,7 +288,7 @@ class _ModeZone extends StatelessWidget {
           actions: tall ? const [] : const [_OutboundStatusChips()],
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(10.ap, 6.ap, 10.ap, 8.ap),
+          padding: EdgeInsets.fromLTRB(10.ap, 4.ap, 10.ap, 6.ap),
           child: SizedBox(
             height: 34.ap,
             child: Consumer(
@@ -537,20 +569,22 @@ class _ProfileName extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Flexible(
-          child: EmojiText(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: style,
-          ),
+          // T286: the name wraps to a second line instead of
+          // ellipsizing — it is the card's primary label and the
+          // switch-sheet entry, so it always reads in full.
+          child: EmojiText(name, maxLines: 2, style: style),
         ),
         const SizedBox(width: 2),
-        Icon(
-          Icons.unfold_more,
-          size: 16,
-          color: context.colorScheme.onSurfaceVariant,
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(
+            Icons.unfold_more,
+            size: 16,
+            color: context.colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -601,6 +635,120 @@ class _GroupNode extends ConsumerWidget {
   }
 }
 
+/// Full-width node row of the wide merged card (T286): inside the
+/// pill that opens the group sheet, the status light and the delay
+/// number share the first line (they read the same data source, so
+/// they belong together) and the current node name gets the pill's
+/// whole second line, wrapping to two lines when long — it never
+/// ellipsizes and never has to fight the light for width. The light
+/// keeps its own tap (the card's sole delay-test trigger); the rest
+/// of the pill opens the group sheet, exactly as the old
+/// right-aligned pill did.
+///
+/// Round 2 (user screenshot): the light's label was ellipsized
+/// ("当前节...") because the light sat in a Flexible beside a
+/// Spacer — flex split the leftover width evenly between them, so
+/// the label only ever got half of what was free. The light now
+/// takes the whole row minus the delay's intrinsic width (the most
+/// any layout can give it) and the delay keeps its intrinsic width
+/// at the right edge, so the label renders in full at any realistic
+/// width; the light's own ellipsis remains only as a guard for
+/// widths where label + delay physically exceed the row. The
+/// pill's bottom padding is deeper than its top (8 vs 5) so Latin
+/// descenders in the node name keep clear of the pill's edge with
+/// fonts whose ink runs past the descent metric.
+class _CurrentNodeRow extends ConsumerWidget {
+  const _CurrentNodeRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDirect = ref.watch(
+      patchClashConfigProvider.select((state) => state.mode == Mode.direct),
+    );
+    final groupName = ref.watch(currentMainGroupNameProvider);
+    if (!isDirect && groupName == null) {
+      // No selection to label yet: the light still stands (and stays
+      // tappable) without the pill around it.
+      return const Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: NodeStatusLight(),
+      );
+    }
+    return _NodePillRow(groupName: groupName, direct: isDirect);
+  }
+}
+
+class _NodePillRow extends ConsumerWidget {
+  final String? groupName;
+  final bool direct;
+
+  const _NodePillRow({required this.groupName, required this.direct});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = context.colorScheme;
+    final String nodeName;
+    int? delay;
+    if (direct) {
+      nodeName = appLocalizations.direct;
+    } else {
+      nodeName = ref.watch(
+        getProxyCardStateProvider(
+          groupName!,
+        ).select((state) => state.proxyName),
+      );
+      // The one shared delay data source: the same getDelayProvider
+      // the status light reads, fed by the global linked test (T131).
+      delay = ref.watch(getDelayProvider(proxyName: groupName!));
+    }
+    final delayValue = delay;
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: colorScheme.primary.withValues(alpha: 0.08),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: direct
+            ? null
+            : () => showGroupProxySheet(context, groupName!),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Expanded(child: NodeStatusLight()),
+                  if (delayValue != null)
+                    Text(
+                      delayValue > 0 ? '$delayValue ms' : 'Timeout',
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: zodiacDelayColor(
+                          context.zodiac?.variant,
+                          delayValue,
+                        ),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              EmojiText(
+                nodeName,
+                maxLines: 2,
+                style: context.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NodeLabel extends StatelessWidget {
   final _NodeStyle style;
   final String nodeName;
@@ -641,8 +789,7 @@ class _NodeLabel extends StatelessWidget {
           fit: isPlain ? FlexFit.tight : FlexFit.loose,
           child: EmojiText(
             nodeName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             style: context.textTheme.labelMedium?.copyWith(
               fontWeight: isPlain ? null : FontWeight.w600,
             ),
