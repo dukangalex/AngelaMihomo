@@ -781,6 +781,51 @@ class Windows {
     return helperClient.ping(coreSHA256);
   }
 
+  /// AM-01/T277: the Environment value written by [_configureHelperService]
+  /// carries HELPER_AUTH_KEY, and the service registry key's default ACL
+  /// lets every local user read it. This PowerShell (run inside the same
+  /// elevated registration chain, after the service starts) removes
+  /// inheritance and all existing rules from the key, then grants
+  /// FullControl to SYSTEM and Administrators and ReadKey to the
+  /// interactive (installing) user — the unelevated app only ever reads
+  /// the value. It mirrors the installer-side hardening
+  /// (HardenHelperServiceKeyAcl in windows/packaging/exe/inno_setup.iss).
+  /// The script travels as a PowerShell -EncodedCommand so the cmd chain
+  /// needs no extra quoting; its plain text is
+  /// [_helperKeyAclScriptTemplate] with __SERVICE__ replaced by the
+  /// service name.
+  String _helperKeyAclEncodedCommand() {
+    final script = _helperKeyAclScriptTemplate.replaceAll(
+      '__SERVICE__',
+      appHelperService,
+    );
+    // PowerShell -EncodedCommand expects base64 of UTF-16LE bytes.
+    final bytes = <int>[];
+    for (final unit in script.codeUnits) {
+      bytes.add(unit & 0xFF);
+      bytes.add((unit >> 8) & 0xFF);
+    }
+    return base64Encode(bytes);
+  }
+
+  static const _helperKeyAclScriptTemplate =
+      r"$ErrorActionPreference='Stop';"
+      r"$keyPath='HKLM:\SYSTEM\CurrentControlSet\Services\__SERVICE__';"
+      r'$acl=Get-Acl -Path $keyPath;'
+      r'$acl.SetAccessRuleProtection($true,$false);'
+      r'foreach($rule in @($acl.Access)){[void]$acl.RemoveAccessRule($rule)};'
+      r'$inherit=[System.Security.AccessControl.InheritanceFlags]::ContainerInherit;'
+      r'$prop=[System.Security.AccessControl.PropagationFlags]::None;'
+      r'$allow=[System.Security.AccessControl.AccessControlType]::Allow;'
+      r'$full=[System.Security.AccessControl.RegistryRights]::FullControl;'
+      r'$read=[System.Security.AccessControl.RegistryRights]::ReadKey;'
+      r"$acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule((New-Object System.Security.Principal.SecurityIdentifier('S-1-5-18')),$full,$inherit,$prop,$allow)));"
+      r"$acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule((New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-544')),$full,$inherit,$prop,$allow)));"
+      r'try{$userName=(Get-CimInstance Win32_ComputerSystem).UserName;'
+      r'if($userName){$userSid=(New-Object System.Security.Principal.NTAccount($userName)).Translate([System.Security.Principal.SecurityIdentifier]);'
+      r'$acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule($userSid,$read,$inherit,$prop,$allow)))}}catch{};'
+      r'Set-Acl -Path $keyPath -AclObject $acl';
+
   Future<bool> _configureHelperService() async {
     final authKey = HelperAuthManager.getAuthKey();
     if (authKey == null) return false;
@@ -822,6 +867,16 @@ class Windows {
       'sc',
       'start',
       appHelperService,
+      // AM-01/T277: tighten the service key ACL (see
+      // _helperKeyAclEncodedCommand). Sequenced with '&' so an ACL
+      // failure can never block the service start above.
+      '&',
+      'powershell',
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-EncodedCommand',
+      _helperKeyAclEncodedCommand(),
     ].join(' ');
 
     return runas('cmd.exe', command);
