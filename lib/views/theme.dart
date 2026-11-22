@@ -111,8 +111,16 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
     return switch (selected.series) {
       ThemeSeries.zodiac => resolveZodiacTheme(selected.id).nameZh,
       ThemeSeries.deepSpace => deepSpaceThemeById(selected.id)?.nameZh ?? '',
-      ThemeSeries.solid => solidThemeById(selected.id)?.nameZh ?? '',
+      ThemeSeries.solid => _solidSelectedNameZh(selected.id),
     };
+  }
+
+  String _solidSelectedNameZh(String id) {
+    final def = solidThemeById(id);
+    if (def == null) return '';
+    return isSolidLightThemeId(id)
+        ? '${def.nameZh} · $solidLightGroupNameZh'
+        : def.nameZh;
   }
 
   @override
@@ -203,7 +211,24 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
             expanded: _expanded.contains(ThemeSeries.solid),
             onToggle: () => _toggle(ThemeSeries.solid),
             children: [
+              const _ThemeGroupHeader(
+                nameZh: solidDarkGroupNameZh,
+                nameEn: solidDarkGroupNameEn,
+              ),
               for (final theme in solidThemes)
+                _ThemeRow(
+                  glyph: theme.nameZh,
+                  nameZh: theme.nameZh,
+                  nameEn: theme.nameEn,
+                  variant: theme.variant,
+                  isSelected: theme.id == selected.id,
+                  onTap: () => _select(theme.id),
+                ),
+              const _ThemeGroupHeader(
+                nameZh: solidLightGroupNameZh,
+                nameEn: solidLightGroupNameEn,
+              ),
+              for (final theme in solidLightThemes)
                 _ThemeRow(
                   glyph: theme.nameZh,
                   nameZh: theme.nameZh,
@@ -215,6 +240,37 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small group label inside a series section (the solid series'
+/// dark and light groups, T264): muted text, no interaction — the
+/// grouping lives inside the existing series section rather than in
+/// a parallel switch.
+class _ThemeGroupHeader extends StatelessWidget {
+  final String nameZh;
+  final String nameEn;
+
+  const _ThemeGroupHeader({required this.nameZh, required this.nameEn});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 2),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '$nameZh · $nameEn',
+          style: textTheme.labelMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
       ),
     );
   }
@@ -521,10 +577,7 @@ class _ThemeRow extends StatelessWidget {
                   ],
                   SizedBox(
                     width: 28,
-                    child: Text(
-                      glyph,
-                      style: const TextStyle(fontSize: 20),
-                    ),
+                    child: Text(glyph, style: const TextStyle(fontSize: 20)),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
