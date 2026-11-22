@@ -23,10 +23,34 @@ void main() {
       'geosite:connectivity-check',
     ]);
     expect(dns.nameserverPolicy, {
-      'geosite:cn': '119.29.29.29',
+      'geosite:cn': 'system',
       'geosite:private': 'system',
       '*': 'system',
     });
+  });
+
+  test('出厂默认 DNS 全部跟随系统，不写死任何公共解析（T232）', () {
+    const dns = Dns();
+
+    expect(dns.defaultNameserver, ['system']);
+    expect(dns.nameserver, ['system']);
+    expect(dns.proxyServerNameserver, ['system']);
+    final allEntries = [
+      ...dns.defaultNameserver,
+      ...dns.nameserver,
+      ...dns.proxyServerNameserver,
+      ...dns.directNameserver,
+      ...dns.fallback,
+      ...dns.nameserverPolicy.values,
+    ];
+    for (final entry in allEntries) {
+      expect(entry, isNot(contains('114.114')));
+      expect(entry, isNot(contains('1.1.1.1')));
+      expect(entry, isNot(contains('119.29')));
+      expect(entry, isNot(contains('223.')));
+      expect(entry, isNot(contains('doh.pub')));
+      expect(entry, isNot(contains('dns-query')));
+    }
   });
 
   test('存量 _bettbox 规则集条目迁移回 geosite 等价项，其余条目保持不变（T162）', () {
