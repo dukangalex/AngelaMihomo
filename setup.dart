@@ -438,20 +438,34 @@ class Build {
   // sources: MetaCubeX/meta-rules-dat for geoip.metadb and geosite.dat,
   // and the DB-IP ASN Lite database for ASN.mmdb.
   static const List<AssetDownloadItem> assetDownloadItems = [
+    // The three geo assets below are pinned to the SHA-256 values in
+    // the geo-data-2026.11 release's signed checksum manifest
+    // (sha256sums.txt, Ed25519-signed by the project data key), the
+    // same enforcement as BundleMRS.7z and zash.zip further down: a
+    // download (or a cached copy) that does not match its pin fails
+    // the build. When the bundled fallback data is refreshed (new
+    // geo-data release), bump these three pins from the new release's
+    // signed manifest in the same change.
     AssetDownloadItem(
       url:
           'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite.dat',
       fileName: 'GeoSite.dat',
+      sha256:
+          'db0c704c3d2d4705729d49d09ec7347c0ec6304c45c856d5456063d4ac5ef1d7',
     ),
     AssetDownloadItem(
       url:
           'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geoip.metadb',
       fileName: 'geoip.metadb',
+      sha256:
+          'dabff40e7e8e472868341968ce6567d7d6bd9e3090d5a4bef77900f40ea438dc',
     ),
     AssetDownloadItem(
       url:
           'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/ASN.mmdb',
       fileName: 'ASN.mmdb',
+      sha256:
+          '81565a450281c949fc83745f5ec9cfea70b035163b1152b055645884765d153d',
     ),
     AssetDownloadItem(
       // The official MetaCubeX rule set bundle, mirrored into the
