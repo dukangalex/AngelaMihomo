@@ -81,12 +81,9 @@ pub mod core {
             log_message(e.clone());
             return e;
         }
-        if start_params.arg.parse::<u16>().is_err()
-            && validate_absolute_path(&start_params.arg).is_err()
-        {
-            let msg = "core arg is invalid".to_string();
-            log_message(msg.clone());
-            return msg;
+        if let Err(e) = validate_core_arg(&start_params.arg) {
+            log_message(e.clone());
+            return e;
         }
         if let Err(e) = start_params
             .home_dir
@@ -96,6 +93,15 @@ pub mod core {
         {
             log_message(e.clone());
             return e;
+        }
+        // The client always passes its own app data directory as home_dir;
+        // require it to be an existing directory so a start request cannot
+        // point the core at an arbitrary not-yet-existing location.
+        let home_dir = start_params.home_dir.as_deref().unwrap_or_default();
+        if !std::path::Path::new(home_dir).is_dir() {
+            let msg = "home_dir is not an existing directory".to_string();
+            log_message(msg.clone());
+            return msg;
         }
 
         let file = match OpenOptions::new().read(true).open(&start_params.path) {
@@ -265,6 +271,36 @@ pub mod core {
             .any(|c| matches!(c, std::path::Component::ParentDir))
         {
             return Err("path must not contain '..'".to_string());
+        }
+        Ok(())
+    }
+
+    // The Dart client (lib/clash/service.dart via lib/helper/helper.dart)
+    // only ever sends two arg shapes to start_core: a TCP port number, or
+    // the absolute path of the unix socket file it created in the system
+    // temp directory ("AngelaMihomo_<hex>.sock"). Anything else — flags,
+    // shell metacharacters, control characters, other paths — is rejected
+    // as defence in depth; the executable itself is already pinned by
+    // SHA-256 below and the arg is passed as a single argv element.
+    fn validate_core_arg(arg: &str) -> Result<(), String> {
+        if arg.parse::<u16>().is_ok() {
+            return Ok(());
+        }
+        if arg.starts_with('-') {
+            return Err("core arg must not be a flag".to_string());
+        }
+        if arg.chars().any(|c| {
+            c.is_control()
+                || matches!(
+                    c,
+                    ';' | '&' | '|' | '$' | '`' | '"' | '<' | '>' | '*' | '?'
+                )
+        }) {
+            return Err("core arg contains forbidden characters".to_string());
+        }
+        validate_absolute_path(arg)?;
+        if !arg.ends_with(".sock") {
+            return Err("core arg path must be a socket path".to_string());
         }
         Ok(())
     }
