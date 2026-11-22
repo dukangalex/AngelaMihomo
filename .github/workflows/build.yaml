@@ -286,7 +286,7 @@ jobs:
           set -euo pipefail
           apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -1)"
           test -n "$apksigner"
-          python3 tools/verify-android-release.py --apksigner "$apksigner" dist/*.apk
+          python3 tools/verify-android-release.py --apksigner "$apksigner" --keystore "$ANDROID_KEYSTORE_PATH" dist/*.apk
 
       - name: Verify Android APK Release Signatures
         if: matrix.platform == 'android'
