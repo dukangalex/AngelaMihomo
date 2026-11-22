@@ -195,7 +195,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool autoRun,
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
-    @Default(true) bool logAiSearch,
     @Default(defaultTestUrl) String testUrl,
     @Default(true) bool showStartSwitch,
     @Default(StartSwitchStyle.outlined) StartSwitchStyle startSwitchStyle,

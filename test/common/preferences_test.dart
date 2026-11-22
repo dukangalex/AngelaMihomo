@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/models/models.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,5 +104,73 @@ void main() {
     final store = await prefs();
     expect(store.containsKey(configKey), isFalse);
     expect(store.getBool('autoLaunch'), isFalse);
+  });
+
+  group('敏感字段落盘加密（T249）', () {
+    Config secretConfig() => Config(
+      themeProps: defaultThemeProps,
+      appSetting: defaultAppSettingProps.copyWith(
+        backupPassword: 'backup-pw',
+      ),
+      dav: const DAV(
+        uri: 'https://dav.example.com',
+        user: 'dav-user',
+        password: 'dav-pw',
+      ),
+      profiles: [
+        Profile(
+          id: 'p1',
+          label: 'secret-profile',
+          url: 'https://sub.example.com/feed?token=sekrit',
+          autoUpdateDuration: const Duration(hours: 24),
+        ),
+      ],
+    );
+
+    setUp(() {
+      FlutterSecureStorage.setMockInitialValues({});
+      utils.resetSecretKeyCache();
+    });
+
+    test('落盘是密文，读回还原明文', () async {
+      await preferences.saveConfig(secretConfig());
+      final raw = await File(path).readAsString();
+      expect(raw, isNot(contains('dav-pw')));
+      expect(raw, isNot(contains('dav-user')));
+      expect(raw, isNot(contains('backup-pw')));
+      expect(raw, isNot(contains('sekrit')));
+      expect(raw, contains('ENC2~'));
+      final loaded = await preferences.getConfig();
+      expect(loaded?.dav?.user, 'dav-user');
+      expect(loaded?.dav?.password, 'dav-pw');
+      expect(loaded?.appSetting.backupPassword, 'backup-pw');
+      expect(
+        loaded?.profiles.single.url,
+        'https://sub.example.com/feed?token=sekrit',
+      );
+    });
+
+    test('存量明文配置原样读入', () async {
+      await File(path).writeAsString(json.encode(secretConfig()));
+      final loaded = await preferences.getConfig();
+      expect(loaded?.dav?.password, 'dav-pw');
+      expect(loaded?.appSetting.backupPassword, 'backup-pw');
+      expect(
+        loaded?.profiles.single.url,
+        'https://sub.example.com/feed?token=sekrit',
+      );
+    });
+
+    test('异机密钥解不开的字段置空，配置仍加载', () async {
+      await preferences.saveConfig(secretConfig());
+      FlutterSecureStorage.setMockInitialValues({});
+      utils.resetSecretKeyCache();
+      final loaded = await preferences.getConfig();
+      expect(loaded, isNotNull);
+      expect(loaded?.profiles.single.label, 'secret-profile');
+      expect(loaded?.dav?.password, '');
+      expect(loaded?.appSetting.backupPassword, '');
+      expect(loaded?.profiles.single.url, '');
+    });
   });
 }

@@ -389,7 +389,11 @@ abstract class Dns with _$Dns {
     @Default(true) @JsonKey(name: 'use-system-hosts') bool useSystemHosts,
     @Default(false) @JsonKey(name: 'respect-rules') bool respectRules,
     @Default(true) bool ipv6,
-    @Default(['114.114.114.114'])
+    // T232: the factory DNS follows the system resolver — no public
+    // resolver is baked into the defaults. The kernel accepts
+    // 'system' in every nameserver slot, including
+    // default-nameserver (its pure-IP check exempts it).
+    @Default(['system'])
     @JsonKey(name: 'default-nameserver')
     List<String> defaultNameserver,
     @Default(DnsMode.fakeIp)
@@ -413,15 +417,15 @@ abstract class Dns with _$Dns {
     List<String> fakeIpFilter,
     @Default(1) @JsonKey(name: 'fake-ip-ttl') int fakeIpTtl,
     @Default({
-      'geosite:cn': '119.29.29.29',
+      'geosite:cn': 'system',
       'geosite:private': 'system',
       '*': 'system',
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
-    @Default(['1.1.1.1']) List<String> nameserver,
+    @Default(['system']) List<String> nameserver,
     @Default([]) List<String> fallback,
-    @Default(['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'])
+    @Default(['system'])
     @JsonKey(name: 'proxy-server-nameserver')
     List<String> proxyServerNameserver,
     @Default([])

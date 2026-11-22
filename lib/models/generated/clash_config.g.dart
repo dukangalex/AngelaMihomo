@@ -258,7 +258,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['default-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['114.114.114.114'],
+      const ['system'],
   enhancedMode:
       $enumDecodeNullable(_$DnsModeEnumMap, json['enhanced-mode']) ??
       DnsMode.fakeIp,
@@ -284,7 +284,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
         (k, e) => MapEntry(k, e as String),
       ) ??
       const {
-        'geosite:cn': '119.29.29.29',
+        'geosite:cn': 'system',
         'geosite:private': 'system',
         '*': 'system',
       },
@@ -292,7 +292,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['1.1.1.1'],
+      const ['system'],
   fallback:
       (json['fallback'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
@@ -300,7 +300,7 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['proxy-server-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['tls://223.6.6.6#DIRECT', 'https://doh.pub/dns-query#DIRECT'],
+      const ['system'],
   directNameserver:
       (json['direct-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)

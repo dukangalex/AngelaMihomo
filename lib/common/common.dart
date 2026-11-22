@@ -27,6 +27,7 @@ export 'launch.dart';
 export 'link.dart';
 export 'managed_script.dart';
 export 'managed_script_update.dart';
+export 'data_integrity.dart';
 export 'zodiac_themes.dart';
 export 'zodiac_guardians.dart';
 export 'deepspace_themes.dart';

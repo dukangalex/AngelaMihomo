@@ -29,7 +29,7 @@
 
 请前往本仓库的 **[Releases](https://github.com/dukangalex/AngelaMihomo/releases)** 页面下载对应平台的安装包（Windows、Linux、macOS、Android、Android TV）。
 
-**从其他版本迁移（Android）**：自 v1.19.7-chain.1 起本应用使用独立包名，可直接与其他版本并存安装；如需迁移数据，请先在原应用中导出备份，再在本应用中导入恢复。
+**从其他版本迁移（Android）**：自 v1.19.8-chain.26 起本应用使用独立包名，可直接与其他版本并存安装；如需迁移数据，请先在原应用中导出备份，再在本应用中导入恢复。
 
 ## 致谢
 

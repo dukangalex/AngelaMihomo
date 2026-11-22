@@ -22,7 +22,7 @@
 
 플랫폼별 패키지는 이 저장소의 **[Releases](https://github.com/dukangalex/AngelaMihomo/releases)** 페이지에서 받을 수 있습니다(Windows, Linux, macOS, Android, Android TV).
 
-**다른 빌드에서 마이그레이션(Android)**: v1.19.7-chain.1부터 이 앱은 자체 패키지 이름을 사용하며 다른 빌드와 함께 설치됩니다. 먼저 기존 앱에서 백업을 내보낸 뒤 이 앱에서 가져오세요.
+**다른 빌드에서 마이그레이션(Android)**: v1.19.8-chain.26부터 이 앱은 자체 패키지 이름을 사용하며 다른 빌드와 함께 설치됩니다. 먼저 기존 앱에서 백업을 내보낸 뒤 이 앱에서 가져오세요.
 
 ## 감사의 글
 

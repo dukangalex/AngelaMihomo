@@ -407,6 +407,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "Backup encrypted with AES-256",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("Unencrypted Backup"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("No backup password is set, so this backup will be sent without encryption. The backup contains your subscription URLs and account credentials — anyone able to read the file on the server can read them. If the storage is not fully trusted, cancel and set a backup password first."),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("This backup was not encrypted (no backup password set)"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("Upload Anyway"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("Enable Anyway"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("Backup Password"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "AES-256 encrypted, leave blank for none",
@@ -857,12 +862,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("Edit Forwarding"),
     "editUser": MessageLookupByLibrary.simpleMessage("Edit User"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage(
-      "Crash Analytics",
-    ),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "Upload crash logs when needed",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("Enable Override"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "Apply the override below to this profile before the core runs it",
@@ -1417,7 +1416,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("Locate"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("Lock Node"),
     "log": MessageLookupByLibrary.simpleMessage("Log"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI Search"),
     "logLevel": MessageLookupByLibrary.simpleMessage("Log Level"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("Log Capture"),
