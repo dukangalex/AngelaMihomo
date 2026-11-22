@@ -15,6 +15,7 @@ export 'identity.dart';
 export 'function.dart';
 export 'future.dart';
 export 'http.dart';
+export 'download_guard.dart';
 export 'ip_risk.dart';
 export 'icon_set.dart';
 export 'icons.dart';

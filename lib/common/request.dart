@@ -63,6 +63,96 @@ class Request {
         return client;
       },
     );
+    // T281 (audit AM-05): the subscription download chain must never
+    // reach link-local or cloud metadata destinations. The redirect
+    // loop below re-checks every hop; this interceptor covers the
+    // initial request (and re-checks each hop as it is issued).
+    _clashDio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final reason = DownloadTargetGuard.blockFor(options.uri);
+          if (reason == null) {
+            handler.next(options);
+            return;
+          }
+          handler.reject(
+            _blockedTargetException(options.uri, reason, options),
+            true,
+          );
+        },
+      ),
+    );
+  }
+
+  DioException _blockedTargetException(
+    Uri uri,
+    DownloadTargetBlock reason, [
+    RequestOptions? requestOptions,
+  ]) {
+    return DioException(
+      requestOptions: requestOptions ?? RequestOptions(path: uri.toString()),
+      type: DioExceptionType.badResponse,
+      error: BlockedDownloadTargetException(uri, reason),
+      message: 'Subscription download target is blocked: $uri',
+    );
+  }
+
+  /// Status codes the manual redirect loop follows, mirroring the
+  /// set dart:io's HttpClient follows automatically.
+  static bool _isRedirectStatus(int? status) =>
+      status == 301 ||
+      status == 302 ||
+      status == 303 ||
+      status == 307 ||
+      status == 308;
+
+  static bool _acceptRedirectResponses(int? status) =>
+      status != null && status < 400;
+
+  /// Sends [send] for [url] and follows redirects manually so every
+  /// hop is validated by [DownloadTargetGuard] before the request
+  /// goes out (T281): dart:io follows redirects inside the client,
+  /// where no per-hop check is possible. Callers must disable the
+  /// client's own redirect following and accept 3xx responses (see
+  /// [_acceptRedirectResponses]). The hop limit matches the dart:io
+  /// default of 5.
+  Future<Response> _sendFollowingRedirects(
+    String url,
+    Future<Response> Function(String url) send,
+  ) async {
+    var current = url;
+    final redirects = <RedirectRecord>[];
+    while (true) {
+      final uri = Uri.parse(current);
+      final reason = DownloadTargetGuard.blockFor(uri);
+      if (reason != null) {
+        throw _blockedTargetException(uri, reason);
+      }
+      final response = await send(current);
+      final location = response.headers.value(HttpHeaders.locationHeader);
+      if (!_isRedirectStatus(response.statusCode) || location == null) {
+        response.isRedirect = redirects.isNotEmpty;
+        response.redirects = redirects;
+        return response;
+      }
+      if (redirects.length >= 5) {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          type: DioExceptionType.unknown,
+          error: HttpException('Redirect limit exceeded', uri: uri),
+          message: 'Too many redirects for $url',
+        );
+      }
+      final next = uri.resolve(location);
+      redirects.add(
+        RedirectRecord(
+          response.statusCode!,
+          response.requestOptions.method,
+          next,
+        ),
+      );
+      current = next.toString();
+    }
   }
 
   Uint8List _decodeWithLimit(
@@ -269,10 +359,17 @@ class Request {
     final (requestUrl, headers) = _authorizedRequest(url);
     final response = await _withPlainEncodingRetry(
       headers,
-      (requestHeaders) => _clashDio.download(
+      (requestHeaders) => _sendFollowingRedirects(
         requestUrl,
-        downloadPath,
-        options: Options(headers: requestHeaders),
+        (target) => _clashDio.download(
+          target,
+          downloadPath,
+          options: Options(
+            headers: requestHeaders,
+            followRedirects: false,
+            validateStatus: _acceptRedirectResponses,
+          ),
+        ),
       ),
     );
     return (path: downloadPath, headers: response.headers, remote: true);
@@ -289,11 +386,16 @@ class Request {
     final (requestUrl, headers) = _authorizedRequest(url);
     final response = await _withPlainEncodingRetry(
       headers,
-      (requestHeaders) => _clashDio.get(
+      (requestHeaders) => _sendFollowingRedirects(
         requestUrl,
-        options: Options(
-          responseType: ResponseType.bytes,
-          headers: requestHeaders,
+        (target) => _clashDio.get(
+          target,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: requestHeaders,
+            followRedirects: false,
+            validateStatus: _acceptRedirectResponses,
+          ),
         ),
       ),
     );
