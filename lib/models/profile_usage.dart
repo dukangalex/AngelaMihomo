@@ -59,15 +59,47 @@ class ProfileUsage {
     ];
   }
 
-  SubscriptionInfo get _nearest {
-    final expiring =
-        items
-            .map((item) => item.value)
-            .where((info) => info.expire > 0)
-            .toList()
-          ..sort((a, b) => a.expire.compareTo(b.expire));
-    return expiring.firstOrNull ?? items.first.value;
+  /// The single source the home card's expiry date and traffic
+  /// figures describe (T223): the earliest expiring source, falling
+  /// back to the first source when none carries an expiry. The date
+  /// and the traffic must always come from this one source — never
+  /// the date from one source and the traffic from an aggregate.
+  MapEntry<String, SubscriptionInfo> get primaryEntry {
+    MapEntry<String, SubscriptionInfo>? earliest;
+    for (final item in items) {
+      if (item.value.expire <= 0) continue;
+      if (earliest == null || item.value.expire < earliest.value.expire) {
+        earliest = item;
+      }
+    }
+    return earliest ?? items.first;
   }
+
+  SubscriptionInfo get _nearest => primaryEntry.value;
+
+  /// Name of [primaryEntry]'s source, shown beside the expiry on the
+  /// home card of a merged profile so the date is attributable to the
+  /// subscription it belongs to. Null for single-source profiles: the
+  /// source is the profile itself, already named by the card title.
+  String? get primarySourceName => isMulti ? primaryEntry.key : null;
+
+  int get primaryUsed => _usedBytes(primaryEntry.value);
+
+  int get primaryTotal => primaryEntry.value.total;
+
+  bool get primaryUnlimited => primaryTotal <= 0;
+
+  String get primaryTotalText =>
+      primaryUnlimited ? '∞' : TrafficValue(value: primaryTotal).show;
+
+  String get primaryUsageText =>
+      '${TrafficValue(value: primaryUsed).show} / $primaryTotalText';
+
+  /// Traffic figure displayed beside the expiry on the home card.
+  /// For merged profiles this is [primaryEntry]'s figure, the same
+  /// source [expireText] refers to; single-source profiles keep the
+  /// (identical) aggregate figure.
+  String get cardUsageText => isMulti ? primaryUsageText : usageText;
 
   String? get expireText => _nearest.expireDesc;
 

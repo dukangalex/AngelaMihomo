@@ -161,6 +161,10 @@ class _ProfileZone extends ConsumerWidget {
     final segments = usage?.segments ?? _emptySegments;
     final subtitle = [
       ?profile.lastUpdateDate?.lastUpdateTimeDesc,
+      // T223: on a merged profile the expiry belongs to one source
+      // (ProfileUsage.primaryEntry); name that source on the same
+      // line so the date is not mistaken for another subscription's.
+      ?usage?.primarySourceName,
       ?profile.usageExpireText(usage),
     ].join(' · ');
     // Stacked rows (T286): every item gets the full card width, so
@@ -254,7 +258,9 @@ class _SubtitleUsageRow extends StatelessWidget {
             ),
           ),
         Text(
-          usage?.usageText ?? appLocalizations.noUsageData,
+          // T223: the figure is cardUsageText, so on a merged profile
+          // it describes the same source as the expiry beside it.
+          usage?.cardUsageText ?? appLocalizations.noUsageData,
           style: context.textTheme.labelMedium?.copyWith(
             color: usage == null ? colorScheme.onSurfaceVariant : null,
             fontFeatures: const [FontFeature.tabularFigures()],
