@@ -7,6 +7,9 @@
   图片资产规矩：截图等图片入库前一律剥除 EXIF（设备型号、拍摄
   时间、定位等一概不随仓公开），发布前复核 snapshots/ 全量为零
   EXIF（T244）。
+  数据流门槛：DATA-FLOW.md 必须已按本版的行为变更同步更新并逐项
+  核对与代码实情一致，未更新不得发布（T245）；隐私声明文案与实现
+  不符按缺陷处理（见 PRIVACY-GUIDELINES.md 发版门槛）。
 -->
 
 # Angela Mihomo 正式版本发布 / Stable Release
