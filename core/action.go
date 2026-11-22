@@ -82,9 +82,22 @@ func handleAction(action *Action, result ActionResult) {
 			result.error(fmt.Sprintf("panic: %v", r))
 		}
 	}()
+	// stringData returns the action's string payload, which most actions
+	// carry. A type mismatch is reported as a regular error reply instead
+	// of panicking into the recover above (AM-07/T283).
+	stringData := func() (string, bool) {
+		data, ok := action.Data.(string)
+		if !ok {
+			result.error(fmt.Sprintf("invalid data for action %s: string payload expected", action.Method))
+		}
+		return data, ok
+	}
 	switch action.Method {
 	case initClashMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(handleInitClash(paramsString))
 		return
 	case getIsInitMethod:
@@ -108,7 +121,10 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(handleShutdown())
 		return
 	case validateConfigMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		var params ValidateConfigParams
 		err := json.Unmarshal([]byte(paramsString), &params)
 		if err != nil {
@@ -118,14 +134,21 @@ func handleAction(action *Action, result ActionResult) {
 		return
 	case importProfileMethod:
 		var params ImportProfileParams
-		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
+		if err := json.Unmarshal([]byte(paramsString), &params); err != nil {
 			result.success(err.Error())
 			return
 		}
 		result.success(handleImportProfile(&params))
 		return
 	case decryptAgeConfigMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		var params DecryptAgeConfigParams
 		err := json.Unmarshal([]byte(paramsString), &params)
 		if err != nil {
@@ -134,12 +157,18 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(handleDecryptAgeConfig(&params))
 		return
 	case updateConfigMethod:
-		data := []byte(action.Data.(string))
-		result.success(handleUpdateConfig(data))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(handleUpdateConfig([]byte(data)))
 		return
 	case setupConfigMethod:
-		data := []byte(action.Data.(string))
-		result.success(handleSetupConfig(data))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(handleSetupConfig([]byte(data)))
 		return
 	case getModeMethod:
 		result.success(handleGetMode())
@@ -148,7 +177,10 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(handleGetProxies())
 		return
 	case changeProxyMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		handleChangeProxy(data, func(value string) {
 			result.success(value)
 		})
@@ -164,13 +196,20 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(true)
 		return
 	case asyncTestDelayMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		handleAsyncTestDelay(data, func(value string) {
 			result.success(value)
 		})
 		return
 	case asyncTestDelaysMethod:
-		handleAsyncTestDelays(action.Data.(string), func(value string) {
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		handleAsyncTestDelays(data, func(value string) {
 			result.success(value)
 		})
 		return
@@ -180,80 +219,140 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(true)
 		return
 	case startSpeedTestMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(toolbox.HandleStartSpeedTest(data))
 		return
 	case probeSpeedTestMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(toolbox.HandleProbeSpeedTest(data))
 		return
 	case getSpeedTestServersMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(toolbox.HandleSpeedTestServers(data))
 		return
 	case cancelSpeedTestMethod:
 		result.success(toolbox.HandleCancelSpeedTest())
 		return
 	case startStunTestMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(toolbox.HandleStartStunTest(data))
 		return
 	case cancelStunTestMethod:
 		result.success(toolbox.HandleCancelStunTest())
 		return
 	case startIperfServerMethod:
-		result.success(toolbox.HandleStartIperfServer(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStartIperfServer(data))
 		return
 	case stopIperfServerMethod:
 		result.success(toolbox.HandleStopIperfServer())
 		return
 	case startIperfClientMethod:
-		result.success(toolbox.HandleStartIperfClient(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStartIperfClient(data))
 		return
 	case cancelIperfClientMethod:
 		result.success(toolbox.HandleCancelIperfClient())
 		return
 	case startLocalPingMethod:
-		result.success(toolbox.HandleStartLocalPing(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStartLocalPing(data))
 		return
 	case cancelLocalPingMethod:
 		result.success(toolbox.HandleCancelLocalPing())
 		return
 	case routeTraceMethod:
-		result.success(toolbox.HandleRouteTrace(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleRouteTrace(data))
 		return
 	case dnsQueryMethod:
-		result.success(toolbox.HandleDnsQuery(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleDnsQuery(data))
 		return
 	case mrsPrepareMethod:
 		result.success(toolbox.HandleMrsPrepare())
 		return
 	case mrsLookupMethod:
-		result.success(toolbox.HandleMrsLookup(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleMrsLookup(data))
 		return
 	case mrsDumpMethod:
-		result.success(toolbox.HandleMrsDump(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleMrsDump(data))
 		return
 	case cancelMrsLookupMethod:
 		result.success(toolbox.HandleCancelMrsLookup())
 		return
 	case getTrafficStatsMethod:
-		result.success(toolbox.HandleGetTrafficStats(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleGetTrafficStats(data))
 		return
 	case clearTrafficStatsMethod:
 		result.success(toolbox.HandleClearTrafficStats())
 		return
 	case storeGetMethod:
-		result.success(toolbox.HandleStoreGet(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStoreGet(data))
 		return
 	case storeSetMethod:
-		result.success(toolbox.HandleStoreSet(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStoreSet(data))
 		return
 	case storeListMethod:
-		result.success(toolbox.HandleStoreList(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStoreList(data))
 		return
 	case storeClearMethod:
-		result.success(toolbox.HandleStoreClear(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleStoreClear(data))
 		return
 	case startToolProxyMethod:
 		result.success(toolbox.HandleStartToolProxy())
@@ -263,7 +362,11 @@ func handleAction(action *Action, result ActionResult) {
 		result.success("true")
 		return
 	case ageCryptMethod:
-		result.success(toolbox.HandleAgeCrypt(action.Data.(string)))
+		data, ok := stringData()
+		if !ok {
+			return
+		}
+		result.success(toolbox.HandleAgeCrypt(data))
 		return
 	case getConnectionsMethod:
 		result.success(handleGetConnections())
@@ -297,7 +400,11 @@ func handleAction(action *Action, result ActionResult) {
 		return
 	case exportConfigMethod:
 		var params ExportConfigParams
-		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
+		if err := json.Unmarshal([]byte(paramsString), &params); err != nil {
 			result.error(err)
 			return
 		}
@@ -309,7 +416,11 @@ func handleAction(action *Action, result ActionResult) {
 		return
 	case mergeProfilesMethod:
 		var params MergeProfilesParams
-		if err := json.Unmarshal([]byte(action.Data.(string)), &params); err != nil {
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
+		if err := json.Unmarshal([]byte(paramsString), &params); err != nil {
 			result.error(err)
 			return
 		}
@@ -322,7 +433,11 @@ func handleAction(action *Action, result ActionResult) {
 		return
 	case getRuntimeConfigMethod:
 		params := defaultSetupParams()
-		if err := UnmarshalJson([]byte(action.Data.(string)), params); err != nil {
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
+		if err := UnmarshalJson([]byte(paramsString), params); err != nil {
 			result.error(err)
 			return
 		}
@@ -334,7 +449,10 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(content)
 		return
 	case getConfigMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		var params GetConfigParams
 		err := json.Unmarshal([]byte(paramsString), &params)
 		if err != nil {
@@ -348,21 +466,33 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(config)
 		return
 	case closeConnectionMethod:
-		id := action.Data.(string)
+		id, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(handleCloseConnection(id))
 		return
 	case closeGroupConnectionsMethod:
-		groupName := action.Data.(string)
+		groupName, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(handleCloseGroupConnections(groupName))
 		return
 	case getExternalProvidersMethod:
 		result.success(handleGetExternalProviders())
 		return
 	case getExternalProviderMethod:
-		externalProviderName := action.Data.(string)
+		externalProviderName, ok := stringData()
+		if !ok {
+			return
+		}
 		result.success(handleGetExternalProvider(externalProviderName))
 	case updateGeoDataMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		var params = map[string]string{}
 		err := json.Unmarshal([]byte(paramsString), &params)
 		if err != nil {
@@ -376,13 +506,19 @@ func handleAction(action *Action, result ActionResult) {
 		})
 		return
 	case updateExternalProviderMethod:
-		providerName := action.Data.(string)
+		providerName, ok := stringData()
+		if !ok {
+			return
+		}
 		handleUpdateExternalProvider(providerName, func(value string) {
 			result.success(value)
 		})
 		return
 	case sideLoadExternalProviderMethod:
-		paramsString := action.Data.(string)
+		paramsString, ok := stringData()
+		if !ok {
+			return
+		}
 		var params = map[string]string{}
 		err := json.Unmarshal([]byte(paramsString), &params)
 		if err != nil {
@@ -396,7 +532,10 @@ func handleAction(action *Action, result ActionResult) {
 		})
 		return
 	case parseExternalProviderContentMethod:
-		providerName := action.Data.(string)
+		providerName, ok := stringData()
+		if !ok {
+			return
+		}
 		handleParseExternalProviderContent(providerName, func(value string) {
 			result.success(value)
 		})
@@ -416,13 +555,19 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(handleStopListener())
 		return
 	case getCountryCodeMethod:
-		ip := action.Data.(string)
+		ip, ok := stringData()
+		if !ok {
+			return
+		}
 		handleGetCountryCode(ip, func(value string) {
 			result.success(value)
 		})
 		return
 	case getIpGeoMethod:
-		ip := action.Data.(string)
+		ip, ok := stringData()
+		if !ok {
+			return
+		}
 		handleGetIpGeo(ip, func(value string) {
 			result.success(value)
 		})
@@ -438,7 +583,10 @@ func handleAction(action *Action, result ActionResult) {
 		})
 		return
 	case setStateMethod:
-		data := action.Data.(string)
+		data, ok := stringData()
+		if !ok {
+			return
+		}
 		handleSetState(data)
 		result.success(true)
 	case flushFakeIPMethod:
@@ -464,7 +612,10 @@ func handleAction(action *Action, result ActionResult) {
 		})
 		return
 	case convertAgeSecretKeyToPublicKeyMethod:
-		secretKey := action.Data.(string)
+		secretKey, ok := stringData()
+		if !ok {
+			return
+		}
 		publicKeys, err := age.ToPublicKeys(secretKey)
 		if err != nil {
 			result.error(err.Error())
