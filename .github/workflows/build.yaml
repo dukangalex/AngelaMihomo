@@ -127,8 +127,30 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          # T251: pull requests from forks never touch release signing
+          # material; they build with a throwaway keystore instead.
+          IS_FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
           set -euo pipefail
+
+          if [[ "$IS_FORK_PR" == "true" ]]; then
+            # Ephemeral keystore for fork PRs: Gradle release signing is
+            # fail-closed, so a keystore must exist — but it must never
+            # be the release one. These credentials are non-secret
+            # constants for a certificate that signs nothing shipped.
+            keytool -genkeypair -keystore android/app/keystore.jks \
+              -storepass pr-ephemeral -keypass pr-ephemeral \
+              -alias pr-ephemeral -keyalg RSA -keysize 2048 -validity 3650 \
+              -dname "CN=AngelaMihomo PR Preview, O=AngelaMihomo" >/dev/null 2>&1
+            {
+              printf 'keyAlias=%s\n' "pr-ephemeral"
+              printf 'storePassword=%s\n' "pr-ephemeral"
+              printf 'keyPassword=%s\n' "pr-ephemeral"
+            } > android/local.properties
+            echo "ANDROID_KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/keystore.jks" >> "$GITHUB_ENV"
+            echo "Fork PR: building with an ephemeral keystore; release signing material was not loaded."
+            exit 0
+          fi
 
           for name in KEYSTORE_B64 KEY_ALIAS STORE_PASSWORD KEY_PASSWORD; do
             if [[ -z "${!name}" ]]; then
@@ -137,18 +159,28 @@ jobs:
             fi
           done
 
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > android/app/keystore.jks
-          if [[ ! -s android/app/keystore.jks ]]; then
+          # T251: the release keystore is decoded outside the checked-out
+          # workspace, so code executed from the tree during this job
+          # (build_runner, setup.dart, Gradle scripts) never runs next
+          # to it inside the checkout; Gradle finds it via the
+          # storeFile property in local.properties.
+          keystore_dir="$RUNNER_TEMP/angela-keystore"
+          mkdir -p "$keystore_dir"
+          keystore_path="$keystore_dir/keystore.jks"
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$keystore_path"
+          if [[ ! -s "$keystore_path" ]]; then
             echo "::error::Decoded Android keystore is empty."
             exit 1
           fi
 
-          keytool -list -keystore android/app/keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          keytool -list -keystore "$keystore_path" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
           {
             printf 'keyAlias=%s\n' "$KEY_ALIAS"
             printf 'storePassword=%s\n' "$STORE_PASSWORD"
             printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+            printf 'storeFile=%s\n' "$keystore_path"
           } > android/local.properties
+          echo "ANDROID_KEYSTORE_PATH=$keystore_path" >> "$GITHUB_ENV"
 
           echo "Android release keystore file and alias validated."
       - name: Setup Java (Android)
@@ -259,12 +291,15 @@ jobs:
       - name: Verify Android APK Release Signatures
         if: matrix.platform == 'android'
         shell: bash
-        env:
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
           set -euo pipefail
           shopt -s nullglob
+
+          # T251: alias/password come from the local.properties the
+          # keystore step wrote, so the same step verifies both the
+          # release keystore and a fork PR's ephemeral one.
+          KEY_ALIAS="$(grep '^keyAlias=' android/local.properties | cut -d= -f2-)"
+          STORE_PASSWORD="$(grep '^storePassword=' android/local.properties | cut -d= -f2-)"
 
           apks=(build/app/outputs/flutter-apk/*.apk)
           if (( ${#apks[@]} == 0 )); then
@@ -272,7 +307,7 @@ jobs:
             exit 1
           fi
 
-          expected_cert="$(keytool -exportcert -keystore android/app/keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | sha256sum | awk '{print toupper($1)}')"
+          expected_cert="$(keytool -exportcert -keystore "${ANDROID_KEYSTORE_PATH:-android/app/keystore.jks}" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | sha256sum | awk '{print toupper($1)}')"
           apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           if [[ -z "$apksigner" || ! -x "$apksigner" ]]; then
             echo "::error::Android apksigner tool was not found."
@@ -290,6 +325,12 @@ jobs:
           done
 
           echo "All Android APK signatures verified against the configured release certificate."
+      - name: Remove Android Keystore Material
+        if: always() && matrix.platform == 'android'
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/angela-keystore"
+          rm -f android/app/keystore.jks
       - name: Install SignPath (Windows)
         if: matrix.platform == 'windows' && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh

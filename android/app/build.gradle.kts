@@ -10,7 +10,13 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
-val mStoreFile = file("keystore.jks")
+// T251: CI may point storeFile at a keystore outside the workspace
+// (release key material is no longer decoded into the checkout);
+// local builds keep the historical in-tree location.
+val mStoreFile = localProperties.getProperty("storeFile")
+    ?.takeIf { it.isNotBlank() }
+    ?.let { file(it) }
+    ?: file("keystore.jks")
 val mStorePassword: String? = localProperties.getProperty("storePassword")
 val mKeyAlias: String? = localProperties.getProperty("keyAlias")
 val mKeyPassword: String? = localProperties.getProperty("keyPassword")
