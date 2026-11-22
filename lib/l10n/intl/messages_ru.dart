@@ -420,6 +420,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "Резервная копия зашифрована AES-256",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("Незашифрованная резервная копия"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("Пароль резервной копии не задан, поэтому эта копия будет отправлена без шифрования. Она содержит адреса подписок и учётные данные — любой, кто сможет прочитать файл на сервере, сможет прочитать и их. Если хранилище не полностью доверенное, отмените и сначала задайте пароль резервной копии."),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("Эта резервная копия не зашифрована (пароль не задан)"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("Всё равно загрузить"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("Всё равно включить"),
     "backupPassword": MessageLookupByLibrary.simpleMessage(
       "Пароль резервной копии",
     ),

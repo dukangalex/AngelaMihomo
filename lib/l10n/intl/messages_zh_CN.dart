@@ -323,6 +323,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "已使用 AES-256 加密备份",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("未加密备份"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("未设置备份口令，本次备份将不加密发送。备份中包含你的订阅地址与账号凭据，任何能读到服务器上该文件的人都能读到它们。若该存储不完全可信，请取消并先设置备份口令。"),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("本次备份未加密（未设置备份口令）"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("仍要上传"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("仍要启用"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("备份密码"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "使用 AES-256 加密备份，留空则不加密",

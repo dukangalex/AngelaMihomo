@@ -344,6 +344,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "AES-256 でバックアップを暗号化しました",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("暗号化されていないバックアップ"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("バックアップパスワードが設定されていないため、このバックアップは暗号化されずに送信されます。バックアップには購読URLとアカウント資格情報が含まれており、サーバー上のファイルを読める人は誰でもそれらを読めます。ストレージを完全に信頼できない場合は、キャンセルして先にバックアップパスワードを設定してください。"),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("このバックアップは暗号化されていません（バックアップパスワード未設定）"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("そのままアップロード"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("そのまま有効化"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("バックアップパスワード"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "AES-256で暗号化（空欄で暗号化なし）",

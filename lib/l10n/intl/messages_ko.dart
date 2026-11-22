@@ -351,6 +351,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "AES-256으로 백업을 암호화했습니다",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("암호화되지 않은 백업"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("백업 비밀번호가 설정되어 있지 않아 이 백업은 암호화 없이 전송됩니다. 백업에는 구독 URL과 계정 자격 정보가 포함되어 있어, 서버의 파일을 읽을 수 있는 사람은 누구나 이를 읽을 수 있습니다. 저장소를 완전히 신뢰할 수 없다면 취소하고 먼저 백업 비밀번호를 설정하세요."),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("이 백업은 암호화되지 않았습니다(백업 비밀번호 미설정)"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("그래도 업로드"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("그래도 활성화"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("백업 비밀번호"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "AES-256 암호화 (비워두면 미적용)",

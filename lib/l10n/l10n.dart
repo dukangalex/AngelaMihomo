@@ -2116,6 +2116,56 @@ class AppLocalizations {
     );
   }
 
+  /// `Unencrypted Backup`
+  String get backupUnencryptedTitle {
+    return Intl.message(
+      'Unencrypted Backup',
+      name: 'backupUnencryptedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No backup password is set, so this backup will be sent without encryption. The backup contains your subscription URLs and account credentials — anyone able to read the file on the server can read them. If the storage is not fully trusted, cancel and set a backup password first.`
+  String get backupUnencryptedWarning {
+    return Intl.message(
+      'No backup password is set, so this backup will be sent without encryption. The backup contains your subscription URLs and account credentials — anyone able to read the file on the server can read them. If the storage is not fully trusted, cancel and set a backup password first.',
+      name: 'backupUnencryptedWarning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This backup was not encrypted (no backup password set)`
+  String get backupUnencryptedTip {
+    return Intl.message(
+      'This backup was not encrypted (no backup password set)',
+      name: 'backupUnencryptedTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload Anyway`
+  String get backupUploadAnyway {
+    return Intl.message(
+      'Upload Anyway',
+      name: 'backupUploadAnyway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable Anyway`
+  String get backupEnableAnyway {
+    return Intl.message(
+      'Enable Anyway',
+      name: 'backupEnableAnyway',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Decrypted and restored with the current password`
   String get recoveryDecryptedTip {
     return Intl.message(

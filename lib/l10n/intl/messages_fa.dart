@@ -402,6 +402,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "پشتیبان با AES-256 رمزگذاری شد",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("پشتیبان‌گیری رمزنگاری‌نشده"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("هیچ گذرواژه‌ای برای پشتیبان‌گیری تنظیم نشده است، بنابراین این پشتیبان‌گیری بدون رمزنگاری ارسال می‌شود. این فایل شامل نشانی‌های اشتراک و اطلاعات حساب شماست و هر کسی که بتواند فایل روی سرور را بخواند، می‌تواند آن‌ها را بخواند. اگر به فضای ذخیره‌سازی کاملاً اعتماد ندارید، لغو کنید و ابتدا گذرواژهٔ پشتیبان‌گیری تنظیم کنید."),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("این پشتیبان‌گیری رمزنگاری نشده است (گذرواژه‌ای تنظیم نشده)"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("همین‌طور بارگذاری کن"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("همین‌طور فعال کن"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("رمز عبور پشتیبان"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "رمزنگاری AES-256 (خالی برای بدون رمز)",
