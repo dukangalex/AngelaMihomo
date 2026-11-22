@@ -35,6 +35,22 @@ const List<double> _emptySegments = [0];
 /// profiles page, because a refresh makes the core re-test delays
 /// through the upstream path and would read as a second test entry
 /// on this card.
+///
+/// Layout (T286, user directive: every item fully visible, nothing
+/// ellipsized): the profile zone stacks its items on separate rows —
+/// the profile name gets a full-width row of its own (up to two
+/// lines), the status light moved into the node pill — its first
+/// line, beside the delay number, with the node name on the pill's
+/// own full-width second line (superseding the T211 top-right
+/// placement, which starved the name row) — and the usage numbers
+/// sit on their own line above the
+/// segment bar instead of sharing a row with the node pill, which
+/// used to truncate both. No field in the card ellipsizes and no font
+/// shrinks. The card's height follows its content with the old
+/// two-grid-row height as a floor (the dashboard grid fits tiles to
+/// their content height), so long names simply make a taller card
+/// instead of a clipped one; the empty-profile placeholder keeps the
+/// exact fixed-height form it always had.
 class ProfileModeCard extends ConsumerWidget {
   final DashboardTileSize? size;
 
@@ -44,22 +60,38 @@ class ProfileModeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final size = this.size ?? DashboardTileSize.large;
     final tall = size == DashboardTileSize.tall;
-    return SizedBox(
-      height: getWidgetHeight(context, size.rows),
+    final floor = getWidgetHeight(context, size.rows);
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      indent: 16.ap,
+      endIndent: 16.ap,
+      color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+    );
+    if (ref.watch(currentProfileProvider) == null) {
+      return SizedBox(
+        height: floor,
+        child: CommonCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              Expanded(child: _ProfileZone(tall: tall)),
+              divider,
+              _ModeZone(tall: tall),
+            ],
+          ),
+        ),
+      );
+    }
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: floor),
       child: CommonCard(
         padding: EdgeInsets.zero,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(child: _ProfileZone(tall: tall)),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 16.ap,
-              endIndent: 16.ap,
-              color: context.colorScheme.outlineVariant.withValues(
-                alpha: 0.5,
-              ),
-            ),
+            _ProfileZone(tall: tall),
+            divider,
             _ModeZone(tall: tall),
           ],
         ),
@@ -131,19 +163,25 @@ class _ProfileZone extends ConsumerWidget {
       ?profile.lastUpdateDate?.lastUpdateTimeDesc,
       ?profile.usageExpireText(usage),
     ].join(' · ');
-    // Compact two-row form, like the former wide profile card: the
-    // name row doubles as the zone header, so the merged card's two
-    // zones fit the two grid rows the pair of cards used to occupy.
+    // Stacked rows (T286): every item gets the full card width on a
+    // row of its own, so no field ever has to ellipsize — the name
+    // row (up to two lines), the update/expire subtitle, the node
+    // row carrying the status light, then the usage numbers above
+    // their segment bar.
     return Padding(
       padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 16.ap, 6.ap),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.description_outlined,
-                color: colorScheme.onSurfaceVariant,
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Icon(
+                  Icons.description_outlined,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -158,21 +196,16 @@ class _ProfileZone extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              // The status light lives at the card's top-right (T211):
-              // in the mode header row it crowded out the running-mode
-              // label on narrow screens.
-              tall
-                  ? const NodeStatusLight(compact: true)
-                  : const NodeStatusLight(),
+              if (tall) ...[
+                const SizedBox(width: 8),
+                const NodeStatusLight(compact: true),
+              ],
             ],
           ),
           if (subtitle.isNotEmpty) ...[
             const SizedBox(height: 2),
             Text(
               subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: context.textTheme.labelSmall?.copyWith(
                 color: usage?.isExpired == true
                     ? colorScheme.error
@@ -180,12 +213,10 @@ class _ProfileZone extends ConsumerWidget {
               ),
             ),
           ],
-          const Spacer(),
+          const SizedBox(height: 8),
           if (tall) ...[
             Text(
               usage?.usageText ?? appLocalizations.noUsageData,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: context.textTheme.labelMedium?.copyWith(
                 color: usage == null ? colorScheme.onSurfaceVariant : null,
                 fontFeatures: const [FontFeature.tabularFigures()],
@@ -193,40 +224,21 @@ class _ProfileZone extends ConsumerWidget {
             ),
             const SizedBox(height: 2),
             const _CurrentNode(style: _NodeStyle.plain),
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        usage?.usageText ?? appLocalizations.noUsageData,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.textTheme.labelMedium?.copyWith(
-                          color: usage == null
-                              ? colorScheme.onSurfaceVariant
-                              : null,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                      if (segments.isNotEmpty) ...[
-                        const SizedBox(height: 5),
-                        UsageSegmentBar(segments: segments, height: 4),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 220),
-                  child: const _CurrentNode(style: _NodeStyle.pill),
-                ),
-              ],
+          ] else ...[
+            const _CurrentNodeRow(),
+            const SizedBox(height: 8),
+            Text(
+              usage?.usageText ?? appLocalizations.noUsageData,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: usage == null ? colorScheme.onSurfaceVariant : null,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
+            if (segments.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              UsageSegmentBar(segments: segments, height: 4),
+            ],
+          ],
         ],
       ),
     );
@@ -240,7 +252,7 @@ class _ModeZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The status light moved to the profile zone's top-right (T211),
+    // The status light lives in the profile zone's node row (T286),
     // so this header row carries only the mode label and, in the wide
     // form, the status chips; the segmented mode switch is shared
     // with the tall form, which does not repeat the chips.
@@ -248,7 +260,7 @@ class _ModeZone extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         InfoHeader(
-          padding: EdgeInsets.fromLTRB(16.ap, 9.ap, 12.ap, 0),
+          padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 12.ap, 0),
           info: Info(
             label: appLocalizations.runningMode,
             iconData: Icons.call_split_sharp,
@@ -256,7 +268,7 @@ class _ModeZone extends StatelessWidget {
           actions: tall ? const [] : const [_OutboundStatusChips()],
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(10.ap, 6.ap, 10.ap, 8.ap),
+          padding: EdgeInsets.fromLTRB(10.ap, 4.ap, 10.ap, 6.ap),
           child: SizedBox(
             height: 34.ap,
             child: Consumer(
@@ -537,20 +549,22 @@ class _ProfileName extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Flexible(
-          child: EmojiText(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: style,
-          ),
+          // T286: the name wraps to a second line instead of
+          // ellipsizing — it is the card's primary label and the
+          // switch-sheet entry, so it always reads in full.
+          child: EmojiText(name, maxLines: 2, style: style),
         ),
         const SizedBox(width: 2),
-        Icon(
-          Icons.unfold_more,
-          size: 16,
-          color: context.colorScheme.onSurfaceVariant,
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(
+            Icons.unfold_more,
+            size: 16,
+            color: context.colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -601,6 +615,109 @@ class _GroupNode extends ConsumerWidget {
   }
 }
 
+/// Full-width node row of the wide merged card (T286): inside the
+/// pill that opens the group sheet, the status light and the delay
+/// number share the first line (they read the same data source, so
+/// they belong together) and the current node name gets the pill's
+/// whole second line, wrapping to two lines when long — it never
+/// ellipsizes and never has to fight the light for width. The light
+/// keeps its own tap (the card's sole delay-test trigger); the rest
+/// of the pill opens the group sheet, exactly as the old
+/// right-aligned pill did.
+class _CurrentNodeRow extends ConsumerWidget {
+  const _CurrentNodeRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDirect = ref.watch(
+      patchClashConfigProvider.select((state) => state.mode == Mode.direct),
+    );
+    final groupName = ref.watch(currentMainGroupNameProvider);
+    if (!isDirect && groupName == null) {
+      // No selection to label yet: the light still stands (and stays
+      // tappable) without the pill around it.
+      return const Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: NodeStatusLight(),
+      );
+    }
+    return _NodePillRow(groupName: groupName, direct: isDirect);
+  }
+}
+
+class _NodePillRow extends ConsumerWidget {
+  final String? groupName;
+  final bool direct;
+
+  const _NodePillRow({required this.groupName, required this.direct});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = context.colorScheme;
+    final String nodeName;
+    int? delay;
+    if (direct) {
+      nodeName = appLocalizations.direct;
+    } else {
+      nodeName = ref.watch(
+        getProxyCardStateProvider(
+          groupName!,
+        ).select((state) => state.proxyName),
+      );
+      // The one shared delay data source: the same getDelayProvider
+      // the status light reads, fed by the global linked test (T131).
+      delay = ref.watch(getDelayProvider(proxyName: groupName!));
+    }
+    final delayValue = delay;
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: colorScheme.primary.withValues(alpha: 0.08),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: direct
+            ? null
+            : () => showGroupProxySheet(context, groupName!),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Flexible(child: NodeStatusLight()),
+                  if (delayValue != null) ...[
+                    const Spacer(),
+                    Text(
+                      delayValue > 0 ? '$delayValue ms' : 'Timeout',
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: zodiacDelayColor(
+                          context.zodiac?.variant,
+                          delayValue,
+                        ),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 2),
+              EmojiText(
+                nodeName,
+                maxLines: 2,
+                style: context.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NodeLabel extends StatelessWidget {
   final _NodeStyle style;
   final String nodeName;
@@ -641,8 +758,7 @@ class _NodeLabel extends StatelessWidget {
           fit: isPlain ? FlexFit.tight : FlexFit.loose,
           child: EmojiText(
             nodeName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             style: context.textTheme.labelMedium?.copyWith(
               fontWeight: isPlain ? null : FontWeight.w600,
             ),
