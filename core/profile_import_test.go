@@ -7,6 +7,7 @@ import (
 	"compress/zlib"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -197,6 +198,55 @@ func TestImportProfileRejectsInvalidInput(t *testing.T) {
 	}
 	if message := handleImportProfile(&ImportProfileParams{Source: filepath.Join(t.TempDir(), "missing"), Output: output}); message == "" {
 		t.Fatal("missing source accepted")
+	}
+}
+
+// T282: a first-time import that skips full validation (Validate=false, no
+// existing file) still passes the minimal shape gate: response garbage and
+// empty bodies are rejected with a reason instead of being stored, while a
+// minimal valid mapping imports as before.
+func TestImportProfileFirstImportShapeGate(t *testing.T) {
+	dir := t.TempDir()
+	garbage := map[string][]byte{
+		"html":  []byte("<html><body>502 Bad Gateway</body></html>"),
+		"empty": {},
+		"blank": []byte("  \n\n"),
+		"text":  []byte("subscription expired, renew now"),
+		"list":  []byte("- just\n- a\n- list\n"),
+	}
+	for name, content := range garbage {
+		output := filepath.Join(dir, name+".yaml")
+		if message := importProfileForTest(t, ImportProfileParams{Output: output}, content); message == "" {
+			t.Errorf("%s: garbage first import accepted", name)
+		}
+		if _, err := os.Stat(output); !os.IsNotExist(err) {
+			t.Errorf("%s: rejected content was written", name)
+		}
+	}
+	output := filepath.Join(dir, "ok.yaml")
+	if message := importProfileForTest(t, ImportProfileParams{Output: output}, []byte("proxies: []\n")); message != "" {
+		t.Fatalf("valid first import rejected: %s", message)
+	}
+}
+
+// T282: import source/output paths are confined to the core home and temp
+// roots; anything outside is rejected before any file is read or written.
+func TestImportProfileRejectsPathsOutsideRoots(t *testing.T) {
+	outside := filepath.Join(filepath.Dir(os.TempDir()), "am-import-outside-roots", "p.yaml")
+	output := filepath.Join(t.TempDir(), "p.yaml")
+	if message := handleImportProfile(&ImportProfileParams{Source: outside, Output: output}); !strings.Contains(message, "import source rejected") {
+		t.Fatalf("outside source: message = %q", message)
+	}
+	source := filepath.Join(t.TempDir(), "source")
+	if err := os.WriteFile(source, []byte("proxies: []\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if message := handleImportProfile(&ImportProfileParams{Source: source, Output: outside}); !strings.Contains(message, "import output rejected") {
+		t.Fatalf("outside output: message = %q", message)
+	}
+	escape := filepath.Join(os.TempDir(), "..", "am-import-escape", "p.yaml")
+	if message := handleImportProfile(&ImportProfileParams{Source: escape, Output: output}); !strings.Contains(message, "import source rejected") {
+		t.Fatalf("escaping source: message = %q", message)
 	}
 }
 
