@@ -170,6 +170,53 @@ begin
   end;
 end;
 
+{ AM-01/T277: the Environment value written by RegisterHelperService
+  carries HELPER_AUTH_KEY, and the service registry key's default ACL
+  lets every local user read it. This procedure tightens the key ACL to
+  SYSTEM + Administrators (full control) plus the interactive user
+  (read only, which is all the unelevated app needs to sync the key).
+  It mirrors the app-side hardening in lib/common/system.dart.
+  Best effort: a failure here must never fail the installation. }
+procedure HardenHelperServiceKeyAcl(ServiceName: String);
+var
+  ResultCode: Integer;
+  PowerShellScript: String;
+  TempScriptPath: String;
+begin
+  PowerShellScript :=
+    '$ErrorActionPreference = ''Stop'';' + #13#10 +
+    '$keyPath = ''HKLM:\SYSTEM\CurrentControlSet\Services\' + ServiceName + ''';' + #13#10 +
+    '$acl = Get-Acl -Path $keyPath;' + #13#10 +
+    '$acl.SetAccessRuleProtection($true, $false);' + #13#10 +
+    'foreach ($rule in @($acl.Access)) { [void]$acl.RemoveAccessRule($rule); }' + #13#10 +
+    '$inherit = [System.Security.AccessControl.InheritanceFlags]::ContainerInherit;' + #13#10 +
+    '$prop = [System.Security.AccessControl.PropagationFlags]::None;' + #13#10 +
+    '$allow = [System.Security.AccessControl.AccessControlType]::Allow;' + #13#10 +
+    '$full = [System.Security.AccessControl.RegistryRights]::FullControl;' + #13#10 +
+    '$read = [System.Security.AccessControl.RegistryRights]::ReadKey;' + #13#10 +
+    '$systemSid = New-Object System.Security.Principal.SecurityIdentifier(''S-1-5-18'');' + #13#10 +
+    '$adminsSid = New-Object System.Security.Principal.SecurityIdentifier(''S-1-5-32-544'');' + #13#10 +
+    '$acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule($systemSid, $full, $inherit, $prop, $allow)));' + #13#10 +
+    '$acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule($adminsSid, $full, $inherit, $prop, $allow)));' + #13#10 +
+    'try {' + #13#10 +
+    '  $userName = (Get-CimInstance Win32_ComputerSystem).UserName;' + #13#10 +
+    '  if ($userName) {' + #13#10 +
+    '    $userSid = (New-Object System.Security.Principal.NTAccount($userName)).Translate([System.Security.Principal.SecurityIdentifier]);' + #13#10 +
+    '    $acl.AddAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule($userSid, $read, $inherit, $prop, $allow)));' + #13#10 +
+    '  }' + #13#10 +
+    '} catch { }' + #13#10 +
+    'Set-Acl -Path $keyPath -AclObject $acl;';
+
+  TempScriptPath := ExpandConstant('{tmp}\harden_helper_key_acl.ps1');
+  SaveStringToFile(TempScriptPath, PowerShellScript, False);
+
+  Exec('powershell.exe',
+    '-NoProfile -ExecutionPolicy Bypass -File "' + TempScriptPath + '"',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  DeleteFile(TempScriptPath);
+end;
+
 procedure RegisterHelperService;
 var
   ResultCode: Integer;
@@ -219,6 +266,10 @@ begin
              'HELPER_PIPE_NAME=' + PipeName;
 
   RegWriteMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\' + ServiceName, 'Environment', EnvData);
+
+  { AM-01/T277: the value just written carries the HMAC key; tighten the
+    service key ACL before the service starts. }
+  HardenHelperServiceKeyAcl(ServiceName);
 
   Exec('sc', 'start ' + ServiceName, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
