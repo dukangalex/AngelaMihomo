@@ -129,6 +129,10 @@ class _ProfileZone extends ConsumerWidget {
     final segments = usage?.segments ?? _emptySegments;
     final subtitle = [
       ?profile.lastUpdateDate?.lastUpdateTimeDesc,
+      // T223: on a merged profile the expiry belongs to one source
+      // (ProfileUsage.primaryEntry); name that source on the same
+      // line so the date is not mistaken for another subscription's.
+      ?usage?.primarySourceName,
       ?profile.usageExpireText(usage),
     ].join(' · ');
     // Compact two-row form, like the former wide profile card: the
@@ -183,7 +187,7 @@ class _ProfileZone extends ConsumerWidget {
           const Spacer(),
           if (tall) ...[
             Text(
-              usage?.usageText ?? appLocalizations.noUsageData,
+              usage?.cardUsageText ?? appLocalizations.noUsageData,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: context.textTheme.labelMedium?.copyWith(
@@ -203,7 +207,7 @@ class _ProfileZone extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        usage?.usageText ?? appLocalizations.noUsageData,
+                        usage?.cardUsageText ?? appLocalizations.noUsageData,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.textTheme.labelMedium?.copyWith(
