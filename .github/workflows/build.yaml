@@ -609,8 +609,10 @@ jobs:
           printf '%s\n' "- Fixes and improvements" "- Recommended version update" > release.md
 
       - name: Patch release.md
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          version=$(echo "$REF_NAME" | sed 's/^v//')
           base_version=$(echo "$version" | sed 's/-pre[0-9]*//')
           if [ "${{ env.IS_PRERELEASE }}" == "true" ]; then
             sed -e "s|BASE_VERSION|$base_version|g" -e "s|VERSION|$version|g" ./.github/release_template_pre.md >> release.md
@@ -635,6 +637,8 @@ jobs:
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
+          REF_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [ -z "$TG_BOT_TOKEN" ] || [ -z "$TG_CHANNEL_ID" ]; then
             echo "::warning::Telegram secrets not configured, skipping channel announcement"
@@ -645,15 +649,15 @@ jobs:
           else
             HIGHLIGHTS="Fixes and improvements · 建议更新到此版本"
           fi
-          MSG="🎉 Angela Mihomo ${{ github.ref_name }} 发布
+          MSG="🎉 Angela Mihomo $REF_NAME 发布
 
           ${HIGHLIGHTS}
 
-          下载：https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+          下载：https://github.com/$REPOSITORY/releases/tag/$REF_NAME"
           curl -sS -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHANNEL_ID}" \
             --data-urlencode "text=${MSG}" \
-            --data-urlencode "link_preview_options={\"url\":\"https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}\"}" \
+            --data-urlencode "link_preview_options={\"url\":\"https://github.com/$REPOSITORY/releases/tag/$REF_NAME\"}" \
             -o /tmp/tg_resp.json -w 'HTTP %{http_code}\n'
           cat /tmp/tg_resp.json
           grep -q '"ok":true' /tmp/tg_resp.json
