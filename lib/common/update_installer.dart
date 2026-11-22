@@ -63,13 +63,28 @@ class UpdateInstaller {
     return sha256DigestFromManifest(manifestBytes, assetName);
   }
 
+  /// Normalizes a release asset name to a plain file name (T284,
+  /// audit AM-08): the name comes from the release API response, so
+  /// every directory component — forward- or backslash-separated —
+  /// is stripped before it is joined with the local download
+  /// directory, and a name like `../../x` can never escape it.
+  /// Degenerate results fall back to a fixed file name.
+  static String localAssetFileName(String assetName) {
+    final segments = assetName.trim().split(RegExp(r'[/\\]'));
+    final base = segments.isEmpty ? '' : segments.last;
+    if (base.isEmpty || base == '.' || base == '..') {
+      return 'update-package';
+    }
+    return base;
+  }
+
   Future<File> download(
     ReleaseAsset asset, {
     required void Function(int received, int total) onProgress,
     CancelToken? cancelToken,
   }) async {
     final dir = await appPath.tempDir.future;
-    final file = File('${dir.path}/${asset.name}');
+    final file = File('${dir.path}/${localAssetFileName(asset.name)}');
     await _dio.download(
       asset.url,
       file.path,

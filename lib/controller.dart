@@ -2346,21 +2346,15 @@ class AppController {
     toPage(PageLabel.profiles);
   }
 
-  bool _isRemoteFileUri(Uri uri) {
-    if (!uri.isScheme('file')) return false;
-    final host = uri.host.toLowerCase();
-    final remoteHost =
-        host.isNotEmpty &&
-        host != 'localhost' &&
-        !RegExp(r'^[a-z]$').hasMatch(host);
-    return remoteHost ||
-        uri.pathSegments.any((segment) => segment.contains('\\'));
-  }
-
   void initLink() {
     linkManager.initAppLinksListen((url) async {
       final uri = Uri.tryParse(url);
-      if (uri == null || _isRemoteFileUri(uri)) {
+      // T281 (audit AM-05): a deep link is an external entry point,
+      // so file:// subscription URLs are rejected outright here — a
+      // link must never make the app read a local file. Local config
+      // files are imported through the in-app file picker instead
+      // (addProfileFormFile), which never goes through a URL.
+      if (uri == null || uri.isScheme('file')) {
         globalState.showNotifier(
           appLocalizations.profileUrlInvalidValidationDesc,
         );
