@@ -54,7 +54,6 @@ const repository = 'dukangalex/AngelaMihomo';
 /// AngelaMihomo (chain.26, T194): the project's own geo data repository.
 /// The app pulls the city database (amcity.bin.gz) from its releases.
 const geoDataRepository = 'dukangalex/angelamihomo-geo';
-const ipInfoToken = String.fromEnvironment('IPINFO_TOKEN', defaultValue: '');
 const defaultExternalController = '127.0.0.1:9090';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;

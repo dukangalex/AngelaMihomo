@@ -29,7 +29,6 @@ env:
   # Temporarily disabled SignPath due to account risk control:
   # SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
   SIGNPATH_API_TOKEN: ''
-  IPINFO_TOKEN: ${{ secrets.IPINFO_TOKEN || vars.IPINFO_TOKEN }}
   
 permissions:
   contents: read
@@ -432,9 +431,6 @@ jobs:
           )
           if ($env:SENTRY_DSN) {
             $flutterArgs += "--dart-define=SENTRY_DSN=$env:SENTRY_DSN"
-          }
-          if ($env:IPINFO_TOKEN) {
-            $flutterArgs += "--dart-define=IPINFO_TOKEN=$env:IPINFO_TOKEN"
           }
           
           flutter @flutterArgs
