@@ -353,6 +353,11 @@ class ApplicationState extends ConsumerState<Application>
     } catch (_) {
       // ManagedScriptUpdateService records its own outcomes.
     }
+    try {
+      await DataIntegrityService().runChecks();
+    } catch (_) {
+      // DataIntegrityService records its own outcomes.
+    }
   }
 
   Widget _buildPlatformState(Widget child) {

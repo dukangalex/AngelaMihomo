@@ -39,6 +39,8 @@ const geoSiteFileName = 'GeoSite.dat';
 const bundleMRSFileName = 'BundleMRS.7z';
 const bundleMRSRawUrl =
     'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/';
+const coreBundleRawUrl =
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/';
 final double kHeaderHeight = system.isDesktop ? 40 : 0;
 const profilesDirectoryName = 'profiles';
 const localhost = '127.0.0.1';
