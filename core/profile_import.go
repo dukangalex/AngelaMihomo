@@ -10,12 +10,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/metacubex/mihomo/component/age"
 	"github.com/metacubex/mihomo/config"
+	"github.com/metacubex/mihomo/constant"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 type ImportProfileParams struct {
@@ -291,7 +294,7 @@ func writeProfileFile(path string, data []byte, sync bool) error {
 }
 
 func writeTempProfile(output string, data []byte) (string, error) {
-	if err := os.MkdirAll(filepath.Dir(output), 0o777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(output), 0o750); err != nil {
 		return "", err
 	}
 	temp := tempProfilePath(output)
@@ -362,7 +365,97 @@ func writeProfile(output string, data []byte) string {
 	return ""
 }
 
+// checkImportPath verifies that path stays inside one of the allowed roots
+// after cleaning, absolutizing and resolving symlinks, using the same
+// Rel/IsLocal containment pattern as the permission guard
+// (permission_unix.go) and bundle.go's IsSafePath use. A path that does not
+// exist yet (the import output before its first write) is resolved through
+// its parent directory.
+func checkImportPath(path string, roots []string) error {
+	if path == "" {
+		return errors.New("path is empty")
+	}
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	if resolved, err := filepath.EvalSymlinks(abs); err == nil {
+		abs = resolved
+	} else if resolved, err := filepath.EvalSymlinks(filepath.Dir(abs)); err == nil {
+		abs = filepath.Join(resolved, filepath.Base(abs))
+	}
+	for _, root := range roots {
+		if root == "" {
+			continue
+		}
+		rootAbs, err := filepath.Abs(root)
+		if err != nil {
+			continue
+		}
+		if resolved, err := filepath.EvalSymlinks(rootAbs); err == nil {
+			rootAbs = resolved
+		}
+		if rel, err := filepath.Rel(rootAbs, abs); err == nil && filepath.IsLocal(rel) {
+			return nil
+		}
+	}
+	return fmt.Errorf("path %s is outside the allowed directories", path)
+}
+
+// importPathRoots lists the directories a profile import may read from and
+// write to. The app constructs both paths itself: the output is the profile
+// file inside the core home directory (the app data dir), and the source is
+// the download staging file staged next to it; the OS temp directory is the
+// only other legitimate staging area.
+func importPathRoots() []string {
+	return []string{constant.Path.HomeDir(), os.TempDir()}
+}
+
+// profileKeyLine matches a plausible top-level YAML key at column 0.
+var profileKeyLine = regexp.MustCompile(`^[A-Za-z0-9_][^:]*:`)
+
+// validateProfileShape is the minimal content gate for first-time imports
+// that skip full validation (Validate=false with no existing file). It
+// deliberately does not run config.Parse: T146 kept first imports
+// unvalidated because the strict parser rejects some content the import
+// pipeline has always stored verbatim (e.g. age-decrypted bodies after
+// tab patching). The gate therefore only rejects what cannot be a profile
+// at all — an empty body, or content with neither a YAML mapping
+// structure nor a single top-level key line, such as an HTML error page
+// or a plain-text notice — so response garbage is reported at import time
+// instead of surfacing at the first profile switch with no visible
+// reason.
+func validateProfileShape(data []byte) string {
+	if len(bytes.TrimSpace(data)) == 0 {
+		return "profile content is empty"
+	}
+	var doc map[string]any
+	if err := yaml.Unmarshal(data, &doc); err == nil {
+		if len(doc) == 0 {
+			return "profile content is empty"
+		}
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if profileKeyLine.MatchString(line) {
+			return ""
+		}
+	}
+	return "profile content does not look like a YAML configuration"
+}
+
 func handleImportProfile(params *ImportProfileParams) string {
+	// AM-06/T282: the import replaces params.Output with content whose
+	// bytes a subscription response controls, so both paths are confined
+	// to the core home / temp roots. A malformed or hostile action must
+	// not turn the import into an arbitrary-file read or overwrite; the
+	// app only ever passes paths inside its own data directory.
+	if err := checkImportPath(params.Source, importPathRoots()); err != nil {
+		return fmt.Sprintf("import source rejected: %v", err)
+	}
+	if err := checkImportPath(params.Output, importPathRoots()); err != nil {
+		return fmt.Sprintf("import output rejected: %v", err)
+	}
 	data, err := readFile(params.Source)
 	if err != nil {
 		return err.Error()
@@ -409,6 +502,15 @@ func handleImportProfile(params *ImportProfileParams) string {
 				return fmt.Sprintf("update rejected, previous profile kept: %s", message)
 			}
 			data = patched
+		}
+	} else {
+		// First-time import with validation skipped: no working file
+		// exists to protect, and the full parser stays off (see
+		// validateProfileShape), but the minimal shape gate still
+		// applies so unusable content is rejected with a reason here
+		// instead of at the first profile switch.
+		if message := validateProfileShape(data); message != "" {
+			return fmt.Sprintf("import rejected: %s", message)
 		}
 	}
 	return writeProfile(params.Output, data)

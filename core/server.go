@@ -42,7 +42,14 @@ func writeFrame(w io.Writer, data []byte) error {
 	return err
 }
 
-const maxFrameLength = 256 * 1024 * 1024
+// maxFrameLength bounds a single frame read from the app. The largest
+// legitimate payloads are full config texts carried inline by actions such
+// as validateConfig and decryptAgeConfig; real-world profiles sit far
+// below this bound (the 64MiB decompressed-profile cap applies to the
+// on-disk import path, whose bytes never traverse a frame). 32MiB keeps
+// generous headroom while capping the allocation a broken or hostile peer
+// can force through readFrame (AM-07/T283).
+const maxFrameLength = 32 * 1024 * 1024
 
 func readFrame(r io.Reader) ([]byte, error) {
 	lenBuf := make([]byte, 4)
