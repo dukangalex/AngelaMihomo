@@ -39,6 +39,8 @@ const geoSiteFileName = 'GeoSite.dat';
 const bundleMRSFileName = 'BundleMRS.7z';
 const bundleMRSRawUrl =
     'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/';
+const coreBundleRawUrl =
+    'https://github.com/dukangalex/angelamihomo-geo/releases/download/core-bundle-2026.12/';
 final double kHeaderHeight = system.isDesktop ? 40 : 0;
 const profilesDirectoryName = 'profiles';
 const localhost = '127.0.0.1';
@@ -54,7 +56,6 @@ const repository = 'dukangalex/AngelaMihomo';
 /// AngelaMihomo (chain.26, T194): the project's own geo data repository.
 /// The app pulls the city database (amcity.bin.gz) from its releases.
 const geoDataRepository = 'dukangalex/angelamihomo-geo';
-const ipInfoToken = String.fromEnvironment('IPINFO_TOKEN', defaultValue: '');
 const defaultExternalController = '127.0.0.1:9090';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;

@@ -46,7 +46,7 @@
 ## 落地机制
 
 - **新功能准入**：上线前完成数据流自查（在《数据流向清单》中增项，并按第二条做开启态复核），未过自查不上线。
-- **发版门槛**：每版发布前核对《数据流向清单》与声明文案是否同步更新；季度隐私复扫不通过，冻结下一版发布，直至修复复验通过。
+- **发版门槛**：每版发布前核对《数据流向清单》与声明文案是否同步更新；季度隐私复扫不通过，冻结下一版发布，直至修复复验通过。（T245 操作化：清单即仓库根目录 DATA-FLOW.md，凡改变数据流向的提交必须同步更新它，发布检查口径见 .github/release_template.md 头注，核对记录写在 DATA-FLOW.md 文末。）
 - **首批落地**：全量端点盘点、逐功能开启态复核、系统云备份口径显式化、直连拉取改经代理、第三方 CDN 镜像自有化等事项，由项目台账 T198 跟踪实施。
 
 ---
@@ -97,5 +97,5 @@ Privacy is achieved through architecture and data-flow governance, never by remo
 ## Enforcement
 
 - **New-feature admission**: before release, a feature completes a data-flow self-check (an entry added to the Data Flow Inventory, plus an enabled-state review under Article 2). No self-check, no release.
-- **Release gate**: before each release, the Data Flow Inventory and all public statements are checked for synchronization; a failed quarterly privacy re-scan freezes the next release until fixed and re-verified.
+- **Release gate**: before each release, the Data Flow Inventory and all public statements are checked for synchronization; a failed quarterly privacy re-scan freezes the next release until fixed and re-verified. (Operationalized by T245: the inventory is DATA-FLOW.md at the repository root; any change that alters a data flow must update it in the same change, the release checklist lives in the header of .github/release_template.md, and each check is recorded at the end of DATA-FLOW.md.)
 - **First batch**: the full endpoint inventory, per-feature enabled-state reviews, explicit system cloud-backup posture, routing direct fetches through the proxy, and self-hosting third-party CDN mirrors are tracked as item T198 in the project ledger.

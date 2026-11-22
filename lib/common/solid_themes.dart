@@ -400,17 +400,416 @@ const List<SolidThemeDef> solidThemeDefs = [
   ),
 ];
 
+/// The light group of the Solid Zodiac series （纯色生肖·浅色， T264):
+/// twelve themes mirroring [solidThemeDefs] animal for animal, built
+/// as the inverse of the dark set — a near-white base tinted with the
+/// animal's hue, the same line sketch re-rendered in deep-hue lines
+/// (recovered from the dark artwork, same placement and scale), and a
+/// full light palette whose text, primary, accent and status colors
+/// are all verified to WCAG AA contrast against the base. Each
+/// variant's background gradient ends at, and its navBar is, the base
+/// color of its artwork, exactly as in the dark set.
+const List<SolidThemeDef> solidLightThemeDefs = [
+  SolidThemeDef(
+    id: 'solid-light-rat',
+    nameZh: '鼠',
+    nameEn: 'Rat Light',
+    skeleton: ZodiacSkeleton.layered,
+    assetPath: 'assets/images/solid/light/rat.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF3F3F4), Color(0xFFEBEBED)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF2249BF),
+      secondary: Color(0xFF592FBB),
+      accent: Color(0xFF1D7187),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF131722),
+      textSecondary: Color(0xFF49536E),
+      outline: Color(0xFF9CA2B4),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEBEBED),
+      selected: ZodiacPaint.solid(Color(0xFFCAD2EA)),
+      hero: ZodiacPaint.gradient([Color(0xFF2249BF), Color(0xFF592FBB)]),
+      glow: Color(0x472249BF),
+      glows: [
+        ZodiacGlow(Color(0x2B2249BF), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F592FBB), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-ox',
+    nameZh: '牛',
+    nameEn: 'Ox Light',
+    skeleton: ZodiacSkeleton.eastern,
+    assetPath: 'assets/images/solid/light/ox.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF6F3F1), Color(0xFFEFEBE8)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFFA5531D),
+      secondary: Color(0xFF827C21),
+      accent: Color(0xFFB9273C),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF221913),
+      textSecondary: Color(0xFF6E5849),
+      outline: Color(0xFFB4A69C),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEFEBE8),
+      selected: ZodiacPaint.solid(Color(0xFFEAD7CA)),
+      hero: ZodiacPaint.gradient([Color(0xFFA5531D), Color(0xFF827C21)]),
+      glow: Color(0x47A5531D),
+      glows: [
+        ZodiacGlow(Color(0x2BA5531D), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F827C21), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-tiger',
+    nameZh: '虎',
+    nameEn: 'Tiger Light',
+    skeleton: ZodiacSkeleton.vibrant,
+    assetPath: 'assets/images/solid/light/tiger.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF4F1F6), Color(0xFFEDE8F0)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF7F22BF),
+      secondary: Color(0xFFBB2FA9),
+      accent: Color(0xFF2F27B9),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF1C1322),
+      textSecondary: Color(0xFF5F496E),
+      outline: Color(0xFFAB9CB4),
+      success: Color(0xFF13723A),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEDE8F0),
+      selected: ZodiacPaint.solid(Color(0xFFDDCAEA)),
+      hero: ZodiacPaint.gradient([Color(0xFF7F22BF), Color(0xFFBB2FA9)]),
+      glow: Color(0x477F22BF),
+      glows: [
+        ZodiacGlow(Color(0x2B7F22BF), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1FBB2FA9), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-rabbit',
+    nameZh: '兔',
+    nameEn: 'Rabbit Light',
+    skeleton: ZodiacSkeleton.paper,
+    assetPath: 'assets/images/solid/light/rabbit.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF5F2F3), Color(0xFFEEE9EC)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFFBF2269),
+      secondary: Color(0xFFBB3C2F),
+      accent: Color(0xFFB125B1),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF22131A),
+      textSecondary: Color(0xFF6E495A),
+      outline: Color(0xFFB49CA7),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEEE9EC),
+      selected: ZodiacPaint.solid(Color(0xFFEACAD9)),
+      hero: ZodiacPaint.gradient([Color(0xFFBF2269), Color(0xFFBB3C2F)]),
+      glow: Color(0x47BF2269),
+      glows: [
+        ZodiacGlow(Color(0x2BBF2269), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1FBB3C2F), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-dragon',
+    nameZh: '龙',
+    nameEn: 'Dragon Light',
+    skeleton: ZodiacSkeleton.immersive,
+    assetPath: 'assets/images/solid/light/dragon.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF1F2F6), Color(0xFFE8E9F0)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF2240BF),
+      secondary: Color(0xFF602FBB),
+      accent: Color(0xFF1D6D8B),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF131622),
+      textSecondary: Color(0xFF49516E),
+      outline: Color(0xFF9CA1B4),
+      success: Color(0xFF13723A),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFE8E9F0),
+      selected: ZodiacPaint.solid(Color(0xFFCAD0EA)),
+      hero: ZodiacPaint.gradient([Color(0xFF2240BF), Color(0xFF602FBB)]),
+      glow: Color(0x472240BF),
+      glows: [
+        ZodiacGlow(Color(0x2B2240BF), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F602FBB), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-snake',
+    nameZh: '蛇',
+    nameEn: 'Snake Light',
+    skeleton: ZodiacSkeleton.layered,
+    assetPath: 'assets/images/solid/light/snake.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF1F6F6), Color(0xFFE7F0F0)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF157575),
+      secondary: Color(0xFF2F70BB),
+      accent: Color(0xFF1A7A46),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF132222),
+      textSecondary: Color(0xFF496E6E),
+      outline: Color(0xFF9CB4B4),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF99590A),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFE7F0F0),
+      selected: ZodiacPaint.solid(Color(0xFFCAEAEA)),
+      hero: ZodiacPaint.gradient([Color(0xFF157575), Color(0xFF2F70BB)]),
+      glow: Color(0x47157575),
+      glows: [
+        ZodiacGlow(Color(0x2B157575), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F2F70BB), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-horse',
+    nameZh: '马',
+    nameEn: 'Horse Light',
+    skeleton: ZodiacSkeleton.vibrant,
+    assetPath: 'assets/images/solid/light/horse.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF1F6F4), Color(0xFFE8F0EC)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF15794B),
+      secondary: Color(0xFF24878F),
+      accent: Color(0xFF1A7A1A),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF13221B),
+      textSecondary: Color(0xFF496E5D),
+      outline: Color(0xFF9CB4A9),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF99590A),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFE8F0EC),
+      selected: ZodiacPaint.solid(Color(0xFFCAEADB)),
+      hero: ZodiacPaint.gradient([Color(0xFF15794B), Color(0xFF24878F)]),
+      glow: Color(0x4715794B),
+      glows: [
+        ZodiacGlow(Color(0x2B15794B), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F24878F), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-goat',
+    nameZh: '羊',
+    nameEn: 'Goat Light',
+    skeleton: ZodiacSkeleton.eastern,
+    assetPath: 'assets/images/solid/light/goat.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF5F6F1), Color(0xFFEEEFE8)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF5F7114),
+      secondary: Color(0xFF3F8B23),
+      accent: Color(0xFF87621D),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF1F2213),
+      textSecondary: Color(0xFF646B47),
+      outline: Color(0xFFB0B49C),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF99590A),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEEEFE8),
+      selected: ZodiacPaint.solid(Color(0xFFE4EACA)),
+      hero: ZodiacPaint.gradient([Color(0xFF5F7114), Color(0xFF3F8B23)]),
+      glow: Color(0x475F7114),
+      glows: [
+        ZodiacGlow(Color(0x2B5F7114), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F3F8B23), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-monkey',
+    nameZh: '猴',
+    nameEn: 'Monkey Light',
+    skeleton: ZodiacSkeleton.vibrant,
+    assetPath: 'assets/images/solid/light/monkey.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF7F4F1), Color(0xFFF1EDE7)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF916018),
+      secondary: Color(0xFF728118),
+      accent: Color(0xFFBF2B22),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF221C13),
+      textSecondary: Color(0xFF6E5F49),
+      outline: Color(0xFFB4AB9C),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF99590A),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFF1EDE7),
+      selected: ZodiacPaint.solid(Color(0xFFEBDDCA)),
+      hero: ZodiacPaint.gradient([Color(0xFF916018), Color(0xFF728118)]),
+      glow: Color(0x47916018),
+      glows: [
+        ZodiacGlow(Color(0x2B916018), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F728118), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-rooster',
+    nameZh: '鸡',
+    nameEn: 'Rooster Light',
+    skeleton: ZodiacSkeleton.layered,
+    assetPath: 'assets/images/solid/light/rooster.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF6F1F2), Color(0xFFF0E8E9)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFFBF2235),
+      secondary: Color(0xFFAF632C),
+      accent: Color(0xFFB92789),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF221315),
+      textSecondary: Color(0xFF6E494E),
+      outline: Color(0xFFB49C9F),
+      success: Color(0xFF13723A),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFF0E8E9),
+      selected: ZodiacPaint.solid(Color(0xFFEACACE)),
+      hero: ZodiacPaint.gradient([Color(0xFFBF2235), Color(0xFFAF632C)]),
+      glow: Color(0x47BF2235),
+      glows: [
+        ZodiacGlow(Color(0x2BBF2235), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1FAF632C), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-dog',
+    nameZh: '狗',
+    nameEn: 'Dog Light',
+    skeleton: ZodiacSkeleton.console,
+    assetPath: 'assets/images/solid/light/dog.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF5F4F2), Color(0xFFEFEDE9)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFF7E6516),
+      secondary: Color(0xFF668221),
+      accent: Color(0xFFB54726),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF221F13),
+      textSecondary: Color(0xFF6E6549),
+      outline: Color(0xFFB4AF9C),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF99590A),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEFEDE9),
+      selected: ZodiacPaint.solid(Color(0xFFEAE2CA)),
+      hero: ZodiacPaint.gradient([Color(0xFF7E6516), Color(0xFF668221)]),
+      glow: Color(0x477E6516),
+      glows: [
+        ZodiacGlow(Color(0x2B7E6516), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1F668221), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+  SolidThemeDef(
+    id: 'solid-light-pig',
+    nameZh: '猪',
+    nameEn: 'Pig Light',
+    skeleton: ZodiacSkeleton.paper,
+    assetPath: 'assets/images/solid/light/pig.webp',
+    variant: ZodiacVariant(
+      background: ZodiacPaint.gradient([Color(0xFFF5F2F4), Color(0xFFEFE9EC)]),
+      surface: Color(0xB3FFFFFF),
+      surfaceVariant: Color(0xCCFFFFFF),
+      primary: Color(0xFFBF227B),
+      secondary: Color(0xFFBB2F35),
+      accent: Color(0xFFA927B9),
+      onPrimary: Color(0xFFFFFFFF),
+      textPrimary: Color(0xFF22131C),
+      textSecondary: Color(0xFF6E495E),
+      outline: Color(0xFFB49CAA),
+      success: Color(0xFF13763D),
+      warning: Color(0xFF955609),
+      error: Color(0xFFB62A20),
+      navBar: Color(0xFFEFE9EC),
+      selected: ZodiacPaint.solid(Color(0xFFEACADC)),
+      hero: ZodiacPaint.gradient([Color(0xFFBF227B), Color(0xFFBB2F35)]),
+      glow: Color(0x47BF227B),
+      glows: [
+        ZodiacGlow(Color(0x2BBF227B), ZodiacGlowPos.topRight),
+        ZodiacGlow(Color(0x1FBB2F35), ZodiacGlowPos.centerLeft),
+      ],
+    ),
+  ),
+];
+
 List<SolidThemeDef> get solidThemes => solidThemeDefs;
+
+/// The twelve light themes, in the same zodiac order as
+/// [solidLightThemeDefs].
+List<SolidThemeDef> get solidLightThemes => solidLightThemeDefs;
+
+/// Every solid-series theme, dark group first, then the light group.
+List<SolidThemeDef> get solidAllThemes => [
+  ...solidThemeDefs,
+  ...solidLightThemeDefs,
+];
 
 /// Series labels under the 星辰大海 umbrella (T182 pattern).
 const solidSeriesNameZh = '纯色生肖';
 const solidSeriesNameEn = 'Solid Zodiac';
 
+/// Group labels inside the solid series section of the theme
+/// chooser: the original dark set and the T264 light set.
+const solidDarkGroupNameZh = '深色';
+const solidDarkGroupNameEn = 'Dark';
+const solidLightGroupNameZh = '浅色';
+const solidLightGroupNameEn = 'Light';
+
 SolidThemeDef? solidThemeById(String? id) {
   for (final def in solidThemeDefs) {
+    if (def.id == id) return def;
+  }
+  for (final def in solidLightThemeDefs) {
     if (def.id == id) return def;
   }
   return null;
 }
 
 bool isSolidThemeId(String? id) => solidThemeById(id) != null;
+
+bool isSolidLightThemeId(String? id) {
+  for (final def in solidLightThemeDefs) {
+    if (def.id == id) return true;
+  }
+  return false;
+}

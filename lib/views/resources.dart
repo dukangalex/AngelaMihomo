@@ -288,6 +288,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
               items: const [
                 DataAutoUpdateListItem(),
                 ManagedScriptChannelListItem(),
+                DataIntegrityListItem(),
               ],
             ),
           ],
@@ -875,6 +876,69 @@ class ManagedScriptChannelListItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${appLocalizations.geoDataUpdateFailed}: ${status.lastError}',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// T228/T233: the runtime data-integrity anchors, listed with the
+/// other data channels. Shows when the bundled core-bundle assets
+/// and the downloaded .mrs rule files were last verified against
+/// the data repository's signed manifests, and states failures
+/// with their recorded reason, never hidden.
+class DataIntegrityListItem extends StatelessWidget {
+  const DataIntegrityListItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: const Text('BundleMRS.7z · zash.zip · ruleset'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          FutureBuilder<DataIntegrityStatus>(
+            future: DataIntegrityService().currentStatus(),
+            builder: (_, snapshot) {
+              final height = globalState.measure.bodyMediumHeight;
+              final status = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  status == null) {
+                return SizedBox(width: height, height: height);
+              }
+              final failed = status.bundleOk == false || status.rulesetError != null;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: height,
+                    child: Text(
+                      [
+                        if (status.checkedAt != null)
+                          status.checkedAt!.lastUpdateTimeDesc,
+                        if (status.bundleOk == true) 'Bundle verified',
+                        if (status.rulesetChecked > 0 || status.rulesetRemoved > 0)
+                          'Rules ${status.rulesetChecked} checked'
+                              '${status.rulesetRemoved > 0 ? ' · ${status.rulesetRemoved} removed' : ''}',
+                      ].join('  ·  '),
+                      style: context.textTheme.bodyMedium,
+                    ),
+                  ),
+                  if (failed) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${appLocalizations.geoDataUpdateFailed}: ${status.bundleError ?? status.rulesetError}',
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: context.colorScheme.error,
                       ),

@@ -344,6 +344,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "AES-256 でバックアップを暗号化しました",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("暗号化されていないバックアップ"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("バックアップパスワードが設定されていないため、このバックアップは暗号化されずに送信されます。バックアップには購読URLとアカウント資格情報が含まれており、サーバー上のファイルを読める人は誰でもそれらを読めます。ストレージを完全に信頼できない場合は、キャンセルして先にバックアップパスワードを設定してください。"),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("このバックアップは暗号化されていません（バックアップパスワード未設定）"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("そのままアップロード"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("そのまま有効化"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("バックアップパスワード"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "AES-256で暗号化（空欄で暗号化なし）",
@@ -730,10 +735,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("転送編集"),
     "editUser": MessageLookupByLibrary.simpleMessage("ユーザーを編集"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("クラッシュ分析"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "必要に応じてクラッシュログを送信",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("オーバーライド有効化"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "オンにすると、下の上書き内容をこの設定に適用してからコアで実行します",
@@ -1204,7 +1205,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("位置"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("ノードを固定"),
     "log": MessageLookupByLibrary.simpleMessage("ログ"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 検索"),
     "logLevel": MessageLookupByLibrary.simpleMessage("ログレベル"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("ログキャプチャ"),

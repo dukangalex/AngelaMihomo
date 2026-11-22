@@ -55,10 +55,27 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
         text: [
           appLocalizations.backupSuccess,
           if (encrypted) appLocalizations.backupEncryptedTip,
+          // T248: an unencrypted backup must say so, not stay silent.
+          if (!encrypted) appLocalizations.backupUnencryptedTip,
         ].join('\n'),
       ),
       cancelable: false,
     );
+  }
+
+  /// T248: warn before anything leaves the device unencrypted. The
+  /// backup archive contains every subscription URL and the WebDAV
+  /// credentials; with no backup password set it is a plaintext zip.
+  /// Returns true only when the user explicitly proceeds anyway.
+  Future<bool> _confirmUnencryptedBackup({
+    required String confirmText,
+  }) async {
+    final res = await globalState.showMessage(
+      title: appLocalizations.backupUnencryptedTitle,
+      message: TextSpan(text: appLocalizations.backupUnencryptedWarning),
+      confirmText: confirmText,
+    );
+    return res == true;
   }
 
   void _showRecoverySuccess(bool decrypted) {
@@ -78,6 +95,12 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
     final encrypted = ref
         .read(appSettingProvider.select((state) => state.backupPassword))
         .isNotEmpty;
+    if (!encrypted &&
+        !await _confirmUnencryptedBackup(
+          confirmText: appLocalizations.backupUploadAnyway,
+        )) {
+      return;
+    }
     final res = await globalState.appController.safeRun<bool>(
       () => globalState.appController.backupToWebDAV(client, dav),
       needLoading: true,
@@ -222,7 +245,21 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
         .updateState((state) => state.copyWith(backupPassword: password));
   }
 
-  void _handleAutoBackupChange(bool value) {
+  Future<void> _handleAutoBackupChange(bool value) async {
+    if (value) {
+      // T248: auto-backup uploads silently on every change, so the
+      // unencrypted warning belongs at enable time — once, before
+      // the first silent upload can happen.
+      final password = ref.read(
+        appSettingProvider.select((state) => state.backupPassword),
+      );
+      if (password.isEmpty &&
+          !await _confirmUnencryptedBackup(
+            confirmText: appLocalizations.backupEnableAnyway,
+          )) {
+        return;
+      }
+    }
     ref
         .read(appDAVSettingProvider.notifier)
         .updateState((state) => state?.copyWith(autoBackup: value));

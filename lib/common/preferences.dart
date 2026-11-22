@@ -14,6 +14,7 @@ import 'constant.dart';
 import 'backup_recovery.dart';
 import 'path.dart';
 import 'print.dart';
+import 'utils.dart';
 
 class Preferences {
   static Preferences? _instance;
@@ -69,13 +70,115 @@ class Preferences {
     }
   }
 
-  Config? _parseConfig(String? content, String source) {
+  Future<Config?> _parseConfig(String? content, String source) async {
     if (content == null) return null;
     try {
-      return Config.compatibleFromJson(json.decode(content));
+      final decoded = json.decode(content);
+      if (decoded is! Map<String, dynamic>) return null;
+      await _unprotectConfigSecrets(decoded);
+      return Config.compatibleFromJson(decoded);
     } catch (e, stackTrace) {
       commonPrint.error('Failed to parse config from $source: $e\n$stackTrace');
       return null;
+    }
+  }
+
+  /// T249: the config file at rest must not be the weakest copy of
+  /// the user's credentials. The backup export has always encrypted
+  /// the WebDAV credentials (and the whole archive can be password
+  /// protected), while config.json itself held the same secrets —
+  /// plus every subscription URL — in plaintext. The sensitive
+  /// fields below are now stored encrypted with the per-install key
+  /// (utils.encryptSecret, AES-256-GCM, ENC2~ form), the same
+  /// machinery the backup export uses:
+  ///
+  /// - `dav.user` / `dav.password` (mirrors the export's set)
+  /// - `appSetting.backupPassword`
+  /// - `profiles[].url` (subscription URLs carry access tokens)
+  ///
+  /// Reading is liberal: only ENC~/ENC2~ values are transformed, so
+  /// config files written by older builds (all plaintext) load
+  /// unchanged and are rewritten protected on the next save. A value
+  /// that cannot be decrypted on this install (foreign key) is
+  /// dropped to empty with a warning rather than crashing the load;
+  /// a failure to encrypt on save falls back to plaintext for that
+  /// field with a warning — protecting the secret never costs the
+  /// user their whole configuration.
+  Future<void> _protectConfigSecrets(Map<String, dynamic> json) async {
+    Future<String> protect(Object? value) async {
+      if (value is! String || value.isEmpty) return value is String ? value : '';
+      try {
+        return await utils.encryptSecret(value);
+      } catch (e) {
+        commonPrint.warn('Failed to encrypt a config secret: $e');
+        return value;
+      }
+    }
+
+    final dav = json['dav'];
+    if (dav is Map<String, dynamic>) {
+      if (dav['user'] is String) dav['user'] = await protect(dav['user']);
+      if (dav['password'] is String) {
+        dav['password'] = await protect(dav['password']);
+      }
+    }
+    final appSetting = json['appSetting'];
+    if (appSetting is Map<String, dynamic> &&
+        appSetting['backupPassword'] is String) {
+      appSetting['backupPassword'] = await protect(
+        appSetting['backupPassword'],
+      );
+    }
+    final profiles = json['profiles'];
+    if (profiles is List) {
+      for (final profile in profiles) {
+        if (profile is Map<String, dynamic> && profile['url'] is String) {
+          profile['url'] = await protect(profile['url']);
+        }
+      }
+    }
+  }
+
+  Future<void> _unprotectConfigSecrets(Map<String, dynamic> json) async {
+    Future<String> unprotect(Object? value, String field) async {
+      if (value is! String || value.isEmpty) {
+        return value is String ? value : '';
+      }
+      final clear = await utils.decryptSecret(value);
+      if (clear == null) {
+        commonPrint.warn(
+          'A stored $field could not be decrypted on this install; '
+          'treating it as unset.',
+        );
+        return '';
+      }
+      return clear;
+    }
+
+    final dav = json['dav'];
+    if (dav is Map<String, dynamic>) {
+      if (dav['user'] is String) {
+        dav['user'] = await unprotect(dav['user'], 'WebDAV user');
+      }
+      if (dav['password'] is String) {
+        dav['password'] = await unprotect(dav['password'], 'WebDAV password');
+      }
+    }
+    final appSetting = json['appSetting'];
+    if (appSetting is Map<String, dynamic> &&
+        appSetting['backupPassword'] is String) {
+      appSetting['backupPassword'] = await unprotect(
+        appSetting['backupPassword'],
+        'backup password',
+      );
+    }
+    final profiles = json['profiles'];
+    if (profiles is List) {
+      for (final profile in profiles) {
+        if (profile is Map<String, dynamic> && profile['url'] is String) {
+          profile['url'] = await unprotect(profile['url'], 'subscription URL');
+        }
+      }
     }
   }
 
@@ -121,7 +224,7 @@ class Preferences {
     });
 
     final content = await _readText(path);
-    final fileConfig = _parseConfig(content, 'file');
+    final fileConfig = await _parseConfig(content, 'file');
     var selected = fileConfig;
     _lastConfig = null;
     _lastSaved = fileConfig != null ? content : null;
@@ -132,11 +235,11 @@ class Preferences {
         commonPrint.warn('Failed to back up config: $e');
       }
     } else {
-      selected = _parseConfig(await _readText('$path.bak'), 'backup');
+      selected = await _parseConfig(await _readText('$path.bak'), 'backup');
     }
 
     if (selected == null || selected.profiles.isEmpty) {
-      final legacy = _parseConfig(
+      final legacy = await _parseConfig(
         preferences?.getString(configKey),
         'preferences',
       );
@@ -215,7 +318,17 @@ class Preferences {
       );
     }
 
-    final jsonStr = await Isolate.run(() => json.encode(config));
+    // T249: encrypt the sensitive fields before the JSON ever
+    // reaches disk (see _protectConfigSecrets). The deep map comes
+    // from an encode/decode round trip — the models' toJson is
+    // shallow (nested values stay model objects until the encoder
+    // walks them), the same conversion backupData uses. Key work
+    // cannot run in an isolate, so it happens here; the final
+    // encode still runs in one.
+    final configMap =
+        json.decode(json.encode(config)) as Map<String, dynamic>;
+    await _protectConfigSecrets(configMap);
+    final jsonStr = await Isolate.run(() => json.encode(configMap));
     final path = await appPath.appConfigPath;
     if (jsonStr == _lastSaved && await File(path).exists()) {
       _lastConfig = config;

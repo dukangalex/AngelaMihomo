@@ -402,6 +402,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "پشتیبان با AES-256 رمزگذاری شد",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("پشتیبان‌گیری رمزنگاری‌نشده"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("هیچ گذرواژه‌ای برای پشتیبان‌گیری تنظیم نشده است، بنابراین این پشتیبان‌گیری بدون رمزنگاری ارسال می‌شود. این فایل شامل نشانی‌های اشتراک و اطلاعات حساب شماست و هر کسی که بتواند فایل روی سرور را بخواند، می‌تواند آن‌ها را بخواند. اگر به فضای ذخیره‌سازی کاملاً اعتماد ندارید، لغو کنید و ابتدا گذرواژهٔ پشتیبان‌گیری تنظیم کنید."),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("این پشتیبان‌گیری رمزنگاری نشده است (گذرواژه‌ای تنظیم نشده)"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("همین‌طور بارگذاری کن"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("همین‌طور فعال کن"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("رمز عبور پشتیبان"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "رمزنگاری AES-256 (خالی برای بدون رمز)",
@@ -854,10 +859,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("ویرایش هدایت"),
     "editUser": MessageLookupByLibrary.simpleMessage("ویرایش کاربر"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("تحلیل خرابی‌ها"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "ارسال گزارش خرابی در صورت لزوم",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("فعالسازی اورراید"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage(
       "وقتی روشن است، بازنویسی زیر روی این پیکربندی اعمال می‌شود و بعد هسته آن را اجرا می‌کند",
@@ -1422,7 +1423,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("موقعیت"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("قفل کردن گره"),
     "log": MessageLookupByLibrary.simpleMessage("گزارش"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("جستجوی هوش مصنوعی"),
     "logLevel": MessageLookupByLibrary.simpleMessage("سطح گزارش"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("ثبت گزارش‌ها"),

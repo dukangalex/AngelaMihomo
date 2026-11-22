@@ -40,6 +40,7 @@ The signing process is strictly automated to prevent tampering. Manual code sign
 - **Ephemeral Environments**: All builds are compiled on ephemeral, isolated GitHub-hosted runners.
 - **SignPath Integration**: Once the unsigned artifacts are compiled, the GitHub Action submits them to SignPath via their official API/Action. SignPath verifies the origin (GitHub Actions OIDC or API Token) and signs the artifacts.
 - **Distribution**: The signed artifacts are automatically downloaded back to the runner and uploaded to the GitHub Releases page.
+- **Android Keystore Handling (T251)**: In `build.yaml` the Android release keystore is decoded outside the checked-out workspace (under the runner's temp directory) and removed by an `always()` cleanup step; Gradle locates it through the `storeFile` property in `local.properties`. Pull requests from forks never receive this material — they build with a generated throwaway keystore, so their artifacts carry no release signature. Pull requests from branches in this repository do build with the release key (the project's signed trial packages are produced from PR pipelines); that residual exposure is accepted for this single-maintainer repository and recorded here deliberately.
 
 ## 5. Incident Response and Revocation
 

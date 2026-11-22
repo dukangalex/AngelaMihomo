@@ -102,6 +102,7 @@ flutter:
     - assets/images/avatars/
     - assets/images/guardians/
     - assets/images/solid/
+    - assets/images/solid/light/
     - assets/scripts/
     - assets/svg/
     - assets/route_svg/

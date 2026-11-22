@@ -29,7 +29,6 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
       autoRun: json['autoRun'] as bool? ?? false,
       openLogs: json['openLogs'] as bool? ?? true,
       closeConnections: json['closeConnections'] as bool? ?? true,
-      logAiSearch: json['logAiSearch'] as bool? ?? true,
       testUrl: json['testUrl'] as String? ?? defaultTestUrl,
       showStartSwitch: json['showStartSwitch'] as bool? ?? true,
       startSwitchStyle:
@@ -137,7 +136,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'autoRun': instance.autoRun,
       'openLogs': instance.openLogs,
       'closeConnections': instance.closeConnections,
-      'logAiSearch': instance.logAiSearch,
       'testUrl': instance.testUrl,
       'showStartSwitch': instance.showStartSwitch,
       'startSwitchStyle': _$StartSwitchStyleEnumMap[instance.startSwitchStyle]!,

@@ -18,13 +18,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// GitHub-releases-only channel the in-app updater (T179) uses, with
 /// the same digest verification. Since chain.28 (T220) the digest on
 /// the project-repository path comes from the release's
-/// sha256sums.txt, and when that manifest ships its Ed25519 signature
-/// (sha256sums.txt.sig) the signature must verify before anything is
-/// installed — see data_signature.dart. The user may point the pull at
-/// a source of their own instead (T201); a custom source must ship a
-/// sha256sums.txt next to the file and passes the same digest
-/// verification (custom sources stay hash-only: they are the user's
-/// own choice, and no project key signs for them).
+/// sha256sums.txt, whose Ed25519 signature (sha256sums.txt.sig) must
+/// verify before anything is installed — since T252 this is
+/// fail-closed with no exceptions, the same discipline as the
+/// managed-script channel (managed_script_update.dart): no manifest,
+/// no signature, or a bad signature all mean no install. The user
+/// may point the pull at a source of their own instead (T201); a
+/// custom source must ship a sha256sums.txt next to the file and
+/// passes the same digest verification (custom sources stay
+/// hash-only: they are the user's own choice, and no project key
+/// signs for them).
 
 enum GeoUpdateOutcome { updated, alreadyLatest, failed, verifyFailed }
 
@@ -258,12 +261,13 @@ class GeoDataService {
       if (current != null && current.tag == tag) {
         return GeoUpdateOutcome.alreadyLatest;
       }
-      // T220: on the project-repository path the asset — and with it
-      // the trusted digest — is derived from the release's
-      // sha256sums.txt, signature-verified whenever the release ships
-      // a signature. The GitHub API path above now only discovers
-      // the target tag.
-      final resolved = await _projectAsset(release, tag);
+      // T220/T252: on the project-repository path the asset — and
+      // with it the trusted digest — is derived from the release's
+      // sha256sums.txt, and the manifest's Ed25519 signature must
+      // verify (fail-closed, aligned with the managed-script
+      // channel). The GitHub API path above now only discovers the
+      // target tag; its unsigned asset metadata is never trusted.
+      final resolved = await _projectAsset(tag);
       if (resolved.verifyFailed) return GeoUpdateOutcome.verifyFailed;
       final asset = resolved.asset;
       if (asset == null) return GeoUpdateOutcome.failed;
@@ -338,23 +342,22 @@ class GeoDataService {
 
   /// Resolve the project-repository asset for [tag] from the
   /// release's sha256sums.txt (T220), which is the authoritative
-  /// digest source on this path:
+  /// digest source on this path. The verification discipline is
+  /// fail-closed, identical to the managed-script channel (T252):
   ///
-  /// - The manifest ships a signature (sha256sums.txt.sig):
-  ///   verification is mandatory. A bad signature yields
-  ///   `verifyFailed: true` and no asset — nothing is installed.
-  /// - The manifest ships no signature: TRANSITION RULE — releases
-  ///   published before manifest signing have no .sig; their
-  ///   manifest-derived digest is accepted hash-only, exactly as
-  ///   every release was before signing existed. Once every live
-  ///   release is signed, a missing signature can be made fatal and
-  ///   this branch removed.
-  /// - The manifest itself is unreachable: fall back to the pre-T220
-  ///   resolution (the GitHub-API asset with its reported digest, or
-  ///   [_fallbackAsset], which fails on its own when there is no
-  ///   manifest either).
+  /// - The manifest is unreachable or absent: no asset — the
+  ///   unsigned digest metadata of the GitHub API is never used as
+  ///   a fallback.
+  /// - The manifest ships no signature: `verifyFailed: true`, no
+  ///   asset. Every live project release is signed, so a missing
+  ///   signature is an anomaly, not a legacy case. (The pre-T252
+  ///   transition rule that accepted unsigned manifests hash-only
+  ///   was removed once all live releases carried signatures.)
+  /// - The signature does not verify: `verifyFailed: true`.
+  /// - The signature cannot be fetched at all (network error, as
+  ///   opposed to a clean 404): no asset, plain failure — the
+  ///   verification state is unknown, so nothing is installed.
   Future<({ReleaseAsset? asset, bool verifyFailed})> _projectAsset(
-    Map<String, dynamic> release,
     String tag,
   ) async {
     final base =
@@ -366,11 +369,7 @@ class GeoDataService {
       sumsBytes = null;
     }
     if (sumsBytes == null) {
-      var asset = _updates.assetByName(release, name: assetName);
-      if (asset == null || asset.sha256 == null) {
-        asset = await _fallbackAsset(tag);
-      }
-      return (asset: asset, verifyFailed: false);
+      return (asset: null, verifyFailed: false);
     }
     List<int>? sigBytes;
     try {
@@ -380,14 +379,15 @@ class GeoDataService {
       // install on a manifest whose verification state is unknown.
       return (asset: null, verifyFailed: false);
     }
-    if (sigBytes != null) {
-      final verified = await verifyManifestSignature(
-        sumsBytes,
-        sigBytes,
-        publicKeyBytes: _manifestPublicKeyBytes,
-      );
-      if (!verified) return (asset: null, verifyFailed: true);
+    if (sigBytes == null) {
+      return (asset: null, verifyFailed: true);
     }
+    final verified = await verifyManifestSignature(
+      sumsBytes,
+      sigBytes,
+      publicKeyBytes: _manifestPublicKeyBytes,
+    );
+    if (!verified) return (asset: null, verifyFailed: true);
     final asset = _assetFromSumsBytes(sumsBytes, fileUrl: '$base/$assetName');
     return (asset: asset, verifyFailed: false);
   }
@@ -423,16 +423,6 @@ class GeoDataService {
     } catch (_) {
       return null;
     }
-  }
-
-  /// Resolve the database asset straight from the release at [tag]
-  /// when the API asset list is unavailable: the download URL is
-  /// deterministic for this repository, and the expected SHA-256
-  /// comes from the release's own sha256sums.txt.
-  Future<ReleaseAsset?> _fallbackAsset(String tag) {
-    final url =
-        'https://github.com/$geoDataRepository/releases/download/${Uri.encodeComponent(tag)}/$assetName';
-    return _assetFromSumsFile(url);
   }
 
   /// Resolve the expected SHA-256 for the file at [fileUrl] from a

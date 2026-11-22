@@ -36,11 +36,34 @@ void main() {
   late Dio dio;
   var downloadCount = 0;
 
+  // T252: the project path is fail-closed — the shared service must
+  // present a properly signed manifest, so the suite signs the sums
+  // with a throwaway keypair and injects key + fetcher.
+  late List<int> manifestPublicKey;
+  late Future<List<int>?> Function(String) manifestFetcher;
+  const sumsUrl =
+      'https://github.com/$repo/releases/download/$tag/sha256sums.txt';
+  const sigUrl =
+      'https://github.com/$repo/releases/download/$tag/sha256sums.txt.sig';
+
   setUpAll(() async {
     home = await Directory.systemTemp.createTemp('geo_data_test_');
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (_) async => home.path);
+    final algorithm = cryptography.Ed25519();
+    final keyPair = await algorithm.newKeyPair();
+    final publicKey = await keyPair.extractPublicKey();
+    manifestPublicKey = publicKey.bytes;
+    final sumsBytes = utf8.encode(
+      '$gzDigest  ${GeoDataService.assetName}\n',
+    );
+    final signature = await algorithm.sign(sumsBytes, keyPair: keyPair);
+    manifestFetcher = (url) async => switch (url) {
+      sumsUrl => sumsBytes,
+      sigUrl => signature.bytes,
+      _ => null,
+    };
   });
 
   tearDownAll(() async {
@@ -116,6 +139,8 @@ void main() {
   GeoDataService service() => GeoDataService(
     updates: ReleaseUpdates(repository: repo, client: dio),
     installer: UpdateInstaller(dio: dio),
+    manifestBytesFetcher: manifestFetcher,
+    manifestPublicKeyBytes: manifestPublicKey,
   );
 
   test('updateNow downloads, verifies, unpacks and records meta', () async {
@@ -166,7 +191,7 @@ void main() {
   });
 
   test(
-    'falls back to the release sha256sums when the API list is empty',
+    'resolves through the signed manifest when the API list is empty',
     () async {
       final fallbackDio = Dio();
       var downloads = 0;
@@ -201,6 +226,8 @@ void main() {
       final svc = GeoDataService(
         updates: ReleaseUpdates(repository: repo, client: fallbackDio),
         installer: UpdateInstaller(dio: fallbackDio),
+        manifestBytesFetcher: manifestFetcher,
+        manifestPublicKeyBytes: manifestPublicKey,
       );
       expect(await svc.updateNow(), GeoUpdateOutcome.updated);
       expect(downloads, 1);
@@ -253,6 +280,8 @@ void main() {
       updates: ReleaseUpdates(repository: repo, client: flakyDio),
       installer: UpdateInstaller(dio: flakyDio),
       retryDelays: const [Duration.zero, Duration.zero],
+      manifestBytesFetcher: manifestFetcher,
+      manifestPublicKeyBytes: manifestPublicKey,
     );
     await svc.ensureData();
     expect(apiHits, 3);
@@ -415,7 +444,7 @@ void main() {
       );
     });
 
-    test('a missing signature falls back to hash-only (legacy)', () async {
+    test('a missing signature blocks the install (fail-closed)', () async {
       final (publicKey, _) = await signSums();
       final svc = signedService(
         publicKey: publicKey,
@@ -424,9 +453,9 @@ void main() {
           _ => null,
         },
       );
-      expect(await svc.updateNow(), GeoUpdateOutcome.updated);
-      expect((await svc.currentMeta())?.tag, tag);
-      expect(downloadCount, 1);
+      expect(await svc.updateNow(), GeoUpdateOutcome.verifyFailed);
+      expect(downloadCount, 0);
+      expect(await svc.currentMeta(), isNull);
     });
   });
 }

@@ -325,6 +325,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "backupEncryptedTip": MessageLookupByLibrary.simpleMessage(
       "已使用 AES-256 加密備份",
     ),
+    "backupUnencryptedTitle": MessageLookupByLibrary.simpleMessage("未加密備份"),
+    "backupUnencryptedWarning": MessageLookupByLibrary.simpleMessage("未設定備份口令，本次備份將不加密傳送。備份中包含你的訂閱位址與帳號憑據，任何能讀到伺服器上該檔案的人都能讀到它們。若該儲存不完全可信，請取消並先設定備份口令。"),
+    "backupUnencryptedTip": MessageLookupByLibrary.simpleMessage("本次備份未加密（未設定備份口令）"),
+    "backupUploadAnyway": MessageLookupByLibrary.simpleMessage("仍要上傳"),
+    "backupEnableAnyway": MessageLookupByLibrary.simpleMessage("仍要啟用"),
     "backupPassword": MessageLookupByLibrary.simpleMessage("備份密碼"),
     "backupPasswordDesc": MessageLookupByLibrary.simpleMessage(
       "使用 AES-256 加密備份，留空則不加密",
@@ -661,10 +666,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTunnel": MessageLookupByLibrary.simpleMessage("編輯轉發"),
     "editUser": MessageLookupByLibrary.simpleMessage("編輯用戶"),
     "emptyTip": m18,
-    "enableCrashReport": MessageLookupByLibrary.simpleMessage("應用崩潰分析"),
-    "enableCrashReportDesc": MessageLookupByLibrary.simpleMessage(
-      "必要時上傳應用崩潰日誌",
-    ),
     "enableOverride": MessageLookupByLibrary.simpleMessage("啟用覆寫"),
     "enableOverrideDesc": MessageLookupByLibrary.simpleMessage("開啟後，先用下面的覆寫內容改一遍這份配置，再交給內核運行"),
     "enableTraySpeed": MessageLookupByLibrary.simpleMessage("網速顯示"),
@@ -1075,7 +1076,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("定位"),
     "lockProxy": MessageLookupByLibrary.simpleMessage("鎖定節點"),
     "log": MessageLookupByLibrary.simpleMessage("日誌"),
-    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜尋"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日誌等級"),
     "logLevelDebugHint": m40,
     "logcat": MessageLookupByLibrary.simpleMessage("日誌捕獲"),

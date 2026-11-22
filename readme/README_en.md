@@ -54,7 +54,7 @@ Highlights:
 
 Get packages for your platform from this repository's **[Releases](https://github.com/dukangalex/AngelaMihomo/releases)** page (Windows, Linux, macOS, Android, Android TV). Distribution is GitHub-only: the Windows installer is not commercially code-signed and the macOS build is not notarized.
 
-**Migrating from another build (Android)**: since v1.19.7-chain.1 this app uses its own package name and installs alongside other builds; export a backup in the other app first, then import it here.
+**Migrating from another build (Android)**: since v1.19.8-chain.26 this app uses its own package name and installs alongside other builds; export a backup in the other app first, then import it here.
 
 ## Acknowledgements
 

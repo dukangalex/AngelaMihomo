@@ -1,4 +1,50 @@
-// @version 2026112102
+// @version 2026112201
+/**
+ * AngelaMihomo 内置托管脚本（managed.js）——改写范围自述（T234）
+ *
+ * 本脚本是 App 的默认配置装配器：main() 从空对象重建整份 mihomo
+ * 配置，改写面如下，账面与代码一致；改动改写面必须同步修订本自述。
+ *
+ * 【整体重建】订阅原有的 DNS、hosts、sniffer、TUN、规则、策略组
+ * 结构一律不保留，由脚本重新生成。仅以下内容原样透传：节点本体
+ * （proxies 的连接参数）、proxy-providers 本体、客户端注入的
+ * secret、合法的 mixed-port、回环地址的 external-controller。
+ *
+ * 【DNS】整组自建：nameserver、proxy-server-nameserver、
+ * direct-nameserver、fallback、fake-ip 相关字段全部由脚本生成，
+ * 订阅自带 DNS 不生效。脚本写死的 DNS 出口如实列明：境外解析走
+ * Cloudflare/Google 的 DoH（经代理组）；直连解析走阿里
+ * 223.5.5.5 与 DNSPod 1.12.12.12 的 DoH（标 DIRECT）；节点域名
+ * 解析走 tls://223.5.5.5 与 doh.pub（标 DIRECT）。这是托管脚本
+ * 的既定行为（HiClash 沿袭），与 App 未启用脚本时的出厂默认
+ * （跟随系统）是两条独立口径，不要混淆。
+ *
+ * 【hosts】两组 hosts 合并写入：DoH 服务域名到其 IP 的引导映射
+ * （doh.pub、cloudflare-dns.com、dns.google、dns.alidns.com）、
+ * services.googleapis.cn 别名，以及 Bilibili PCDN 域名空路由
+ * （+.mcdn.bilivideo.com 等四条指向 0.0.0.0）。
+ *
+ * 【安全基线】securityBaseline 整体写入：mixed-port 7890、
+ * allow-lan 关闭、bind-address 127.0.0.1、rule 模式、
+ * external-controller 127.0.0.1:19090、external-ui 指向本项目
+ * 数据仓的 zash.zip、geox-url 指向本项目数据仓等。
+ *
+ * 【嗅探与 TUN】sniffer 固定为脚本版本；「强制TUN」开启时 TUN
+ * 整组由脚本接管（栈 mips、auto-route、strict-route、
+ * dns-hijack 等），关闭时原样保留订阅/客户端自带 TUN 设置。
+ *
+ * 【节点处理】普通订阅：含订阅信息/过期/官网等字样的节点被过滤，
+ * 其余节点按地区识别改名并分组；provider 模式不下载、不展开、
+ * 不改名，仅补内核必填字段。
+ *
+ * 【策略组与规则】策略组、规则与 40 个 .mrs 规则提供者全部由
+ * 脚本生成；提供者一律指向本项目数据仓（geo-data Release 直链
+ * 或 core-bundle 包内路径），已下载到本地的规则文件由 App 以
+ * 数据仓签名清单校验完整性，不符者删除重下（T233）。
+ *
+ * 【不接管】不修改节点连接参数本身；不回传、不外发任何配置内容；
+ * 脚本执行完全在本地核心内完成。
+ */
 const Compatible_With_AngelaMihomo = { ruleOptionsEnable: true };
 
 // --- 静态配置区域 ---

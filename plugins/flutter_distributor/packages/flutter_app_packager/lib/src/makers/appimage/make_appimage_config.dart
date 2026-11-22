@@ -36,6 +36,7 @@ class MakeAppImageConfig extends MakeConfig {
     required this.icon,
     this.keywords = const [],
     this.categories = const [],
+    this.supportedMimeTypes = const [],
     this.actions = const [],
     this.include = const [],
     this.startupNotify = true,
@@ -52,6 +53,8 @@ class MakeAppImageConfig extends MakeConfig {
       include: (map['include'] as List<dynamic>? ?? []).cast<String>(),
       keywords: (map['keywords'] as List<dynamic>? ?? []).cast<String>(),
       categories: (map['categories'] as List<dynamic>? ?? []).cast<String>(),
+      supportedMimeTypes: (map['supported_mime_type'] as List<dynamic>? ?? [])
+          .cast<String>(),
       startupNotify: map['startup_notify'] as bool? ?? false,
       startupWMClass: map['startup_wm_class'] as String?,
       genericName: map['generic_name'] as String? ?? 'A Flutter Application',
@@ -68,6 +71,7 @@ class MakeAppImageConfig extends MakeConfig {
   final String icon;
   final List<String> keywords;
   final List<String> categories;
+  final List<String> supportedMimeTypes;
   final List<AppImageAction> actions;
   final bool startupNotify;
   final String? startupWMClass;
@@ -87,6 +91,8 @@ class MakeAppImageConfig extends MakeConfig {
       'StartupNotify': startupNotify ? 'true' : 'false',
       if (startupWMClass != null) 'StartupWMClass': startupWMClass!,
       if (categories.isNotEmpty) 'Categories': categories.join(';'),
+      if (supportedMimeTypes.isNotEmpty)
+        'MimeType': '${supportedMimeTypes.join(';')};',
       if (keywords.isNotEmpty) 'Keywords': keywords.join(';'),
       if (this.actions.isNotEmpty)
         'Actions': this.actions.map((e) => e.label).join(';'),

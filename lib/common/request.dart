@@ -723,10 +723,25 @@ class Request {
     }
   }
 
+  /// Risk verdicts are cached for at most 24 hours (T247): a
+  /// Scamalytics verdict is a point-in-time judgement, and the old
+  /// cache kept it forever. Entries are stored wrapped as
+  /// `{'t': <epoch millis>, 'risk': <IpRisk json>}`; anything in the
+  /// pre-T247 bare shape has no timestamp and counts as expired.
+  static const ipRiskCacheTtl = Duration(hours: 24);
+
   Future<IpRisk?> readIpRiskCache(String ip) async {
     try {
       final cached = await readIpCache('risk_$ip');
-      return cached == null ? null : IpRisk.fromJson(cached).normalized;
+      if (cached == null) return null;
+      final stampedAt = cached['t'];
+      final riskJson = cached['risk'];
+      if (stampedAt is! int || riskJson is! Map<String, dynamic>) {
+        return null;
+      }
+      final age = DateTime.now().millisecondsSinceEpoch - stampedAt;
+      if (age < 0 || age > ipRiskCacheTtl.inMilliseconds) return null;
+      return IpRisk.fromJson(riskJson).normalized;
     } catch (_) {
       return null;
     }
@@ -744,7 +759,15 @@ class Request {
     }
     const timeout = Duration(seconds: 10);
     try {
-      final res = await _dio.get<List<int>>(
+      // T247: the risk lookup carries the queried IP to a third
+      // party, so it must never leave the device directly — it goes
+      // through the core's proxy like all clash-bound traffic, and
+      // when the core is not running there is no lookup at all
+      // (handleFindProxy would otherwise fall back to DIRECT).
+      if (globalState.appState.runTime == null) {
+        return Result.error('core not running');
+      }
+      final res = await _clashDio.get<List<int>>(
         'https://scamalytics.com/ip/${Uri.encodeComponent(ip)}',
         cancelToken: cancelToken,
         options: Options(
@@ -760,7 +783,10 @@ class Request {
       }
       final risk = await Isolate.run(() => parseScamalyticsBytes(ip, data));
       if (risk == null) return Result.error('parse failed');
-      await writeIpCache(cacheKey, risk.toJson());
+      await writeIpCache(cacheKey, {
+        't': DateTime.now().millisecondsSinceEpoch,
+        'risk': risk.toJson(),
+      });
       return Result.success(risk);
     } catch (e) {
       if (e is DioException && e.type == DioExceptionType.cancel) {
