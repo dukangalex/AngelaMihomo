@@ -730,10 +730,19 @@ class BuildCommand extends Command {
         Build.getExecutable('sudo apt install -y rpm patchelf libfuse2'),
       );
 
-      final downloadName = arch == Arch.amd64 ? 'x86_64' : 'aarch64';
+      // T253: appimagetool is pinned to AppImageKit release 12 (the
+      // last versioned release) and hash-verified before install —
+      // the previous 'continuous' URL was a moving target whose
+      // bytes could change under the build at any time. Bump the
+      // version and the pinned digest together.
       await Build.exec(
         Build.getExecutable(
-          'wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$downloadName.AppImage',
+          'wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage',
+        ),
+      );
+      await Build.exec(
+        Build.getExecutable(
+          'echo "d918b4df547b388ef253f3c9e7f6529ca81a885395c31f619d9aaf7030499a13  appimagetool" | sha256sum -c -',
         ),
       );
       await Build.exec(Build.getExecutable('chmod +x appimagetool'));
@@ -752,7 +761,9 @@ class BuildCommand extends Command {
   }
 
   Future<void> _getMacosDependencies() async {
-    await Build.exec(Build.getExecutable('npm install -g appdmg'));
+    // T253: appdmg pinned to an exact version; npm verifies the
+    // tarball against the registry's published integrity digest.
+    await Build.exec(Build.getExecutable('npm install -g appdmg@0.6.6'));
   }
 
   Future<void> _buildDistributor({
