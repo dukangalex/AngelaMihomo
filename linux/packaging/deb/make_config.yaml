@@ -40,3 +40,12 @@ postinstall_scripts:
       setcap 'cap_net_admin,cap_net_bind_service,cap_net_raw=+ep' "$CORE_PATH" && sync
     fi
     rm -f /etc/polkit-1/rules.d/90-bettbox.rules /etc/polkit-1/rules.d/99-bettbox.rules /usr/share/polkit-1/rules.d/99-bettbox.rules
+
+# T257: register the same deep-link schemes the other platforms
+# handle (clash/clashmeta/flclash/bettbox/angelamihomo)://install-config
+supported_mime_type:
+  - x-scheme-handler/clash
+  - x-scheme-handler/clashmeta
+  - x-scheme-handler/flclash
+  - x-scheme-handler/bettbox
+  - x-scheme-handler/angelamihomo
