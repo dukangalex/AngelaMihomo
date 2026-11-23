@@ -14,29 +14,30 @@
 
 # Angela Mihomo 正式版本发布 / Stable Release
 
-### 自有化定型：数据、字体、图标、工具全部自有自研 / Fully self-owned: data, fonts, icons and tools — all in-house
+### 浅色纯色十二生肖：纯色主题补齐浅色一组 / Light solid zodiac: the solid-color family gains its light set
 
-本版是 AngelaMihomo 的自有化定型版：chain.28 已把数据收归自有仓分发，本版再进一步——随包字体换成开源授权的 Noto Sans SC、Windows 回环豁免工具改为完全自研、Android TV 横幅与 macOS 版权署名归位、Android 系统云备份显式关闭、脚本更新通道改为校验失败即拒用、桌面小部件协议键换自有命名。至此，运行时依赖与随包组件全部自有，或采用授权清晰的开源成果，不再依赖任何无授权的第三方组件。功能一项不少：自有化靠替换与自研完成，不靠砍功能。
-(This release is the self-ownership definitive edition of AngelaMihomo. chain.28 already moved all data distribution to our own repositories; this release goes further — the bundled font is now the openly licensed Noto Sans SC, the Windows loopback-exemption tool is now fully developed in-house, the Android TV banner and macOS copyright carry our own identity, Android system cloud backup is explicitly off, the script update channel fails closed on any verification error, and the home-widget protocol keys moved to our own namespace. Runtime dependencies and bundled components are now all our own, or openly licensed with clear terms — no unauthorized third-party component remains. No feature removed: self-ownership was achieved by replacement and in-house development, never by cutting features.)
+chain.29 自有化定型之后，本版的夺目点是视觉：纯色十二生肖补齐浅色一组——与深色纯色一一对应的十二件，浅底、同生肖深色线条水印，在设置页「纯色生肖」组内分深色 / 浅色两组选用。同一版里，首页合并卡重新排版、每项信息完整显示；两轮外部安全审计的整改与 chain.28 审计遗留一并清零；出厂默认 DNS 改为跟随系统。内核不变，仍为 Mihomo 1.19.34。
+(After chain.29's self-ownership edition, this release leads with a visual: the solid zodiac family gains a light set — twelve themes one-to-one with the dark solids, light backgrounds with the same zodiac line-art watermark in a deeper tone, selectable in Settings under the solid zodiac group, now split into dark and light. The same release re-lays out the merged home card so every item shows in full, lands both rounds of external security-audit fixes plus the remaining chain.28 audit items, and makes the factory-default DNS follow the system. The core stays at Mihomo 1.19.34.)
 
 > 仍在 chain.25 或更早版本的用户请注意 chain.26 的一次性迁移：应用标识已改为 app.angelamihomo，升级前请先在旧版导出配置、装新版后导入。详见 chain.26 发布说明。
 > (Still on chain.25 or earlier? See the chain.26 release notes for the one-time app-identity migration: export your configuration before upgrading and import it afterwards.)
 
 ### ✨ 本版亮点 / What's new in this build
 
-- **自有化定型 / Fully self-owned**：内核兜底数据源、脚本组图标全部改指自有仓，运行时不依赖任何第三方在线服务；随包组件全部自有或授权清晰，第三方只出现在致谢里。
-  (Kernel fallback data sources and script group icons all point at our own repositories, and the app depends on no third-party online service at runtime; every bundled component is our own or clearly licensed, with third parties appearing only in the acknowledgements.)
-- **Windows 回环工具自研 / Loopback tool, now in-house (Windows)**：用于放行商店应用访问本机代理端口的回环豁免工具改为完全自研（20 KB，另带命令行模式），不再随包分发来源与授权不明的第三方二进制。
-  (The loopback-exemption tool that lets Store apps reach the local proxy port is now fully developed in-house (20 KB, with a command-line mode besides the GUI); the Windows package no longer ships a third-party binary of unclear provenance and licensing.)
-- **字体换新 / A new bundled font**：随包中文字体由 HarmonyOS Sans SC 换为 Noto Sans SC（SIL 开源字体授权 OFL-1.1，可自由分发），字形观感与字距、行高略有变化。原随包副本是经子集化修改的版本、不满足其授权的分发条件，本版一并改正，许可全文随包附带。
-  (The bundled Chinese font changes from HarmonyOS Sans SC to Noto Sans SC (SIL Open Font License 1.1, freely redistributable); glyph shapes and text metrics differ slightly. The previously bundled copy was a subsetted, modified build that did not meet its licence's redistribution terms — now corrected, with the full licence text shipped in the package.)
-- **隐私再加固 / Privacy hardened**：Android 系统备份显式关闭，含订阅与凭据的明文配置不再随系统云备份离开设备；脚本与数据通道校验失败一律拒用，绝不将就加载未验签内容。
-  (Android system backup is explicitly disabled, so plaintext configuration (subscriptions, credentials) never leaves the device via cloud backup; script and data channels fail closed — unverified content is never loaded.)
-- **品牌与版权归位 / Branding and copyright set right**：Android TV 横幅换自有标识、macOS 版权署名更正为 AngelaMihomo、默认 User-Agent 改为自有标识、站点图标等文案与实现对齐；桌面小部件的内部协议键同步换成自有命名，用户无感。
-  (The Android TV banner carries our own artwork, the macOS copyright now names AngelaMihomo, the default User-Agent leads with our own identity, and site-icon copy matches the implementation; internal home-widget protocol keys moved to our own namespace as well — invisible to users.)
-- **官方整包＋签名校验 / Official bundle, signature-verified**：内置规则数据包改指 core-bundle-2026.12，采用 MetaCubeX 官方整包（来源链完整可查），数据文件附 SHA-256 清单与 Ed25519 签名，构建与运行时双重校验。
-  (The bundled rule data package now points at core-bundle-2026.12, built on the official MetaCubeX package with a fully traceable source chain; data files ship with a SHA-256 manifest and Ed25519 signature, verified at build time and at runtime.)
-- **内核 / Core**：Mihomo 1.19.34
+- **浅色纯色十二生肖 / Light solid zodiac series（本版夺目点）**：纯色主题新增浅色一组，与深色纯色十二生肖一一对应——浅底、同生肖深色线条水印，在设置页「纯色生肖」组内分深色 / 浅色两组选用。
+  (The solid-color theme family gains a light set, one-to-one with the dark solid zodiac twelve — light backgrounds with the same zodiac line-art watermark in a deeper tone. Pick them in Settings under the solid zodiac group, now split into dark and light.)
+- **首页卡片新版式 / Home card, redesigned**：首页顶部合并卡重新排版，配置名、更新时间、到期日与用量完整显示不截断；合并配置的到期日与流量改为跟随同一家订阅并标明来源，不再出现日期是这家、流量是那家的对不上。
+  (The merged home card is re-laid out so name, update time, expiry and usage always show in full; for merged profiles the expiry date and traffic now come from the same member subscription, with the source named.)
+- **安全审计整改 / Security audit fixes**：两轮外部安全审计的整改全部并入——Windows 助手服务密钥权限收紧、命名管道与配置导入边界加固、本地落盘字段加密、发布流水线签名材料隔离、构建工具钉版校验等。
+  (Both rounds of external security-audit fixes land here: tightened Windows helper service key ACLs, hardened named-pipe and config-import boundaries, field-level encryption for on-disk preferences, release-signing material isolation in CI, and pinned, hash-verified build tools.)
+- **默认更注重隐私 / Privacy-first defaults**：出厂默认 DNS 改为跟随系统，不再写死公共解析服务；规则数据的运行时完整性校验与脚本完整性校验补齐，校验不过的内容一律拒用。
+  (The factory-default DNS now follows the system instead of hard-coded public resolvers; runtime integrity checks for bundled rule data and managed scripts are completed — anything that fails verification is refused.)
+- **内核 / Core**：Mihomo 1.19.34（与 chain.29 同内核）
+
+### ⚠️ 已知问题 / Known issues
+
+- **Windows 静默升级的安装目录（修复中）**：在自定义目录（如 D 盘）安装后，通过静默方式升级可能不沿用原目录、落到默认目录，并使旧目录被移除；遇到时请运行新目录下的程序，配置数据不受影响（配置在用户目录下独立保存）。修复完成前，建议升级时运行安装包并确认安装目录为原目录。
+  (On Windows, if you installed into a custom directory (e.g. drive D:), a silent upgrade may not keep that directory and may install into the default location instead, removing the old one. Your configuration is unaffected (it lives separately under your user profile); until the fix ships, run the installer and confirm the target directory when upgrading.)
 
 ### ✍️ 签名说明 / Signing
 
