@@ -90,12 +90,16 @@ class MakeAppImageConfig extends MakeConfig {
       'Type': 'Application',
       'StartupNotify': startupNotify ? 'true' : 'false',
       if (startupWMClass != null) 'StartupWMClass': startupWMClass!,
-      if (categories.isNotEmpty) 'Categories': categories.join(';'),
+      // Desktop Entry string-list values must end with a trailing ';'
+      // (freedesktop spec); appimagetool validates the file and aborts
+      // the AppImage build otherwise. Same format the deb/rpm makers
+      // in this package already use for every list key.
+      if (categories.isNotEmpty) 'Categories': '${categories.join(';')};',
       if (supportedMimeTypes.isNotEmpty)
         'MimeType': '${supportedMimeTypes.join(';')};',
-      if (keywords.isNotEmpty) 'Keywords': keywords.join(';'),
+      if (keywords.isNotEmpty) 'Keywords': '${keywords.join(';')};',
       if (this.actions.isNotEmpty)
-        'Actions': this.actions.map((e) => e.label).join(';'),
+        'Actions': '${this.actions.map((e) => e.label).join(';')};',
     }.entries.map((e) => '${e.key}=${e.value}').join('\n');
 
     final actions = this.actions.map((action) {
