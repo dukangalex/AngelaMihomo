@@ -169,8 +169,8 @@ class _ProfileZone extends ConsumerWidget {
     ].join(' · ');
     // Stacked rows (T286): every item gets the full card width, so
     // no field ever has to ellipsize — the name row (up to two
-    // lines), the meta row joining update time, expiry and the
-    // usage numbers on one wrapping line, the usage segment bar
+    // lines), the meta line joining update time, expiry and the
+    // usage numbers as one combined text (T288), the usage segment bar
     // directly under that row, then the node pill carrying the
     // status light.
     return Padding(
@@ -227,12 +227,21 @@ class _ProfileZone extends ConsumerWidget {
 }
 
 /// The meta line under the profile name (T286): last-update time,
-/// expiry and the subscription usage presented as one row —
-/// "time · expire · used / total". The usage is a single Wrap
-/// child, so when the row runs out of width it moves to the next
-/// line as a whole instead of truncating; nothing on the row
-/// ellipsizes or shrinks, and the usage segment bar sits directly
-/// under the row so the numbers and their bar stay adjacent.
+/// expiry and the subscription usage presented as one line —
+/// "time · expire · used / total".
+///
+/// T288: the line is a single combined [Text], not separate chunks
+/// in a Wrap. The Wrap form laid the subtitle and the usage out as
+/// two atomic boxes — the usage typeset larger (labelMedium) than
+/// the subtitle (labelSmall) — so whenever the two boxes plus the
+/// Wrap spacing exceeded the card width, the whole usage box was
+/// pushed to a second line even though the same words as one
+/// flowing text fit on the line (the user's phone hit exactly
+/// that). As one text the line takes the full card width, stays on
+/// one line whenever the words fit, and wraps only at natural text
+/// break points when they genuinely do not; nothing ellipsizes or
+/// shrinks, and the usage segment bar sits directly under the line
+/// so the numbers and their bar stay adjacent.
 class _SubtitleUsageRow extends StatelessWidget {
   final String subtitle;
   final ProfileUsage? usage;
@@ -243,30 +252,19 @@ class _SubtitleUsageRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final usage = this.usage;
-    return Wrap(
-      spacing: 4,
-      runSpacing: 2,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        if (subtitle.isNotEmpty)
-          Text(
-            '$subtitle ·',
-            style: context.textTheme.labelSmall?.copyWith(
-              color: usage?.isExpired == true
-                  ? colorScheme.error
-                  : colorScheme.onSurfaceVariant,
-            ),
-          ),
-        Text(
-          // T223: the figure is cardUsageText, so on a merged profile
-          // it describes the same source as the expiry beside it.
-          usage?.cardUsageText ?? appLocalizations.noUsageData,
-          style: context.textTheme.labelMedium?.copyWith(
-            color: usage == null ? colorScheme.onSurfaceVariant : null,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
+    return Text(
+      [
+        if (subtitle.isNotEmpty) subtitle,
+        // T223: the figure is cardUsageText, so on a merged profile
+        // it describes the same source as the expiry beside it.
+        usage?.cardUsageText ?? appLocalizations.noUsageData,
+      ].join(' · '),
+      style: context.textTheme.labelSmall?.copyWith(
+        color: usage?.isExpired == true
+            ? colorScheme.error
+            : colorScheme.onSurfaceVariant,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
     );
   }
 }
