@@ -231,13 +231,47 @@ jobs:
         if: matrix.platform == 'macos'
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
+      # T254: subosito/flutter-action resolves the SDK through Flutter's
+      # official release manifest, which publishes x64 host archives only
+      # for Linux/Windows (no arm64 entries at all), so on ARM64 runners
+      # it fails with "Unable to determine Flutter version for channel:
+      # stable version: 3.47.7 architecture: arm64". The Windows/Linux
+      # ARM64 legs therefore skip the action and install the same pinned
+      # 3.47.7 from the official git repository instead; the Flutter tool
+      # bootstraps the arm64 Dart SDK and engine artifacts on first run.
       - name: Setup Flutter
+        if: ${{ !(matrix.arch == 'arm64' && (matrix.platform == 'windows' || matrix.platform == 'linux')) }}
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
           cache: true
           cache-key: flutter-${{ matrix.platform }}-${{ matrix.arch }}-${{ hashFiles('**/pubspec.lock') }}
           flutter-version: '3.47.7'
+
+      - name: Cache Flutter SDK (ARM64 hosts)
+        if: ${{ matrix.arch == 'arm64' && (matrix.platform == 'windows' || matrix.platform == 'linux') }}
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ runner.temp }}/flutter-sdk
+          key: flutter-sdk-3.47.7-${{ matrix.platform }}-arm64
+
+      - name: Setup Flutter (ARM64 hosts)
+        if: ${{ matrix.arch == 'arm64' && (matrix.platform == 'windows' || matrix.platform == 'linux') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk="${RUNNER_TEMP}/flutter-sdk"
+          if [[ ! -e "${sdk}/bin/flutter" && ! -e "${sdk}/bin/flutter.bat" ]]; then
+            rm -rf "${sdk}"
+            git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "${sdk}"
+          fi
+          echo "${sdk}/bin" >> "${GITHUB_PATH}"
+          # First run bootstraps the arm64 Dart SDK and engine artifacts.
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            "${sdk}/bin/flutter.bat" --version
+          else
+            "${sdk}/bin/flutter" --version
+          fi
 
       - name: Clear Pub Cache Credentials
         shell: bash
