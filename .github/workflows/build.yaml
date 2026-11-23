@@ -266,6 +266,9 @@ jobs:
             git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "${sdk}"
           fi
           echo "${sdk}/bin" >> "${GITHUB_PATH}"
+          # `dart pub global activate` installs flutter_distributor into
+          # ~/.pub-cache/bin; flutter-action adds it on other legs.
+          echo "${HOME}/.pub-cache/bin" >> "${GITHUB_PATH}"
           # First run bootstraps the arm64 Dart SDK and engine artifacts.
           if [[ "${{ matrix.platform }}" == "windows" ]]; then
             "${sdk}/bin/flutter.bat" --version
