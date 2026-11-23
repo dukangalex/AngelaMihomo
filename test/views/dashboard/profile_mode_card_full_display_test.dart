@@ -64,11 +64,33 @@ Profile _longProfile({String nodeName = _longNodeName}) {
   );
 }
 
+/// T288 fixture: the exact figures from the user's report — the
+/// profile was updated 15 hours ago, expires 2027-11-22, and has
+/// used 468.37 KB of 1024.00 GB.
+Profile _userReportProfile() {
+  const kb = 1024;
+  const gb = 1024 * 1024 * 1024;
+  return Profile(
+    id: 'p',
+    label: 'Kitty Network(1)',
+    autoUpdateDuration: const Duration(days: 1),
+    lastUpdateDate: DateTime.now().subtract(const Duration(hours: 15)),
+    subscriptionInfo: SubscriptionInfo(
+      upload: 0,
+      download: (468.37 * kb).round(),
+      total: 1024 * gb,
+      expire: DateTime(2027, 11, 22).millisecondsSinceEpoch ~/ 1000,
+    ),
+    selectedMap: {'MainGroup': _longNodeName},
+  );
+}
+
 Future<void> _pumpCard(
   WidgetTester tester, {
   required double width,
   String nodeName = _longNodeName,
   Locale? locale,
+  Profile? profile,
 }) async {
   final container = ProviderContainer();
   addTearDown(container.dispose);
@@ -99,7 +121,7 @@ Future<void> _pumpCard(
     themeProps: defaultThemeProps,
     currentProfileId: 'p',
     patchClashConfig: defaultClashConfig.copyWith(mode: Mode.rule),
-    profiles: [_longProfile(nodeName: nodeName)],
+    profiles: [profile ?? _longProfile(nodeName: nodeName)],
     proxiesStyle: defaultProxiesStyle,
   );
   await tester.pumpWidget(
@@ -193,6 +215,59 @@ void _expectPlainTextFullyShown(WidgetTester tester, String text) {
   );
 }
 
+/// T288: the meta line is one combined Text carrying the expiry
+/// date and the usage figures together — never separate chunks.
+Finder _metaLineFinder({required String expire, required String usage}) {
+  return find.byWidgetPredicate(
+    (widget) =>
+        widget is Text &&
+        (widget.data?.contains(expire) ?? false) &&
+        (widget.data?.contains(usage) ?? false),
+  );
+}
+
+void _expectMetaLineFullyShown(
+  WidgetTester tester, {
+  required String expire,
+  required String usage,
+}) {
+  final finder = _metaLineFinder(expire: expire, usage: usage);
+  expect(
+    finder,
+    findsOneWidget,
+    reason: 'missing combined meta line: $expire · $usage',
+  );
+  final widget = tester.widget<Text>(finder);
+  expect(
+    widget.overflow,
+    isNot(TextOverflow.ellipsis),
+    reason: 'meta line must not ellipsize',
+  );
+  expect(
+    _paragraphExceedsLines(tester, finder),
+    isFalse,
+    reason: 'meta line exceeds its line budget',
+  );
+}
+
+/// How many laid-out lines the meta line's paragraph occupies:
+/// re-layout the same text and style in a standalone painter at
+/// the paragraph's own width and count its line metrics.
+int _metaLineCount(WidgetTester tester, Finder finder) {
+  final widget = tester.widget<Text>(finder);
+  final richText = find.descendant(
+    of: finder,
+    matching: find.byType(RichText),
+  );
+  expect(richText, findsOneWidget);
+  final width = tester.getSize(richText).width;
+  final painter = TextPainter(
+    text: TextSpan(text: widget.data, style: widget.style),
+    textDirection: TextDirection.ltr,
+  )..layout(maxWidth: width);
+  return painter.computeLineMetrics().length;
+}
+
 void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
@@ -217,10 +292,15 @@ void main() {
       // Profile name: full string, up to two lines, never ellipsized.
       _expectEmojiTextFullyShown(tester, _longProfileName, maxLines: 2);
 
-      // Usage numbers: both ends of "used / total" present in full.
+      // Usage numbers: both ends of "used / total" present in full,
+      // on the combined meta line beside the expiry date (T288).
       final usageText = ProfileUsage.of(_longProfile())!.usageText;
       expect(usageText, contains('999'));
-      _expectPlainTextFullyShown(tester, usageText);
+      _expectMetaLineFullyShown(
+        tester,
+        expire: '2027-01-29',
+        usage: usageText,
+      );
 
       // Node name + delay, status light, chips and the three modes.
       // The light's label is asserted in full in the zh-locale test
@@ -253,9 +333,10 @@ void main() {
     expect(tester.takeException(), isNull);
     _expectEmojiTextFullyShown(tester, _longProfileName, maxLines: 2);
     _expectEmojiTextFullyShown(tester, _longNodeName, maxLines: 2);
-    _expectPlainTextFullyShown(
+    _expectMetaLineFullyShown(
       tester,
-      ProfileUsage.of(_longProfile())!.usageText,
+      expire: '2027-01-29',
+      usage: ProfileUsage.of(_longProfile())!.usageText,
     );
   });
 
@@ -329,12 +410,12 @@ void main() {
     });
   }
 
-  // T286 round 2 (layout instruction): update time, expiry and the
-  // usage numbers share one meta row under the profile name, the
-  // segment bar sits directly under that row, and the node pill
-  // follows. With the long fixture at phone width the row fits on
-  // one line in the user's locale.
-  testWidgets('time and usage share one meta row above the bar and pill', (
+  // T286 round 2 (layout instruction), T288 form: update time,
+  // expiry and the usage numbers form one combined meta line under
+  // the profile name, the segment bar sits directly under that
+  // line, and the node pill follows. With the long fixture at phone
+  // width the line fits on one line in the user's locale.
+  testWidgets('time and usage share one meta line above the bar and pill', (
     tester,
   ) async {
     ClashCore.setHandlerForTesting(_FakeHandler());
@@ -342,38 +423,32 @@ void main() {
 
     expect(tester.takeException(), isNull);
     final usageText = ProfileUsage.of(_longProfile())!.usageText;
-    _expectPlainTextFullyShown(tester, usageText);
+    _expectMetaLineFullyShown(
+      tester,
+      expire: '2027-01-29',
+      usage: usageText,
+    );
 
-    // The subtitle chunk (update time + expiry, trailing separator)
-    // and the usage text are siblings in one Wrap.
-    final subtitleFinder = find.byWidgetPredicate(
-      (widget) =>
-          widget is Text &&
-          (widget.data?.contains('2027-01-29') ?? false) &&
-          (widget.data?.endsWith('·') ?? false),
+    // One combined Text: no standalone usage-only Text remains.
+    final metaFinder = _metaLineFinder(
+      expire: '2027-01-29',
+      usage: usageText,
     );
-    expect(subtitleFinder, findsOneWidget);
-    final wrapFinder = find.ancestor(
-      of: subtitleFinder,
-      matching: find.byType(Wrap),
-    );
-    expect(wrapFinder, findsOneWidget);
     expect(
-      find.descendant(of: wrapFinder, matching: find.text(usageText)),
-      findsOneWidget,
+      find.text(usageText),
+      findsNothing,
+      reason: 'usage must be part of the combined meta line (T288)',
     );
 
-    // Same line: the two chunks' rects overlap vertically.
-    final subtitleRect = tester.getRect(subtitleFinder);
-    final usageRect = tester.getRect(find.text(usageText));
+    // The whole line occupies exactly one laid-out line.
     expect(
-      subtitleRect.bottom > usageRect.top &&
-          usageRect.bottom > subtitleRect.top,
-      isTrue,
-      reason: 'time and usage must sit on the same line when they fit',
+      _metaLineCount(tester, metaFinder),
+      1,
+      reason: 'time, expiry and usage must share one line when they fit',
     );
 
-    // Order: meta row, then the segment bar, then the node pill.
+    // Order: meta line, then the segment bar, then the node pill.
+    final metaRect = tester.getRect(metaFinder);
     final barRect = tester.getRect(find.byType(UsageSegmentBar));
     final pillRect = tester.getRect(
       find
@@ -385,13 +460,14 @@ void main() {
           )
           .first,
     );
-    expect(barRect.top, greaterThanOrEqualTo(usageRect.bottom - 1));
+    expect(barRect.top, greaterThanOrEqualTo(metaRect.bottom - 1));
     expect(pillRect.top, greaterThanOrEqualTo(barRect.bottom - 1));
   });
 
-  // When the row cannot fit, the usage moves to the second line as
-  // a whole — never truncated, never ellipsized.
-  testWidgets('usage wraps as a whole when the meta row runs out of width', (
+  // T288: when the combined line genuinely cannot fit, it wraps at
+  // natural text break points — every part still renders in full,
+  // never truncated, never ellipsized.
+  testWidgets('meta line wraps naturally and in full at narrow width', (
     tester,
   ) async {
     ClashCore.setHandlerForTesting(_FakeHandler());
@@ -399,24 +475,55 @@ void main() {
 
     expect(tester.takeException(), isNull);
     final usageText = ProfileUsage.of(_longProfile())!.usageText;
-    _expectPlainTextFullyShown(tester, usageText);
-    final subtitleFinder = find.byWidgetPredicate(
-      (widget) =>
-          widget is Text &&
-          (widget.data?.contains('2027-01-29') ?? false) &&
-          (widget.data?.endsWith('·') ?? false),
+    _expectMetaLineFullyShown(
+      tester,
+      expire: '2027-01-29',
+      usage: usageText,
     );
-    final subtitleRect = tester.getRect(subtitleFinder);
-    final usageRect = tester.getRect(find.text(usageText));
-    expect(
-      usageRect.top,
-      greaterThanOrEqualTo(subtitleRect.bottom - 1),
-      reason: 'usage must wrap whole to the next line, not truncate',
+    final meta = tester.widget<Text>(
+      _metaLineFinder(expire: '2027-01-29', usage: usageText),
     );
-    expect(
-      usageRect.left,
-      lessThanOrEqualTo(subtitleRect.left + 1),
-      reason: 'the wrapped usage starts at the row start',
-    );
+    expect(meta.maxLines, isNull, reason: 'no line cap may truncate');
+    expect(meta.data, contains('2027-01-29'));
+    expect(meta.data, contains(usageText));
   });
+
+  // T288 regression: the user's report — with the Wrap form, the
+  // usage figures were pushed to a second line below the update
+  // time and expiry. As one combined Text, the exact reported line
+  // must stay on a single line at phone widths, character for
+  // character.
+  for (final width in [400.0, 360.0]) {
+    testWidgets('user-reported meta line stays on one line at ${width}dp', (
+      tester,
+    ) async {
+      ClashCore.setHandlerForTesting(_FakeHandler());
+      await _pumpCard(
+        tester,
+        width: width,
+        locale: const Locale('zh', 'CN'),
+        profile: _userReportProfile(),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(
+        ProfileUsage.of(_userReportProfile())!.cardUsageText,
+        '468.37 KB / 1024.00 GB',
+      );
+      const expected = '15 小时前 · 2027-11-22 · 468.37 KB / 1024.00 GB';
+      final finder = find.text(expected);
+      expect(
+        finder,
+        findsOneWidget,
+        reason: 'meta line must be one combined text: $expected',
+      );
+      final widget = tester.widget<Text>(finder);
+      expect(widget.overflow, isNot(TextOverflow.ellipsis));
+      expect(
+        _metaLineCount(tester, finder),
+        1,
+        reason: 'update time, expiry and usage must share one line',
+      );
+    });
+  }
 }
