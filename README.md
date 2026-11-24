@@ -12,6 +12,10 @@
   默认主题：射手座 · 靛夜飞箭
 </p>
 
+<p align="center">
+  <strong>项目落地页</strong>：<a href="https://angeleai.loc.cc">angeleai.loc.cc</a>（下载指引 · 常见问题）
+</p>
+
 ## 关于本项目
 
 **Angela Mihomo** 是一款基于 [Mihomo](https://github.com/MetaCubeX/mihomo) 内核的跨平台代理客户端，覆盖 Android、Windows、macOS、Linux 四个平台，同版本、一套功能、同步发布。它的设计语言是「星辰大海」主题家族，共三个系列、三十九套主题：十二星座、人类深空探索、纯色生肖，一套设计走到底。
