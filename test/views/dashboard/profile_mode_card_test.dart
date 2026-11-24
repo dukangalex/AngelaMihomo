@@ -197,12 +197,13 @@ void main() {
       expect((dot.decoration as BoxDecoration).color, _sagittarius.success);
       // No second speed-test trigger anywhere in the card.
       expect(find.byIcon(Icons.network_ping), findsNothing);
-      // T149: no refresh/update button on the card either — a refresh
-      // makes the core re-test delays through the upstream path, so it
-      // would read as a second test entry. Subscription refresh lives
-      // on the profiles page; the light stays the only trigger here.
-      expect(find.byIcon(Icons.sync), findsNothing);
-      expect(find.byTooltip('Update'), findsNothing);
+      // T292 (supersedes the T149 placement call at the user's direct
+      // instruction): the card's leading icon IS the update-current-
+      // profile button — exactly one, wearing the refresh glyph and
+      // the Update tooltip. It is a refresh entry, not a test entry:
+      // the light above stays the card's only speed-test trigger.
+      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
+      expect(find.byTooltip('Update'), findsOneWidget);
     },
   );
 

@@ -295,33 +295,30 @@ class _UpdateProfileButton extends ConsumerWidget {
     final color = canRefresh
         ? colorScheme.onSurfaceVariant
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.38);
-    return Tooltip(
-      message: appLocalizations.update,
-      child: IconButton(
-        onPressed: canRefresh
-            ? () => refreshProfileSubscription(context, ref, profile)
-            : null,
-        tooltip: appLocalizations.update,
-        iconSize: 20,
-        visualDensity: VisualDensity.compact,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(
-          minWidth: 28,
-          minHeight: 28,
-          maxWidth: 28,
-          maxHeight: 28,
-        ),
-        icon: updating
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colorScheme.primary,
-                ),
-              )
-            : Icon(Icons.refresh_rounded, size: 20, color: color),
+    return IconButton(
+      onPressed: canRefresh
+          ? () => refreshProfileSubscription(context, ref, profile)
+          : null,
+      tooltip: appLocalizations.update,
+      iconSize: 20,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(
+        minWidth: 28,
+        minHeight: 28,
+        maxWidth: 28,
+        maxHeight: 28,
       ),
+      icon: updating
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            )
+          : Icon(Icons.refresh_rounded, size: 20, color: color),
     );
   }
 }
