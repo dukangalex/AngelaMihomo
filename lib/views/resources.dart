@@ -9,6 +9,7 @@ import 'package:angelamihomo/providers/config.dart';
 import 'package:angelamihomo/views/proxies/providers.dart';
 import 'package:angelamihomo/state.dart';
 import 'package:angelamihomo/widgets/widgets.dart';
+import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -503,8 +504,20 @@ class CityDataListItem extends ConsumerStatefulWidget {
 }
 
 class _CityDataListItemState extends ConsumerState<CityDataListItem> {
-  static const _releasesUrl =
-      'https://github.com/$geoDataRepository/releases';
+  static const _releasesUrl = 'https://github.com/$geoDataRepository/releases';
+
+  // Lucian UX/UI Prompt #004 · MIT License — the sync action is a
+  // progress download button: it fills with the transfer, a tap
+  // cancels it, and a finished download folds into its done state.
+  ProgressDownloadPhase _syncPhase = ProgressDownloadPhase.idle;
+  final ValueNotifier<double?> _syncProgress = ValueNotifier(null);
+  CancelToken? _syncCancelToken;
+
+  @override
+  void dispose() {
+    _syncProgress.dispose();
+    super.dispose();
+  }
 
   String _repoAssetUrl(String tag) =>
       'https://github.com/$geoDataRepository/releases/download/$tag/${GeoDataService.assetName}';
@@ -582,17 +595,51 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
     final updatingKeysNotifier = ref.read(geoUpdatingKeysProvider.notifier);
     if (ref.read(geoUpdatingKeysProvider).contains('city')) return;
     updatingKeysNotifier.update((s) => Set.of(s)..add('city'));
+    final cancelToken = CancelToken();
+    _syncCancelToken = cancelToken;
+    _syncProgress.value = null;
+    setState(() => _syncPhase = ProgressDownloadPhase.running);
     try {
-      final outcome = await globalState.appController.updateGeoData();
+      final outcome = await globalState.appController.updateGeoData(
+        cancelToken: cancelToken,
+        onProgress: (received, total) {
+          if (total > 0) _syncProgress.value = received / total;
+        },
+      );
       if (!mounted) return;
-      final message = switch (outcome) {
-        GeoUpdateOutcome.updated => appLocalizations.geoDataUpdated,
-        GeoUpdateOutcome.alreadyLatest => appLocalizations.geoDataUpToDate,
-        GeoUpdateOutcome.verifyFailed => appLocalizations.geoDataVerifyFailed,
-        GeoUpdateOutcome.failed => appLocalizations.geoDataUpdateFailed,
-      };
-      context.showNotifier(message);
+      // The outcome also lands on the stacking toast, kind-coded
+      // (Lucian #070): success / info / error. A cancel is silent —
+      // the button simply folds back to idle.
+      switch (outcome) {
+        case GeoUpdateOutcome.updated:
+          setState(() => _syncPhase = ProgressDownloadPhase.done);
+          context.showNotifier(
+            appLocalizations.geoDataUpdated,
+            kind: ToastKind.success,
+          );
+        case GeoUpdateOutcome.alreadyLatest:
+          setState(() => _syncPhase = ProgressDownloadPhase.idle);
+          context.showNotifier(
+            appLocalizations.geoDataUpToDate,
+            kind: ToastKind.info,
+          );
+        case GeoUpdateOutcome.verifyFailed:
+          setState(() => _syncPhase = ProgressDownloadPhase.idle);
+          context.showNotifier(
+            appLocalizations.geoDataVerifyFailed,
+            kind: ToastKind.error,
+          );
+        case GeoUpdateOutcome.failed:
+          setState(() => _syncPhase = ProgressDownloadPhase.idle);
+          context.showNotifier(
+            appLocalizations.geoDataUpdateFailed,
+            kind: ToastKind.error,
+          );
+        case GeoUpdateOutcome.cancelled:
+          setState(() => _syncPhase = ProgressDownloadPhase.idle);
+      }
     } finally {
+      _syncCancelToken = null;
       if (mounted) {
         updatingKeysNotifier.update((s) => Set.of(s)..remove('city'));
       }
@@ -664,27 +711,35 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                 label: appLocalizations.edit,
                 onPressed: isSyncing ? null : _updateUrl,
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  isSyncing
-                      ? const SizedBox(
-                          height: 30,
-                          width: 30,
-                          child: Padding(
-                            padding: EdgeInsets.all(2),
-                            child: SyncedLoading(
-                              size: 26,
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                        )
-                      : CommonChip(
-                          avatar: const Icon(Icons.sync),
-                          label: appLocalizations.sync,
-                          onPressed: _handleSync,
-                        ),
-                ],
+              // Lucian UX/UI Prompt #004 · MIT License — the sync
+              // chip becomes the progress download button. A sync
+              // started elsewhere (sync-all) shows as an
+              // indeterminate run that this row cannot cancel.
+              ValueListenableBuilder<double?>(
+                valueListenable: _syncProgress,
+                builder: (context, progress, _) {
+                  final externallyDriven =
+                      isSyncing && _syncPhase == ProgressDownloadPhase.idle;
+                  return ProgressDownloadButton(
+                    phase: externallyDriven
+                        ? ProgressDownloadPhase.running
+                        : _syncPhase,
+                    progress: externallyDriven ? null : progress,
+                    label: appLocalizations.sync,
+                    doneLabel: appLocalizations.geoDataUpdated,
+                    height: 36,
+                    width: 176,
+                    onPressed: isSyncing ? null : _handleSync,
+                    onCancel: _syncCancelToken == null
+                        ? null
+                        : () => _syncCancelToken?.cancel('user'),
+                    onDoneSettled: () {
+                      if (mounted && _syncPhase == ProgressDownloadPhase.done) {
+                        setState(() => _syncPhase = ProgressDownloadPhase.idle);
+                      }
+                    },
+                  );
+                },
               ),
             ],
           ),
@@ -917,7 +972,8 @@ class DataIntegrityListItem extends StatelessWidget {
                   status == null) {
                 return SizedBox(width: height, height: height);
               }
-              final failed = status.bundleOk == false || status.rulesetError != null;
+              final failed =
+                  status.bundleOk == false || status.rulesetError != null;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -928,7 +984,8 @@ class DataIntegrityListItem extends StatelessWidget {
                         if (status.checkedAt != null)
                           status.checkedAt!.lastUpdateTimeDesc,
                         if (status.bundleOk == true) 'Bundle verified',
-                        if (status.rulesetChecked > 0 || status.rulesetRemoved > 0)
+                        if (status.rulesetChecked > 0 ||
+                            status.rulesetRemoved > 0)
                           'Rules ${status.rulesetChecked} checked'
                               '${status.rulesetRemoved > 0 ? ' · ${status.rulesetRemoved} removed' : ''}',
                       ].join('  ·  '),

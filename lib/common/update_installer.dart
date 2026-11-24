@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,35 @@ import 'package:angelamihomo/common/release_updates.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:open_filex/open_filex.dart';
+
+/// Pause / resume handle for [UpdateInstaller.downloadPausable].
+/// Pausing pauses the response stream's subscription, which stops
+/// the transfer itself (TCP backpressure), not just its display.
+class PausableDownloadHandle {
+  StreamSubscription<List<int>>? _subscription;
+  bool _paused = false;
+
+  bool get isPaused => _paused;
+
+  void _attach(StreamSubscription<List<int>> subscription) {
+    _subscription = subscription;
+    if (_paused) subscription.pause();
+  }
+
+  void pause() {
+    if (_paused) return;
+    _paused = true;
+    _subscription?.pause();
+  }
+
+  void resume() {
+    if (!_paused) return;
+    _paused = false;
+    _subscription?.resume();
+  }
+
+  void toggle() => _paused ? resume() : pause();
+}
 
 /// AngelaMihomo (chain.26, T179): the second half of the update flow —
 /// download the validated release asset inside the app, verify it
@@ -97,6 +127,68 @@ class UpdateInstaller {
       ),
     );
     return file;
+  }
+
+  /// Lucian UX/UI Prompt #082 · MIT License — the update dialog's
+  /// icon progress needs a transfer that can pause and resume in
+  /// place: this variant streams the response to disk so pausing
+  /// the stream subscription applies real backpressure (no bytes
+  /// are dropped or re-fetched). The result goes through the same
+  /// SHA-256 verification as [download], so a paused, resumed or
+  /// truncated transfer can never install — it can only fail the
+  /// digest check like any other bad download.
+  Future<File> downloadPausable(
+    ReleaseAsset asset, {
+    required void Function(int received, int total) onProgress,
+    CancelToken? cancelToken,
+    PausableDownloadHandle? handle,
+  }) async {
+    final dir = await appPath.tempDir.future;
+    final file = File('${dir.path}/${localAssetFileName(asset.name)}');
+    final response = await _dio.get<ResponseBody>(
+      asset.url,
+      cancelToken: cancelToken,
+      options: Options(
+        responseType: ResponseType.stream,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(minutes: 10),
+        followRedirects: true,
+      ),
+    );
+    final body = response.data!;
+    final total = body.contentLength;
+    final sink = file.openWrite();
+    var received = 0;
+    final completer = Completer<void>();
+    final subscription = body.stream.listen(
+      (chunk) {
+        received += chunk.length;
+        sink.add(chunk);
+        onProgress(received, total);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      },
+      onDone: () {
+        if (!completer.isCompleted) completer.complete();
+      },
+      cancelOnError: true,
+    );
+    handle?._attach(subscription);
+    try {
+      await completer.future;
+      await sink.flush();
+      await sink.close();
+      return file;
+    } catch (_) {
+      await sink.close();
+      try {
+        await file.delete();
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   /// Streams the file through SHA-256 so even the largest package

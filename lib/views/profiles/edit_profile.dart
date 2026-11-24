@@ -80,8 +80,14 @@ class EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
-  Future<void> _handleConfirm() async {
-    if (!_formKey.currentState!.validate()) return;
+  /// Runs the save. Returns true when the save went through (the
+  /// page would normally close at that point). With
+  /// [popOnSuccess] false the caller owns the closing — the morph
+  /// save button (Lucian #438) plays its success state first and
+  /// then calls [_popAfterSave]. Failures keep their existing
+  /// dialogs and return false.
+  Future<bool> _handleConfirm({bool popOnSuccess = true}) async {
+    if (!_formKey.currentState!.validate()) return false;
     final appController = globalState.appController;
     Profile profile = this.profile.copyWith(
       url: urlController.text,
@@ -111,7 +117,7 @@ class EditProfileViewState extends State<EditProfileView> {
             cancelable: false,
           );
         }
-        return;
+        return false;
       } finally {
         ref.read(loadingProvider.notifier).value = false;
       }
@@ -138,7 +144,7 @@ class EditProfileViewState extends State<EditProfileView> {
               cancelable: false,
             );
           }
-          return;
+          return false;
         }
       } else if (!hasUpdate) {
         appController.setProfileAndAutoApply(profile);
@@ -157,11 +163,16 @@ class EditProfileViewState extends State<EditProfileView> {
         }
       }
     }
-    if (mounted) {
-      Navigator.of(context).pop();
-      if (widget.isNew && widget.context.mounted) {
-        Navigator.of(widget.context).pop();
-      }
+    if (!mounted) return false;
+    if (popOnSuccess) _popAfterSave();
+    return true;
+  }
+
+  void _popAfterSave() {
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    if (widget.isNew && widget.context.mounted) {
+      Navigator.of(widget.context).pop();
     }
   }
 
@@ -524,11 +535,15 @@ class EditProfileViewState extends State<EditProfileView> {
       },
       child: FloatLayout(
         floatingWidget: FloatWrapper(
-          child: FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: _handleConfirm,
-            label: Text(appLocalizations.save),
-            icon: const Icon(Icons.save),
+          // Lucian UX/UI Prompt #438 · MIT License — the save
+          // button morphs into its spinner, draws its check on
+          // success, then the page closes; on failure it grows
+          // back and the save's own dialog carries the reason.
+          child: MorphActionButton(
+            label: appLocalizations.save,
+            icon: Icons.save,
+            onPressed: () => _handleConfirm(popOnSuccess: false),
+            onCompleted: _popAfterSave,
           ),
         ),
         child: Form(

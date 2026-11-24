@@ -2,6 +2,8 @@ import 'package:angelamihomo/manager/message_manager.dart';
 import 'package:angelamihomo/widgets/scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 
+export 'package:angelamihomo/manager/message_manager.dart' show ToastKind;
+
 extension BuildContextExtension on BuildContext {
   CommonScaffoldState? get commonScaffoldState {
     return findAncestorStateOfType<CommonScaffoldState>();
@@ -33,12 +35,14 @@ extension BuildContextExtension on BuildContext {
 
   Future<void>? showNotifier(
     String text, {
+    ToastKind kind = ToastKind.info,
     VoidCallback? onAction,
     String? actionLabel,
     bool showCountdown = false,
   }) {
     return findAncestorStateOfType<MessageManagerState>()?.message(
       text,
+      kind: kind,
       onAction: onAction,
       actionLabel: actionLabel,
       showCountdown: showCountdown,

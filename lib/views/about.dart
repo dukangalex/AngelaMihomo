@@ -50,6 +50,13 @@ class AboutView extends StatelessWidget {
         icon: Icons.groups_outlined,
         onTap: () => globalState.openUrl('https://t.me/AngelaMihomoGroup'),
       ),
+      // T291: the project landing page joins the same grid, opened
+      // through the system browser like the other external links.
+      _LinkTile(
+        title: '官方网站',
+        icon: Icons.public,
+        onTap: () => globalState.openUrl('https://angeleai.loc.cc'),
+      ),
     ];
     return generateSection(
       title: appLocalizations.projectLinks,

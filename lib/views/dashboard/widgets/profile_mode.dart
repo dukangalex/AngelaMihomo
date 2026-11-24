@@ -105,11 +105,7 @@ class _ProfileZone extends ConsumerWidget {
 
   const _ProfileZone({required this.tall});
 
-  Widget _nameRow(
-    BuildContext context,
-    Profile profile,
-    TextStyle? style,
-  ) {
+  Widget _nameRow(BuildContext context, Profile profile, TextStyle? style) {
     return _TapArea(
       onTap: () => showProfileSwitchSheet(context),
       child: _ProfileName(name: profile.label ?? profile.id, style: style),
@@ -712,9 +708,7 @@ class _NodePillRow extends ConsumerWidget {
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: direct
-            ? null
-            : () => showGroupProxySheet(context, groupName!),
+        onTap: direct ? null : () => showGroupProxySheet(context, groupName!),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 5, 10, 8),
           child: Column(
@@ -846,7 +840,9 @@ class UsageSegmentBar extends StatelessWidget {
       children: [
         for (final (index, segment) in segments.indexed) ...[
           if (index > 0) const SizedBox(width: 3),
-          Expanded(child: _UsageBar(value: segment, height: height)),
+          Expanded(
+            child: _UsageBar(value: segment, height: height),
+          ),
         ],
       ],
     );
@@ -859,22 +855,52 @@ class _UsageBar extends StatelessWidget {
 
   const _UsageBar({required this.value, required this.height});
 
+  // Lucian UX/UI Prompt #299 · MIT License — the spec's warning
+  // orange and limit red for a usage meter nearing its cap.
+  static const warningColor = Color(0xFFF59E0B);
+  static const criticalColor = Color(0xFFE11D48);
+
   @override
   Widget build(BuildContext context) {
     final primary = context.colorScheme.primary;
     final radius = BorderRadius.circular(height / 2);
+    final level = usageWarningLevel(value);
+    final targetColor = switch (level) {
+      UsageWarningLevel.normal => primary,
+      UsageWarningLevel.warning => warningColor,
+      UsageWarningLevel.critical => criticalColor,
+    };
+    // Spec motion: the fill grows over 600ms on
+    // cubic-bezier(.3,1,.4,1) and its colour cross-fades over
+    // 400ms when a threshold is crossed.
     return ClipRRect(
       borderRadius: radius,
       child: Container(
         height: height,
         alignment: Alignment.centerLeft,
         color: primary.withValues(alpha: 0.15),
-        child: FractionallySizedBox(
-          widthFactor: value,
-          heightFactor: 1,
-          child: DecoratedBox(
-            decoration: BoxDecoration(color: primary, borderRadius: radius),
-          ),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: value),
+          duration: const Duration(milliseconds: 600),
+          curve: const Cubic(0.3, 1, 0.4, 1),
+          builder: (context, animatedValue, _) {
+            return TweenAnimationBuilder<Color?>(
+              tween: ColorTween(end: targetColor),
+              duration: const Duration(milliseconds: 400),
+              builder: (context, animatedColor, _) {
+                return FractionallySizedBox(
+                  widthFactor: animatedValue.clamp(0.0, 1.0),
+                  heightFactor: 1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: animatedColor ?? targetColor,
+                      borderRadius: radius,
+                    ),
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );

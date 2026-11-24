@@ -722,6 +722,7 @@ class GlobalState {
 
   void showNotifier(
     String text, {
+    ToastKind kind = ToastKind.info,
     VoidCallback? onAction,
     String? actionLabel,
     bool showCountdown = false,
@@ -729,6 +730,7 @@ class GlobalState {
     if (text.isEmpty) return;
     navigatorKey.currentContext?.showNotifier(
       text,
+      kind: kind,
       onAction: onAction,
       actionLabel: actionLabel,
       showCountdown: showCountdown,

@@ -9,6 +9,20 @@ import 'profile.dart';
 double? _usageRatio(int used, int total) =>
     total > 0 ? (used / total).clamp(0.0, 1.0) : null;
 
+/// Lucian UX/UI Prompt #299 · MIT License
+///
+/// Warning level of a usage meter as its fill approaches the
+/// limit, thresholds from the #299 spec (angela-uxui): at 80% the
+/// bar turns warning orange (#F59E0B), at 100% it turns limit red
+/// (#E11D48). The colours themselves live with the bar widget.
+enum UsageWarningLevel { normal, warning, critical }
+
+UsageWarningLevel usageWarningLevel(double ratio) {
+  if (ratio >= 1) return UsageWarningLevel.critical;
+  if (ratio >= 0.8) return UsageWarningLevel.warning;
+  return UsageWarningLevel.normal;
+}
+
 int _usedBytes(SubscriptionInfo info) => info.upload + info.download;
 
 class ProfileUsage {

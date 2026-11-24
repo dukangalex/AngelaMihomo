@@ -305,9 +305,14 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
           final isMobileView = ref.watch(isMobileViewProvider);
           final profiles = profilesSelectorState.profiles;
           if (profiles.isEmpty) {
-            return NullStatus(
-              label: appLocalizations.nullProfileDesc,
-              icon: Icons.description_outlined,
+            // Lucian UX/UI Prompt #440 · MIT License — first-run
+            // empty state: floating constellation artwork, the
+            // existing no-profile wording, and a call to action
+            // into the same add flow as the app-bar button.
+            return FirstRunEmptyState(
+              title: appLocalizations.nullProfileDesc,
+              ctaLabel: appLocalizations.addProfile,
+              onCta: _handleShowAddExtendPage,
             );
           }
           final folded = profiles.collapsedMemberIds;
@@ -1413,7 +1418,10 @@ class _CurrentProfileBadge extends StatelessWidget {
     final selected = context.zodiac?.variant.selected;
     final radius = BorderRadius.circular(999);
     final decoration = selected != null && selected.isGradient
-        ? BoxDecoration(gradient: selected.selectedGradient, borderRadius: radius)
+        ? BoxDecoration(
+            gradient: selected.selectedGradient,
+            borderRadius: radius,
+          )
         : BoxDecoration(
             color: selected != null && !selected.isNone
                 ? selected.firstColor
