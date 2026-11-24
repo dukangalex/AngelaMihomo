@@ -29,7 +29,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// hash-only: they are the user's own choice, and no project key
 /// signs for them).
 
-enum GeoUpdateOutcome { updated, alreadyLatest, failed, verifyFailed }
+enum GeoUpdateOutcome {
+  updated,
+  alreadyLatest,
+  failed,
+  verifyFailed,
+  cancelled,
+}
 
 /// Bookkeeping for the locally stored city database. The meta file is
 /// authoritative: a data file without readable meta counts as absent
@@ -222,10 +228,11 @@ class GeoDataService {
   /// share the same in-flight pull.
   Future<GeoUpdateOutcome> updateNow({
     void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     final running = _inFlight;
     if (running != null) return running;
-    final future = _updateNow(onProgress: onProgress);
+    final future = _updateNow(onProgress: onProgress, cancelToken: cancelToken);
     _inFlight = future;
     try {
       return await future;
@@ -236,6 +243,7 @@ class GeoDataService {
 
   Future<GeoUpdateOutcome> _updateNow({
     void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     try {
       // T201: a user-chosen source replaces the repository channel.
@@ -251,6 +259,7 @@ class GeoDataService {
           tag: customTag,
           sourceUrl: custom,
           onProgress: onProgress,
+          cancelToken: cancelToken,
         );
       }
       final release = await _updates.latestWithAsset(name: assetName);
@@ -271,7 +280,17 @@ class GeoDataService {
       if (resolved.verifyFailed) return GeoUpdateOutcome.verifyFailed;
       final asset = resolved.asset;
       if (asset == null) return GeoUpdateOutcome.failed;
-      return await _install(asset, tag: tag, onProgress: onProgress);
+      return await _install(
+        asset,
+        tag: tag,
+        onProgress: onProgress,
+        cancelToken: cancelToken,
+      );
+    } on DioException catch (e) {
+      // A user cancel is an outcome of its own, not a failure.
+      return e.type == DioExceptionType.cancel
+          ? GeoUpdateOutcome.cancelled
+          : GeoUpdateOutcome.failed;
     } catch (_) {
       return GeoUpdateOutcome.failed;
     }
@@ -285,10 +304,12 @@ class GeoDataService {
     required String tag,
     String? sourceUrl,
     void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     final gz = await _installer.download(
       asset,
       onProgress: onProgress ?? (_, _) {},
+      cancelToken: cancelToken,
     );
     try {
       if (!await _installer.verify(gz, asset.sha256!)) {

@@ -80,6 +80,20 @@ void showProfileSwitchSheet(BuildContext context) {
 }
 
 void showGroupProxySheet(BuildContext context, String groupName) {
+  // Lucian UX/UI Prompt #336 · MIT License — on mobile the group
+  // detail opens as the three-detent bottom sheet (collapsed /
+  // half / full, spring snap with fling velocity); larger form
+  // factors keep the adaptive sheet.
+  final isMobile =
+      utils.getViewMode(MediaQuery.sizeOf(context).width) == ViewMode.mobile;
+  if (isMobile) {
+    showDetentSheet(
+      context: context,
+      header: _GroupSheetHeader(groupName: groupName),
+      child: _DetentGroupBody(groupName: groupName),
+    );
+    return;
+  }
   showSheet(
     context: context,
     builder: (_, type) => _GroupProxySheet(type: type, groupName: groupName),
@@ -98,6 +112,78 @@ class _GroupProxySheet extends ConsumerWidget {
       if (previous == next || !context.mounted) return;
       Navigator.of(context).pop();
     });
+    return AdaptiveSheetScaffold(
+      type: type,
+      title: groupName,
+      body: _GroupProxyGrid(groupName: groupName),
+    );
+  }
+}
+
+/// Header of the detent group sheet: the grab area carries the
+/// group name and its node count, mirroring the spec's sheet head.
+class _GroupSheetHeader extends ConsumerWidget {
+  final String groupName;
+
+  const _GroupSheetHeader({required this.groupName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count =
+        ref.watch(sortedGroupProxiesProvider('', groupName))?.length ?? 0;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Flexible(
+            child: Text(
+              groupName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetentGroupBody extends ConsumerWidget {
+  final String groupName;
+
+  const _DetentGroupBody({required this.groupName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(getProxyNameProvider(groupName), (previous, next) {
+      if (previous == next || !context.mounted) return;
+      Navigator.of(context).pop();
+    });
+    return _GroupProxyGrid(groupName: groupName);
+  }
+}
+
+class _GroupProxyGrid extends ConsumerWidget {
+  final String groupName;
+
+  const _GroupProxyGrid({required this.groupName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final group = ref.watch(
       groupsProvider.select((groups) => groups.getGroup(groupName)),
     );
@@ -107,39 +193,34 @@ class _GroupProxySheet extends ConsumerWidget {
         (state) => (state.cardType, state.layout),
       ),
     );
-    return AdaptiveSheetScaffold(
-      type: type,
-      title: groupName,
-      body: group == null
-          ? const SizedBox.shrink()
-          : LayoutBuilder(
-              builder: (_, constraints) => GridView.builder(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  4,
-                  16,
-                  16 + MediaQuery.paddingOf(context).bottom,
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: math.max(
-                    1,
-                    utils.getProxiesColumns(constraints.maxWidth, layout),
-                  ),
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  mainAxisExtent: getItemHeight(cardType),
-                ),
-                itemCount: proxies.length,
-                itemBuilder: (_, index) => ProxyCard(
-                  key: ValueKey(proxies[index].name),
-                  testUrl: group.testUrl,
-                  groupType: group.type,
-                  type: cardType,
-                  proxy: proxies[index],
-                  groupName: group.name,
-                ),
-              ),
-            ),
+    if (group == null) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (_, constraints) => GridView.builder(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          4,
+          16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: math.max(
+            1,
+            utils.getProxiesColumns(constraints.maxWidth, layout),
+          ),
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          mainAxisExtent: getItemHeight(cardType),
+        ),
+        itemCount: proxies.length,
+        itemBuilder: (_, index) => ProxyCard(
+          key: ValueKey(proxies[index].name),
+          testUrl: group.testUrl,
+          groupType: group.type,
+          type: cardType,
+          proxy: proxies[index],
+          groupName: group.name,
+        ),
+      ),
     );
   }
 }

@@ -15,6 +15,7 @@ import 'package:angelamihomo/plugins/service.dart' as vpn_service;
 import 'package:angelamihomo/providers/providers.dart';
 import 'package:angelamihomo/state.dart';
 import 'package:angelamihomo/widgets/dialog.dart';
+import 'package:angelamihomo/widgets/icon_sweep_progress.dart';
 import 'package:angelamihomo/widgets/input.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -491,6 +492,7 @@ class AppController {
       );
       globalState.showNotifier(
         '${appLocalizations.profileParseErrorDesc}: ${redactSensitiveText(message)}',
+        kind: ToastKind.error,
       );
       final fallbackScripted =
           currentProfile.runsManagedScript &&
@@ -833,7 +835,10 @@ class AppController {
         commonPrint.error(
           '[Bundle] Failed to generate $label: ${e.formatErrorLog}',
         );
-        globalState.showNotifier('$label: ${e.formatError}');
+        globalState.showNotifier(
+          '$label: ${e.formatError}',
+          kind: ToastKind.error,
+        );
       }
     }
   }
@@ -1822,8 +1827,14 @@ class AppController {
 
   /// T194: manual geo data refresh from the About page. The outcome
   /// drives the feedback shown to the user.
-  Future<GeoUpdateOutcome> updateGeoData() {
-    return GeoDataService().updateNow();
+  Future<GeoUpdateOutcome> updateGeoData({
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) {
+    return GeoDataService().updateNow(
+      onProgress: onProgress,
+      cancelToken: cancelToken,
+    );
   }
 
   Future<void> checkUpdateResultHandle({
@@ -1916,6 +1927,9 @@ class AppController {
     final installer = UpdateInstaller();
     final cancelToken = CancelToken();
     final progress = ValueNotifier<double?>(null);
+    final progressBytes = ValueNotifier<(int, int)>((0, 0));
+    final paused = ValueNotifier<bool>(false);
+    final downloadHandle = PausableDownloadHandle();
     final verifying = ValueNotifier<bool>(false);
     var dialogOpen = true;
     void closeDialog() {
@@ -1935,19 +1949,56 @@ class AppController {
             valueListenable: verifying,
             builder: (context, isVerifying, _) => Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Lucian UX/UI Prompt #082 · MIT License — the
+                // update downloads over the app icon itself: a
+                // veil sweeps away clockwise with the transfer,
+                // tapping the icon pauses / resumes it for real
+                // (stream backpressure), and at 100% the icon
+                // hops as verification takes over.
+                ValueListenableBuilder<bool>(
+                  valueListenable: paused,
+                  builder: (context, isPaused, _) =>
+                      ValueListenableBuilder<double?>(
+                        valueListenable: progress,
+                        builder: (context, value, _) =>
+                            ValueListenableBuilder<(int, int)>(
+                              valueListenable: progressBytes,
+                              builder: (context, bytes, _) {
+                                final (received, total) = bytes;
+                                final isZh =
+                                    Localizations.localeOf(
+                                      context,
+                                    ).languageCode ==
+                                    'zh';
+                                final meta = total > 0
+                                    ? '${TrafficValue(value: received).show} / ${TrafficValue(value: total).show}'
+                                    : null;
+                                return IconSweepProgress(
+                                  icon: Image.asset('assets/images/icon.png'),
+                                  progress: isVerifying ? 1 : value,
+                                  paused: isPaused,
+                                  done: isVerifying,
+                                  metaText: isPaused && meta != null
+                                      ? '${isZh ? '已暂停' : 'Paused'} · $meta'
+                                      : meta,
+                                  onTap: isVerifying
+                                      ? null
+                                      : () {
+                                          downloadHandle.toggle();
+                                          paused.value =
+                                              downloadHandle.isPaused;
+                                        },
+                                );
+                              },
+                            ),
+                      ),
+                ),
+                const SizedBox(height: 12),
                 Text(
                   isVerifying
                       ? appLocalizations.updateVerifying
                       : appLocalizations.updateDownloading,
-                ),
-                const SizedBox(height: 16),
-                ValueListenableBuilder<double?>(
-                  valueListenable: progress,
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: isVerifying ? null : value,
-                  ),
                 ),
               ],
             ),
@@ -1978,22 +2029,30 @@ class AppController {
       );
       if (digest == null || digest != asset.sha256!.toLowerCase()) {
         closeDialog();
-        globalState.showNotifier(appLocalizations.updateVerifyFailed);
+        globalState.showNotifier(
+          appLocalizations.updateVerifyFailed,
+          kind: ToastKind.error,
+        );
         return;
       }
       signedDigest = digest;
     } catch (_) {
       closeDialog();
-      globalState.showNotifier(appLocalizations.updateVerifyFailed);
+      globalState.showNotifier(
+        appLocalizations.updateVerifyFailed,
+        kind: ToastKind.error,
+      );
       return;
     }
 
     File? file;
     try {
-      file = await installer.download(
+      file = await installer.downloadPausable(
         asset,
         cancelToken: cancelToken,
+        handle: downloadHandle,
         onProgress: (received, total) {
+          progressBytes.value = (received, total);
           if (total > 0) progress.value = received / total;
         },
       );
@@ -2002,12 +2061,14 @@ class AppController {
       if (e.type == DioExceptionType.cancel) return;
       globalState.showNotifier(
         appLocalizations.updateDownloadFailedReason(e.message ?? e.type.name),
+        kind: ToastKind.error,
       );
       return;
     } catch (e) {
       closeDialog();
       globalState.showNotifier(
         appLocalizations.updateDownloadFailedReason(e.toString()),
+        kind: ToastKind.error,
       );
       return;
     }
@@ -2019,7 +2080,10 @@ class AppController {
         await file.delete();
       } catch (_) {}
       closeDialog();
-      globalState.showNotifier(appLocalizations.updateVerifyFailed);
+      globalState.showNotifier(
+        appLocalizations.updateVerifyFailed,
+        kind: ToastKind.error,
+      );
       return;
     }
     closeDialog();
@@ -2027,6 +2091,7 @@ class AppController {
     if (launchError != null) {
       globalState.showNotifier(
         appLocalizations.updateInstallLaunchFailed(launchError),
+        kind: ToastKind.error,
       );
     }
   }
@@ -3013,7 +3078,10 @@ class AppController {
       final res = await backupToWebDAV(DAVClient(dav), dav);
       if (res) {
         commonPrint.log('Auto backup finished');
-        globalState.showNotifier(appLocalizations.autoBackupSuccess);
+        globalState.showNotifier(
+          appLocalizations.autoBackupSuccess,
+          kind: ToastKind.success,
+        );
       }
     } catch (e) {
       commonPrint.error('Auto backup failed: ${e.formatErrorLog}');
