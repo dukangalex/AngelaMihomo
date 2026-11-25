@@ -92,7 +92,10 @@ void main() {
       const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN'),
     );
     final theme = ThemeData(
-      extensions: [ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'))],
+      extensions: [ZodiacThemeExtension.of(
+        resolveZodiacTheme('sagittarius'),
+        Brightness.dark,
+      )],
     );
     await tester.pumpWidget(
       ProviderScope(

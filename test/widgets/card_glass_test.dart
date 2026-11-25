@@ -12,13 +12,14 @@ import 'package:material_ui/material_ui.dart';
 /// immersive skeleton. These tests assert what the cards actually
 /// resolve to when painted — the button style's resolved fill and
 /// border, the shadow stack, and the list frame's paint color — for
-/// every theme of the (single-set) family, so the discipline cannot
+/// every theme of the family (the dark set — the glass discipline
+/// is a dark-field one), so the discipline cannot
 /// silently narrow again.
 void main() {
   ThemeData themeFor(ZodiacThemeDef def) {
     return ThemeData(
-      colorScheme: def.variant.toColorScheme(),
-      extensions: [ZodiacThemeExtension.of(def)],
+      colorScheme: def.dark.toColorScheme(Brightness.dark),
+      extensions: [ZodiacThemeExtension.of(def, Brightness.dark)],
     );
   }
 
@@ -67,7 +68,7 @@ void main() {
   group('glass premise: the canonical tokens are translucent', () {
     for (final def in zodiacThemes) {
       test('${def.id} surface tokens sit in the glass band', () {
-        final variant = def.variant;
+        final variant = def.dark;
         for (final token in [variant.surface, variant.surfaceVariant]) {
           expect(
             token.a,
@@ -90,8 +91,8 @@ void main() {
         tester,
       ) async {
         final card = await pumpCard(tester, themeFor(def));
-        expect(card.fill, def.variant.surface, reason: def.id);
-        expect(card.side?.color, def.variant.outline, reason: def.id);
+        expect(card.fill, def.dark.surface, reason: def.id);
+        expect(card.side?.color, def.dark.outline, reason: def.id);
         expect(card.side?.width, 1.0, reason: def.id);
         expect(
           card.shadows,
@@ -108,16 +109,16 @@ void main() {
         // surfaceVariant token so the selected card reads at a glance;
         // the raw token alone sat in the same glass band as the
         // unselected surface and was not recognisable on a real device.
-        final scheme = def.variant.toColorScheme();
+        final scheme = def.dark.toColorScheme(Brightness.dark);
         expect(
           card.fill,
           Color.alphaBlend(
             scheme.primary.withValues(alpha: 0.30),
-            def.variant.surfaceVariant,
+            def.dark.surfaceVariant,
           ),
           reason: def.id,
         );
-        expect(card.fill, isNot(def.variant.surface), reason: def.id);
+        expect(card.fill, isNot(def.dark.surface), reason: def.id);
         expect(card.side?.color, scheme.primary, reason: def.id);
         expect(card.side?.width, 2.0, reason: def.id);
       });
@@ -131,11 +132,7 @@ void main() {
             home: const Scaffold(
               body: Column(
                 children: [
-                  ContinuousListItem(
-                    index: 0,
-                    count: 1,
-                    child: Text('entry'),
-                  ),
+                  ContinuousListItem(index: 0, count: 1, child: Text('entry')),
                 ],
               ),
             ),
@@ -145,15 +142,14 @@ void main() {
         // it was actually given to paint with.
         Color? frameColor;
         void visit(Element element) {
-          if (element.widget.runtimeType.toString() ==
-              '_ContinuousItemFrame') {
+          if (element.widget.runtimeType.toString() == '_ContinuousItemFrame') {
             frameColor = (element.widget as dynamic).color as Color;
           }
           element.visitChildren(visit);
         }
 
         tester.element(find.byType(ContinuousListItem)).visitChildren(visit);
-        expect(frameColor, def.variant.surface, reason: def.id);
+        expect(frameColor, def.dark.surface, reason: def.id);
       });
     }
   });

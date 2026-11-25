@@ -17,7 +17,8 @@ class _FixedPageLabel extends CurrentPageLabel {
 /// theme's single variant carries glow spots and a glow tone, every
 /// theme carries a recognizable asterism, and backgrounds are imagery
 /// gradients except Gemini's documented solid exception (doc 7.4).
-/// (Single-set family since 2026-11-15: one variant per theme.)
+/// (Dual-set family since T298: the data audit covers both the
+/// light and the dark variant of every theme.)
 void main() {
   // The backdrop's name plate (T159) reads the global localizations,
   // which the app loads before any page builds.
@@ -28,27 +29,28 @@ void main() {
   group('light field data audit', () {
     test('every variant has a glow tone and both glow spots', () {
       for (final def in zodiacThemes) {
-        final variant = def.variant;
-        expect(
-          variant.glow,
-          isNotNull,
-          reason: '${def.id} must carry a glow tone',
-        );
-        expect(
-          variant.glows,
-          hasLength(2),
-          reason: '${def.id} must carry both glow spots',
-        );
-        expect(
-          variant.glows.map((spot) => spot.pos),
-          containsAll([ZodiacGlowPos.topRight, ZodiacGlowPos.centerLeft]),
-        );
+        for (final variant in [def.light, def.dark]) {
+          expect(
+            variant.glow,
+            isNotNull,
+            reason: '${def.id} must carry a glow tone',
+          );
+          expect(
+            variant.glows,
+            hasLength(2),
+            reason: '${def.id} must carry both glow spots',
+          );
+          expect(
+            variant.glows.map((spot) => spot.pos),
+            containsAll([ZodiacGlowPos.topRight, ZodiacGlowPos.centerLeft]),
+          );
+        }
       }
     });
 
     test('backgrounds are gradients except the Gemini exception', () {
       for (final def in zodiacThemes) {
-        final background = def.variant.background;
+        final background = def.dark.background;
         if (def.id == 'gemini') {
           expect(
             background.isGradient,
@@ -103,8 +105,8 @@ void main() {
             ],
             child: MaterialApp(
               theme: ThemeData(
-                colorScheme: def.variant.toColorScheme(),
-                extensions: [ZodiacThemeExtension.of(def)],
+                colorScheme: def.dark.toColorScheme(Brightness.dark),
+                extensions: [ZodiacThemeExtension.of(def, Brightness.dark)],
               ),
               home: const ZodiacBackdrop(),
             ),

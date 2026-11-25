@@ -25,7 +25,10 @@ void main() {
 
   ThemeData theme() {
     return ThemeData(
-      extensions: [ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'))],
+      extensions: [ZodiacThemeExtension.of(
+        resolveZodiacTheme('sagittarius'),
+        Brightness.dark,
+      )],
     );
   }
 

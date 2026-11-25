@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
@@ -133,11 +132,12 @@ class ZodiacVariant {
   Color compositeOverBase(Color color) =>
       Color.alphaBlend(color, backgroundBase);
 
-  /// The family's single variant is a dark design (DESIGN doc section
-  /// 1 rule 9, single-set decision 2026-11-15), so the scheme is always
-  /// composed at dark brightness — including when the app sits in its
-  /// Material light slot under a light system mode.
-  ColorScheme toColorScheme() {
+  /// Composes this variant's color scheme at its own [brightness]:
+  /// the light variant serves the Material light slot, the dark
+  /// variant the dark slot, so the presentation follows the app's
+  /// theme mode (system / light / dark). T298 restored the dual set;
+  /// the T151 single-set decision (2026-11-15) is reversed.
+  ColorScheme toColorScheme(Brightness brightness) {
     final base = backgroundBase;
     final surfaceSolid = compositeOverBase(surface);
     final variantSolid = compositeOverBase(surfaceVariant);
@@ -146,7 +146,7 @@ class ZodiacVariant {
         ? const Color(0xFF2A0E0E)
         : const Color(0xFFFFFFFF);
     return ColorScheme(
-      brightness: Brightness.dark,
+      brightness: brightness,
       primary: primary,
       onPrimary: onPrimary,
       primaryContainer: selected.isNone ? surfaceVariant : selected.firstColor,
@@ -175,7 +175,9 @@ class ZodiacVariant {
       onSurfaceVariant: textSecondary,
       surfaceDim: Color.alphaBlend(const Color(0x14000000), base),
       surfaceBright: surfaceSolid,
-      surfaceContainerLowest: Color.alphaBlend(const Color(0x1A000000), base),
+      surfaceContainerLowest: brightness == Brightness.light
+          ? Color.alphaBlend(const Color(0x0A000000), surfaceSolid)
+          : Color.alphaBlend(const Color(0x1A000000), base),
       surfaceContainerLow: variantSolid,
       surfaceContainer: variantSolid,
       surfaceContainerHigh: Color.alphaBlend(
@@ -239,10 +241,12 @@ class ZodiacThemeDef {
   final ZodiacSkeleton skeleton;
   final ZodiacConstellation constellation;
 
-  /// The theme's single variant. The family is single-set (DESIGN doc
-  /// section 1 rule 9): the former dark variant is canonical and the
-  /// light variant set was removed, so there is no brightness split.
-  final ZodiacVariant variant;
+  /// The theme's light variant (Material light slot).
+  final ZodiacVariant light;
+
+  /// The theme's dark variant (Material dark slot) — the canonical
+  /// set the family shipped as its only set between T151 and T298.
+  final ZodiacVariant dark;
 
   const ZodiacThemeDef({
     required this.id,
@@ -251,8 +255,13 @@ class ZodiacThemeDef {
     required this.nameEn,
     required this.skeleton,
     this.constellation = ZodiacConstellation.empty,
-    required this.variant,
+    required this.light,
+    required this.dark,
   });
+
+  /// The variant for a resolved [brightness].
+  ZodiacVariant variantFor(Brightness brightness) =>
+      brightness == Brightness.light ? light : dark;
 }
 
 /// All twelve themes in zodiac order (doc section 5.1).
@@ -283,42 +292,29 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
   final ZodiacSkeleton skeleton;
   final ZodiacVariant variant;
 
-  /// The deep-space event motif painted as this theme's background
-  /// element layer; null for the other series.
-  final DeepSpaceMotif? motif;
-
-  /// The constellation painted as this theme's element layer (the
-  /// twelve-constellation series); empty for the deep-space series.
+  /// The constellation painted as this theme's element layer.
   final ZodiacConstellation constellation;
 
   /// Whether the guardian figure and plate ride in the backdrop.
-  /// Only the twelve-constellation series carries guardians.
   final bool showGuardian;
 
-  /// The sign glyph watermark for constellation-bearing series;
-  /// empty for the deep-space series.
+  /// The sign glyph watermark.
   final String sign;
-
-  /// The solid series' full-canvas artwork, painted by the backdrop
-  /// as a full-bleed cover layer; null for the other series.
-  final String? solidAssetPath;
 
   const ZodiacThemeExtension({
     required this.themeId,
     required this.skeleton,
     required this.variant,
-    this.motif,
     this.constellation = ZodiacConstellation.empty,
     this.showGuardian = true,
     this.sign = '',
-    this.solidAssetPath,
   });
 
-  factory ZodiacThemeExtension.of(ZodiacThemeDef def) {
+  factory ZodiacThemeExtension.of(ZodiacThemeDef def, Brightness brightness) {
     return ZodiacThemeExtension(
       themeId: def.id,
       skeleton: def.skeleton,
-      variant: def.variant,
+      variant: def.variantFor(brightness),
       constellation: def.constellation,
       sign: def.sign,
     );
@@ -336,21 +332,17 @@ class ZodiacThemeExtension extends ThemeExtension<ZodiacThemeExtension> {
     String? themeId,
     ZodiacSkeleton? skeleton,
     ZodiacVariant? variant,
-    DeepSpaceMotif? motif,
     ZodiacConstellation? constellation,
     bool? showGuardian,
     String? sign,
-    String? solidAssetPath,
   }) {
     return ZodiacThemeExtension(
       themeId: themeId ?? this.themeId,
       skeleton: skeleton ?? this.skeleton,
       variant: variant ?? this.variant,
-      motif: motif ?? this.motif,
       constellation: constellation ?? this.constellation,
       showGuardian: showGuardian ?? this.showGuardian,
       sign: sign ?? this.sign,
-      solidAssetPath: solidAssetPath ?? this.solidAssetPath,
     );
   }
 
@@ -537,78 +529,50 @@ class ZodiacBackdrop extends StatelessWidget {
         // sits at a light defocus (sigma 1.2–1.3; the guardian's
         // strength was recalibrated by T193). The name plates are
         // text, not artwork — they stay legible, already dimmed.
-        // The solid series is the one exception to the blur rule
-        // (T224): its artwork is a finished full-canvas image whose
-        // solid base and faint watermark are already at their
-        // approved strength, so it is painted as-is — full-bleed
-        // cover, no blur, no opacity reduction — with no
-        // constellation, guardian, motif or name plate over it.
-        if (zodiac.solidAssetPath != null) ...[
-          Positioned.fill(
-            child: Image.asset(zodiac.solidAssetPath!, fit: BoxFit.cover),
-          ),
-        ] else if (zodiac.motif != null) ...[
-          Positioned.fill(
-            child: ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(
-                sigmaX: 1.3,
-                sigmaY: 1.3,
-                tileMode: ui.TileMode.mirror,
-              ),
-              child: CustomPaint(
-                painter: DeepSpaceMotifPainter(
-                  motif: zodiac.motif!,
-                  variant: variant,
-                  isDark: Theme.of(context).brightness == Brightness.dark,
-                ),
+        // T298: the twelve constellations are the only series left,
+        // so the backdrop paints the one element layer — the sign's
+        // constellation and watermark, the guardian figure and its
+        // plate — from the active slot's variant, which follows the
+        // app's theme mode (system / light / dark).
+        Positioned.fill(
+          child: ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(
+              sigmaX: 1.3,
+              sigmaY: 1.3,
+              tileMode: ui.TileMode.mirror,
+            ),
+            child: CustomPaint(
+              painter: _ConstellationPainter(
+                constellation: zodiac.constellation,
+                sign: zodiac.sign,
+                variant: variant,
+                isDark: Theme.of(context).brightness == Brightness.dark,
               ),
             ),
           ),
-          // T191: deep-space themes carry an event name plate in
-          // the same seat as the guardian plate.
-          if (showGuardian)
-            const Positioned.fill(child: DeepSpacePlate()),
-        ] else ...[
+        ),
+        // T159: the guardian figure and its name plate are the
+        // backdrop's own top layers — part of the background, below
+        // whatever page content is stacked over this backdrop.
+        // Only the twelve-constellation series carries them; the
+        // extension's own flag says so.
+        if (showGuardian && zodiac.showGuardian)
           Positioned.fill(
             child: ImageFiltered(
+              // T187's stronger defocus (2.2) plus the figure's
+              // own dimming read as too faint on the user's real
+              // device (2026-11-17, T193): eased to 1.2 — still
+              // softened, never sharp, but with body.
               imageFilter: ui.ImageFilter.blur(
-                sigmaX: 1.3,
-                sigmaY: 1.3,
+                sigmaX: 1.2,
+                sigmaY: 1.2,
                 tileMode: ui.TileMode.mirror,
               ),
-              child: CustomPaint(
-                painter: _ConstellationPainter(
-                  constellation: zodiac.constellation,
-                  sign: zodiac.sign,
-                  variant: variant,
-                  isDark: Theme.of(context).brightness == Brightness.dark,
-                ),
-              ),
+              child: const ZodiacGuardianBackdropFigure(),
             ),
           ),
-          // T159: the guardian figure and its name plate are the
-          // backdrop's own top layers — part of the background, below
-          // whatever page content is stacked over this backdrop.
-          // Only the twelve-constellation series carries them; the
-          // extension's own flag says so.
-          if (showGuardian && zodiac.showGuardian)
-            Positioned.fill(
-              child: ImageFiltered(
-                // T187's stronger defocus (2.2) plus the figure's
-                // own dimming read as too faint on the user's real
-                // device (2026-11-17, T193): eased to 1.2 — still
-                // softened, never sharp, but with body.
-                imageFilter: ui.ImageFilter.blur(
-                  sigmaX: 1.2,
-                  sigmaY: 1.2,
-                  tileMode: ui.TileMode.mirror,
-                ),
-                child: const ZodiacGuardianBackdropFigure(),
-              ),
-            ),
-          if (showGuardian && zodiac.showGuardian)
-            const Positioned.fill(child: ZodiacGuardianPlate()),
-        ],
+        if (showGuardian && zodiac.showGuardian)
+          const Positioned.fill(child: ZodiacGuardianPlate()),
       ],
     );
   }
@@ -713,697 +677,4 @@ class _ConstellationPainter extends CustomPainter {
         oldDelegate.variant != variant ||
         oldDelegate.isDark != isDark;
   }
-}
-
-/// The Human Deep Space Exploration series' background motifs
-/// (T181): one per historic event, drawn by [DeepSpaceMotifPainter]
-/// as theme-toned line work in the backdrop's element layer — the
-/// same role the asterism plays for constellation themes.
-enum DeepSpaceMotif {
-  /// A planet with a craft in an elliptical orbit (Vostok 1).
-  orbit,
-
-  /// The same orbit composition with a capsule glyph (Shenzhou 5).
-  capsuleOrbit,
-
-  /// Descent arc onto a large moon disc (Apollo 11).
-  moonLanding,
-
-  /// A trajectory sweeping away from a small planet (Voyager 1).
-  escapeTrajectory,
-
-  /// Scattered-light bands with one pale dot (Pale Blue Dot).
-  paleBlueDot,
-
-  /// A ringed planet with its orbiter (Cassini).
-  ringedPlanet,
-
-  /// Descent onto a curved lunar surface with a rover (Chang'e 3).
-  lunarDescent,
-
-  /// A hyperbolic pass by a planet (New Horizons).
-  flyby,
-
-  /// The moon's far side with a relay satellite link (Chang'e 4).
-  farSide,
-
-  /// A craft in orbit around Mars (Tianwen 1).
-  marsOrbit,
-
-  /// A hexagonal segmented mirror array (James Webb).
-  mirrorArray,
-
-  /// A kinetic impactor striking a small asteroid (DART).
-  impact,
-
-  /// A shuttle climbing its ascent arc (Columbia, STS-1).
-  shuttleAscent,
-
-  /// A space telescope in orbit above the Earth arc (Hubble).
-  telescopeOrbit,
-
-  /// A truss-and-panels station over the Earth arc (ISS).
-  spaceStation,
-}
-
-/// Paints a [DeepSpaceMotif] in the active variant's tones: primary
-/// line work, secondary accents, textPrimary star points — the same
-/// palette discipline as the constellation painter, so an event
-/// background changes character with its theme and never borrows
-/// another event's colors.
-class DeepSpaceMotifPainter extends CustomPainter {
-  final DeepSpaceMotif motif;
-  final ZodiacVariant variant;
-  final bool isDark;
-
-  const DeepSpaceMotifPainter({
-    required this.motif,
-    required this.variant,
-    required this.isDark,
-  });
-
-  double get _lineAlpha => isDark ? 0.5 : 0.38;
-
-  Paint _stroke(Color color, double alpha, double width) => Paint()
-    ..color = color.withValues(alpha: alpha)
-    ..strokeWidth = width
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.round;
-
-  Paint _fill(Color color, double alpha) =>
-      Paint()..color = color.withValues(alpha: alpha);
-
-  void _dash(Canvas canvas, Path path, Paint paint) {
-    for (final metric in path.computeMetrics()) {
-      var d = 0.0;
-      var draw = true;
-      while (d < metric.length) {
-        final len = draw ? 7.0 : 6.0;
-        if (draw) {
-          canvas.drawPath(
-            metric.extractPath(d, math.min(d + len, metric.length)),
-            paint,
-          );
-        }
-        d += len;
-        draw = !draw;
-      }
-    }
-  }
-
-  /// A sparse deterministic star field across the upper sky, shared
-  /// by every motif (positions from a fixed irrational walk, so the
-  /// field is identical on every frame and every device).
-  void _starField(Canvas canvas, Size size) {
-    for (var i = 0; i < 30; i++) {
-      final x = (i * 0.61803 + 0.07) % 1.0;
-      final y = ((i * 0.75488 + 0.05) % 1.0) * 0.52;
-      final center = Offset(size.width * x, size.height * y);
-      final big = i % 7 == 0;
-      if (big) {
-        canvas.drawCircle(
-          center,
-          6,
-          Paint()
-            ..color = variant.secondary.withValues(alpha: 0.16)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
-        );
-      }
-      canvas.drawCircle(
-        center,
-        big ? 2.0 : 1.2,
-        _fill(variant.textPrimary, big ? 0.65 : 0.4),
-      );
-    }
-  }
-
-  void _planet(Canvas canvas, Offset center, double r, {double fill = 0.05}) {
-    canvas.drawCircle(center, r, _fill(variant.primary, fill));
-    canvas.drawCircle(center, r, _stroke(variant.primary, _lineAlpha, 1.2));
-  }
-
-  void _craftDot(Canvas canvas, Offset at, {double r = 3}) {
-    canvas.drawCircle(
-      at,
-      r * 2.6,
-      Paint()
-        ..color = variant.secondary.withValues(alpha: 0.2)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-    );
-    canvas.drawCircle(at, r, _fill(variant.secondary, 0.95));
-  }
-
-  /// An ellipse (orbit) around [center], drawn through a canvas
-  /// transform so rotation comes free.
-  void _orbit(
-    Canvas canvas,
-    Offset center,
-    double rx,
-    double ry,
-    double rotation,
-    Paint paint, {
-    bool dashed = false,
-  }) {
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(rotation);
-    final path = Path()
-      ..addOval(
-        Rect.fromCenter(center: Offset.zero, width: rx * 2, height: ry * 2),
-      );
-    if (dashed) {
-      _dash(canvas, path, paint);
-    } else {
-      canvas.drawPath(path, paint);
-    }
-    canvas.restore();
-  }
-
-  Offset _orbitPoint(
-    Offset center,
-    double rx,
-    double ry,
-    double rotation,
-    double t,
-  ) {
-    final x = rx * math.cos(t);
-    final y = ry * math.sin(t);
-    final c = math.cos(rotation);
-    final s = math.sin(rotation);
-    return Offset(center.dx + x * c - y * s, center.dy + x * s + y * c);
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _starField(canvas, size);
-    final w = size.width;
-    final h = size.height;
-    switch (motif) {
-      case DeepSpaceMotif.orbit:
-      case DeepSpaceMotif.capsuleOrbit:
-        final center = Offset(w * 0.70, h * 0.24);
-        final rx = w * 0.30;
-        final ry = h * 0.105;
-        const rotation = -0.35;
-        _orbit(
-          canvas,
-          center,
-          rx,
-          ry,
-          rotation,
-          _stroke(variant.primary, _lineAlpha * 0.8, 1.1),
-        );
-        _planet(canvas, center, w * 0.082);
-        final at = _orbitPoint(center, rx, ry, rotation, 2.4);
-        if (motif == DeepSpaceMotif.capsuleOrbit) {
-          // A capsule: hull plus a solar wing line.
-          canvas.save();
-          canvas.translate(at.dx, at.dy);
-          canvas.rotate(rotation + 0.5);
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromCenter(center: Offset.zero, width: 13, height: 8),
-              const Radius.circular(4),
-            ),
-            _fill(variant.secondary, 0.95),
-          );
-          canvas.drawLine(
-            const Offset(-11, 0),
-            const Offset(11, 0),
-            _stroke(variant.secondary, 0.8, 1.6),
-          );
-          canvas.restore();
-        } else {
-          _craftDot(canvas, at);
-        }
-      case DeepSpaceMotif.moonLanding:
-        final moon = Offset(w * 0.86, h * 0.12);
-        final mr = w * 0.15;
-        _planet(canvas, moon, mr, fill: 0.07);
-        for (final crater in [
-          (0.3, 0.35, 0.16),
-          (-0.25, 0.1, 0.11),
-          (0.05, -0.4, 0.09),
-        ]) {
-          canvas.drawCircle(
-            Offset(moon.dx + mr * crater.$1, moon.dy + mr * crater.$2),
-            mr * crater.$3,
-            _stroke(variant.primary, 0.22, 1),
-          );
-        }
-        final descent = Path()
-          ..moveTo(w * 0.08, h * 0.05)
-          ..cubicTo(
-            w * 0.34,
-            h * 0.01,
-            w * 0.52,
-            h * 0.08,
-            w * 0.72,
-            h * 0.155,
-          );
-        _dash(canvas, descent, _stroke(variant.secondary, 0.75, 1.3));
-        final land = Offset(w * 0.72, h * 0.155);
-        canvas.drawRect(
-          Rect.fromCenter(center: land, width: 7, height: 5),
-          _fill(variant.secondary, 0.95),
-        );
-        canvas.drawLine(
-          Offset(land.dx - 5, land.dy + 5),
-          Offset(land.dx - 1, land.dy + 2),
-          _stroke(variant.secondary, 0.9, 1.2),
-        );
-        canvas.drawLine(
-          Offset(land.dx + 5, land.dy + 5),
-          Offset(land.dx + 1, land.dy + 2),
-          _stroke(variant.secondary, 0.9, 1.2),
-        );
-      case DeepSpaceMotif.escapeTrajectory:
-        final planet = Offset(w * 0.16, h * 0.40);
-        _planet(canvas, planet, w * 0.052);
-        final path = Path()
-          ..moveTo(planet.dx, planet.dy)
-          ..cubicTo(w * 0.40, h * 0.33, w * 0.62, h * 0.17, w * 0.99, h * 0.03);
-        // The trajectory fades as it leaves: three segments of
-        // decreasing alpha along one path.
-        for (final metric in path.computeMetrics()) {
-          for (var seg = 0; seg < 3; seg++) {
-            final from = metric.length * seg / 3;
-            final to = metric.length * (seg + 1) / 3;
-            canvas.drawPath(
-              metric.extractPath(from, to),
-              _stroke(variant.primary, _lineAlpha * (1 - seg * 0.28), 1.3),
-            );
-          }
-          final tangent = metric.getTangentForOffset(metric.length * 0.72);
-          if (tangent != null) _craftDot(canvas, tangent.position);
-        }
-      case DeepSpaceMotif.paleBlueDot:
-        canvas.save();
-        canvas.translate(w * 0.5, h * 0.26);
-        canvas.rotate(-0.42);
-        final bands = [
-          (0.055, variant.secondary, 0.10, -0.10),
-          (0.034, variant.primary, 0.09, 0.0),
-          (0.075, variant.accent, 0.05, 0.115),
-        ];
-        for (final band in bands) {
-          canvas.drawRect(
-            Rect.fromCenter(
-              center: Offset(0, h * band.$4),
-              width: w * 1.6,
-              height: h * band.$1,
-            ),
-            _fill(band.$2, band.$3),
-          );
-        }
-        canvas.restore();
-        final dot = Offset(w * 0.635, h * 0.295);
-        canvas.drawCircle(
-          dot,
-          9,
-          Paint()
-            ..color = variant.primary.withValues(alpha: 0.35)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
-        );
-        canvas.drawCircle(dot, 3.2, _fill(variant.primary, 1));
-        canvas.drawCircle(dot, 1.3, _fill(const Color(0xFFFFFFFF), 0.95));
-      case DeepSpaceMotif.ringedPlanet:
-        final center = Offset(w * 0.50, h * 0.235);
-        final r = w * 0.082;
-        _orbit(
-          canvas,
-          center,
-          w * 0.205,
-          h * 0.042,
-          -0.28,
-          _stroke(variant.secondary, 0.4, 1.4),
-        );
-        _planet(canvas, center, r, fill: 0.08);
-        // Front ring arc over the planet's lower face.
-        canvas.save();
-        canvas.translate(center.dx, center.dy);
-        canvas.rotate(-0.28);
-        canvas.scale(1, (h * 0.042) / (w * 0.205));
-        canvas.drawArc(
-          Rect.fromCircle(center: Offset.zero, radius: w * 0.205),
-          0.15,
-          math.pi - 0.3,
-          false,
-          _stroke(variant.secondary, 0.75, 2.2),
-        );
-        canvas.restore();
-        final orbiter = Offset(w * 0.665, h * 0.095);
-        _craftDot(canvas, orbiter, r: 2.4);
-        _dash(
-          canvas,
-          Path()
-            ..moveTo(orbiter.dx, orbiter.dy)
-            ..quadraticBezierTo(w * 0.62, h * 0.15, w * 0.575, h * 0.185),
-          _stroke(variant.secondary, 0.5, 1),
-        );
-      case DeepSpaceMotif.lunarDescent:
-        final surfaceCenter = Offset(w * 0.5, h * 1.42);
-        final surfaceR = h * 1.0;
-        canvas.drawCircle(
-          surfaceCenter,
-          surfaceR,
-          _stroke(variant.primary, _lineAlpha * 0.9, 1.3),
-        );
-        final descent = Path()
-          ..moveTo(w * 0.10, h * 0.04)
-          ..cubicTo(
-            w * 0.22,
-            h * 0.16,
-            w * 0.30,
-            h * 0.30,
-            w * 0.415,
-            h * 0.425,
-          );
-        _dash(canvas, descent, _stroke(variant.secondary, 0.75, 1.3));
-        final land = Offset(w * 0.415, h * 0.425);
-        canvas.drawRect(
-          Rect.fromCenter(center: land, width: 8, height: 5),
-          _fill(variant.secondary, 0.95),
-        );
-        // The rover, a short way along the surface: two wheel dots
-        // and a mast.
-        final rover = Offset(w * 0.575, h * 0.402);
-        canvas.drawCircle(
-          Offset(rover.dx - 4, rover.dy + 3),
-          1.8,
-          _fill(variant.accent, 0.9),
-        );
-        canvas.drawCircle(
-          Offset(rover.dx + 4, rover.dy + 3),
-          1.8,
-          _fill(variant.accent, 0.9),
-        );
-        canvas.drawLine(
-          Offset(rover.dx, rover.dy + 2),
-          Offset(rover.dx, rover.dy - 6),
-          _stroke(variant.accent, 0.9, 1.4),
-        );
-      case DeepSpaceMotif.flyby:
-        final planet = Offset(w * 0.30, h * 0.19);
-        final r = w * 0.098;
-        _planet(canvas, planet, r, fill: 0.07);
-        // Pluto's lighter heart plain: two soft overlapping lobes.
-        canvas.drawCircle(
-          Offset(planet.dx + r * 0.18, planet.dy + r * 0.22),
-          r * 0.42,
-          _fill(variant.secondary, 0.13),
-        );
-        canvas.drawCircle(
-          Offset(planet.dx - r * 0.22, planet.dy + r * 0.3),
-          r * 0.3,
-          _fill(variant.secondary, 0.10),
-        );
-        final path = Path()
-          ..moveTo(-w * 0.02, h * 0.015)
-          ..quadraticBezierTo(w * 0.34, h * 0.46, w * 0.72, h * 0.335)
-          ..quadraticBezierTo(w * 0.88, h * 0.29, w * 1.02, h * 0.315);
-        canvas.drawPath(path, _stroke(variant.primary, _lineAlpha, 1.3));
-        for (final metric in path.computeMetrics()) {
-          final tangent = metric.getTangentForOffset(metric.length * 0.47);
-          if (tangent != null) _craftDot(canvas, tangent.position);
-        }
-      case DeepSpaceMotif.farSide:
-        final moon = Offset(w * 0.44, h * 0.235);
-        final r = w * 0.112;
-        _planet(canvas, moon, r, fill: 0.06);
-        // The far side turned away: shade the moon's right portion.
-        canvas.save();
-        canvas.clipPath(
-          Path()..addOval(Rect.fromCircle(center: moon, radius: r)),
-        );
-        canvas.drawRect(
-          Rect.fromLTWH(moon.dx + r * 0.05, moon.dy - r, r, r * 2),
-          _fill(const Color(0xFF000000), 0.22),
-        );
-        canvas.restore();
-        final relay = Offset(w * 0.85, h * 0.085);
-        _orbit(
-          canvas,
-          relay,
-          w * 0.058,
-          h * 0.02,
-          0.5,
-          _stroke(variant.secondary, 0.55, 1),
-        );
-        _craftDot(canvas, relay, r: 2.4);
-        _dash(
-          canvas,
-          Path()
-            ..moveTo(moon.dx + r * 0.75, moon.dy - r * 0.55)
-            ..quadraticBezierTo(w * 0.68, h * 0.05, relay.dx - 4, relay.dy + 3),
-          _stroke(variant.secondary, 0.6, 1.1),
-        );
-        _craftDot(
-          canvas,
-          Offset(moon.dx + r * 0.42, moon.dy + r * 0.62),
-          r: 2.2,
-        );
-      case DeepSpaceMotif.marsOrbit:
-        final center = Offset(w * 0.68, h * 0.245);
-        final r = w * 0.098;
-        final rx = w * 0.265;
-        final ry = h * 0.098;
-        const rotation = -0.3;
-        _orbit(
-          canvas,
-          center,
-          rx,
-          ry,
-          rotation,
-          _stroke(variant.primary, _lineAlpha * 0.8, 1.1),
-        );
-        _planet(canvas, center, r, fill: 0.08);
-        // Polar cap and a dark albedo patch.
-        canvas.save();
-        canvas.clipPath(
-          Path()..addOval(Rect.fromCircle(center: center, radius: r)),
-        );
-        canvas.drawCircle(
-          Offset(center.dx, center.dy - r * 0.92),
-          r * 0.34,
-          _fill(const Color(0xFFFFFFFF), 0.28),
-        );
-        canvas.drawCircle(
-          Offset(center.dx - r * 0.3, center.dy + r * 0.25),
-          r * 0.45,
-          _fill(const Color(0xFF000000), 0.16),
-        );
-        canvas.restore();
-        _craftDot(canvas, _orbitPoint(center, rx, ry, rotation, 0.45));
-      case DeepSpaceMotif.mirrorArray:
-        final center = Offset(w * 0.31, h * 0.215);
-        final hr = w * 0.036;
-        void hex(Offset c, double radius, {bool filled = false}) {
-          final path = Path();
-          for (var i = 0; i < 6; i++) {
-            final a = math.pi / 3 * i + math.pi / 6;
-            final p = Offset(
-              c.dx + radius * math.cos(a),
-              c.dy + radius * math.sin(a),
-            );
-            i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
-          }
-          path.close();
-          if (filled) canvas.drawPath(path, _fill(variant.primary, 0.12));
-          canvas.drawPath(path, _stroke(variant.primary, 0.65, 1.2));
-        }
-
-        final dx = hr * 1.78;
-        final dy = hr * 1.56;
-        hex(center, hr, filled: true);
-        for (final o in [
-          Offset(dx, 0),
-          Offset(-dx, 0),
-          Offset(dx / 2, dy),
-          Offset(-dx / 2, dy),
-          Offset(dx / 2, -dy),
-          Offset(-dx / 2, -dy),
-        ]) {
-          hex(center + o, hr);
-        }
-        // Collected starlight leaving the array.
-        for (var i = 0; i < 3; i++) {
-          final from = Offset(center.dx + dx + hr, center.dy - dy + i * dy);
-          canvas.drawLine(
-            from,
-            Offset(w * 0.97, from.dy - h * 0.055),
-            _stroke(variant.secondary, 0.16, 1.1),
-          );
-        }
-      case DeepSpaceMotif.impact:
-        final big = Offset(w * 0.60, h * 0.215);
-        _planet(canvas, big, w * 0.062, fill: 0.06);
-        final small = Offset(w * 0.745, h * 0.295);
-        _planet(canvas, small, w * 0.031, fill: 0.06);
-        final hit = Offset(w * 0.718, h * 0.272);
-        _dash(
-          canvas,
-          Path()
-            ..moveTo(w * 0.07, h * 0.03)
-            ..quadraticBezierTo(w * 0.38, h * 0.10, hit.dx, hit.dy),
-          _stroke(variant.primary, 0.7, 1.2),
-        );
-        _craftDot(canvas, hit, r: 2.6);
-        // The burst: rays of uneven length from the impact point.
-        for (var i = 0; i < 9; i++) {
-          final a = -0.9 + i * 0.42;
-          final len = w * (0.02 + (i % 3) * 0.011);
-          canvas.drawLine(
-            hit,
-            Offset(hit.dx + len * math.cos(a), hit.dy + len * math.sin(a)),
-            _stroke(i.isEven ? variant.secondary : variant.accent, 0.8, 1.3),
-          );
-        }
-      case DeepSpaceMotif.shuttleAscent:
-        // The ascent: a dashed exhaust trail curving up from the
-        // lower left, the shuttle glyph riding its head.
-        final trail = Path()
-          ..moveTo(w * 0.06, h * 0.54)
-          ..cubicTo(
-            w * 0.20,
-            h * 0.40,
-            w * 0.34,
-            h * 0.28,
-            w * 0.56,
-            h * 0.175,
-          );
-        _dash(canvas, trail, _stroke(variant.textPrimary, 0.35, 3.2));
-        _dash(canvas, trail, _stroke(variant.secondary, 0.55, 1.4));
-        final nose = Offset(w * 0.615, h * 0.15);
-        canvas.save();
-        canvas.translate(nose.dx, nose.dy);
-        canvas.rotate(-0.62);
-        // Fuselage, delta wing and tail fin as one line glyph.
-        final shuttle = Path()
-          ..moveTo(0, -17)
-          ..quadraticBezierTo(4.5, -8, 4, 2)
-          ..lineTo(13, 12)
-          ..lineTo(4.5, 12)
-          ..lineTo(4, 7)
-          ..lineTo(-4, 7)
-          ..lineTo(-4.5, 12)
-          ..lineTo(-13, 12)
-          ..lineTo(-4, 2)
-          ..quadraticBezierTo(-4.5, -8, 0, -17)
-          ..close();
-        canvas.drawPath(shuttle, _fill(variant.primary, 0.16));
-        canvas.drawPath(shuttle, _stroke(variant.primary, 0.85, 1.3));
-        canvas.drawCircle(
-          const Offset(0, -9),
-          1.8,
-          _fill(variant.secondary, 0.95),
-        );
-        canvas.restore();
-      case DeepSpaceMotif.telescopeOrbit:
-      case DeepSpaceMotif.spaceStation:
-        // The shared stage: Earth's limb as a great arc low in the
-        // frame, the craft in orbit above it.
-        final earthCenter = Offset(w * 0.5, h * 1.52);
-        final earthR = h * 1.06;
-        canvas.drawCircle(
-          earthCenter,
-          earthR,
-          _stroke(variant.primary, _lineAlpha * 0.85, 1.3),
-        );
-        canvas.drawCircle(earthCenter, earthR, _fill(variant.primary, 0.04));
-        if (motif == DeepSpaceMotif.telescopeOrbit) {
-          final orbit = Path()
-            ..moveTo(w * 0.04, h * 0.335)
-            ..quadraticBezierTo(w * 0.5, h * 0.20, w * 0.96, h * 0.335);
-          _dash(canvas, orbit, _stroke(variant.primary, 0.4, 1.1));
-          final hubble = Offset(w * 0.40, h * 0.235);
-          canvas.save();
-          canvas.translate(hubble.dx, hubble.dy);
-          canvas.rotate(-0.42);
-          // The tube, its aperture and the two panel wings.
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromCenter(center: Offset.zero, width: 36, height: 12),
-              const Radius.circular(6),
-            ),
-            _stroke(variant.primary, 0.85, 1.4),
-          );
-          canvas.drawCircle(
-            const Offset(18, 0),
-            4.5,
-            _stroke(variant.secondary, 0.9, 1.3),
-          );
-          for (final side in [-1.0, 1.0]) {
-            canvas.drawRect(
-              Rect.fromCenter(
-                center: Offset(side * 8, -13),
-                width: 15,
-                height: 9,
-              ),
-              _fill(variant.secondary, 0.55),
-            );
-            canvas.drawRect(
-              Rect.fromCenter(
-                center: Offset(side * 8, 13),
-                width: 15,
-                height: 9,
-              ),
-              _fill(variant.secondary, 0.55),
-            );
-          }
-          canvas.restore();
-        } else {
-          final station = Offset(w * 0.5, h * 0.175);
-          // The truss.
-          canvas.drawLine(
-            Offset(station.dx - w * 0.17, station.dy),
-            Offset(station.dx + w * 0.17, station.dy),
-            _stroke(variant.primary, 0.85, 1.6),
-          );
-          // Four panel pairs along the truss.
-          for (final fx in [-0.145, -0.055, 0.055, 0.145]) {
-            final px = station.dx + w * fx;
-            canvas.drawRect(
-              Rect.fromCenter(
-                center: Offset(px, station.dy - 10),
-                width: 20,
-                height: 11,
-              ),
-              _fill(variant.secondary, 0.6),
-            );
-            canvas.drawRect(
-              Rect.fromCenter(
-                center: Offset(px, station.dy + 10),
-                width: 20,
-                height: 11,
-              ),
-              _fill(variant.secondary, 0.6),
-            );
-          }
-          // The pressurized modules under the truss center.
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromCenter(
-                center: Offset(station.dx, station.dy + 9),
-                width: 30,
-                height: 9,
-              ),
-              const Radius.circular(4.5),
-            ),
-            _fill(variant.primary, 0.85),
-          );
-          _craftDot(
-            canvas,
-            Offset(station.dx + w * 0.20, station.dy + 16),
-            r: 2.2,
-          );
-        }
-    }
-  }
-
-  @override
-  bool shouldRepaint(DeepSpaceMotifPainter oldDelegate) =>
-      oldDelegate.motif != motif ||
-      oldDelegate.variant != variant ||
-      oldDelegate.isDark != isDark;
 }

@@ -33,7 +33,7 @@ void main() {
       systemUiOverlayStyle: const SystemUiOverlayStyle(),
     );
     final zodiac = resolveZodiacTheme('sagittarius');
-    final variant = zodiac.variant;
+    final variant = zodiac.dark;
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh', 'CN'),
@@ -46,8 +46,8 @@ void main() {
           // Single-set family: the zodiac scheme is always dark, so
           // ThemeData takes its brightness from the scheme; the loop's
           // brightness still drives AppState above.
-          colorScheme: variant.toColorScheme(),
-          extensions: [ZodiacThemeExtension.of(zodiac)],
+          colorScheme: variant.toColorScheme(Brightness.dark),
+          extensions: [ZodiacThemeExtension.of(zodiac, Brightness.dark)],
         ),
         home: Scaffold(
           body: ProfileItem(

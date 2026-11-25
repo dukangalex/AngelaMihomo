@@ -23,19 +23,15 @@ import 'package:material_ui/material_ui.dart';
 /// widget tree, plus a real settings page toggle regression.
 void main() {
   ThemeData themeFor(ZodiacThemeDef def) {
-    final scheme = def.variant.toColorScheme();
+    final scheme = def.dark.toColorScheme(Brightness.dark);
     return ThemeData(
       colorScheme: scheme,
-      extensions: [ZodiacThemeExtension.of(def)],
-      switchTheme: zodiacSwitchTheme(scheme, def.variant),
+      extensions: [ZodiacThemeExtension.of(def, Brightness.dark)],
+      switchTheme: zodiacSwitchTheme(scheme, def.dark),
     );
   }
 
-  Color? resolve(
-    SwitchThemeData theme,
-    bool thumb,
-    Set<WidgetState> states,
-  ) {
+  Color? resolve(SwitchThemeData theme, bool thumb, Set<WidgetState> states) {
     final property = thumb ? theme.thumbColor : theme.trackColor;
     return property?.resolve(states);
   }
@@ -96,7 +92,7 @@ void main() {
       );
       final context = tester.element(find.byType(Switch).first);
       final theme = Theme.of(context).switchTheme;
-      expectLit(theme, def.variant);
+      expectLit(theme, def.dark);
       // The pumped switches carry the states the resolver was fed:
       // on, off, and disabled-on are all present in the tree.
       final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
@@ -108,18 +104,17 @@ void main() {
   test('all twelve themes resolve lit from their own tokens', () {
     expect(zodiacThemes, hasLength(12));
     for (final def in zodiacThemes) {
-      final scheme = def.variant.toColorScheme();
-      expectLit(zodiacSwitchTheme(scheme, def.variant), def.variant);
+      final scheme = def.dark.toColorScheme(Brightness.dark);
+      expectLit(zodiacSwitchTheme(scheme, def.dark), def.dark);
     }
   });
 
   test('no-zodiac fallback keeps the previous scheme colors', () {
-    final scheme = resolveZodiacTheme('sagittarius').variant.toColorScheme();
+    final scheme = resolveZodiacTheme(
+      'sagittarius',
+    ).dark.toColorScheme(Brightness.dark);
     final theme = zodiacSwitchTheme(scheme, null);
-    expect(
-      resolve(theme, false, {WidgetState.selected}),
-      scheme.primary,
-    );
+    expect(resolve(theme, false, {WidgetState.selected}), scheme.primary);
     expect(resolve(theme, true, {WidgetState.selected}), scheme.onPrimary);
   });
 

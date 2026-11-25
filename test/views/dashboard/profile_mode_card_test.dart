@@ -95,7 +95,7 @@ List<Group> _fixtureGroups() {
   ];
 }
 
-final _sagittarius = resolveZodiacTheme('sagittarius').variant;
+final _sagittarius = resolveZodiacTheme('sagittarius').dark;
 
 Future<ProviderContainer> _pumpCard(
   WidgetTester tester, {
@@ -136,7 +136,10 @@ Future<ProviderContainer> _pumpCard(
       child: MaterialApp(
         theme: ThemeData(
           extensions: [
-            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
+            ZodiacThemeExtension.of(
+            resolveZodiacTheme('sagittarius'),
+            Brightness.dark,
+          ),
           ],
         ),
         localizationsDelegates: const [AppLocalizations.delegate],

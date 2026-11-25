@@ -28,32 +28,33 @@ void main() {
 
   test('every variant carries the full token set with shared delay tiers', () {
     for (final theme in zodiacThemes) {
-      final variant = theme.variant;
-      expect(variant.delayGood, variant.success, reason: theme.id);
-      expect(variant.delayMid, variant.warning, reason: theme.id);
-      expect(variant.delayBad, variant.error, reason: theme.id);
-      expect(
-        variant.disabled,
-        variant.textSecondary.withValues(alpha: 0.45),
-        reason: theme.id,
-      );
-      expect(variant.background.isNone, isFalse, reason: theme.id);
+      for (final variant in [theme.light, theme.dark]) {
+        expect(variant.delayGood, variant.success, reason: theme.id);
+        expect(variant.delayMid, variant.warning, reason: theme.id);
+        expect(variant.delayBad, variant.error, reason: theme.id);
+        expect(
+          variant.disabled,
+          variant.textSecondary.withValues(alpha: 0.45),
+          reason: theme.id,
+        );
+        expect(variant.background.isNone, isFalse, reason: theme.id);
+      }
     }
   });
 
   test('sagittarius tokens match the design table', () {
     final sag = resolveZodiacTheme('sagittarius');
-    expect(sag.variant.primary, const Color(0xFF6C4DF6));
-    expect(sag.variant.secondary, const Color(0xFF2DD4BF));
-    expect(sag.variant.backgroundBase, const Color(0xFF081A2E));
-    expect(sag.variant.surface, const Color(0x12FFFFFF));
-    expect(sag.variant.selected.stops, [
+    expect(sag.dark.primary, const Color(0xFF6C4DF6));
+    expect(sag.dark.secondary, const Color(0xFF2DD4BF));
+    expect(sag.dark.backgroundBase, const Color(0xFF081A2E));
+    expect(sag.dark.surface, const Color(0x12FFFFFF));
+    expect(sag.dark.selected.stops, [
       const Color(0xFF6C4DF6),
       const Color(0xFF2DD4BF),
     ]);
-    expect(sag.variant.glow, const Color(0x802DD4BF));
-    expect(sag.variant.glows, hasLength(2));
-    expect(sag.variant.navBar, const Color(0x8C08081A));
+    expect(sag.dark.glow, const Color(0x802DD4BF));
+    expect(sag.dark.glows, hasLength(2));
+    expect(sag.dark.navBar, const Color(0x8C08081A));
   });
 
   test('unknown or missing selections fall back to sagittarius', () {
@@ -65,17 +66,22 @@ void main() {
 
   test('color schemes come from the tokens', () {
     final sag = resolveZodiacTheme('sagittarius');
-    final scheme = sag.variant.toColorScheme();
-    expect(scheme.primary, sag.variant.primary);
-    expect(scheme.secondary, sag.variant.secondary);
-    expect(scheme.error, sag.variant.error);
-    expect(scheme.onSurface, sag.variant.textPrimary);
-    expect(scheme.onSurfaceVariant, sag.variant.textSecondary);
-    // Single-set family: the scheme is always composed at dark
-    // brightness (DESIGN doc section 1 rule 9).
+    final scheme = sag.dark.toColorScheme(Brightness.dark);
+    expect(scheme.primary, sag.dark.primary);
+    expect(scheme.secondary, sag.dark.secondary);
+    expect(scheme.error, sag.dark.error);
+    expect(scheme.onSurface, sag.dark.textPrimary);
+    expect(scheme.onSurfaceVariant, sag.dark.textSecondary);
+    // Dual-set family (T298): each variant composes at its own
+    // brightness — the dark variant in the dark slot, the light
+    // variant in the light slot.
     expect(scheme.brightness, Brightness.dark);
+    final lightScheme = sag.light.toColorScheme(Brightness.light);
+    expect(lightScheme.brightness, Brightness.light);
+    expect(lightScheme.primary, sag.light.primary);
+    expect(lightScheme.onSurface, sag.light.textPrimary);
     final leo = resolveZodiacTheme('leo');
-    final leoScheme = leo.variant.toColorScheme();
+    final leoScheme = leo.dark.toColorScheme(Brightness.dark);
     expect(leoScheme.primary, const Color(0xFFE8A812));
     expect(leoScheme.onPrimary, const Color(0xFF2A1A05));
   });
@@ -90,14 +96,20 @@ void main() {
   });
 
   test('nav selection color follows the skeleton rule', () {
-    final sag = ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius'));
+    final sag = ZodiacThemeExtension.of(
+      resolveZodiacTheme('sagittarius'),
+      Brightness.dark,
+    );
     expect(sag.navSelected, const Color(0xFF2DD4BF));
-    final aries = ZodiacThemeExtension.of(resolveZodiacTheme('aries'));
+    final aries = ZodiacThemeExtension.of(
+      resolveZodiacTheme('aries'),
+      Brightness.dark,
+    );
     expect(aries.navSelected, const Color(0xFFFF5A2A));
   });
 
   test('delay colors come from the variant tiers', () {
-    final variant = resolveZodiacTheme('sagittarius').variant;
+    final variant = resolveZodiacTheme('sagittarius').dark;
     expect(zodiacDelayColor(variant, null), isNull);
     expect(zodiacDelayColor(variant, -1), variant.delayBad);
     expect(zodiacDelayColor(variant, 120), variant.delayGood);

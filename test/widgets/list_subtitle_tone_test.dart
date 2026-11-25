@@ -14,15 +14,15 @@ void main() {
   }) async {
     final selection = resolveAppTheme('sagittarius');
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: selection.variant.primary,
+      seedColor: selection.darkVariant.primary,
       brightness: Brightness.dark,
     );
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(
           colorScheme: colorScheme,
-          extensions: [selection.toExtension()],
-          switchTheme: zodiacSwitchTheme(colorScheme, selection.variant),
+          extensions: [selection.toExtension(Brightness.dark)],
+          switchTheme: zodiacSwitchTheme(colorScheme, selection.darkVariant),
         ),
         home: Scaffold(
           body: ListItem.switchItem(
@@ -45,16 +45,16 @@ void main() {
     final offColor = await pumpAndRead(tester, on: false);
     expect(onColor, offColor);
     final scheme = ColorScheme.fromSeed(
-      seedColor: selection.variant.primary,
+      seedColor: selection.darkVariant.primary,
       brightness: Brightness.dark,
     );
     expect(
       onColor,
-      zodiacSubtitleColor(scheme, selection.variant),
+      zodiacSubtitleColor(scheme, selection.darkVariant),
     );
     // Softer than the switch's full lit color, brighter than the
     // old muted variant tone.
-    final lit = zodiacSwitchLitColor(scheme, selection.variant);
+    final lit = zodiacSwitchLitColor(scheme, selection.darkVariant);
     expect(onColor, isNot(lit));
     expect(onColor, isNot(scheme.onSurfaceVariant));
   });

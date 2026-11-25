@@ -9,7 +9,6 @@ import 'package:angelamihomo/providers/app.dart';
 
 import 'app_localizations.dart';
 import 'constant.dart';
-import 'deepspace_themes.dart';
 import 'zodiac_themes.dart';
 
 /// The guardian deity of one zodiac theme (T159; user spec finalised
@@ -359,6 +358,13 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     final active = _activeGuardian(context);
     if (active == null) return const SizedBox.expand();
+    // T298 (user 2026-11-24): the watermark adapts to the active
+    // mode. The guardian artwork is a dark-toned figure composed
+    // against dark fields; on a light field the same presence at
+    // full strength would shout over the content, so the light
+    // presentation eases it down — still clearly present, still
+    // the backdrop's, never the scene's subject.
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final variant = zodiacGuardianVariantFor(pageLabel);
     final size = MediaQuery.sizeOf(context);
     return IgnorePointer(
@@ -376,7 +382,8 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
               // stronger blur it read as too faint on the user's real
               // device (2026-11-17, T193), so the presence is raised
               // to 0.6 and the blur eased in the backdrop.
-              opacity: 0.6,
+              // T298: light fields take 0.45 (see above).
+              opacity: isLight ? 0.45 : 0.6,
               child: ShaderMask(
                 // T188: feather the artwork's edges into the
                 // background on both axes so the figure reads as grown
@@ -500,67 +507,6 @@ class ZodiacGuardianPlate extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    decoration: TextDecoration.none,
-                    color: variant.textSecondary.withValues(alpha: 0.7),
-                    fontSize: 8.5,
-                    letterSpacing: 1.8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The deep-space event name plate (T191, user 2026-11-17: the
-/// deep-space series carries a plate too). Same seat and voice as
-/// the guardian plate — lower-right corner, dimmed to background
-/// level, part of the backdrop painting rather than an overlay —
-/// naming the event instead of a guardian: the event's Chinese name
-/// over its Latin name and year.
-class DeepSpacePlate extends StatelessWidget {
-  const DeepSpacePlate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final zodiac = context.zodiac;
-    if (zodiac == null || zodiac.motif == null) {
-      return const SizedBox.expand();
-    }
-    final def = deepSpaceThemeById(zodiac.themeId);
-    if (def == null) return const SizedBox.expand();
-    final variant = zodiac.variant;
-    final title = def.nameZh.split('·').first.trim();
-    final latin = def.nameEn.split('·').first.trim().toUpperCase();
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          Positioned(
-            right: 15,
-            bottom: getFloatingBottomBarReserveHeight(context) + 22,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    decoration: TextDecoration.none,
-                    color: variant.textPrimary.withValues(alpha: 0.55),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3.5,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '$latin · ${def.year}',
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
