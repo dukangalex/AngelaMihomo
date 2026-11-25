@@ -203,11 +203,12 @@ void main() {
       // T292 (supersedes the T149 placement call at the user's direct
       // instruction): the card's leading icon IS the update-current-
       // profile button — exactly one, wearing the Update tooltip.
-      // T300 dresses it as the Earth–Moon system (EarthMoonUpdateIcon;
-      // the moon orbits while an update runs). It is a refresh entry,
+      // T301 dresses it as a zodiac astrolabe wheel
+      // (ZodiacWheelUpdateIcon; the glyph ring and the compass star
+      // counter-turn while an update runs). It is a refresh entry,
       // not a test entry: the light above stays the card's only
       // speed-test trigger.
-      expect(find.byType(EarthMoonUpdateIcon), findsOneWidget);
+      expect(find.byType(ZodiacWheelUpdateIcon), findsOneWidget);
       expect(find.byTooltip('Update'), findsOneWidget);
     },
   );
