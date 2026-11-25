@@ -133,7 +133,10 @@ Future<void> _pumpCard(
         theme: ThemeData(
           fontFamily: 'NotoSansSC',
           extensions: [
-            ZodiacThemeExtension.of(resolveZodiacTheme('sagittarius')),
+            ZodiacThemeExtension.of(
+            resolveZodiacTheme('sagittarius'),
+            Brightness.dark,
+          ),
           ],
         ),
         localizationsDelegates: [

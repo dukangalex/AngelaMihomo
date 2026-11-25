@@ -73,10 +73,8 @@ class ItemCard extends StatelessWidget {
 }
 
 /// The theme chooser: the 星辰大海 family name heads the card and
-/// its three series sit under it as collapsible sections — 十二星座，
-/// 人类深空探索, 纯色生肖. The section holding the
-/// active theme starts expanded; every section can be opened or
-/// closed on its own.
+/// its one remaining series — the twelve constellations (T298) —
+/// sits under it as a collapsible section, starting expanded.
 class _StarrySeaThemeItem extends ConsumerStatefulWidget {
   const _StarrySeaThemeItem();
 
@@ -108,19 +106,7 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
   }
 
   String _selectedNameZh(AppThemeSelection selected) {
-    return switch (selected.series) {
-      ThemeSeries.zodiac => resolveZodiacTheme(selected.id).nameZh,
-      ThemeSeries.deepSpace => deepSpaceThemeById(selected.id)?.nameZh ?? '',
-      ThemeSeries.solid => _solidSelectedNameZh(selected.id),
-    };
-  }
-
-  String _solidSelectedNameZh(String id) {
-    final def = solidThemeById(id);
-    if (def == null) return '';
-    return isSolidLightThemeId(id)
-        ? '${def.nameZh} · $solidLightGroupNameZh'
-        : def.nameZh;
+    return resolveZodiacTheme(selected.id).nameZh;
   }
 
   @override
@@ -184,57 +170,9 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
                   glyph: theme.sign,
                   nameZh: theme.nameZh,
                   nameEn: theme.nameEn,
-                  variant: theme.variant,
+                  variant: theme.variantFor(Theme.of(context).brightness),
                   isSelected: theme.id == selected.id,
                   isDefault: theme.id == zodiacDefaultThemeId,
-                  onTap: () => _select(theme.id),
-                ),
-            ],
-          ),
-          _SeriesSection(
-            nameZh: deepSpaceSeriesNameZh,
-            nameEn: deepSpaceSeriesNameEn,
-            expanded: _expanded.contains(ThemeSeries.deepSpace),
-            onToggle: () => _toggle(ThemeSeries.deepSpace),
-            children: [
-              for (final theme in deepSpaceThemes)
-                _DeepSpaceThemeRow(
-                  theme: theme,
-                  isSelected: theme.id == selected.id,
-                  onTap: () => _select(theme.id),
-                ),
-            ],
-          ),
-          _SeriesSection(
-            nameZh: solidSeriesNameZh,
-            nameEn: solidSeriesNameEn,
-            expanded: _expanded.contains(ThemeSeries.solid),
-            onToggle: () => _toggle(ThemeSeries.solid),
-            children: [
-              const _ThemeGroupHeader(
-                nameZh: solidDarkGroupNameZh,
-                nameEn: solidDarkGroupNameEn,
-              ),
-              for (final theme in solidThemes)
-                _ThemeRow(
-                  glyph: theme.nameZh,
-                  nameZh: theme.nameZh,
-                  nameEn: theme.nameEn,
-                  variant: theme.variant,
-                  isSelected: theme.id == selected.id,
-                  onTap: () => _select(theme.id),
-                ),
-              const _ThemeGroupHeader(
-                nameZh: solidLightGroupNameZh,
-                nameEn: solidLightGroupNameEn,
-              ),
-              for (final theme in solidLightThemes)
-                _ThemeRow(
-                  glyph: theme.nameZh,
-                  nameZh: theme.nameZh,
-                  nameEn: theme.nameEn,
-                  variant: theme.variant,
-                  isSelected: theme.id == selected.id,
                   onTap: () => _select(theme.id),
                 ),
             ],
@@ -245,40 +183,6 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
   }
 }
 
-/// A small group label inside a series section (the solid series'
-/// dark and light groups, T264): muted text, no interaction — the
-/// grouping lives inside the existing series section rather than in
-/// a parallel switch.
-class _ThemeGroupHeader extends StatelessWidget {
-  final String nameZh;
-  final String nameEn;
-
-  const _ThemeGroupHeader({required this.nameZh, required this.nameEn});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 2),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          '$nameZh · $nameEn',
-          style: textTheme.labelMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One collapsible series section under the 星辰大海 header: the
-/// series' full name （中文 primary, English under it) with a
-/// chevron; tapping the header opens or closes its theme rows.
 class _SeriesSection extends StatelessWidget {
   final String nameZh;
   final String nameEn;
@@ -355,143 +259,7 @@ class _SeriesSection extends StatelessWidget {
   }
 }
 
-/// One Human Deep Space Exploration event row (T182): the year as
-/// the leading mark, the event name in Chinese with the English
-/// line under it, the palette dots and the same selected chrome as
-/// the constellation rows.
-class _DeepSpaceThemeRow extends StatelessWidget {
-  final DeepSpaceThemeDef theme;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _DeepSpaceThemeRow({
-    required this.theme,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  Widget _dot(Color color) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final variant = context.zodiac?.variant;
-    final selectedPaint = variant?.selected;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: isSelected
-                ? BoxDecoration(
-                    color:
-                        variant?.surfaceVariant ??
-                        colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
-                  )
-                : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  if (isSelected &&
-                      selectedPaint != null &&
-                      !selectedPaint.isNone) ...[
-                    Container(
-                      width: 4,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        gradient: selectedPaint.isGradient
-                            ? LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: selectedPaint.stops!,
-                              )
-                            : null,
-                        color: selectedPaint.isGradient
-                            ? null
-                            : selectedPaint.solidColor,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                  SizedBox(
-                    width: 34,
-                    child: Text(
-                      theme.year,
-                      style: textTheme.labelMedium?.copyWith(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          theme.nameZh,
-                          style: textTheme.titleSmall?.copyWith(
-                            color: isSelected
-                                ? colorScheme.primary
-                                : colorScheme.onSurface,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          theme.nameEn,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _dot(theme.variant.primary),
-                  const SizedBox(width: 4),
-                  _dot(theme.variant.secondary),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isSelected
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    size: 20,
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One theme row in the glyph-led series (the constellations, and
-/// the solid zodiac whose glyph is the animal's Chinese name).
+/// One theme row in the constellation series, led by its sign glyph.
 class _ThemeRow extends StatelessWidget {
   final String glyph;
   final String nameZh;

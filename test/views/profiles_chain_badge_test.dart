@@ -16,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// display: card taps keep working and stale data renders normally.
 void main() {
   final zodiac = resolveZodiacTheme('sagittarius');
-  final variant = zodiac.variant;
+  final variant = zodiac.dark;
 
   Future<void> pumpItem(
     WidgetTester tester, {
@@ -44,8 +44,8 @@ void main() {
           ...GlobalMaterialLocalizations.delegates,
         ],
         theme: ThemeData(
-          colorScheme: variant.toColorScheme(),
-          extensions: [ZodiacThemeExtension.of(zodiac)],
+          colorScheme: variant.toColorScheme(Brightness.dark),
+          extensions: [ZodiacThemeExtension.of(zodiac, Brightness.dark)],
         ),
         home: Scaffold(
           body: ProfileItem(

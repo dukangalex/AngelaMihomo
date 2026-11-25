@@ -225,54 +225,51 @@ final isRestartingCoreProvider = StateProvider<bool>((ref) => false);
 /// Profiles without an enabled chain are absent from the map. The chain
 /// settings page invalidates this after every saved change; profile
 /// imports, updates and deletions recompute it via [profilesProvider].
-final chainCardHealthProvider =
-    FutureProvider<Map<String, ChainCardHealth>>((ref) async {
-      final profiles = ref.watch(profilesProvider);
+final chainCardHealthProvider = FutureProvider<Map<String, ChainCardHealth>>((
+  ref,
+) async {
+  final profiles = ref.watch(profilesProvider);
+  try {
+    await ProfileChainStore.instance.ensureLoaded();
+    final store = ProfileChainStore.instance;
+    final targetCache = <String, Set<String>>{};
+    Future<Set<String>> targetsOf(String profileId) async {
+      final cached = targetCache[profileId];
+      if (cached != null) return cached;
+      Set<String> targets;
       try {
-        await ProfileChainStore.instance.ensureLoaded();
-        final store = ProfileChainStore.instance;
-        final targetCache = <String, Set<String>>{};
-        Future<Set<String>> targetsOf(String profileId) async {
-          final cached = targetCache[profileId];
-          if (cached != null) return cached;
-          Set<String> targets;
-          try {
-            final config = await globalState.getProfileConfig(
-              profileId,
-              effective: true,
-            );
-            targets = chainTargetKeysOf(config);
-          } catch (_) {
-            targets = const {};
-          }
-          return targetCache[profileId] = targets;
-        }
-
-        final health = <String, ChainCardHealth>{};
-        for (final profile in profiles) {
-          final chain = store.of(profile.id);
-          if (!chain.enabled) continue;
-          final landingProfileId = chain.resolvedLandingProfileId(
-            profile.id,
-          );
-          final landingExists = profiles.any(
-            (item) => item.id == landingProfileId,
-          );
-          health[profile.id] = chainCardHealth(
-            chain: chain,
-            currentProfileId: profile.id,
-            landingProfileExists: landingExists,
-            entryTargets: await targetsOf(profile.id),
-            landingTargets: landingExists
-                ? await targetsOf(landingProfileId)
-                : const {},
-          );
-        }
-        return health;
+        final config = await globalState.getProfileConfig(
+          profileId,
+          effective: true,
+        );
+        targets = chainTargetKeysOf(config);
       } catch (_) {
-        return const {};
+        targets = const {};
       }
-    });
+      return targetCache[profileId] = targets;
+    }
+
+    final health = <String, ChainCardHealth>{};
+    for (final profile in profiles) {
+      final chain = store.of(profile.id);
+      if (!chain.enabled) continue;
+      final landingProfileId = chain.resolvedLandingProfileId(profile.id);
+      final landingExists = profiles.any((item) => item.id == landingProfileId);
+      health[profile.id] = chainCardHealth(
+        chain: chain,
+        currentProfileId: profile.id,
+        landingProfileExists: landingExists,
+        entryTargets: await targetsOf(profile.id),
+        landingTargets: landingExists
+            ? await targetsOf(landingProfileId)
+            : const {},
+      );
+    }
+    return health;
+  } catch (_) {
+    return const {};
+  }
+});
 
 @riverpod
 TrayState trayState(Ref ref) {
@@ -1123,12 +1120,13 @@ ColorScheme genColorScheme(
   final zodiacId = ref.watch(
     themeSettingProvider.select((state) => state.zodiacTheme),
   );
-  // Single-set family (DESIGN doc section 1 rule 9): the zodiac scheme
-  // is brightness-independent — the canonical variant's dark scheme is
-  // returned for both Material slots, so a light system mode still
-  // renders the same constellation theme. The [brightness] argument
-  // only steers the legacy non-zodiac path above.
-  return resolveAppTheme(zodiacId).variant.toColorScheme();
+  // Dual-set family (T298): the scheme is composed from the
+  // variant matching the requested slot's [brightness], so a light
+  // slot renders the light presentation and a dark slot the dark
+  // one.
+  return resolveAppTheme(
+    zodiacId,
+  ).variantFor(brightness).toColorScheme(brightness);
 }
 
 @riverpod

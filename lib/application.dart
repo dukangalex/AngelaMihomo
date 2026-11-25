@@ -426,9 +426,7 @@ class ApplicationState extends ConsumerState<Application>
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont
-                ? 'NotoSansSC'
-                : null;
+            final fontFamily = themeProps.useHarmonyFont ? 'NotoSansSC' : null;
             final zodiac = resolveAppTheme(themeProps.zodiacTheme);
             final lightColorScheme = ref.read(
               genColorSchemeProvider(Brightness.light),
@@ -485,19 +483,22 @@ class ApplicationState extends ConsumerState<Application>
               locale:
                   utils.getLocaleForString(locale) ?? utils.getSystemLocale(),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
-              // The zodiac family is single-set (DESIGN doc section 1
-              // rule 9): both slots carry the same canonical theme, so
-              // the system brightness never changes the presentation.
-              themeMode: ThemeMode.system,
+              // The zodiac family is dual-set (T298): each slot
+              // carries its own brightness's presentation of the
+              // selected constellation theme, and the app's theme
+              // mode decides which slot is live — system follows
+              // the platform brightness, light and dark force
+              // their slot.
+              themeMode: themeProps.themeMode,
               theme: _themeOf(
                 lightColorScheme,
                 fontFamily,
-                zodiac.toExtension(),
+                zodiac.toExtension(Brightness.light),
               ),
               darkTheme: _themeOf(
                 darkColorScheme,
                 fontFamily,
-                zodiac.toExtension(),
+                zodiac.toExtension(Brightness.dark),
               ),
               home: child!,
             );

@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:angelamihomo/common/deepspace_themes.dart';
 import 'package:angelamihomo/common/zodiac_themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 double _luminance(Color c) {
   double f(double v) {
     final s = v / 255.0;
-    return s <= 0.04045 ? s / 12.92 : math.pow((s + 0.055) / 1.055, 2.4).toDouble();
+    return s <= 0.04045
+        ? s / 12.92
+        : math.pow((s + 0.055) / 1.055, 2.4).toDouble();
   }
 
   return 0.2126 * f(c.r * 255) + 0.7152 * f(c.g * 255) + 0.0722 * f(c.b * 255);
@@ -31,46 +32,33 @@ double _contrast(Color a, Color b) {
 void main() {
   group('zodiac textSecondary contrast floor (T177)', () {
     for (final def in zodiacThemeDefs) {
-      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
-        final variant = def.variant;
-        final stops = variant.background.isGradient
-            ? variant.background.stops!
-            : [variant.background.firstColor];
-        final lightest = stops.reduce(
-          (a, b) => _luminance(a) >= _luminance(b) ? a : b,
+      for (final (name, variant) in [
+        ('light', def.light),
+        ('dark', def.dark),
+      ]) {
+        test(
+          '${def.id} ($name) stays at or above 5.5:1 on its worst-case card',
+          () {
+            final stops = variant.background.isGradient
+                ? variant.background.stops!
+                : [variant.background.firstColor];
+            final lightest = stops.reduce(
+              (a, b) => _luminance(a) >= _luminance(b) ? a : b,
+            );
+            final worstCard = Color.alphaBlend(
+              variant.surfaceVariant,
+              lightest,
+            );
+            expect(
+              _contrast(variant.textSecondary, worstCard),
+              greaterThanOrEqualTo(5.5),
+              reason:
+                  '${def.id} ($name) textSecondary ${variant.textSecondary} '
+                  'vs worst card $worstCard',
+            );
+          },
         );
-        final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
-        expect(
-          _contrast(variant.textSecondary, worstCard),
-          greaterThanOrEqualTo(5.5),
-          reason:
-              '${def.id} textSecondary ${variant.textSecondary} vs worst '
-              'card $worstCard',
-        );
-      });
+      }
     }
   });
-
-  group('deep space textSecondary contrast floor (T181)', () {
-    for (final def in deepSpaceThemeDefs) {
-      test('${def.id} stays at or above 5.5:1 on its worst-case card', () {
-        final variant = def.variant;
-        final stops = variant.background.isGradient
-            ? variant.background.stops!
-            : [variant.background.firstColor];
-        final lightest = stops.reduce(
-          (a, b) => _luminance(a) >= _luminance(b) ? a : b,
-        );
-        final worstCard = Color.alphaBlend(variant.surfaceVariant, lightest);
-        expect(
-          _contrast(variant.textSecondary, worstCard),
-          greaterThanOrEqualTo(5.5),
-          reason:
-              '${def.id} textSecondary ${variant.textSecondary} vs worst '
-              'card $worstCard',
-        );
-      });
-    }
-  });
-
 }
