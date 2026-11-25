@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
 import 'package:angelamihomo/models/models.dart';
@@ -230,6 +232,182 @@ class _ProfileZone extends ConsumerWidget {
   }
 }
 
+/// T300 (user 2026-11-25): the update button as an Earth–Moon
+/// system, drawn in the active color scheme so it belongs to the
+/// 星辰大海 interface — an inner planet sphere (scheme gradient,
+/// shaded terminator, atmosphere rim) and a small moon parked on
+/// its orbit ring. While [updating] the moon orbits the planet;
+/// when the update ends it completes its current revolution and
+/// parks again. [dimmed] renders the whole system at disabled
+/// strength.
+class EarthMoonUpdateIcon extends StatefulWidget {
+  final bool updating;
+  final bool dimmed;
+
+  const EarthMoonUpdateIcon({
+    super.key,
+    required this.updating,
+    this.dimmed = false,
+  });
+
+  @override
+  State<EarthMoonUpdateIcon> createState() => _EarthMoonUpdateIconState();
+}
+
+class _EarthMoonUpdateIconState extends State<EarthMoonUpdateIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _orbit = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  );
+
+  @override
+  void didUpdateWidget(EarthMoonUpdateIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.updating == oldWidget.updating) return;
+    if (widget.updating) {
+      _orbit.repeat();
+    } else {
+      // Finish the current revolution, then park at the rest angle.
+      final remaining = (1 - _orbit.value) * 1600;
+      _orbit
+          .animateTo(1, duration: Duration(milliseconds: remaining.round()))
+          .whenComplete(() {
+            if (mounted && !widget.updating) _orbit.value = 0;
+          });
+    }
+  }
+
+  @override
+  void dispose() {
+    _orbit.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return AnimatedBuilder(
+      animation: _orbit,
+      builder: (_, _) => CustomPaint(
+        size: const Size.square(24),
+        painter: _EarthMoonPainter(
+          // Rest angle parks the moon at the upper right.
+          angle: -0.96 + _orbit.value * 2 * math.pi,
+          planetLight: colorScheme.secondary,
+          planetDeep: colorScheme.primary,
+          ring: colorScheme.onSurfaceVariant,
+          moon: colorScheme.onSurfaceVariant,
+          dimmed: widget.dimmed,
+        ),
+      ),
+    );
+  }
+}
+
+class _EarthMoonPainter extends CustomPainter {
+  final double angle;
+  final Color planetLight;
+  final Color planetDeep;
+  final Color ring;
+  final Color moon;
+  final bool dimmed;
+
+  const _EarthMoonPainter({
+    required this.angle,
+    required this.planetLight,
+    required this.planetDeep,
+    required this.ring,
+    required this.moon,
+    required this.dimmed,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fade = dimmed ? 0.38 : 1.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    const orbitRadius = 9.3;
+    const planetRadius = 5.9;
+    const moonRadius = 2.35;
+
+    canvas.drawCircle(
+      center,
+      orbitRadius,
+      Paint()
+        ..color = ring.withValues(alpha: 0.45 * fade)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+
+    // Planet sphere: scheme gradient lit from the upper left, a
+    // soft terminator toward the lower right, a thin atmosphere rim.
+    canvas.drawCircle(
+      center,
+      planetRadius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            planetLight.withValues(alpha: fade),
+            planetDeep.withValues(alpha: fade),
+          ],
+          stops: const [0.15, 1],
+        ).createShader(
+          Rect.fromCircle(
+            center: center + const Offset(-1.8, -1.8),
+            radius: planetRadius * 1.8,
+          ),
+        ),
+    );
+    canvas.drawCircle(
+      center,
+      planetRadius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Colors.transparent,
+            Colors.black.withValues(alpha: 0.16 * fade),
+          ],
+        ).createShader(
+          Rect.fromCircle(
+            center: center + const Offset(2.4, 2.4),
+            radius: planetRadius * 1.7,
+          ),
+        ),
+    );
+    canvas.drawCircle(
+      center,
+      planetRadius,
+      Paint()
+        ..color = planetLight.withValues(alpha: 0.30 * fade)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.9,
+    );
+
+    // The moon on its orbit, one small crater for character.
+    final moonCenter =
+        center + Offset(math.cos(angle), math.sin(angle)) * orbitRadius;
+    canvas.drawCircle(
+      moonCenter,
+      moonRadius,
+      Paint()..color = moon.withValues(alpha: 0.92 * fade),
+    );
+    canvas.drawCircle(
+      moonCenter + const Offset(0.7, -0.45),
+      0.65,
+      Paint()..color = Colors.black.withValues(alpha: 0.14 * fade),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_EarthMoonPainter oldDelegate) =>
+      angle != oldDelegate.angle ||
+      planetLight != oldDelegate.planetLight ||
+      planetDeep != oldDelegate.planetDeep ||
+      ring != oldDelegate.ring ||
+      moon != oldDelegate.moon ||
+      dimmed != oldDelegate.dimmed;
+}
+
 /// T292: the current profile card's leading update button, replacing
 /// the old static description icon. It routes the tap to
 /// refreshProfileSubscription (profile_info.dart), which already
@@ -237,10 +415,11 @@ class _ProfileZone extends ConsumerWidget {
 /// external-provider update — so this button adds no update logic of
 /// its own.
 ///
-/// States: while the profile reports isUpdating the button shrinks to
-/// a small spinner and is disabled so a second tap cannot double-fire;
-/// a file profile with no external providers has nothing to refresh,
-/// so it is shown disabled (onPressed null).
+/// States (T300 presentation): the Earth–Moon system (see
+/// EarthMoonUpdateIcon) — while the profile reports isUpdating the
+/// moon orbits and the button is disabled so a second tap cannot
+/// double-fire; a file profile with no external providers has
+/// nothing to refresh, so it is shown dimmed and disabled.
 class _UpdateProfileButton extends ConsumerWidget {
   final Profile profile;
 
@@ -260,17 +439,11 @@ class _UpdateProfileButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final canRefresh = _canRefresh;
-    final colorScheme = context.colorScheme;
-    final updating = profile.isUpdating;
-    final color = canRefresh
-        ? colorScheme.onSurfaceVariant
-        : colorScheme.onSurfaceVariant.withValues(alpha: 0.38);
     return IconButton(
       onPressed: canRefresh
           ? () => refreshProfileSubscription(context, ref, profile)
           : null,
       tooltip: appLocalizations.update,
-      iconSize: 20,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(
@@ -279,16 +452,10 @@ class _UpdateProfileButton extends ConsumerWidget {
         maxWidth: 28,
         maxHeight: 28,
       ),
-      icon: updating
-          ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colorScheme.primary,
-              ),
-            )
-          : Icon(Icons.refresh_rounded, size: 20, color: color),
+      icon: EarthMoonUpdateIcon(
+        updating: profile.isUpdating,
+        dimmed: !canRefresh && !profile.isUpdating,
+      ),
     );
   }
 }
