@@ -8,12 +8,12 @@ import 'package:angelamihomo/common/profile_chain.dart';
 class ProfileChainOverlay {
   const ProfileChainOverlay._();
 
-  /// Short source marker embedded in generated names. Profile ids are
-  /// timestamp-like and long; the last 6 characters keep generated group
-  /// names readable while staying distinct per source profile.
-  static String _nameToken(String profileId) => profileId.length > 6
-      ? profileId.substring(profileId.length - 6)
-      : profileId;
+  /// Source marker embedded in generated names: a single chain glyph
+  /// (T307: the profile token was dropped at the user's request for the
+  /// shortest readable names). Distinctness across source profiles is
+  /// kept by the collision suffix in [build]'s rename map, fed by the
+  /// caller's accumulated reserved names.
+  static const String _prefix = '⛓';
 
   /// Health checks of the imported exit graph run through the entry, so a
   /// check costs two hops. The parameters are aligned with the
@@ -45,6 +45,7 @@ class ProfileChainOverlay {
     required String targetName,
     Set<String> reservedNames = const {},
     String? providersPath,
+    String? targetAlias,
   }) {
     final proxies = _objects(source['proxies'], 'proxy');
     final groups = _objects(source['proxy-groups'], 'group');
@@ -74,9 +75,20 @@ class ProfileChainOverlay {
       );
     }
 
-    final prefix = '[chain ${_nameToken(profileId)}] ';
+    final prefix = _prefix;
     final used = <String>{...allNames, ...providerNames, ...reservedNames};
     final renamed = <String, String>{};
+    // T307: a sole group exit can be imported under the landing group's
+    // own name, so the core needs no extra wrapper group around it. The
+    // caller only passes an alias that is free in the active profile;
+    // re-check here so a stale caller can never produce a name the core
+    // would reject as conflicting.
+    if (targetAlias != null &&
+        targetKind == ChainTargetKind.group &&
+        !reservedNames.contains(targetAlias)) {
+      renamed['group\u0000$targetName'] = targetAlias;
+      used.add(targetAlias);
+    }
     String mapped(String kind, String original) =>
         renamed.putIfAbsent('$kind\u0000$original', () {
           var candidate = '$prefix$original';
@@ -170,7 +182,7 @@ class ProfileChainOverlay {
           'Provider "$name" has an unsupported override-expr value.',
         );
       }
-      final providerPrefix = '[chain ${_nameToken(profileId)}/$name] ';
+      final providerPrefix = '⛓/$name ';
       expressions.add('.name = ${jsonEncode(providerPrefix)} + .name');
       overrideMap['override-expr'] = expressions;
       copied['override'] = overrideMap;

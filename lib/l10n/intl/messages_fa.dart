@@ -527,6 +527,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "chainEntry": MessageLookupByLibrary.simpleMessage("Entry"),
     "chainExit": MessageLookupByLibrary.simpleMessage("Exit"),
+    "chainAddExit": MessageLookupByLibrary.simpleMessage("افزودن خروجی"),
     "chainExitProfile": MessageLookupByLibrary.simpleMessage("Exit profile"),
     "chainIssueIncomplete": MessageLookupByLibrary.simpleMessage(
       "Choose both an entry and an exit before enabling the chain.",

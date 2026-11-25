@@ -249,20 +249,26 @@ final chainCardHealthProvider = FutureProvider<Map<String, ChainCardHealth>>((
       return targetCache[profileId] = targets;
     }
 
+    final existingProfileIds = {for (final item in profiles) item.id};
     final health = <String, ChainCardHealth>{};
     for (final profile in profiles) {
       final chain = store.of(profile.id);
       if (!chain.enabled) continue;
-      final landingProfileId = chain.resolvedLandingProfileId(profile.id);
-      final landingExists = profiles.any((item) => item.id == landingProfileId);
+      final landingTargetsByProfile = <String, Set<String>>{};
+      for (final landing in chain.landings) {
+        final landingProfileId = landing.resolvedProfileId(profile.id);
+        if (existingProfileIds.contains(landingProfileId)) {
+          landingTargetsByProfile[landingProfileId] = await targetsOf(
+            landingProfileId,
+          );
+        }
+      }
       health[profile.id] = chainCardHealth(
         chain: chain,
         currentProfileId: profile.id,
-        landingProfileExists: landingExists,
+        existingProfileIds: existingProfileIds,
         entryTargets: await targetsOf(profile.id),
-        landingTargets: landingExists
-            ? await targetsOf(landingProfileId)
-            : const {},
+        landingTargetsByProfile: landingTargetsByProfile,
       );
     }
     return health;

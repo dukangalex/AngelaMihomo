@@ -27,6 +27,7 @@ import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'common/common.dart';
+import 'common/explicit_policy.dart';
 import 'common/profile_chain.dart';
 import 'common/profile_chain_overlay.dart';
 import 'controller.dart';
@@ -1135,44 +1136,78 @@ class GlobalState {
     ProfileChain chain,
   ) async {
     final policy = chain.toJson();
-    final landingProfileId = chain.resolvedLandingProfileId(profile.id);
     if (!chain.enabled) return policy;
-    if (landingProfileId == profile.id) {
+    if (chain.landings.isEmpty) {
       throw const ChainSelectionStaleException(
-        ChainStaleReference.exitSameProfile,
-        'The chain exit must be selected from another profile.',
+        ChainStaleReference.exitTarget,
+        'The chain has no exit selected.',
       );
     }
-    final sourceProfile = config.profiles.getProfile(landingProfileId);
-    if (sourceProfile == null) {
-      throw const ChainSelectionStaleException(
-        ChainStaleReference.exitProfile,
-        'The selected exit profile is no longer available.',
-      );
-    }
-    final source = await getProfileConfig(landingProfileId, effective: true);
     final activeConfig = await getProfileConfig(profile.id, effective: true);
-    policy.addAll(
-      ProfileChainOverlay.build(
+    // Names a later exit import must not reuse: everything the active
+    // profile already has, plus every name an earlier import generated
+    // (two exits may come from the same source profile and share the
+    // generated-name prefix).
+    final reservedNames = <String>{
+      for (final proxy in (activeConfig['proxies'] as List? ?? const []))
+        if (proxy is Map && proxy['name'] is String) proxy['name'] as String,
+      for (final group in (activeConfig['proxy-groups'] as List? ?? const []))
+        if (group is Map && group['name'] is String) group['name'] as String,
+      for (final name
+          in (activeConfig['proxy-providers'] as Map? ?? const {}).keys)
+        name.toString(),
+    };
+    final targets = <Map<String, dynamic>>[];
+    for (final landing in chain.landings) {
+      final landingProfileId = landing.resolvedProfileId(profile.id);
+      if (landingProfileId == profile.id) {
+        throw const ChainSelectionStaleException(
+          ChainStaleReference.exitSameProfile,
+          'The chain exit must be selected from another profile.',
+        );
+      }
+      final sourceProfile = config.profiles.getProfile(landingProfileId);
+      if (sourceProfile == null) {
+        throw const ChainSelectionStaleException(
+          ChainStaleReference.exitProfile,
+          'The selected exit profile is no longer available.',
+        );
+      }
+      final source = await getProfileConfig(landingProfileId, effective: true);
+      final overlay = ProfileChainOverlay.build(
         profileId: sourceProfile.id,
         source: source,
-        targetKind: chain.landingKind,
-        targetName: chain.landing,
-        reservedNames: {
-          for (final proxy in (activeConfig['proxies'] as List? ?? const []))
-            if (proxy is Map && proxy['name'] is String)
-              proxy['name'] as String,
-          for (final group
-              in (activeConfig['proxy-groups'] as List? ?? const []))
-            if (group is Map && group['name'] is String)
-              group['name'] as String,
-          for (final name
-              in (activeConfig['proxy-providers'] as Map? ?? const {}).keys)
-            name.toString(),
-        },
+        targetKind: landing.kind,
+        targetName: landing.name,
+        reservedNames: reservedNames,
         providersPath: await appPath.getProvidersDirPath(sourceProfile.id),
-      ),
-    );
+        // T307: with exactly one exit and that exit a group, the imported
+        // group itself takes the landing group's name; the core then
+        // needs no wrapper group around it. Skipped when the active
+        // profile already uses that name.
+        targetAlias:
+            chain.landings.length == 1 &&
+                landing.kind == ChainTargetKind.group &&
+                !reservedNames.contains(explicitChainGroup)
+            ? explicitChainGroup
+            : null,
+      );
+      reservedNames
+        ..add(overlay['external-target'] as String)
+        ..addAll(
+          (overlay['external-proxies'] as List).map(
+            (proxy) => (proxy as Map)['name'] as String,
+          ),
+        )
+        ..addAll(
+          (overlay['external-groups'] as List).map(
+            (group) => (group as Map)['name'] as String,
+          ),
+        )
+        ..addAll((overlay['external-providers'] as Map).keys.cast<String>());
+      targets.add(overlay);
+    }
+    policy['external-targets'] = targets;
     return policy;
   }
 

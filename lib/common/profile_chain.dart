@@ -33,24 +33,95 @@ enum ChainTargetKind { proxy, group }
 String chainTargetKey(ChainTargetKind kind, String name) =>
     '${kind.name}\u0000$name';
 
+/// One chain exit: a node or strategy group taken from another profile.
+/// A chain may carry several exits (T303); the generated chain landing
+/// group lists them side by side and the user picks one at runtime.
+class ChainLanding {
+  /// The profile the exit is taken from. Empty is the legacy v1 shape,
+  /// where it meant the profile owning the chain.
+  String profileId;
+  ChainTargetKind kind;
+  String name;
+
+  ChainLanding({
+    this.profileId = '',
+    this.kind = ChainTargetKind.proxy,
+    this.name = '',
+  });
+
+  String get key => chainTargetKey(kind, name);
+
+  String resolvedProfileId(String currentProfileId) =>
+      profileId.isEmpty ? currentProfileId : profileId;
+
+  ChainLanding copyWith({
+    String? profileId,
+    ChainTargetKind? kind,
+    String? name,
+  }) => ChainLanding(
+    profileId: profileId ?? this.profileId,
+    kind: kind ?? this.kind,
+    name: name ?? this.name,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'profile-id': profileId,
+    'kind': kind.name,
+    'name': name,
+  };
+
+  factory ChainLanding.fromJson(Map<String, dynamic> json) => ChainLanding(
+    profileId: (json['profile-id'] ?? '').toString(),
+    kind: _parseChainTargetKind(json['kind']),
+    name: (json['name'] ?? '').toString(),
+  );
+}
+
+ChainTargetKind _parseChainTargetKind(Object? value) {
+  for (final kind in ChainTargetKind.values) {
+    if (kind.name == value) return kind;
+  }
+  return ChainTargetKind.proxy;
+}
+
 class ProfileChain {
   bool enabled;
   String entry;
   ChainTargetKind entryKind;
-  String landing;
-  ChainTargetKind landingKind;
 
-  /// Empty means the profile owning this chain (also the legacy v1 default).
-  String landingProfileId;
+  /// The chain exits, in display order. The legacy v1 settings held a
+  /// single exit; they are read as a one-element list and written back
+  /// with the first exit mirrored into the legacy fields, so a downgrade
+  /// still sees a working single-exit chain.
+  List<ChainLanding> landings;
 
   ProfileChain({
     this.enabled = false,
     this.entry = '',
     this.entryKind = ChainTargetKind.proxy,
-    this.landing = '',
-    this.landingKind = ChainTargetKind.proxy,
-    this.landingProfileId = '',
-  });
+    List<ChainLanding>? landings,
+    String landing = '',
+    ChainTargetKind landingKind = ChainTargetKind.proxy,
+    String landingProfileId = '',
+  }) : landings =
+           landings ??
+           [
+             if (landing.isNotEmpty)
+               ChainLanding(
+                 profileId: landingProfileId,
+                 kind: landingKind,
+                 name: landing,
+               ),
+           ];
+
+  /// Legacy single-exit accessors over the first exit.
+  String get landing => landings.isEmpty ? '' : landings.first.name;
+  ChainTargetKind get landingKind =>
+      landings.isEmpty ? ChainTargetKind.proxy : landings.first.kind;
+
+  /// Empty means the profile owning this chain (also the legacy v1 default).
+  String get landingProfileId =>
+      landings.isEmpty ? '' : landings.first.profileId;
 
   String resolvedLandingProfileId(String currentProfileId) =>
       landingProfileId.isEmpty ? currentProfileId : landingProfileId;
@@ -59,34 +130,58 @@ class ProfileChain {
     bool? enabled,
     String? entry,
     ChainTargetKind? entryKind,
+    List<ChainLanding>? landings,
     String? landing,
     ChainTargetKind? landingKind,
     String? landingProfileId,
-  }) => ProfileChain(
-    enabled: enabled ?? this.enabled,
-    entry: entry ?? this.entry,
-    entryKind: entryKind ?? this.entryKind,
-    landing: landing ?? this.landing,
-    landingKind: landingKind ?? this.landingKind,
-    landingProfileId: landingProfileId ?? this.landingProfileId,
-  );
+  }) {
+    var nextLandings = landings ?? List<ChainLanding>.of(this.landings);
+    if (landing != null || landingKind != null || landingProfileId != null) {
+      final first = nextLandings.isEmpty ? ChainLanding() : nextLandings.first;
+      final rewritten = first.copyWith(
+        name: landing,
+        kind: landingKind,
+        profileId: landingProfileId,
+      );
+      if (nextLandings.isEmpty) {
+        if (rewritten.name.isNotEmpty) nextLandings = [rewritten];
+      } else {
+        nextLandings[0] = rewritten;
+      }
+    }
+    return ProfileChain(
+      enabled: enabled ?? this.enabled,
+      entry: entry ?? this.entry,
+      entryKind: entryKind ?? this.entryKind,
+      landings: nextLandings,
+    );
+  }
 
   ProfileChainIssue? selectionIssue({
     required String currentProfileId,
     required Set<String> entryTargets,
-    required Set<String> landingTargets,
+    required Map<String, Set<String>> landingTargetsByProfile,
   }) {
     if (!enabled) return null;
-    if (entry.trim().isEmpty || landing.trim().isEmpty) {
+    if (entry.trim().isEmpty ||
+        landings.isEmpty ||
+        landings.any((landing) => landing.name.trim().isEmpty)) {
       return ProfileChainIssue.incomplete;
     }
-    final landingSource = resolvedLandingProfileId(currentProfileId);
-    if (landingSource == currentProfileId) {
-      return ProfileChainIssue.otherProfileRequired;
+    for (final landing in landings) {
+      if (landing.resolvedProfileId(currentProfileId) == currentProfileId) {
+        return ProfileChainIssue.otherProfileRequired;
+      }
     }
-    if (!entryTargets.contains(chainTargetKey(entryKind, entry)) ||
-        !landingTargets.contains(chainTargetKey(landingKind, landing))) {
+    if (!entryTargets.contains(chainTargetKey(entryKind, entry))) {
       return ProfileChainIssue.unavailable;
+    }
+    for (final landing in landings) {
+      final targets =
+          landingTargetsByProfile[landing.resolvedProfileId(currentProfileId)];
+      if (targets == null || !targets.contains(landing.key)) {
+        return ProfileChainIssue.unavailable;
+      }
     }
     return null;
   }
@@ -95,25 +190,35 @@ class ProfileChain {
     'enabled': enabled,
     'entry': entry,
     'entry-kind': entryKind.name,
-    'landing': landing,
-    'landing-kind': landingKind.name,
-    if (landingProfileId.isNotEmpty) 'landing-profile-id': landingProfileId,
+    'landings': [for (final landing in landings) landing.toJson()],
+    if (landings.isNotEmpty) ...{
+      'landing': landings.first.name,
+      'landing-kind': landings.first.kind.name,
+      if (landings.first.profileId.isNotEmpty)
+        'landing-profile-id': landings.first.profileId,
+    },
   };
 
   factory ProfileChain.fromJson(Map<String, dynamic> json) {
-    ChainTargetKind parseKind(Object? value) {
-      for (final kind in ChainTargetKind.values) {
-        if (kind.name == value) return kind;
-      }
-      return ChainTargetKind.proxy;
+    final rawLandings = json['landings'];
+    if (rawLandings is List && rawLandings.isNotEmpty) {
+      return ProfileChain(
+        enabled: json['enabled'] == true,
+        entry: (json['entry'] ?? '').toString(),
+        entryKind: _parseChainTargetKind(json['entry-kind']),
+        landings: [
+          for (final raw in rawLandings)
+            if (raw is Map)
+              ChainLanding.fromJson(raw.cast<String, dynamic>()),
+        ],
+      );
     }
-
     return ProfileChain(
       enabled: json['enabled'] == true,
       entry: (json['entry'] ?? '').toString(),
-      entryKind: parseKind(json['entry-kind']),
+      entryKind: _parseChainTargetKind(json['entry-kind']),
       landing: (json['landing'] ?? '').toString(),
-      landingKind: parseKind(json['landing-kind']),
+      landingKind: _parseChainTargetKind(json['landing-kind']),
       landingProfileId: (json['landing-profile-id'] ?? '').toString(),
     );
   }

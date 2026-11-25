@@ -11425,6 +11425,11 @@ class AppLocalizations {
     return Intl.message('Exit', name: 'chainExit', desc: '', args: []);
   }
 
+  /// `Add exit`
+  String get chainAddExit {
+    return Intl.message('Add exit', name: 'chainAddExit', desc: '', args: []);
+  }
+
   /// `Exit profile`
   String get chainExitProfile {
     return Intl.message(

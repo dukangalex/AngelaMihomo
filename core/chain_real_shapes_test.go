@@ -201,3 +201,133 @@ rules: ['MATCH,Main']
 		t.Fatal("expected unavailable-provider validation error, got nil")
 	}
 }
+
+// RS4 (T303): two exits imported side by side — a group exit from one
+// profile and a single-node exit from another. The generated chain
+// landing group must list both targets, and every imported node must
+// dial through the entry.
+func TestChainMultiExitGroupAndProxy(t *testing.T) {
+	raw := parsePatchProfile(t, `
+proxies:
+  - {name: entry-1, type: http, server: 127.0.0.1, port: 1}
+proxy-groups:
+  - {name: Main, type: select, proxies: [entry-1, DIRECT]}
+rules: ['MATCH,Main']
+`)
+	groupExit := PatchChainExternal{
+		ExternalProfile: "2", ExternalTarget: "⛓222222 自动选择",
+		ExternalKind: "group",
+		ExternalGroups: []map[string]any{{
+			"name":    "⛓222222 自动选择",
+			"type":    "url-test",
+			"proxies": []any{"⛓222222 exit-1", "⛓222222 exit-2"},
+			"url":     "http://127.0.0.1:1",
+		}},
+		ExternalProxies: []map[string]any{
+			{"name": "⛓222222 exit-1", "type": "http", "server": "127.0.0.1", "port": 1},
+			{"name": "⛓222222 exit-2", "type": "http", "server": "127.0.0.1", "port": 1},
+		},
+	}
+	proxyExit := PatchChainExternal{
+		ExternalProfile: "3", ExternalTarget: "⛓333333 solo",
+		ExternalKind: "proxy",
+		ExternalProxies: []map[string]any{
+			{"name": "⛓333333 solo", "type": "http", "server": "127.0.0.1", "port": 1},
+		},
+	}
+	params := &PatchParams{ChainPolicy: &PatchChainPolicy{
+		Enabled: true, Entry: "entry-1", EntryKind: "proxy",
+		Landing: "⛓222222 自动选择", LandingKind: "group",
+		ExternalTargets: []PatchChainExternal{groupExit, proxyExit},
+	}}
+	if _, err := applyPatch(raw, params); err != nil {
+		t.Fatalf("applyPatch: %v", err)
+	}
+	landing := findGroup(raw.ProxyGroup, "链式落地")
+	if landing == nil {
+		t.Fatalf("chain landing group missing")
+	}
+	members := anyStrings(landing["proxies"])
+	want := []string{"⛓222222 自动选择", "⛓333333 solo"}
+	if len(members) != len(want) {
+		t.Fatalf("chain landing members = %v, want %v", members, want)
+	}
+	for i, name := range want {
+		if members[i] != name {
+			t.Fatalf("chain landing members = %v, want %v", members, want)
+		}
+	}
+	for _, name := range []string{"⛓222222 exit-1", "⛓222222 exit-2", "⛓333333 solo"} {
+		proxy := findProxy(t, raw.Proxy, name)
+		if proxy == nil {
+			t.Fatalf("imported proxy %q missing", name)
+		}
+		if proxy["dialer-proxy"] != "entry-1" {
+			t.Fatalf("proxy %q dialer-proxy = %v", name, proxy["dialer-proxy"])
+		}
+	}
+	main := findGroup(raw.ProxyGroup, "Main")
+	if got := anyStrings(main["proxies"]); len(got) == 0 || got[0] != "链式落地" {
+		t.Fatalf("main selector not leading with chain landing: %v", got)
+	}
+	parseChainConfig(t, raw)
+}
+
+// RS5 (T307): a sole group exit imported under the landing group's own
+// name IS the landing group — no extra select wrapper may be generated,
+// the main selector points straight at the imported group, and every
+// imported node still dials through the entry.
+func TestChainSoleGroupExitIsLandingGroup(t *testing.T) {
+	raw := parsePatchProfile(t, `
+proxies:
+  - {name: entry-1, type: http, server: 127.0.0.1, port: 1}
+proxy-groups:
+  - {name: Main, type: select, proxies: [entry-1, DIRECT]}
+rules: ['MATCH,Main']
+`)
+	params := &PatchParams{ChainPolicy: &PatchChainPolicy{
+		Enabled: true, Entry: "entry-1", EntryKind: "proxy",
+		Landing: "链式落地", LandingKind: "group",
+		ExternalTargets: []PatchChainExternal{{
+			ExternalProfile: "2", ExternalTarget: "链式落地",
+			ExternalKind: "group",
+			ExternalGroups: []map[string]any{{
+				"name":    "链式落地",
+				"type":    "url-test",
+				"proxies": []any{"⛓exit-1", "⛓exit-2"},
+				"url":     "http://127.0.0.1:1",
+			}},
+			ExternalProxies: []map[string]any{
+				{"name": "⛓exit-1", "type": "http", "server": "127.0.0.1", "port": 1},
+				{"name": "⛓exit-2", "type": "http", "server": "127.0.0.1", "port": 1},
+			},
+		}},
+	}}
+	if _, err := applyPatch(raw, params); err != nil {
+		t.Fatalf("applyPatch: %v", err)
+	}
+	if len(raw.ProxyGroup) != 2 {
+		t.Fatalf("expected exactly Main + imported landing group, got %d groups", len(raw.ProxyGroup))
+	}
+	landing := findGroup(raw.ProxyGroup, "链式落地")
+	if landing == nil {
+		t.Fatalf("landing group missing")
+	}
+	if landing["type"] != "url-test" {
+		t.Fatalf("landing group type = %v, want the imported url-test group itself", landing["type"])
+	}
+	for _, name := range []string{"⛓exit-1", "⛓exit-2"} {
+		proxy := findProxy(t, raw.Proxy, name)
+		if proxy == nil {
+			t.Fatalf("imported proxy %q missing", name)
+		}
+		if proxy["dialer-proxy"] != "entry-1" {
+			t.Fatalf("proxy %q dialer-proxy = %v", name, proxy["dialer-proxy"])
+		}
+	}
+	main := findGroup(raw.ProxyGroup, "Main")
+	if got := anyStrings(main["proxies"]); len(got) == 0 || got[0] != "链式落地" {
+		t.Fatalf("main selector not leading with chain landing: %v", got)
+	}
+	parseChainConfig(t, raw)
+}

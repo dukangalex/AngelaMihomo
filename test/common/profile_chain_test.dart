@@ -12,7 +12,7 @@ void main() {
       ProfileChain().selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       isNull,
     );
@@ -20,7 +20,7 @@ void main() {
       ProfileChain(entry: 'old').selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       isNull,
     );
@@ -39,7 +39,7 @@ void main() {
       chain.selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       isNull,
     );
@@ -50,7 +50,7 @@ void main() {
       ProfileChain(enabled: true).selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       ProfileChainIssue.incomplete,
     );
@@ -62,7 +62,7 @@ void main() {
       ).selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       ProfileChainIssue.otherProfileRequired,
     );
@@ -77,7 +77,7 @@ void main() {
       ).selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: const {'proxy\u0000Exit'},
+        landingTargetsByProfile: {'other': const {'proxy\u0000Exit'}},
       ),
       ProfileChainIssue.unavailable,
     );
@@ -91,7 +91,7 @@ void main() {
       ).selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: bothTargets,
+        landingTargetsByProfile: {'other': bothTargets},
       ),
       ProfileChainIssue.otherProfileRequired,
     );
@@ -106,7 +106,7 @@ void main() {
       ).selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: bothTargets,
+        landingTargetsByProfile: {'other': bothTargets},
       ),
       isNull,
     );
@@ -141,7 +141,7 @@ void main() {
       candidate.selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargets: landingTargets,
+        landingTargetsByProfile: {'other': landingTargets},
       ),
       ProfileChainIssue.unavailable,
     );
@@ -164,9 +164,96 @@ void main() {
       chain.selectionIssue(
         currentProfileId: 'active',
         entryTargets: {chainTargetKey(ChainTargetKind.proxy, 'Entry')},
-        landingTargets: {chainTargetKey(ChainTargetKind.proxy, 'Exit')},
+        landingTargetsByProfile: {'p': {chainTargetKey(ChainTargetKind.proxy, 'Exit')}},
       ),
       ProfileChainIssue.otherProfileRequired,
     );
+  });
+
+  multiExitMain();
+}
+
+/// T303: multi-exit selections and the v1 -> v2 storage migration.
+void multiExitMain() {
+  const entryTargets = {'proxy\u0000Entry'};
+  final targetsByProfile = <String, Set<String>>{
+    'other': {'group\u0000Exit group'},
+    'third': {'proxy\u0000Solo exit'},
+  };
+
+  ProfileChain multi() => ProfileChain(
+    enabled: true,
+    entry: 'Entry',
+    landings: [
+      ChainLanding(
+        profileId: 'other',
+        kind: ChainTargetKind.group,
+        name: 'Exit group',
+      ),
+      ChainLanding(
+        profileId: 'third',
+        kind: ChainTargetKind.proxy,
+        name: 'Solo exit',
+      ),
+    ],
+  );
+
+  test('multiple exits validate against their own profiles', () {
+    expect(
+      multi().selectionIssue(
+        currentProfileId: 'p',
+        entryTargets: entryTargets,
+        landingTargetsByProfile: targetsByProfile,
+      ),
+      isNull,
+    );
+  });
+
+  test('one stale exit marks the whole selection unavailable', () {
+    final broken = Map<String, Set<String>>.of(targetsByProfile)
+      ..['third'] = {'proxy\u0000Renamed'};
+    expect(
+      multi().selectionIssue(
+        currentProfileId: 'p',
+        entryTargets: entryTargets,
+        landingTargetsByProfile: broken,
+      ),
+      ProfileChainIssue.unavailable,
+    );
+  });
+
+  test('any exit pointing at the own profile is rejected', () {
+    final chain = multi();
+    chain.landings.add(ChainLanding(profileId: '', name: 'Local'));
+    expect(
+      chain.selectionIssue(
+        currentProfileId: 'p',
+        entryTargets: entryTargets,
+        landingTargetsByProfile: targetsByProfile,
+      ),
+      ProfileChainIssue.otherProfileRequired,
+    );
+  });
+
+  test('landings JSON round-trips and mirrors the first exit', () {
+    final json = multi().toJson();
+    expect(json['landing'], 'Exit group');
+    expect(json['landing-profile-id'], 'other');
+    expect((json['landings'] as List).length, 2);
+    expect(ProfileChain.fromJson(json).toJson(), json);
+  });
+
+  test('legacy single-exit JSON migrates to a one-element list', () {
+    final migrated = ProfileChain.fromJson({
+      'enabled': true,
+      'entry': 'Entry',
+      'landing': 'Exit',
+      'landing-kind': 'group',
+      'landing-profile-id': 'other',
+    });
+    expect(migrated.landings.length, 1);
+    expect(migrated.landings.single.profileId, 'other');
+    expect(migrated.landings.single.kind, ChainTargetKind.group);
+    expect(migrated.landing, 'Exit');
   });
 }

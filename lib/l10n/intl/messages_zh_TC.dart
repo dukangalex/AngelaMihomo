@@ -420,6 +420,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "chainEntry": MessageLookupByLibrary.simpleMessage("入口"),
     "chainExit": MessageLookupByLibrary.simpleMessage("出口"),
+    "chainAddExit": MessageLookupByLibrary.simpleMessage("添加出口"),
     "chainExitProfile": MessageLookupByLibrary.simpleMessage("出口配置"),
     "chainIssueIncomplete": MessageLookupByLibrary.simpleMessage(
       "请先选择入口和出口，再启用链式代理。",
