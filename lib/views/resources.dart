@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:angelamihomo/clash/clash.dart';
@@ -506,15 +507,17 @@ class CityDataListItem extends ConsumerStatefulWidget {
 class _CityDataListItemState extends ConsumerState<CityDataListItem> {
   static const _releasesUrl = 'https://github.com/$geoDataRepository/releases';
 
-  // Lucian UX/UI Prompt #004 · MIT License — the sync action is a
-  // progress download button: it fills with the transfer, a tap
-  // cancels it, and a finished download folds into its done state.
+  // Lucian UX/UI Prompt #004 · MIT License — the sync action carries
+  // progress, tap-to-cancel and a done state; since T293 they live
+  // inside the sibling rows' CommonChip instead of a filled pill.
   ProgressDownloadPhase _syncPhase = ProgressDownloadPhase.idle;
   final ValueNotifier<double?> _syncProgress = ValueNotifier(null);
   CancelToken? _syncCancelToken;
+  Timer? _doneFoldTimer;
 
   @override
   void dispose() {
+    _doneFoldTimer?.cancel();
     _syncProgress.dispose();
     super.dispose();
   }
@@ -595,6 +598,7 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
     final updatingKeysNotifier = ref.read(geoUpdatingKeysProvider.notifier);
     if (ref.read(geoUpdatingKeysProvider).contains('city')) return;
     updatingKeysNotifier.update((s) => Set.of(s)..add('city'));
+    _doneFoldTimer?.cancel();
     final cancelToken = CancelToken();
     _syncCancelToken = cancelToken;
     _syncProgress.value = null;
@@ -613,6 +617,14 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
       switch (outcome) {
         case GeoUpdateOutcome.updated:
           setState(() => _syncPhase = ProgressDownloadPhase.done);
+          // T293: the done chip folds back to idle on its own, the
+          // way the old progress button settled itself.
+          _doneFoldTimer?.cancel();
+          _doneFoldTimer = Timer(const Duration(milliseconds: 1600), () {
+            if (mounted && _syncPhase == ProgressDownloadPhase.done) {
+              setState(() => _syncPhase = ProgressDownloadPhase.idle);
+            }
+          });
           context.showNotifier(
             appLocalizations.geoDataUpdated,
             kind: ToastKind.success,
@@ -711,33 +723,51 @@ class _CityDataListItemState extends ConsumerState<CityDataListItem> {
                 label: appLocalizations.edit,
                 onPressed: isSyncing ? null : _updateUrl,
               ),
-              // Lucian UX/UI Prompt #004 · MIT License — the sync
-              // chip becomes the progress download button. A sync
-              // started elsewhere (sync-all) shows as an
-              // indeterminate run that this row cannot cancel.
+              // Lucian UX/UI Prompt #004 · MIT License — progress,
+              // cancel and done feedback for the sync action. T293
+              // (the user's call: the big filled pill clashed with
+              // the sibling rows) keeps those behaviours but folds
+              // them into the same CommonChip as the four GEO rows
+              // above, so all five rows speak one visual language
+              // and no state change moves the layout. A sync started
+              // elsewhere (sync-all) shows as an indeterminate run
+              // that this row cannot cancel.
               ValueListenableBuilder<double?>(
                 valueListenable: _syncProgress,
                 builder: (context, progress, _) {
                   final externallyDriven =
                       isSyncing && _syncPhase == ProgressDownloadPhase.idle;
-                  return ProgressDownloadButton(
-                    phase: externallyDriven
-                        ? ProgressDownloadPhase.running
-                        : _syncPhase,
-                    progress: externallyDriven ? null : progress,
+                  if (_syncPhase == ProgressDownloadPhase.done) {
+                    return CommonChip(
+                      avatar: const Icon(Icons.check),
+                      label: appLocalizations.geoDataUpdated,
+                      onPressed: null,
+                    );
+                  }
+                  if (_syncPhase == ProgressDownloadPhase.running ||
+                      externallyDriven) {
+                    final value = externallyDriven ? null : progress;
+                    return CommonChip(
+                      avatar: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: value,
+                        ),
+                      ),
+                      label: value != null
+                          ? '${(value * 100).round().clamp(0, 100)}%'
+                          : appLocalizations.sync,
+                      onPressed: externallyDriven || _syncCancelToken == null
+                          ? null
+                          : () => _syncCancelToken?.cancel('user'),
+                    );
+                  }
+                  return CommonChip(
+                    avatar: const Icon(Icons.sync),
                     label: appLocalizations.sync,
-                    doneLabel: appLocalizations.geoDataUpdated,
-                    height: 36,
-                    width: 176,
                     onPressed: isSyncing ? null : _handleSync,
-                    onCancel: _syncCancelToken == null
-                        ? null
-                        : () => _syncCancelToken?.cancel('user'),
-                    onDoneSettled: () {
-                      if (mounted && _syncPhase == ProgressDownloadPhase.done) {
-                        setState(() => _syncPhase = ProgressDownloadPhase.idle);
-                      }
-                    },
                   );
                 },
               ),

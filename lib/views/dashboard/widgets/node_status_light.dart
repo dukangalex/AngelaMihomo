@@ -56,10 +56,11 @@ Group? nodeLightAnchorGroup({
 ///
 /// Every visual quantity is taken from the active constellation theme:
 /// the dot colors are the variant's status tokens, the ring paints the
-/// variant's selected gradient, the halo is the variant's glow, and the
-/// theme's sign glyph sits beside the label. While a test runs, the
-/// ring's gapped arc rotates; the animation stops the moment the run
-/// ends, so nothing animates at rest.
+/// variant's selected gradient and the halo is the variant's glow.
+/// (The sign glyph that used to sit beside the label moved to the
+/// header card as its watermark — T294, the user's call.) While a
+/// test runs, the ring's gapped arc rotates; the animation stops the
+/// moment the run ends, so nothing animates at rest.
 class NodeStatusLight extends ConsumerStatefulWidget {
   /// Compact form (dot and ring only, no sign glyph or status label)
   /// for narrow layouts such as the merged profile/mode card's tall
@@ -161,7 +162,6 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
         variant?.outline ??
         context.colorScheme.outlineVariant.withValues(alpha: 0.6);
     final haloColor = variant?.glow ?? statusColor.withValues(alpha: 0.30);
-    final sign = zodiac == null ? null : themeGlyphFor(zodiac.themeId);
 
     return AnimatedBuilder(
       animation: globalDelayTestController,
@@ -228,16 +228,6 @@ class _NodeStatusLightState extends ConsumerState<NodeStatusLight>
                   ),
                   if (!widget.compact) ...[
                     const SizedBox(width: 7),
-                    if (sign != null) ...[
-                      Text(
-                        sign,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: variant?.accent.withValues(alpha: 0.9),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                    ],
                     Flexible(
                       child: Text(
                         label,

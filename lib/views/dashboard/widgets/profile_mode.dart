@@ -73,11 +73,16 @@ class ProfileModeCard extends ConsumerWidget {
         height: floor,
         child: CommonCard(
           padding: EdgeInsets.zero,
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(child: _ProfileZone(tall: tall)),
-              divider,
-              _ModeZone(tall: tall),
+              const Positioned(top: -16, right: -6, child: _ZodiacWatermark()),
+              Column(
+                children: [
+                  Expanded(child: _ProfileZone(tall: tall)),
+                  divider,
+                  _ModeZone(tall: tall),
+                ],
+              ),
             ],
           ),
         ),
@@ -87,13 +92,46 @@ class ProfileModeCard extends ConsumerWidget {
       constraints: BoxConstraints(minHeight: floor),
       child: CommonCard(
         padding: EdgeInsets.zero,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
-            _ProfileZone(tall: tall),
-            divider,
-            _ModeZone(tall: tall),
+            const Positioned(top: -16, right: -6, child: _ZodiacWatermark()),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ProfileZone(tall: tall),
+                divider,
+                _ModeZone(tall: tall),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// T294: the active theme's zodiac sign as this header card's
+/// watermark. The solid glyph that used to sit inside the status row
+/// was retired at the user's direction — the sign now lives here,
+/// large and faint at the card's top right: plain to recognise at a
+/// glance, behind every control, never intercepting a tap. Themes
+/// without a zodiac carry no watermark.
+class _ZodiacWatermark extends StatelessWidget {
+  const _ZodiacWatermark();
+
+  @override
+  Widget build(BuildContext context) {
+    final zodiac = context.zodiac;
+    if (zodiac == null) return const SizedBox.shrink();
+    final color = zodiac.variant.accent.withValues(alpha: 0.14);
+    return IgnorePointer(
+      child: Text(
+        themeGlyphFor(zodiac.themeId),
+        style: TextStyle(
+          fontSize: 84,
+          height: 1,
+          fontWeight: FontWeight.w700,
+          color: color,
         ),
       ),
     );
@@ -177,13 +215,13 @@ class _ProfileZone extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 1),
-                child: Icon(
-                  Icons.description_outlined,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
+              // T292: the static description icon is now a tappable
+              // "update current profile" button. It reuses
+              // refreshProfileSubscription (profile_info.dart), which
+              // already routes by config type (bundle regenerate /
+              // url fetch / external provider refresh) — no new
+              // update logic here.
+              _UpdateProfileButton(profile: profile),
               const SizedBox(width: 8),
               Expanded(
                 child: Align(
@@ -218,6 +256,69 @@ class _ProfileZone extends ConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// T292: the current profile card's leading update button, replacing
+/// the old static description icon. It routes the tap to
+/// refreshProfileSubscription (profile_info.dart), which already
+/// handles every config kind — bundle regenerate, url re-fetch,
+/// external-provider update — so this button adds no update logic of
+/// its own.
+///
+/// States: while the profile reports isUpdating the button shrinks to
+/// a small spinner and is disabled so a second tap cannot double-fire;
+/// a file profile with no external providers has nothing to refresh,
+/// so it is shown disabled (onPressed null).
+class _UpdateProfileButton extends ConsumerWidget {
+  final Profile profile;
+
+  const _UpdateProfileButton({required this.profile});
+
+  bool get _canRefresh {
+    if (profile.isUpdating) return false;
+    // A plain local file with no external providers has nothing to
+    // refresh — the button is greyed out for it.
+    if (profile.type == ProfileType.file &&
+        profile.providerSubscriptions.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final canRefresh = _canRefresh;
+    final colorScheme = context.colorScheme;
+    final updating = profile.isUpdating;
+    final color = canRefresh
+        ? colorScheme.onSurfaceVariant
+        : colorScheme.onSurfaceVariant.withValues(alpha: 0.38);
+    return IconButton(
+      onPressed: canRefresh
+          ? () => refreshProfileSubscription(context, ref, profile)
+          : null,
+      tooltip: appLocalizations.update,
+      iconSize: 20,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(
+        minWidth: 28,
+        minHeight: 28,
+        maxWidth: 28,
+        maxHeight: 28,
+      ),
+      icon: updating
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            )
+          : Icon(Icons.refresh_rounded, size: 20, color: color),
     );
   }
 }
