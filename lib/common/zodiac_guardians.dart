@@ -7,17 +7,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:angelamihomo/enum/enum.dart';
 import 'package:angelamihomo/providers/app.dart';
 
-import 'app_localizations.dart';
 import 'constant.dart';
 import 'zodiac_themes.dart';
 
-/// The guardian deity of one zodiac theme (T159; user spec finalised
-/// 2026-11-15 22:25: every existing theme element stays untouched — the
-/// guardian is one added layer, anchored lower-left raised, in
-/// Japanese-anime line style, gazing up at the theme's own constellation
-/// chart at the top of the backdrop, with a name plate. Scope widened
-/// 2026-11-16 by the user: not the dashboard only — every page that
-/// shows the zodiac backdrop carries the figure and the plate).
+/// The watermark artwork of one zodiac theme (T159; user spec
+/// finalised 2026-11-15 22:25: every existing theme element stays
+/// untouched — the artwork is one added layer, anchored lower-left
+/// raised, with a name plate. Scope widened 2026-11-16 by the user:
+/// not the dashboard only — every page that shows the zodiac backdrop
+/// carries the figure and the plate. Artwork replaced wholesale in
+/// T302, user direction 2026-11-25: the original guardian-deity
+/// portraits are gone — every sign now shows its own constellation
+/// art, the sign's symbol woven from starlight on a deep cosmic
+/// field, and the plate names the sign and its date range instead of
+/// a deity. The class and its deity fields keep their T159 names so
+/// the mapping layer stays stable; the plate no longer reads them.)
 class ZodiacGuardian {
   final String themeId;
 
@@ -36,11 +40,11 @@ class ZodiacGuardian {
 
   /// The artwork for [brightness] (T299, user direction 2026-11-25:
   /// within one theme the watermark leans light on dark fields and
-  /// dark on light fields). The shipped art is bright neon line work
-  /// over a dark disc — right on dark fields, washed out on light
-  /// ones — so every guardian also ships a derived light-field
-  /// edition under guardians_light/: the same lines deepened into
-  /// the dark family, the disc melted away, generated from the
+  /// dark on light fields). The shipped art is bright starlight work
+  /// over a deep cosmic field — right on dark fields, washed out on
+  /// light ones — so every sign also ships a derived light-field
+  /// edition under guardians_light/: the same figure deepened into
+  /// the dark family, the field melted away, generated from the
   /// original art (luminance-driven alpha, hues kept).
   String assetPathFor(Brightness brightness) => brightness == Brightness.light
       ? assetPath.replaceFirst('images/guardians/', 'images/guardians_light/')
@@ -225,6 +229,61 @@ String zodiacGuardianSignName(String themeId, Locale locale) {
   }
   return _guardianSignNames[locale.languageCode]?[themeId] ??
       def.nameEn.split('·').first.trim();
+}
+
+/// The calendar span of each sign, as (startMonth, startDay, endMonth,
+/// endDay) — the conventional tropical zodiac dates the name plate
+/// shows under the sign's name (T302, user spec 2026-11-25: the plate
+/// reads sign name plus its month-day range).
+const zodiacDateRanges = <String, (int, int, int, int)>{
+  'aries': (3, 21, 4, 19),
+  'taurus': (4, 20, 5, 20),
+  'gemini': (5, 21, 6, 21),
+  'cancer': (6, 22, 7, 22),
+  'leo': (7, 23, 8, 22),
+  'virgo': (8, 23, 9, 22),
+  'libra': (9, 23, 10, 23),
+  'scorpio': (10, 24, 11, 22),
+  'sagittarius': (11, 23, 12, 21),
+  'capricorn': (12, 22, 1, 19),
+  'aquarius': (1, 20, 2, 18),
+  'pisces': (2, 19, 3, 20),
+};
+
+const _monthAbbrEn = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+const _monthGenitiveRu = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+/// One date of a sign's span in [locale]'s convention, hand-rolled so
+/// the plate never depends on intl date-symbol data being loaded.
+String _zodiacDate(int month, int day, Locale locale) {
+  switch (locale.languageCode) {
+    case 'zh':
+    case 'ja':
+      return '$month月$day日';
+    case 'ko':
+      return '$month월 $day일';
+    case 'ru':
+      return '$day ${_monthGenitiveRu[month - 1]}';
+    default:
+      return '${_monthAbbrEn[month - 1]} $day';
+  }
+}
+
+/// The plate's date-range line for [themeId], e.g. 11月23日 - 12月21日
+/// in Chinese, Nov 23 - Dec 21 in English.
+String zodiacDateRangeLabel(String themeId, Locale locale) {
+  final range = zodiacDateRanges[themeId];
+  if (range == null) return '';
+  final (startMonth, startDay, endMonth, endDay) = range;
+  return '${_zodiacDate(startMonth, startDay, locale)} - '
+      '${_zodiacDate(endMonth, endDay, locale)}';
 }
 
 /// Resolves the active theme's guardian, or null when there is no
@@ -490,11 +549,9 @@ class ZodiacGuardianPlate extends StatelessWidget {
     if (active == null) return const SizedBox.expand();
     final guardian = active.guardian;
     final variant = active.variant;
-    final l10n = appLocalizations;
-    final sign = zodiacGuardianSignName(
-      guardian.themeId,
-      Localizations.localeOf(context),
-    );
+    final locale = Localizations.localeOf(context);
+    final sign = zodiacGuardianSignName(guardian.themeId, locale);
+    final dateRange = zodiacDateRangeLabel(guardian.themeId, locale);
     return IgnorePointer(
       child: Stack(
         children: [
@@ -506,7 +563,7 @@ class ZodiacGuardianPlate extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  guardian.localizedName(l10n),
+                  sign,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
@@ -518,7 +575,7 @@ class ZodiacGuardianPlate extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  l10n.guardianLine(guardian.latinName.toUpperCase(), sign),
+                  dateRange,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     decoration: TextDecoration.none,
