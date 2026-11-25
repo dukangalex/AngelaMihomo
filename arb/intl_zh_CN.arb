@@ -1355,6 +1355,7 @@
   "chainEnableDesc": "入口来自当前配置；出口可选其他配置的节点或策略组。开启后请在策略组中选择“链式落地”，只有走该选项的流量才经过链路；不改订阅原文。",
   "chainEntry": "入口",
   "chainExit": "出口",
+  "chainAddExit": "添加出口",
   "chainExitProfile": "出口配置",
   "chainIssueIncomplete": "请先选择入口和出口，再启用链式代理。",
   "chainIssueOtherProfile": "出口必须来自当前配置以外的另一份配置，请重新选择。",

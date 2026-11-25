@@ -1355,6 +1355,7 @@
   "chainEnableDesc": "Choose an entry from this profile and an exit proxy or group from another. After enabling, select the generated chain in a manual group; only traffic using it follows the chain. Source configs stay unchanged.",
   "chainEntry": "Entry",
   "chainExit": "Exit",
+  "chainAddExit": "Add exit",
   "chainExitProfile": "Exit profile",
   "chainIssueIncomplete": "Choose both an entry and an exit before enabling the chain.",
   "chainIssueOtherProfile": "Choose the exit from a different profile.",

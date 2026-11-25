@@ -31,12 +31,10 @@ type PatchRules struct {
 	Rules    []string `json:"rules"`
 }
 
-type PatchChainPolicy struct {
-	Enabled               bool                      `json:"enabled"`
-	Entry                 string                    `json:"entry"`
-	EntryKind             string                    `json:"entry-kind"`
-	Landing               string                    `json:"landing"`
-	LandingKind           string                    `json:"landing-kind"`
+// PatchChainExternal is one imported exit: the dependency closure of a
+// single target taken from another profile, namespaced by the Dart
+// overlay so it cannot collide with the active profile.
+type PatchChainExternal struct {
 	ExternalProfile       string                    `json:"external-profile-id"`
 	ExternalProvidersPath string                    `json:"external-providers-path"`
 	ExternalTarget        string                    `json:"external-target"`
@@ -44,6 +42,27 @@ type PatchChainPolicy struct {
 	ExternalProxies       []map[string]any          `json:"external-proxies"`
 	ExternalGroups        []map[string]any          `json:"external-groups"`
 	ExternalProviders     map[string]map[string]any `json:"external-providers"`
+}
+
+type PatchChainPolicy struct {
+	Enabled     bool   `json:"enabled"`
+	Entry       string `json:"entry"`
+	EntryKind   string `json:"entry-kind"`
+	Landing     string `json:"landing"`
+	LandingKind string `json:"landing-kind"`
+	// Legacy single-exit external fields. New app builds send
+	// ExternalTargets instead; the flat fields are still honoured when
+	// no list is present.
+	ExternalProfile       string                    `json:"external-profile-id"`
+	ExternalProvidersPath string                    `json:"external-providers-path"`
+	ExternalTarget        string                    `json:"external-target"`
+	ExternalKind          string                    `json:"external-target-kind"`
+	ExternalProxies       []map[string]any          `json:"external-proxies"`
+	ExternalGroups        []map[string]any          `json:"external-groups"`
+	ExternalProviders     map[string]map[string]any `json:"external-providers"`
+	// ExternalTargets carries every configured exit (T303 multi-exit);
+	// the generated chain landing group lists all of their targets.
+	ExternalTargets []PatchChainExternal `json:"external-targets"`
 }
 
 type PatchParams struct {
@@ -1154,15 +1173,30 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 	if landingKind == "" {
 		landingKind = "proxy"
 	}
+	// Normalise the external exits: the multi-exit list when present,
+	// otherwise the legacy flat single-exit fields.
+	externals := policy.ExternalTargets
+	if len(externals) == 0 && policy.ExternalProfile != "" {
+		externals = []PatchChainExternal{{
+			ExternalProfile:       policy.ExternalProfile,
+			ExternalProvidersPath: policy.ExternalProvidersPath,
+			ExternalTarget:        policy.ExternalTarget,
+			ExternalKind:          policy.ExternalKind,
+			ExternalProxies:       policy.ExternalProxies,
+			ExternalGroups:        policy.ExternalGroups,
+			ExternalProviders:     policy.ExternalProviders,
+		}}
+	}
+	hasExternal := len(externals) > 0
 	// Keep legacy same-profile node behavior for existing native callers;
 	// the new UI requires an external exit profile.
-	if policy.ExternalProfile == "" && entryKind == "proxy" && landingKind == "proxy" {
+	if !hasExternal && entryKind == "proxy" && landingKind == "proxy" {
 		return patchLegacyChainPolicy(raw, policy)
 	}
 	if entry == "" || landing == "" {
 		return fmt.Errorf("choose both an entry and an exit before enabling the chain")
 	}
-	if entry == landing && policy.ExternalProfile == "" && entryKind == landingKind {
+	if entry == landing && !hasExternal && entryKind == landingKind {
 		return fmt.Errorf("chain entry and exit must be different nodes")
 	}
 	for _, name := range protectedProxyNames {
@@ -1183,9 +1217,11 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 	}
 	sort.Strings(entryProviderNames)
 	used := make(map[string]string)
-	if policy.ExternalProfile != "" {
-		if policy.ExternalTarget == "" || (policy.ExternalKind != "proxy" && policy.ExternalKind != "group") {
-			return fmt.Errorf("external exit selection is incomplete")
+	if hasExternal {
+		for _, external := range externals {
+			if external.ExternalTarget == "" || (external.ExternalKind != "proxy" && external.ExternalKind != "group") {
+				return fmt.Errorf("external exit selection is incomplete")
+			}
 		}
 		if raw.ProxyProvider == nil {
 			raw.ProxyProvider = make(map[string]map[string]any)
@@ -1205,32 +1241,34 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 		for name := range raw.ProxyProvider {
 			used[name] = "provider"
 		}
-		for _, proxy := range policy.ExternalProxies {
-			name, _ := proxy["name"].(string)
-			if name == "" || used[name] != "" {
-				return fmt.Errorf("external proxy name %q is empty or conflicts with the active profile", name)
+		for _, external := range externals {
+			for _, proxy := range external.ExternalProxies {
+				name, _ := proxy["name"].(string)
+				if name == "" || used[name] != "" {
+					return fmt.Errorf("external proxy name %q is empty or conflicts with the active profile", name)
+				}
+				used[name] = "proxy"
+				raw.Proxy = append(raw.Proxy, proxy)
 			}
-			used[name] = "proxy"
-			raw.Proxy = append(raw.Proxy, proxy)
-		}
-		for _, group := range policy.ExternalGroups {
-			name, _ := group["name"].(string)
-			if name == "" || used[name] != "" {
-				return fmt.Errorf("external group name %q is empty or conflicts with the active profile", name)
+			for _, group := range external.ExternalGroups {
+				name, _ := group["name"].(string)
+				if name == "" || used[name] != "" {
+					return fmt.Errorf("external group name %q is empty or conflicts with the active profile", name)
+				}
+				used[name] = "group"
+				raw.ProxyGroup = append(raw.ProxyGroup, group)
 			}
-			used[name] = "group"
-			raw.ProxyGroup = append(raw.ProxyGroup, group)
-		}
-		patchProviderPaths(policy.ExternalProviders, policy.ExternalProvidersPath, "proxies")
-		for name, provider := range policy.ExternalProviders {
-			if name == "" || used[name] != "" {
-				return fmt.Errorf("external provider name %q is empty or conflicts with the active profile", name)
+			patchProviderPaths(external.ExternalProviders, external.ExternalProvidersPath, "proxies")
+			for name, provider := range external.ExternalProviders {
+				if name == "" || used[name] != "" {
+					return fmt.Errorf("external provider name %q is empty or conflicts with the active profile", name)
+				}
+				used[name] = "provider"
+				raw.ProxyProvider[name] = provider
 			}
-			used[name] = "provider"
-			raw.ProxyProvider[name] = provider
 		}
-		landing = policy.ExternalTarget
-		landingKind = policy.ExternalKind
+		landing = externals[0].ExternalTarget
+		landingKind = externals[0].ExternalKind
 	}
 
 	entryFound := false
@@ -1250,7 +1288,7 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 			entryFound = true
 		}
 	}
-	if !entryFound && entryKind == "proxy" && len(entryProviderNames) > 0 && policy.ExternalProfile != "" {
+	if !entryFound && entryKind == "proxy" && len(entryProviderNames) > 0 && hasExternal {
 		// Live provider nodes are not present in raw.Proxy. Resolve their
 		// exact display name through a private provider selector that fails
 		// closed if refresh removes the node. Do not alter the source provider.
@@ -1345,48 +1383,54 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 		return nil
 	}
 
-	if policy.ExternalProfile != "" {
-		if landingKind == "proxy" {
-			target := findProxy(landing)
-			if target == nil {
-				return fmt.Errorf("external exit %q was not imported", landing)
+	if hasExternal {
+		chainMembers := make([]any, 0, len(externals))
+		for _, external := range externals {
+			target := external.ExternalTarget
+			if external.ExternalKind == "proxy" {
+				proxy := findProxy(target)
+				if proxy == nil {
+					return fmt.Errorf("external exit %q was not imported", target)
+				}
+				// The enabled app chain is the explicit chain choice. It
+				// replaces only this selected exit's existing dialer-proxy
+				// on the runtime copy; all other profile-native rules and
+				// chains remain intact.
+				proxy["dialer-proxy"] = entry
+			} else {
+				group := findGroup(target)
+				if group == nil {
+					return fmt.Errorf("external exit group %q was not imported", target)
+				}
+				if len(external.ExternalProxies) == 0 && len(external.ExternalProviders) == 0 {
+					return fmt.Errorf("external exit group %q has no usable proxy members", target)
+				}
+				// The exit group carries the chain's second hop: same
+				// stickiness rule as the entry group. This floors the
+				// imported runtime copy only; the source profile's saved
+				// YAML keeps its own parameters.
+				floorChainHopHealthCheck(group)
 			}
-			// The enabled app chain is the explicit chain choice. It replaces
-			// only this selected exit's existing dialer-proxy on the runtime copy.
-			// Only the selected exit's homologous chain setting is replaced;
-			// all other profile-native rules and chains remain intact.
-			target["dialer-proxy"] = entry
-		} else if landingKind != "group" || findGroup(landing) == nil {
-			return fmt.Errorf("external exit group %q was not imported", landing)
+			chainMembers = append(chainMembers, target)
 		}
-		if landingKind == "group" && findGroup(landing) == nil {
-			return fmt.Errorf("external exit group %q was not imported", landing)
-		}
-		if landingKind == "group" && len(policy.ExternalProxies) == 0 && len(policy.ExternalProviders) == 0 {
-			return fmt.Errorf("external exit group %q has no usable proxy members", landing)
-		}
-		if landingKind == "group" {
-			// The exit group carries the chain's second hop: same
-			// stickiness rule as the entry group. This floors the
-			// imported runtime copy only; the source profile's saved
-			// YAML keeps its own parameters.
-			floorChainHopHealthCheck(findGroup(landing))
-		}
-		for _, proxy := range policy.ExternalProxies {
-			// Explicit app chain wins for the imported exit graph only. These
-			// are runtime copies; saved source-profile YAML remains untouched.
-			proxy["dialer-proxy"] = entry
-		}
-		for _, provider := range policy.ExternalProviders {
-			if err := appendDialer(provider); err != nil {
-				return err
+		for _, external := range externals {
+			for _, proxy := range external.ExternalProxies {
+				// Explicit app chain wins for the imported exit graph only.
+				// These are runtime copies; saved source-profile YAML
+				// remains untouched.
+				proxy["dialer-proxy"] = entry
+			}
+			for _, provider := range external.ExternalProviders {
+				if err := appendDialer(provider); err != nil {
+					return err
+				}
 			}
 		}
 		chainGroup := uniqueChainGroupName(used)
 		raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
 			"name":    chainGroup,
 			"type":    "select",
-			"proxies": []any{landing},
+			"proxies": chainMembers,
 		})
 		// The chain must not be inserted into its own entry group or any
 		// nested entry group: doing so would create a dialer cycle.

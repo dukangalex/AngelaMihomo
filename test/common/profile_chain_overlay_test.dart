@@ -30,7 +30,7 @@ void main() {
       source: source,
       targetKind: ChainTargetKind.group,
       targetName: 'Outer',
-      reservedNames: {'[chain 192612] Node A'},
+      reservedNames: {'⛓192612 Node A'},
     );
     expect(
       jsonEncode(source),
@@ -48,7 +48,11 @@ void main() {
       ...groups.map((group) => group['name']),
     };
     expect(names, hasLength(4));
-    expect(names, isNot(contains('[chain 192612] Node A')));
+    // T303: generated names carry the short chain prefix, and a name
+    // already taken in the active profile gets the collision suffix.
+    expect(names, everyElement(startsWith('⛓192612 ')));
+    expect(names, contains('⛓192612 Node A (2)'));
+    expect(names, isNot(contains('⛓192612 Node A')));
     final outer = groups.singleWhere(
       (g) => g['name'] == overlay['external-target'],
     );

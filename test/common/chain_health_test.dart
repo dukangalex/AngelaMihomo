@@ -46,13 +46,15 @@ void main() {
   }) => chainCardHealth(
     chain: candidate,
     currentProfileId: currentId,
-    landingProfileExists: landingExists,
+    existingProfileIds: {currentId, if (landingExists) landingId},
     entryTargets: chainTargetKeysOf(
       entryConfig ?? configOf(groups: ['EntryGroup'], proxies: ['node-a']),
     ),
-    landingTargets: chainTargetKeysOf(
-      landingConfig ?? configOf(groups: ['ExitGroup'], proxies: ['exit-a']),
-    ),
+    landingTargetsByProfile: {
+      landingId: chainTargetKeysOf(
+        landingConfig ?? configOf(groups: ['ExitGroup'], proxies: ['exit-a']),
+      ),
+    },
   );
 
   group('chainTargetsOf', () {
@@ -192,9 +194,9 @@ void main() {
         chainCardHealth(
           chain: ProfileChain(enabled: true),
           currentProfileId: 'gone',
-          landingProfileExists: false,
+          existingProfileIds: const {},
           entryTargets: const {},
-          landingTargets: const {},
+          landingTargetsByProfile: const {},
         ),
         ChainCardHealth.stale,
       );

@@ -70,7 +70,7 @@ enum ChainCardHealth {
 
 /// Pure, total projection of a saved chain selection onto
 /// [ChainCardHealth]. It reads the same existence facts the assembly
-/// path consumes — the profile list (via [landingProfileExists]) and the
+/// path consumes — the profile list (via [existingProfileIds]) and the
 /// target sets of the owning and exit profiles' effective configs (the
 /// [ProfileChain.selectionIssue] inputs) — and never throws, so a card
 /// renders normally no matter how stale the saved data is.
@@ -83,18 +83,22 @@ enum ChainCardHealth {
 ChainCardHealth chainCardHealth({
   required ProfileChain chain,
   required String currentProfileId,
-  required bool landingProfileExists,
+  required Set<String> existingProfileIds,
   required Set<String> entryTargets,
-  required Set<String> landingTargets,
+  required Map<String, Set<String>> landingTargetsByProfile,
 }) {
   if (!chain.enabled) return ChainCardHealth.notEnabled;
-  final landingProfileId = chain.resolvedLandingProfileId(currentProfileId);
-  if (landingProfileId == currentProfileId) return ChainCardHealth.stale;
-  if (!landingProfileExists) return ChainCardHealth.stale;
+  for (final landing in chain.landings) {
+    final landingProfileId = landing.resolvedProfileId(currentProfileId);
+    if (landingProfileId == currentProfileId) return ChainCardHealth.stale;
+    if (!existingProfileIds.contains(landingProfileId)) {
+      return ChainCardHealth.stale;
+    }
+  }
   final issue = chain.selectionIssue(
     currentProfileId: currentProfileId,
     entryTargets: entryTargets,
-    landingTargets: landingTargets,
+    landingTargetsByProfile: landingTargetsByProfile,
   );
   return issue == null ? ChainCardHealth.healthy : ChainCardHealth.stale;
 }

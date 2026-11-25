@@ -10,10 +10,14 @@ class ProfileChainOverlay {
 
   /// Short source marker embedded in generated names. Profile ids are
   /// timestamp-like and long; the last 6 characters keep generated group
-  /// names readable while staying distinct per source profile.
+  /// names readable while staying distinct per source profile. The
+  /// prefix is a chain glyph plus the token (T303: kept as short as
+  /// possible while staying recognisable in group lists).
   static String _nameToken(String profileId) => profileId.length > 6
       ? profileId.substring(profileId.length - 6)
       : profileId;
+
+  static String _prefix(String profileId) => '⛓${_nameToken(profileId)} ';
 
   /// Health checks of the imported exit graph run through the entry, so a
   /// check costs two hops. The parameters are aligned with the
@@ -74,7 +78,7 @@ class ProfileChainOverlay {
       );
     }
 
-    final prefix = '[chain ${_nameToken(profileId)}] ';
+    final prefix = _prefix(profileId);
     final used = <String>{...allNames, ...providerNames, ...reservedNames};
     final renamed = <String, String>{};
     String mapped(String kind, String original) =>
@@ -170,7 +174,7 @@ class ProfileChainOverlay {
           'Provider "$name" has an unsupported override-expr value.',
         );
       }
-      final providerPrefix = '[chain ${_nameToken(profileId)}/$name] ';
+      final providerPrefix = '⛓${_nameToken(profileId)}/$name ';
       expressions.add('.name = ${jsonEncode(providerPrefix)} + .name');
       overrideMap['override-expr'] = expressions;
       copied['override'] = overrideMap;

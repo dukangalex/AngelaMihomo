@@ -209,7 +209,10 @@ void main() {
         );
       });
       final policy = setup?.patch?['chain-policy'] as Map?;
-      expect(policy?['external-profile-id'], exitProfile.id);
+      final targets = policy?['external-targets'] as List?;
+      expect(targets, hasLength(1));
+      expect(targets?.single['external-profile-id'], exitProfile.id);
+      expect(targets?.single['external-target'], endsWith(' Exit'));
       expect(policy?['landing'], 'Exit');
       expect(ProfileChainStore.instance.of(profile.id), same(old));
     },
