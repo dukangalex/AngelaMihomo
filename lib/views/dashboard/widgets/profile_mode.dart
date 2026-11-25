@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
@@ -232,55 +233,69 @@ class _ProfileZone extends ConsumerWidget {
   }
 }
 
-/// T300 (user 2026-11-25): the update button as an Earth–Moon
-/// system, drawn in the active color scheme so it belongs to the
-/// 星辰大海 interface — an inner planet sphere (scheme gradient,
-/// shaded terminator, atmosphere rim) and a small moon parked on
-/// its orbit ring. While [updating] the moon orbits the planet;
-/// when the update ends it completes its current revolution and
-/// parks again. [dimmed] renders the whole system at disabled
-/// strength.
-class EarthMoonUpdateIcon extends StatefulWidget {
+/// T301 (user 2026-11-25, supersedes the T300 Earth–Moon look as
+/// "not tech-feeling enough"): the update button as a zodiac
+/// astrolabe wheel, after the user's reference of a golden zodiac
+/// star-disc — an outer ring divided into twelve sign sectors with
+/// their glyphs and gem dots on the rim, an inner eight-point
+/// compass star, drawn in the active color scheme's metal tones so
+/// it belongs to the 星辰大海 interface in every theme. While
+/// [updating] the glyph ring turns one way and the star counter-
+/// turns, like an instrument at work; when the update ends both
+/// finish their current revolution and park. [dimmed] renders the
+/// wheel at disabled strength.
+class ZodiacWheelUpdateIcon extends StatefulWidget {
   final bool updating;
   final bool dimmed;
 
-  const EarthMoonUpdateIcon({
+  const ZodiacWheelUpdateIcon({
     super.key,
     required this.updating,
     this.dimmed = false,
   });
 
   @override
-  State<EarthMoonUpdateIcon> createState() => _EarthMoonUpdateIconState();
+  State<ZodiacWheelUpdateIcon> createState() => _ZodiacWheelUpdateIconState();
 }
 
-class _EarthMoonUpdateIconState extends State<EarthMoonUpdateIcon>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _orbit = AnimationController(
+class _ZodiacWheelUpdateIconState extends State<ZodiacWheelUpdateIcon>
+    with TickerProviderStateMixin {
+  late final AnimationController _ring = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1600),
+    duration: const Duration(milliseconds: 9000),
+  );
+  late final AnimationController _star = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 6000),
   );
 
   @override
-  void didUpdateWidget(EarthMoonUpdateIcon oldWidget) {
+  void didUpdateWidget(ZodiacWheelUpdateIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.updating == oldWidget.updating) return;
     if (widget.updating) {
-      _orbit.repeat();
+      _ring.repeat();
+      _star.repeat();
     } else {
-      // Finish the current revolution, then park at the rest angle.
-      final remaining = (1 - _orbit.value) * 1600;
-      _orbit
-          .animateTo(1, duration: Duration(milliseconds: remaining.round()))
-          .whenComplete(() {
-            if (mounted && !widget.updating) _orbit.value = 0;
-          });
+      // Finish the current revolution on both layers, then park.
+      for (final (controller, periodMs) in [(_ring, 9000), (_star, 6000)]) {
+        final remaining = (1 - controller.value) * periodMs;
+        controller
+            .animateTo(
+              1,
+              duration: Duration(milliseconds: remaining.round()),
+            )
+            .whenComplete(() {
+              if (mounted && !widget.updating) controller.value = 0;
+            });
+      }
     }
   }
 
   @override
   void dispose() {
-    _orbit.dispose();
+    _ring.dispose();
+    _star.dispose();
     super.dispose();
   }
 
@@ -288,16 +303,14 @@ class _EarthMoonUpdateIconState extends State<EarthMoonUpdateIcon>
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     return AnimatedBuilder(
-      animation: _orbit,
+      animation: Listenable.merge([_ring, _star]),
       builder: (_, _) => CustomPaint(
-        size: const Size.square(24),
-        painter: _EarthMoonPainter(
-          // Rest angle parks the moon at the upper right.
-          angle: -0.96 + _orbit.value * 2 * math.pi,
-          planetLight: colorScheme.secondary,
-          planetDeep: colorScheme.primary,
-          ring: colorScheme.onSurfaceVariant,
-          moon: colorScheme.onSurfaceVariant,
+        size: const Size.square(26),
+        painter: _ZodiacWheelPainter(
+          ringAngle: _ring.value * 2 * math.pi,
+          starAngle: -_star.value * 2 * math.pi,
+          deep: colorScheme.primary,
+          light: colorScheme.secondary,
           dimmed: widget.dimmed,
         ),
       ),
@@ -305,20 +318,23 @@ class _EarthMoonUpdateIconState extends State<EarthMoonUpdateIcon>
   }
 }
 
-class _EarthMoonPainter extends CustomPainter {
-  final double angle;
-  final Color planetLight;
-  final Color planetDeep;
-  final Color ring;
-  final Color moon;
+/// The twelve sign glyphs in zodiac order, one per wheel sector.
+const List<String> _zodiacGlyphs = [
+  '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓',
+];
+
+class _ZodiacWheelPainter extends CustomPainter {
+  final double ringAngle;
+  final double starAngle;
+  final Color deep;
+  final Color light;
   final bool dimmed;
 
-  const _EarthMoonPainter({
-    required this.angle,
-    required this.planetLight,
-    required this.planetDeep,
-    required this.ring,
-    required this.moon,
+  const _ZodiacWheelPainter({
+    required this.ringAngle,
+    required this.starAngle,
+    required this.deep,
+    required this.light,
     required this.dimmed,
   });
 
@@ -326,85 +342,139 @@ class _EarthMoonPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final fade = dimmed ? 0.38 : 1.0;
     final center = Offset(size.width / 2, size.height / 2);
-    const orbitRadius = 9.3;
-    const planetRadius = 5.9;
-    const moonRadius = 2.35;
+    const rimRadius = 12.3;
+    const bandInner = 8.7;
 
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+
+    // --- Glyph ring (rotates) ---
+    canvas.save();
+    canvas.rotate(ringAngle);
     canvas.drawCircle(
-      center,
-      orbitRadius,
+      Offset.zero,
+      rimRadius,
       Paint()
-        ..color = ring.withValues(alpha: 0.45 * fade)
+        ..color = deep.withValues(alpha: 0.85 * fade)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0,
-    );
-
-    // Planet sphere: scheme gradient lit from the upper left, a
-    // soft terminator toward the lower right, a thin atmosphere rim.
-    canvas.drawCircle(
-      center,
-      planetRadius,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            planetLight.withValues(alpha: fade),
-            planetDeep.withValues(alpha: fade),
-          ],
-          stops: const [0.15, 1],
-        ).createShader(
-          Rect.fromCircle(
-            center: center + const Offset(-1.8, -1.8),
-            radius: planetRadius * 1.8,
-          ),
-        ),
+        ..strokeWidth = 1.2,
     );
     canvas.drawCircle(
-      center,
-      planetRadius,
+      Offset.zero,
+      bandInner,
       Paint()
-        ..shader = RadialGradient(
-          colors: [
-            Colors.transparent,
-            Colors.black.withValues(alpha: 0.16 * fade),
-          ],
-        ).createShader(
-          Rect.fromCircle(
-            center: center + const Offset(2.4, 2.4),
-            radius: planetRadius * 1.7,
-          ),
-        ),
-    );
-    canvas.drawCircle(
-      center,
-      planetRadius,
-      Paint()
-        ..color = planetLight.withValues(alpha: 0.30 * fade)
+        ..color = deep.withValues(alpha: 0.7 * fade)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.9,
     );
+    final dividerPaint = Paint()
+      ..color = deep.withValues(alpha: 0.55 * fade)
+      ..strokeWidth = 0.7;
+    for (var i = 0; i < 12; i++) {
+      final a = (i * 30 + 15) * math.pi / 180;
+      canvas.drawLine(
+        Offset(math.cos(a), math.sin(a)) * bandInner,
+        Offset(math.cos(a), math.sin(a)) * rimRadius,
+        dividerPaint,
+      );
+      // Gem dot seated on the rim at each divider.
+      canvas.drawCircle(
+        Offset(math.cos(a), math.sin(a)) * rimRadius,
+        0.55,
+        Paint()..color = light.withValues(alpha: 0.9 * fade),
+      );
+    }
+    for (var i = 0; i < 12; i++) {
+      canvas.save();
+      canvas.rotate(i * math.pi / 6);
+      canvas.translate(0, -10.5);
+      final glyph = TextPainter(
+        text: TextSpan(
+          text: _zodiacGlyphs[i],
+          style: TextStyle(
+            fontSize: 4.6,
+            fontWeight: FontWeight.w700,
+            color: deep.withValues(alpha: 0.9 * fade),
+          ),
+        ),
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+      glyph.paint(canvas, Offset(-glyph.width / 2, -glyph.height / 2));
+      canvas.restore();
+    }
+    canvas.restore();
 
-    // The moon on its orbit, one small crater for character.
-    final moonCenter =
-        center + Offset(math.cos(angle), math.sin(angle)) * orbitRadius;
+    // --- Inner machinery ring + compass star (counter-rotates) ---
+    canvas.save();
+    canvas.rotate(starAngle);
     canvas.drawCircle(
-      moonCenter,
-      moonRadius,
-      Paint()..color = moon.withValues(alpha: 0.92 * fade),
+      Offset.zero,
+      5.6,
+      Paint()
+        ..color = deep.withValues(alpha: 0.5 * fade)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7,
+    );
+    for (var i = 0; i < 12; i++) {
+      final a = i * math.pi / 6;
+      canvas.drawCircle(
+        Offset(math.cos(a), math.sin(a)) * 5.6,
+        0.4,
+        Paint()..color = deep.withValues(alpha: 0.5 * fade),
+      );
+    }
+    final star = Path();
+    for (var k = 0; k < 16; k++) {
+      final a = k * math.pi / 8;
+      final r = k.isOdd ? 1.75 : (k % 4 == 0 ? 4.9 : 3.6);
+      final point = Offset(math.cos(a), math.sin(a)) * r;
+      if (k == 0) {
+        star.moveTo(point.dx, point.dy);
+      } else {
+        star.lineTo(point.dx, point.dy);
+      }
+    }
+    star.close();
+    canvas.drawPath(
+      star,
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            light.withValues(alpha: fade),
+            deep.withValues(alpha: fade),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(const Rect.fromLTWH(-5, -5, 10, 10)),
+    );
+    canvas.drawPath(
+      star,
+      Paint()
+        ..color = deep.withValues(alpha: 0.65 * fade)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5,
     );
     canvas.drawCircle(
-      moonCenter + const Offset(0.7, -0.45),
-      0.65,
-      Paint()..color = Colors.black.withValues(alpha: 0.14 * fade),
+      Offset.zero,
+      1.2,
+      Paint()..color = light.withValues(alpha: fade),
     );
+    canvas.drawCircle(
+      Offset.zero,
+      0.55,
+      Paint()..color = deep.withValues(alpha: fade),
+    );
+    canvas.restore();
+
+    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(_EarthMoonPainter oldDelegate) =>
-      angle != oldDelegate.angle ||
-      planetLight != oldDelegate.planetLight ||
-      planetDeep != oldDelegate.planetDeep ||
-      ring != oldDelegate.ring ||
-      moon != oldDelegate.moon ||
+  bool shouldRepaint(_ZodiacWheelPainter oldDelegate) =>
+      ringAngle != oldDelegate.ringAngle ||
+      starAngle != oldDelegate.starAngle ||
+      deep != oldDelegate.deep ||
+      light != oldDelegate.light ||
       dimmed != oldDelegate.dimmed;
 }
 
@@ -415,11 +485,11 @@ class _EarthMoonPainter extends CustomPainter {
 /// external-provider update — so this button adds no update logic of
 /// its own.
 ///
-/// States (T300 presentation): the Earth–Moon system (see
-/// EarthMoonUpdateIcon) — while the profile reports isUpdating the
-/// moon orbits and the button is disabled so a second tap cannot
-/// double-fire; a file profile with no external providers has
-/// nothing to refresh, so it is shown dimmed and disabled.
+/// States (T301 presentation): the zodiac astrolabe wheel (see
+/// ZodiacWheelUpdateIcon) — while the profile reports isUpdating
+/// the wheel turns and the button is disabled so a second tap
+/// cannot double-fire; a file profile with no external providers
+/// has nothing to refresh, so it is shown dimmed and disabled.
 class _UpdateProfileButton extends ConsumerWidget {
   final Profile profile;
 
@@ -452,7 +522,7 @@ class _UpdateProfileButton extends ConsumerWidget {
         maxWidth: 28,
         maxHeight: 28,
       ),
-      icon: EarthMoonUpdateIcon(
+      icon: ZodiacWheelUpdateIcon(
         updating: profile.isUpdating,
         dimmed: !canRefresh && !profile.isUpdating,
       ),
