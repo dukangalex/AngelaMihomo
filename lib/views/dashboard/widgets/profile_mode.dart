@@ -75,7 +75,6 @@ class ProfileModeCard extends ConsumerWidget {
           padding: EdgeInsets.zero,
           child: Stack(
             children: [
-              const Positioned(top: 0, right: 0, child: _ZodiacWatermark()),
               Column(
                 children: [
                   Expanded(child: _ProfileZone(tall: tall)),
@@ -94,7 +93,6 @@ class ProfileModeCard extends ConsumerWidget {
         padding: EdgeInsets.zero,
         child: Stack(
           children: [
-            const Positioned(top: 0, right: 0, child: _ZodiacWatermark()),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -104,81 +102,6 @@ class ProfileModeCard extends ConsumerWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// T294, revised by T296 at the user's direct instruction: the
-/// header card's watermark is the theme's zodiac ARTWORK — the
-/// animal figure itself — never the sign's name written as a text
-/// glyph. It sits at the card's top right, behind every control,
-/// never intercepting a tap. Each series supplies its own artwork:
-/// the solid zodiac's animal is composited into its full-canvas
-/// image (right-hand band, measured across all twenty-four
-/// artworks: x 0.36–0.97, y 0.49–0.79 of the 1440×2880 canvas), so
-/// the watermark shows that canvas through a square cover window
-/// aligned on the animal, its patch edges faded so the base-colour
-/// block melts into the card; the constellation series shows its
-/// guardian figure (pre-faded artwork); deep-space shows its motif.
-/// Themes without artwork carry no watermark.
-class _ZodiacWatermark extends StatelessWidget {
-  const _ZodiacWatermark();
-
-  @override
-  Widget build(BuildContext context) {
-    final zodiac = context.zodiac;
-    if (zodiac == null) return const SizedBox.shrink();
-    final solidPath = zodiac.solidAssetPath;
-    if (solidPath != null) {
-      return IgnorePointer(
-        child: ShaderMask(
-          blendMode: BlendMode.dstIn,
-          shaderCallback: (bounds) => const RadialGradient(
-            center: Alignment(0.25, -0.25),
-            radius: 0.85,
-            colors: [Colors.white, Colors.white, Colors.transparent],
-            stops: [0, 0.55, 1],
-          ).createShader(bounds),
-          child: Image.asset(
-            solidPath,
-            width: 132,
-            height: 132,
-            fit: BoxFit.cover,
-            // Cover on a square window over the 1:2 canvas shows
-            // the full width and the y 0.39–0.89 band — the band
-            // every solid animal occupies.
-            alignment: const Alignment(0, 0.56),
-          ),
-        ),
-      );
-    }
-    if (zodiac.motif != null) {
-      return IgnorePointer(
-        child: Opacity(
-          opacity: 0.4,
-          child: CustomPaint(
-            size: const Size.square(120),
-            painter: DeepSpaceMotifPainter(
-              motif: zodiac.motif!,
-              variant: zodiac.variant,
-              isDark: Theme.of(context).brightness == Brightness.dark,
-            ),
-          ),
-        ),
-      );
-    }
-    final guardian = zodiacGuardianForTheme(zodiac.themeId);
-    if (guardian == null) return const SizedBox.shrink();
-    return IgnorePointer(
-      child: Opacity(
-        opacity: 0.55,
-        child: Image.asset(
-          guardian.assetPath,
-          width: 120,
-          height: 120,
-          fit: BoxFit.contain,
         ),
       ),
     );
