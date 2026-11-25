@@ -93,6 +93,24 @@ void main() {
       expect(zodiacGuardianSignName('scorpio', const Locale('ru')), 'Скорпион');
       expect(zodiacGuardianSignName('libra', const Locale('fa')), 'میزان');
     });
+
+    test('date range labels cover all twelve signs per locale', () {
+      expect(zodiacDateRanges, hasLength(12));
+      expect(
+        zodiacDateRanges.keys.toSet(),
+        zodiacThemes.map((theme) => theme.id).toSet(),
+      );
+      const zh = Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN');
+      expect(zodiacDateRangeLabel('sagittarius', zh), '11月23日 - 12月21日');
+      expect(zodiacDateRangeLabel('capricorn', zh), '12月22日 - 1月19日');
+      expect(zodiacDateRangeLabel('aries', const Locale('en')), 'Mar 21 - Apr 19');
+      expect(
+        zodiacDateRangeLabel('pisces', const Locale('ru')),
+        '19 февраля - 20 марта',
+      );
+      expect(zodiacDateRangeLabel('leo', const Locale('ko')), '7월 23일 - 8월 22일');
+      expect(zodiacDateRangeLabel('unknown', const Locale('en')), '');
+    });
   });
 
   /// Pumps a lone [ZodiacBackdrop] for the Sagittarius theme with the
@@ -147,8 +165,8 @@ void main() {
     expect(find.byType(ZodiacGuardianFigureLayer), findsOneWidget);
     expect(find.byType(ZodiacGuardianPlate), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
-    expect(find.text('宙斯'), findsOneWidget);
-    expect(find.text('ZEUS · 射手座守护神'), findsOneWidget);
+    expect(find.text('射手座'), findsOneWidget);
+    expect(find.text('11月23日 - 12月21日'), findsOneWidget);
     // The plate is part of the backdrop, not a fixed overlay above
     // page content: it lives inside ZodiacBackdrop's own stack, so
     // sheets, dialogs and cards stacked over the backdrop cover it.
@@ -197,7 +215,7 @@ void main() {
     await pumpBackdrop(tester, showGuardian: false);
     expect(find.byType(CustomPaint), findsWidgets);
     expect(find.byType(Image), findsNothing);
-    expect(find.text('宙斯'), findsNothing);
+    expect(find.text('射手座'), findsNothing);
   });
 
   test('page variants pose the same guardian differently per page', () {
@@ -241,6 +259,6 @@ void main() {
     await tester.pump();
     expect(find.byType(Image), findsNothing);
     expect(find.byType(ZodiacGuardianPlate), findsNothing);
-    expect(find.text('宙斯'), findsNothing);
+    expect(find.text('射手座'), findsNothing);
   });
 }
