@@ -212,7 +212,7 @@ void main() {
       final targets = policy?['external-targets'] as List?;
       expect(targets, hasLength(1));
       expect(targets?.single['external-profile-id'], exitProfile.id);
-      expect(targets?.single['external-target'], endsWith(' Exit'));
+      expect(targets?.single['external-target'], '⛓Exit');
       expect(policy?['landing'], 'Exit');
       expect(ProfileChainStore.instance.of(profile.id), same(old));
     },
