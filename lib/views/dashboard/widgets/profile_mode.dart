@@ -111,39 +111,20 @@ class ProfileModeCard extends ConsumerWidget {
 }
 
 /// T294, revised by T296 at the user's direct instruction: the
-/// header card's watermark is the theme's zodiac artwork — for the
-/// solid zodiac, the animal's HEAD as a sketch portrait — never the
-/// sign's name written as a text glyph. It sits at the card's top
-/// right, behind every control, never intercepting a tap. The solid
-/// animal is composited into its full-canvas image, so the
-/// watermark shows that canvas through a square window centred on
-/// the head (per-animal windows measured from the artworks
-/// themselves; the dark and light canvases share one composition),
-/// its patch edges faded so the base-colour block melts into the
-/// card. The constellation series shows its guardian figure
-/// (pre-faded artwork); deep-space shows its motif. Themes without
-/// artwork carry no watermark.
+/// header card's watermark is the theme's zodiac ARTWORK — the
+/// animal figure itself — never the sign's name written as a text
+/// glyph. It sits at the card's top right, behind every control,
+/// never intercepting a tap. Each series supplies its own artwork:
+/// the solid zodiac's animal is composited into its full-canvas
+/// image (right-hand band, measured across all twenty-four
+/// artworks: x 0.36–0.97, y 0.49–0.79 of the 1440×2880 canvas), so
+/// the watermark shows that canvas through a square cover window
+/// aligned on the animal, its patch edges faded so the base-colour
+/// block melts into the card; the constellation series shows its
+/// guardian figure (pre-faded artwork); deep-space shows its motif.
+/// Themes without artwork carry no watermark.
 class _ZodiacWatermark extends StatelessWidget {
   const _ZodiacWatermark();
-
-  /// Head windows over the solid canvas, keyed by the artwork's
-  /// file stem: (centre x, centre y, side) as canvas fractions,
-  /// the side as a fraction of the canvas width (the canvas is
-  /// 1440×2880, so the side spans half as much of its height).
-  static const _solidHeadWindows = <String, (double, double, double)>{
-    'rat': (0.87, 0.755, 0.15),
-    'ox': (0.88, 0.545, 0.19),
-    'tiger': (0.45, 0.69, 0.17),
-    'rabbit': (0.76, 0.66, 0.25),
-    'dragon': (0.73, 0.51, 0.18),
-    'snake': (0.82, 0.51, 0.14),
-    'horse': (0.415, 0.70, 0.16),
-    'goat': (0.86, 0.52, 0.21),
-    'monkey': (0.83, 0.625, 0.16),
-    'rooster': (0.49, 0.53, 0.16),
-    'dog': (0.865, 0.645, 0.17),
-    'pig': (0.40, 0.70, 0.17),
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -151,13 +132,6 @@ class _ZodiacWatermark extends StatelessWidget {
     if (zodiac == null) return const SizedBox.shrink();
     final solidPath = zodiac.solidAssetPath;
     if (solidPath != null) {
-      final stem = solidPath.split('/').last.replaceAll('.webp', '');
-      final head = _solidHeadWindows[stem];
-      if (head == null) return const SizedBox.shrink();
-      final (cx, cy, side) = head;
-      const box = 124.0;
-      final imgW = box / side;
-      final imgH = imgW * 2;
       return IgnorePointer(
         child: ShaderMask(
           blendMode: BlendMode.dstIn,
@@ -167,22 +141,15 @@ class _ZodiacWatermark extends StatelessWidget {
             colors: [Colors.white, Colors.white, Colors.transparent],
             stops: [0, 0.55, 1],
           ).createShader(bounds),
-          child: SizedBox(
-            width: box,
-            height: box,
-            child: ClipRect(
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: box / 2 - cx * imgW,
-                    top: box / 2 - cy * imgH,
-                    width: imgW,
-                    height: imgH,
-                    child: Image.asset(solidPath, fit: BoxFit.fill),
-                  ),
-                ],
-              ),
-            ),
+          child: Image.asset(
+            solidPath,
+            width: 132,
+            height: 132,
+            fit: BoxFit.cover,
+            // Cover on a square window over the 1:2 canvas shows
+            // the full width and the y 0.39–0.89 band — the band
+            // every solid animal occupies.
+            alignment: const Alignment(0, 0.56),
           ),
         ),
       );
