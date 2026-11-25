@@ -606,7 +606,12 @@ class _ConstellationPainter extends CustomPainter {
         style: TextStyle(
           fontSize: size.width * 0.4,
           fontWeight: FontWeight.w700,
-          color: variant.textPrimary.withValues(alpha: 0.05),
+          // T299: the glyph is a watermark, so it follows the same
+          // lean as the guardian figure — textPrimary is already the
+          // light family on dark variants and the dark family on
+          // light ones; the light tokens need extra weight to read
+          // at watermark strength against a light field.
+          color: variant.textPrimary.withValues(alpha: isDark ? 0.05 : 0.1),
         ),
       ),
       textDirection: TextDirection.ltr,

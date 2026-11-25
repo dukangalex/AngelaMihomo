@@ -101,6 +101,7 @@ flutter:
     - assets/images/
     - assets/images/avatars/
     - assets/images/guardians/
+    - assets/images/guardians_light/
     - assets/scripts/
     - assets/svg/
     - assets/route_svg/

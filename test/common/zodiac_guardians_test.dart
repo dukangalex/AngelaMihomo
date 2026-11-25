@@ -41,6 +41,21 @@ void main() {
           isTrue,
           reason: '${guardian.assetPath} must exist on disk',
         );
+        // T299: every guardian also ships its dark-toned light-field
+        // edition, and the path derivation must land on it.
+        expect(
+          guardian.assetPathFor(Brightness.dark),
+          guardian.assetPath,
+        );
+        expect(
+          guardian.assetPathFor(Brightness.light),
+          'assets/images/guardians_light/${theme.id}.webp',
+        );
+        expect(
+          File(guardian.assetPathFor(Brightness.light)).existsSync(),
+          isTrue,
+          reason: 'the light-field edition must exist on disk',
+        );
         expect(guardian.latinName, isNotEmpty);
       }
     });

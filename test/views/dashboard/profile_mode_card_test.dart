@@ -202,10 +202,12 @@ void main() {
       expect(find.byIcon(Icons.network_ping), findsNothing);
       // T292 (supersedes the T149 placement call at the user's direct
       // instruction): the card's leading icon IS the update-current-
-      // profile button — exactly one, wearing the refresh glyph and
-      // the Update tooltip. It is a refresh entry, not a test entry:
-      // the light above stays the card's only speed-test trigger.
-      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
+      // profile button — exactly one, wearing the Update tooltip.
+      // T300 dresses it as the Earth–Moon system (EarthMoonUpdateIcon;
+      // the moon orbits while an update runs). It is a refresh entry,
+      // not a test entry: the light above stays the card's only
+      // speed-test trigger.
+      expect(find.byType(EarthMoonUpdateIcon), findsOneWidget);
       expect(find.byTooltip('Update'), findsOneWidget);
     },
   );

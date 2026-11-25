@@ -34,6 +34,18 @@ class ZodiacGuardian {
     required this.assetPath,
   });
 
+  /// The artwork for [brightness] (T299, user direction 2026-11-25:
+  /// within one theme the watermark leans light on dark fields and
+  /// dark on light fields). The shipped art is bright neon line work
+  /// over a dark disc — right on dark fields, washed out on light
+  /// ones — so every guardian also ships a derived light-field
+  /// edition under guardians_light/: the same lines deepened into
+  /// the dark family, the disc melted away, generated from the
+  /// original art (luminance-driven alpha, hues kept).
+  String assetPathFor(Brightness brightness) => brightness == Brightness.light
+      ? assetPath.replaceFirst('images/guardians/', 'images/guardians_light/')
+      : assetPath;
+
   /// The guardian's name in the active locale, resolved through the
   /// hand-maintained `guardian*` l10n keys.
   String localizedName(AppLocalizations l10n) {
@@ -358,13 +370,12 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     final active = _activeGuardian(context);
     if (active == null) return const SizedBox.expand();
-    // T298 (user 2026-11-24): the watermark adapts to the active
-    // mode. The guardian artwork is a dark-toned figure composed
-    // against dark fields; on a light field the same presence at
-    // full strength would shout over the content, so the light
-    // presentation eases it down — still clearly present, still
-    // the backdrop's, never the scene's subject.
-    final isLight = Theme.of(context).brightness == Brightness.light;
+    // T299 (user 2026-11-25): the watermark adapts its tone family
+    // to the active mode — the light-toned artwork on dark fields,
+    // the derived dark-toned edition (assetPathFor) on light
+    // fields — at the same presence in both, so neither mode's
+    // watermark washes out against its own field.
+    final brightness = Theme.of(context).brightness;
     final variant = zodiacGuardianVariantFor(pageLabel);
     final size = MediaQuery.sizeOf(context);
     return IgnorePointer(
@@ -382,8 +393,9 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
               // stronger blur it read as too faint on the user's real
               // device (2026-11-17, T193), so the presence is raised
               // to 0.6 and the blur eased in the backdrop.
-              // T298: light fields take 0.45 (see above).
-              opacity: isLight ? 0.45 : 0.6,
+              // T299: both modes take 0.6 — the per-mode artwork
+              // (see above) carries the adaptation now.
+              opacity: 0.6,
               child: ShaderMask(
                 // T188: feather the artwork's edges into the
                 // background on both axes so the figure reads as grown
@@ -428,7 +440,7 @@ class ZodiacGuardianFigureLayer extends StatelessWidget {
                       child: Transform.flip(
                         flipX: variant.flipX,
                         child: Image.asset(
-                          active.guardian.assetPath,
+                          active.guardian.assetPathFor(brightness),
                           fit: BoxFit.fitWidth,
                         ),
                       ),
