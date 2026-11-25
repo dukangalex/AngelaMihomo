@@ -30,7 +30,7 @@ void main() {
       source: source,
       targetKind: ChainTargetKind.group,
       targetName: 'Outer',
-      reservedNames: {'⛓192612 Node A'},
+      reservedNames: {'⛓Node A'},
     );
     expect(
       jsonEncode(source),
@@ -48,16 +48,64 @@ void main() {
       ...groups.map((group) => group['name']),
     };
     expect(names, hasLength(4));
-    // T303: generated names carry the short chain prefix, and a name
+    // T307: generated names carry only the chain glyph, and a name
     // already taken in the active profile gets the collision suffix.
-    expect(names, everyElement(startsWith('⛓192612 ')));
-    expect(names, contains('⛓192612 Node A (2)'));
-    expect(names, isNot(contains('⛓192612 Node A')));
+    expect(names, everyElement(startsWith('⛓')));
+    expect(names, contains('⛓Node A (2)'));
+    expect(names, isNot(contains('⛓Node A')));
     final outer = groups.singleWhere(
       (g) => g['name'] == overlay['external-target'],
     );
     expect((outer['proxies'] as List).length, 2);
     expect(outer['empty-fallback'], 'REJECT');
+  });
+
+  test('sole group exit can be imported under the landing group name', () {
+    final source = <String, dynamic>{
+      'proxies': [
+        {'name': 'Node A', 'type': 'http', 'server': 'a.example', 'port': 80},
+        {'name': 'Node B', 'type': 'http', 'server': 'b.example', 'port': 80},
+      ],
+      'proxy-groups': [
+        {
+          'name': 'Inner',
+          'type': 'select',
+          'proxies': ['Node A'],
+        },
+        {
+          'name': 'Outer',
+          'type': 'url-test',
+          'url': 'http://www.gstatic.com/generate_204',
+          'proxies': ['Inner', 'Node B'],
+        },
+      ],
+    };
+    final overlay = ProfileChainOverlay.build(
+      profileId: 'p9',
+      source: source,
+      targetKind: ChainTargetKind.group,
+      targetName: 'Outer',
+      targetAlias: '链式落地',
+    );
+    expect(overlay['external-target'], '链式落地');
+    final groups = (overlay['external-groups'] as List).cast<Map>();
+    final landing = groups.singleWhere((g) => g['name'] == '链式落地');
+    // Only the target group takes the alias; nested groups and members
+    // keep the short chain prefix, and references point at the alias.
+    expect((landing['proxies'] as List), ['⛓Inner', '⛓Node B']);
+    expect(groups.map((g) => g['name']), contains('⛓Inner'));
+
+    // The alias is dropped when the active profile already uses the
+    // name, so the import can never collide with it.
+    final blocked = ProfileChainOverlay.build(
+      profileId: 'p9',
+      source: source,
+      targetKind: ChainTargetKind.group,
+      targetName: 'Outer',
+      reservedNames: {'链式落地'},
+      targetAlias: '链式落地',
+    );
+    expect(blocked['external-target'], '⛓Outer');
   });
 
   test('floors aggressive health-check parameters on imported copies', () {
@@ -182,6 +230,7 @@ void main() {
     expect(copied['path'], 'old-path');
     final expr = (copied['override'] as Map)['override-expr'] as List;
     expect(expr, hasLength(1));
+    expect(expr.single, '.name = "⛓/remote " + .name');
     final group = (overlay['external-groups'] as List).single as Map;
     expect(group['use'], providerNames);
   });

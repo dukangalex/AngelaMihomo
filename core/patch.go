@@ -1426,12 +1426,21 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				}
 			}
 		}
-		chainGroup := uniqueChainGroupName(used)
-		raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
-			"name":    chainGroup,
-			"type":    "select",
-			"proxies": chainMembers,
-		})
+		// T307: a sole group exit imported under the landing group's own
+		// name IS the landing group; wrapping it in another select group
+		// would add a redundant layer on the proxies page.
+		soleAliasedGroup := len(externals) == 1 &&
+			externals[0].ExternalKind == "group" &&
+			externals[0].ExternalTarget == explicitChainGroup
+		chainGroup := explicitChainGroup
+		if !soleAliasedGroup {
+			chainGroup = uniqueChainGroupName(used)
+			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
+				"name":    chainGroup,
+				"type":    "select",
+				"proxies": chainMembers,
+			})
+		}
 		// The chain must not be inserted into its own entry group or any
 		// nested entry group: doing so would create a dialer cycle.
 		entryGroups := make(map[string]bool)

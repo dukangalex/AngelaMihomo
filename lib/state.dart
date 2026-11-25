@@ -27,6 +27,7 @@ import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'common/common.dart';
+import 'common/explicit_policy.dart';
 import 'common/profile_chain.dart';
 import 'common/profile_chain_overlay.dart';
 import 'controller.dart';
@@ -1180,6 +1181,16 @@ class GlobalState {
         targetName: landing.name,
         reservedNames: reservedNames,
         providersPath: await appPath.getProvidersDirPath(sourceProfile.id),
+        // T307: with exactly one exit and that exit a group, the imported
+        // group itself takes the landing group's name; the core then
+        // needs no wrapper group around it. Skipped when the active
+        // profile already uses that name.
+        targetAlias:
+            chain.landings.length == 1 &&
+                landing.kind == ChainTargetKind.group &&
+                !reservedNames.contains(explicitChainGroup)
+            ? explicitChainGroup
+            : null,
       );
       reservedNames
         ..add(overlay['external-target'] as String)
