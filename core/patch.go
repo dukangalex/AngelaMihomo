@@ -1188,6 +1188,12 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 		}}
 	}
 	hasExternal := len(externals) > 0
+	// T310: exactly one exit is in effect (the first). Choice among
+	// landing nodes belongs to the generated landing group, not to
+	// extra configured exits; ignore any stale extras defensively.
+	if len(externals) > 1 {
+		externals = externals[:1]
+	}
 	// Keep legacy same-profile node behavior for existing native callers;
 	// the new UI requires an external exit profile.
 	if !hasExternal && entryKind == "proxy" && landingKind == "proxy" {
@@ -1426,19 +1432,47 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				}
 			}
 		}
-		// T307: a sole group exit imported under the landing group's own
-		// name IS the landing group; wrapping it in another select group
-		// would add a redundant layer on the proxies page.
-		soleAliasedGroup := len(externals) == 1 &&
-			externals[0].ExternalKind == "group" &&
-			externals[0].ExternalTarget == explicitChainGroup
+		// T310: the landing group is always an explicit select group.
+		// A group exit is expanded in place: its imported members are
+		// listed directly, so every landing node is visible and the
+		// user picks one on the proxies page. (The T303/T307 shape kept
+		// the imported group's own type, so a url-test exit silently
+		// auto-picked the landing node.) The imported group is hidden
+		// so it does not duplicate the landing group on the page. A
+		// group whose members are provider-supplied at runtime cannot
+		// be enumerated here; it stays the landing group's sole member.
+		landingMembers := chainMembers
+		var expandedGroup map[string]any
+		if externals[0].ExternalKind == "group" {
+			if target := findGroup(externals[0].ExternalTarget); target != nil {
+				if members := anyStrings(target["proxies"]); len(members) > 0 {
+					landingMembers = members
+					expandedGroup = target
+				}
+			}
+		}
 		chainGroup := explicitChainGroup
-		if !soleAliasedGroup {
+		switch {
+		case expandedGroup != nil && externals[0].ExternalTarget == explicitChainGroup:
+			// The imported group already carries the landing group's
+			// name (the pre-T310 aliased shape): convert it in place
+			// into the select landing group instead of wrapping it.
+			expandedGroup["type"] = "select"
+			delete(expandedGroup, "url")
+		case expandedGroup != nil:
+			expandedGroup["hidden"] = true
 			chainGroup = uniqueChainGroupName(used)
 			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
 				"name":    chainGroup,
 				"type":    "select",
-				"proxies": chainMembers,
+				"proxies": landingMembers,
+			})
+		default:
+			chainGroup = uniqueChainGroupName(used)
+			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
+				"name":    chainGroup,
+				"type":    "select",
+				"proxies": landingMembers,
 			})
 		}
 		// The chain must not be inserted into its own entry group or any

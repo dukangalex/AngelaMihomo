@@ -34,8 +34,10 @@ String chainTargetKey(ChainTargetKind kind, String name) =>
     '${kind.name}\u0000$name';
 
 /// One chain exit: a node or strategy group taken from another profile.
-/// A chain may carry several exits (T303); the generated chain landing
-/// group lists them side by side and the user picks one at runtime.
+/// A chain has exactly one exit in effect (T310, superseding the T303
+/// multi-exit reading): when the exit is a group, the generated chain
+/// landing group lists that group's nodes side by side and the user
+/// picks one at runtime on the proxies page.
 class ChainLanding {
   /// The profile the exit is taken from. Empty is the legacy v1 shape,
   /// where it meant the profile owning the chain.
@@ -89,10 +91,10 @@ class ProfileChain {
   String entry;
   ChainTargetKind entryKind;
 
-  /// The chain exits, in display order. The legacy v1 settings held a
-  /// single exit; they are read as a one-element list and written back
-  /// with the first exit mirrored into the legacy fields, so a downgrade
-  /// still sees a working single-exit chain.
+  /// The stored chain exits. Only the first is in effect (T310); the
+  /// list shape is kept so T303-era stored settings still parse, and
+  /// the first exit is mirrored into the legacy fields on write, so a
+  /// downgrade still sees a working single-exit chain.
   List<ChainLanding> landings;
 
   ProfileChain({
@@ -163,12 +165,15 @@ class ProfileChain {
     required Map<String, Set<String>> landingTargetsByProfile,
   }) {
     if (!enabled) return null;
+    // T310: only the first stored landing is in effect; stale extras
+    // from the T303 layout must not flag the chain as broken.
+    final effective = landings.take(1).toList();
     if (entry.trim().isEmpty ||
-        landings.isEmpty ||
-        landings.any((landing) => landing.name.trim().isEmpty)) {
+        effective.isEmpty ||
+        effective.any((landing) => landing.name.trim().isEmpty)) {
       return ProfileChainIssue.incomplete;
     }
-    for (final landing in landings) {
+    for (final landing in effective) {
       if (landing.resolvedProfileId(currentProfileId) == currentProfileId) {
         return ProfileChainIssue.otherProfileRequired;
       }
@@ -176,7 +181,7 @@ class ProfileChain {
     if (!entryTargets.contains(chainTargetKey(entryKind, entry))) {
       return ProfileChainIssue.unavailable;
     }
-    for (final landing in landings) {
+    for (final landing in effective) {
       final targets =
           landingTargetsByProfile[landing.resolvedProfileId(currentProfileId)];
       if (targets == null || !targets.contains(landing.key)) {

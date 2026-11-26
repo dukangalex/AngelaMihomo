@@ -202,10 +202,11 @@ rules: ['MATCH,Main']
 	}
 }
 
-// RS4 (T303): two exits imported side by side — a group exit from one
-// profile and a single-node exit from another. The generated chain
-// landing group must list both targets, and every imported node must
-// dial through the entry.
+// RS4 (T310): two exits supplied — only the first is in effect. Its
+// group exit is expanded: the generated chain landing group lists the
+// group's nodes directly for the user to pick from, the imported group
+// is hidden, and the second exit is not imported at all. Every imported
+// node must dial through the entry.
 func TestChainMultiExitGroupAndProxy(t *testing.T) {
 	raw := parsePatchProfile(t, `
 proxies:
@@ -247,8 +248,11 @@ rules: ['MATCH,Main']
 	if landing == nil {
 		t.Fatalf("chain landing group missing")
 	}
+	if landing["type"] != "select" {
+		t.Fatalf("chain landing type = %v, want select", landing["type"])
+	}
 	members := anyStrings(landing["proxies"])
-	want := []string{"⛓222222 自动选择", "⛓333333 solo"}
+	want := []string{"⛓222222 exit-1", "⛓222222 exit-2"}
 	if len(members) != len(want) {
 		t.Fatalf("chain landing members = %v, want %v", members, want)
 	}
@@ -257,7 +261,16 @@ rules: ['MATCH,Main']
 			t.Fatalf("chain landing members = %v, want %v", members, want)
 		}
 	}
-	for _, name := range []string{"⛓222222 exit-1", "⛓222222 exit-2", "⛓333333 solo"} {
+	imported := findGroup(raw.ProxyGroup, "⛓222222 自动选择")
+	if imported == nil || imported["hidden"] != true {
+		t.Fatalf("imported exit group must stay but be hidden: %v", imported)
+	}
+	for _, proxy := range raw.Proxy {
+		if proxy["name"] == "⛓333333 solo" {
+			t.Fatalf("second exit must not be imported under T310")
+		}
+	}
+	for _, name := range []string{"⛓222222 exit-1", "⛓222222 exit-2"} {
 		proxy := findProxy(t, raw.Proxy, name)
 		if proxy == nil {
 			t.Fatalf("imported proxy %q missing", name)
@@ -273,10 +286,11 @@ rules: ['MATCH,Main']
 	parseChainConfig(t, raw)
 }
 
-// RS5 (T307): a sole group exit imported under the landing group's own
-// name IS the landing group — no extra select wrapper may be generated,
-// the main selector points straight at the imported group, and every
-// imported node still dials through the entry.
+// RS5 (T310): a sole group exit imported under the landing group's own
+// name is converted in place into the select landing group — no extra
+// wrapper is generated, all its nodes stay listed for the user to pick
+// from, the main selector points straight at it, and every imported
+// node still dials through the entry.
 func TestChainSoleGroupExitIsLandingGroup(t *testing.T) {
 	raw := parsePatchProfile(t, `
 proxies:
@@ -313,8 +327,11 @@ rules: ['MATCH,Main']
 	if landing == nil {
 		t.Fatalf("landing group missing")
 	}
-	if landing["type"] != "url-test" {
-		t.Fatalf("landing group type = %v, want the imported url-test group itself", landing["type"])
+	if landing["type"] != "select" {
+		t.Fatalf("landing group type = %v, want select (converted in place)", landing["type"])
+	}
+	if members := anyStrings(landing["proxies"]); len(members) != 2 {
+		t.Fatalf("landing group members = %v, want both imported nodes listed", members)
 	}
 	for _, name := range []string{"⛓exit-1", "⛓exit-2"} {
 		proxy := findProxy(t, raw.Proxy, name)
