@@ -105,6 +105,33 @@ class App {
     });
   }
 
+  /// T309: the package owning a single live flow, for the strict-mode
+  /// connections-page backfill (Android API 29+; the platform answers
+  /// only for flows through this app's own VPN). Null when the flow
+  /// cannot be attributed.
+  Future<String?> getConnectionOwnerPackage({
+    required int protocol,
+    required String sourceIp,
+    required int sourcePort,
+    required String destinationIp,
+    required int destinationPort,
+  }) async {
+    try {
+      return await methodChannel.invokeMethod<String>(
+        'getConnectionOwnerPackage',
+        {
+          'protocol': protocol,
+          'sourceIp': sourceIp,
+          'sourcePort': sourcePort,
+          'destinationIp': destinationIp,
+          'destinationPort': destinationPort,
+        },
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<bool?> tip(String? message) async {
     if (message == null || message.isEmpty) return false;
     return await methodChannel.invokeMethod<bool>('tip', {'message': message});
