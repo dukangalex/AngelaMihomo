@@ -781,10 +781,10 @@ abstract class ClashConfig with _$ClashConfig {
     List<String> skipAuthPrefixes,
     @Default(LogLevel.error) @JsonKey(name: 'log-level') LogLevel logLevel,
     @Default(true) bool ipv6,
-    @Default(FindProcessMode.always)
+    @Default(FindProcessMode.strict)
     @JsonKey(
       name: 'find-process-mode',
-      unknownEnumValue: FindProcessMode.always,
+      unknownEnumValue: FindProcessMode.strict,
     )
     FindProcessMode findProcessMode,
     @Default(defaultKeepAliveInterval)
