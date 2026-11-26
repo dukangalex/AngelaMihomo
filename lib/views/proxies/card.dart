@@ -120,6 +120,11 @@ class ProxyDelayText extends StatelessWidget {
             style: context.textTheme.labelSmall?.copyWith(
               overflow: TextOverflow.ellipsis,
               fontWeight: FontWeight.w600,
+              // T313: every other changing number in the app uses
+              // tabular figures (home tiles, the actions sheet, the
+              // profile pill) — the delay readout does the same so
+              // re-tests do not jitter the row layout.
+              fontFeatures: const [FontFeature.tabularFigures()],
               color: zodiacDelayColor(context.zodiac?.variant, delay),
             ),
           );
