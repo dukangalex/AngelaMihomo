@@ -261,6 +261,24 @@ class Preferences {
       await preferences?.setBool(ipRiskAlertOffMigratedKey, true);
     }
 
+    // AngelaMihomo (T309): find-process-mode used to default to always,
+    // and that default is baked into every stored config. The default is
+    // now strict — the kernel's own default, which only looks processes
+    // up when a process rule needs it. Flip stored always values once;
+    // the flag keeps this one-time, so users may pick always afterwards.
+    if (preferences?.getBool(findProcessStrictMigratedKey) != true) {
+      if (selected != null &&
+          selected.patchClashConfig.findProcessMode ==
+              FindProcessMode.always) {
+        selected = selected.copyWith(
+          patchClashConfig: selected.patchClashConfig.copyWith(
+            findProcessMode: FindProcessMode.strict,
+          ),
+        );
+      }
+      await preferences?.setBool(findProcessStrictMigratedKey, true);
+    }
+
     if (selected != null && !identical(selected, fileConfig)) {
       await saveConfig(selected);
     } else if (preferences?.containsKey(configKey) == true) {

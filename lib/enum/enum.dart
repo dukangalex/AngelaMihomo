@@ -146,7 +146,11 @@ enum AppMessageType {
 
 enum InvokeMessageType { protect, process }
 
-enum FindProcessMode { always, off }
+enum FindProcessMode { always, strict, off }
+
+extension FindProcessModeExt on FindProcessMode {
+  String get label => '${name[0].toUpperCase()}${name.substring(1)}';
+}
 
 enum RecoveryOption { all, onlyProfiles }
 
