@@ -129,7 +129,7 @@ PopupMenuItemData _buildGroupItem(
             null => null,
             0 => Text('...', style: delayStyle),
             final delay => Text(
-              delay < 0 ? '×' : '${delay} ms',
+              delay < 0 ? '×' : '$delay ms',
               style: delayStyle?.copyWith(color: zodiacDelayColor(context.zodiac?.variant, delay)),
             ),
           },
