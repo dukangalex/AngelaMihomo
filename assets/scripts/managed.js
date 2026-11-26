@@ -1540,7 +1540,7 @@ const serviceConfigs = [
   {
     name: '远控工具',
     baseOption: selectBaseOption,
-    fixedProxies: ['默认代理', 'REJECT-DROP'],
+    fixedProxies: ['默认代理', 'DIRECT', 'REJECT-DROP'],
     icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Remote.svg',
     rules: [
       'PROCESS-NAME-WILDCARD,*AnyDesk*,远控工具',
