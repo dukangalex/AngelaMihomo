@@ -1451,6 +1451,30 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				}
 			}
 		}
+		if expandedGroup != nil && len(landingMembers) > 1 {
+			// Manual and automatic coexist, shaped like the region
+			// groups: a paired url-test subgroup named
+			// "<group>-自动选择" over the same nodes, listed first so
+			// automatic selection is the default and every node stays
+			// one tap away. The subgroup carries the chain's second
+			// hop, so it gets the hop health-check floors.
+			autoName := uniqueChainGroupNameWithBase(used, explicitChainGroup+"-自动选择")
+			auto := map[string]any{
+				"name":      autoName,
+				"type":      "url-test",
+				"proxies":   landingMembers,
+				"interval":  180,
+				"tolerance": 200,
+				"timeout":   5000,
+			}
+			if url, ok := expandedGroup["url"].(string); ok && url != "" {
+				auto["url"] = url
+			} else {
+				auto["url"] = "https://www.gstatic.com/generate_204"
+			}
+			raw.ProxyGroup = append(raw.ProxyGroup, auto)
+			landingMembers = append([]any{autoName}, landingMembers...)
+		}
 		chainGroup := explicitChainGroup
 		switch {
 		case expandedGroup != nil && externals[0].ExternalTarget == explicitChainGroup:
@@ -1458,6 +1482,7 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 			// name (the pre-T310 aliased shape): convert it in place
 			// into the select landing group instead of wrapping it.
 			expandedGroup["type"] = "select"
+			expandedGroup["proxies"] = landingMembers
 			delete(expandedGroup, "url")
 		case expandedGroup != nil:
 			expandedGroup["hidden"] = true

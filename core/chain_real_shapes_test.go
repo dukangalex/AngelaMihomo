@@ -252,7 +252,7 @@ rules: ['MATCH,Main']
 		t.Fatalf("chain landing type = %v, want select", landing["type"])
 	}
 	members := anyStrings(landing["proxies"])
-	want := []string{"⛓222222 exit-1", "⛓222222 exit-2"}
+	want := []string{"链式落地-自动选择", "⛓222222 exit-1", "⛓222222 exit-2"}
 	if len(members) != len(want) {
 		t.Fatalf("chain landing members = %v, want %v", members, want)
 	}
@@ -260,6 +260,13 @@ rules: ['MATCH,Main']
 		if members[i] != name {
 			t.Fatalf("chain landing members = %v, want %v", members, want)
 		}
+	}
+	auto := findGroup(raw.ProxyGroup, "链式落地-自动选择")
+	if auto == nil || auto["type"] != "url-test" {
+		t.Fatalf("paired auto-select group missing or wrong type: %v", auto)
+	}
+	if got := anyStrings(auto["proxies"]); len(got) != 2 {
+		t.Fatalf("auto-select members = %v, want both landing nodes", got)
 	}
 	imported := findGroup(raw.ProxyGroup, "⛓222222 自动选择")
 	if imported == nil || imported["hidden"] != true {
@@ -320,8 +327,8 @@ rules: ['MATCH,Main']
 	if _, err := applyPatch(raw, params); err != nil {
 		t.Fatalf("applyPatch: %v", err)
 	}
-	if len(raw.ProxyGroup) != 2 {
-		t.Fatalf("expected exactly Main + imported landing group, got %d groups", len(raw.ProxyGroup))
+	if len(raw.ProxyGroup) != 3 {
+		t.Fatalf("expected exactly Main + landing group + paired auto group, got %d groups", len(raw.ProxyGroup))
 	}
 	landing := findGroup(raw.ProxyGroup, "链式落地")
 	if landing == nil {
@@ -330,8 +337,9 @@ rules: ['MATCH,Main']
 	if landing["type"] != "select" {
 		t.Fatalf("landing group type = %v, want select (converted in place)", landing["type"])
 	}
-	if members := anyStrings(landing["proxies"]); len(members) != 2 {
-		t.Fatalf("landing group members = %v, want both imported nodes listed", members)
+	members := anyStrings(landing["proxies"])
+	if len(members) != 3 || members[0] != "链式落地-自动选择" {
+		t.Fatalf("landing group members = %v, want paired auto group first, then both nodes", members)
 	}
 	for _, name := range []string{"⛓exit-1", "⛓exit-2"} {
 		proxy := findProxy(t, raw.Proxy, name)
