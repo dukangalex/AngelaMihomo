@@ -57,6 +57,13 @@ class AboutView extends StatelessWidget {
         icon: Icons.public,
         onTap: () => globalState.openUrl('https://angeleai.loc.cc'),
       ),
+      // Angela Lab: the self-owned projects showcase, same grid,
+      // opened through the system browser like the other links.
+      _LinkTile(
+        title: 'Angela Lab',
+        icon: Icons.science_outlined,
+        onTap: () => globalState.openUrl('https://lab.angela.ipv64.net/'),
+      ),
     ];
     return generateSection(
       title: appLocalizations.projectLinks,
