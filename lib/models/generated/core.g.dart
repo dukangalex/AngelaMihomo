@@ -70,6 +70,7 @@ Map<String, dynamic> _$UpdateParamsToJson(_UpdateParams instance) =>
 
 const _$FindProcessModeEnumMap = {
   FindProcessMode.always: 'always',
+  FindProcessMode.strict: 'strict',
   FindProcessMode.off: 'off',
 };
 

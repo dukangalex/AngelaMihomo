@@ -416,29 +416,27 @@ class FindProcessItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final findProcess = ref.watch(
-      patchClashConfigProvider.select(
-        (state) => state.findProcessMode == FindProcessMode.always,
-      ),
+    final findProcessMode = ref.watch(
+      patchClashConfigProvider.select((state) => state.findProcessMode),
     );
 
-    return ListItem.switchItem(
+    return ListItem<FindProcessMode>.options(
       leading: const Icon(Icons.polymer_outlined),
       title: Text(appLocalizations.findProcessMode),
-      subtitle: Text(appLocalizations.findProcessModeDesc),
-      delegate: SwitchDelegate(
-        value: findProcess,
-        onChanged: (bool value) async {
+      subtitle: Text(findProcessMode.label),
+      delegate: OptionsDelegate<FindProcessMode>(
+        title: appLocalizations.findProcessMode,
+        options: FindProcessMode.values,
+        onChanged: (FindProcessMode? value) {
+          if (value == null) {
+            return;
+          }
           ref
               .read(patchClashConfigProvider.notifier)
-              .updateState(
-                (state) => state.copyWith(
-                  findProcessMode: value
-                      ? FindProcessMode.always
-                      : FindProcessMode.off,
-                ),
-              );
+              .updateState((state) => state.copyWith(findProcessMode: value));
         },
+        textBuilder: (mode) => mode.label,
+        value: findProcessMode,
       ),
     );
   }

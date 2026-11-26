@@ -110,7 +110,7 @@ class TrackerInfoItem extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     final value = ref.watch(
       patchClashConfigProvider.select(
-        (state) => state.findProcessMode == FindProcessMode.always,
+        (state) => state.findProcessMode != FindProcessMode.off,
       ),
     );
     final title = Column(
