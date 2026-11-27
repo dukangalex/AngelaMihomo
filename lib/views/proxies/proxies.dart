@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
 import 'package:angelamihomo/models/common.dart';
@@ -26,11 +28,50 @@ class ProxiesView extends ConsumerStatefulWidget {
   ConsumerState<ProxiesView> createState() => _ProxiesViewState();
 }
 
-class _ProxiesViewState extends ConsumerState<ProxiesView> {
+class _ProxiesViewState extends ConsumerState<ProxiesView>
+    with WidgetsBindingObserver {
   final GlobalKey<ProxiesTabViewState> _proxiesTabKey = GlobalKey();
   final GlobalKey<ProxiesListViewState> _proxiesListKey = GlobalKey();
   bool _hasProviders = false;
   bool _isTab = false;
+
+  // T305: automatic delay freshness. The proxies page is where delay
+  // numbers are read, so arriving here (or returning to the app with
+  // this page up) starts a global test run, and a slow timer keeps
+  // the numbers fresh while the page stays open. Every trigger goes
+  // through _autoDelayTest's guards — active page, running core, and
+  // a minimum spacing behind any run start (manual ones included,
+  // tracked via _onDelayTestActivity) — so the automation can never
+  // stack runs or pop an error strip over a stopped core.
+  Timer? _autoDelayTestTimer;
+  DateTime? _lastDelayTestAt;
+
+  void _onDelayTestActivity() {
+    if (globalDelayTestController.isRunning) {
+      _lastDelayTestAt = DateTime.now();
+    }
+  }
+
+  void _autoDelayTest() {
+    if (!mounted) return;
+    final scope = context.getInheritedWidgetOfExactType<PageActivityScope>();
+    if (scope != null && !scope.isActive) return;
+    if (ref.read(runTimeProvider) == null) return;
+    final last = _lastDelayTestAt;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 45)) {
+      return;
+    }
+    _lastDelayTestAt = DateTime.now();
+    globalDelayTest();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _autoDelayTest();
+    }
+  }
 
   List<Widget> _buildActions() {
     final (autoStickyHeader, showHiddenItems, hideTimeoutProxies) = ref.watch(
@@ -256,6 +297,13 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    globalDelayTestController.addListener(_onDelayTestActivity);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _autoDelayTest());
+    _autoDelayTestTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => _autoDelayTest(),
+    );
     ref.listenManual(providersProvider.select((state) => state.isNotEmpty), (
       prev,
       next,
@@ -329,6 +377,9 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    globalDelayTestController.removeListener(_onDelayTestActivity);
+    _autoDelayTestTimer?.cancel();
     if (globalDelayTestController.isRunning) {
       cancelGlobalDelayTest();
     }
