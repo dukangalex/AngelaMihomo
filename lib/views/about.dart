@@ -62,7 +62,7 @@ class AboutView extends StatelessWidget {
       _LinkTile(
         title: 'Angela Lab',
         icon: Icons.science_outlined,
-        onTap: () => globalState.openUrl('https://lab.angela.ipv64.net/'),
+        onTap: () => globalState.openUrl('https://lab.muset.ccwu.cc/'),
       ),
     ];
     return generateSection(
