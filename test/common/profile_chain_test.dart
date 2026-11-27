@@ -173,7 +173,9 @@ void main() {
   multiExitMain();
 }
 
-/// T303: multi-exit selections and the v1 -> v2 storage migration.
+/// T303 storage shape, T310 semantics: the landings list still parses
+/// and round-trips, but only the first exit is in effect — validation
+/// and generation ignore any stored extras.
 void multiExitMain() {
   const entryTargets = {'proxy\u0000Entry'};
   final targetsByProfile = <String, Set<String>>{
@@ -198,7 +200,7 @@ void multiExitMain() {
     ],
   );
 
-  test('multiple exits validate against their own profiles', () {
+  test('stored multi-exit list validates on its first exit', () {
     expect(
       multi().selectionIssue(
         currentProfileId: 'p',
@@ -209,24 +211,47 @@ void multiExitMain() {
     );
   });
 
-  test('one stale exit marks the whole selection unavailable', () {
-    final broken = Map<String, Set<String>>.of(targetsByProfile)
+  test('only the first exit decides availability (T310)', () {
+    final staleSecond = Map<String, Set<String>>.of(targetsByProfile)
       ..['third'] = {'proxy\u0000Renamed'};
     expect(
       multi().selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
-        landingTargetsByProfile: broken,
+        landingTargetsByProfile: staleSecond,
+      ),
+      isNull,
+    );
+    final staleFirst = Map<String, Set<String>>.of(targetsByProfile)
+      ..['other'] = {'group\u0000Renamed'};
+    expect(
+      multi().selectionIssue(
+        currentProfileId: 'p',
+        entryTargets: entryTargets,
+        landingTargetsByProfile: staleFirst,
       ),
       ProfileChainIssue.unavailable,
     );
   });
 
-  test('any exit pointing at the own profile is rejected', () {
+  test('an extra exit pointing at the own profile is ignored (T310)', () {
     final chain = multi();
     chain.landings.add(ChainLanding(profileId: '', name: 'Local'));
     expect(
       chain.selectionIssue(
+        currentProfileId: 'p',
+        entryTargets: entryTargets,
+        landingTargetsByProfile: targetsByProfile,
+      ),
+      isNull,
+    );
+    final firstLocal = ProfileChain(
+      enabled: true,
+      entry: 'Entry',
+      landings: [ChainLanding(profileId: '', name: 'Local')],
+    );
+    expect(
+      firstLocal.selectionIssue(
         currentProfileId: 'p',
         entryTargets: entryTargets,
         landingTargetsByProfile: targetsByProfile,

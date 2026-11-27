@@ -1188,6 +1188,12 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 		}}
 	}
 	hasExternal := len(externals) > 0
+	// T310: exactly one exit is in effect (the first). Choice among
+	// landing nodes belongs to the generated landing group, not to
+	// extra configured exits; ignore any stale extras defensively.
+	if len(externals) > 1 {
+		externals = externals[:1]
+	}
 	// Keep legacy same-profile node behavior for existing native callers;
 	// the new UI requires an external exit profile.
 	if !hasExternal && entryKind == "proxy" && landingKind == "proxy" {
@@ -1426,19 +1432,72 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				}
 			}
 		}
-		// T307: a sole group exit imported under the landing group's own
-		// name IS the landing group; wrapping it in another select group
-		// would add a redundant layer on the proxies page.
-		soleAliasedGroup := len(externals) == 1 &&
-			externals[0].ExternalKind == "group" &&
-			externals[0].ExternalTarget == explicitChainGroup
+		// T310: the landing group is always an explicit select group.
+		// A group exit is expanded in place: its imported members are
+		// listed directly, so every landing node is visible and the
+		// user picks one on the proxies page. (The T303/T307 shape kept
+		// the imported group's own type, so a url-test exit silently
+		// auto-picked the landing node.) The imported group is hidden
+		// so it does not duplicate the landing group on the page. A
+		// group whose members are provider-supplied at runtime cannot
+		// be enumerated here; it stays the landing group's sole member.
+		landingMembers := chainMembers
+		var expandedGroup map[string]any
+		if externals[0].ExternalKind == "group" {
+			if target := findGroup(externals[0].ExternalTarget); target != nil {
+				if members := anyStrings(target["proxies"]); len(members) > 0 {
+					landingMembers = members
+					expandedGroup = target
+				}
+			}
+		}
+		if expandedGroup != nil && len(landingMembers) > 1 {
+			// Manual and automatic coexist, shaped like the region
+			// groups: a paired url-test subgroup named
+			// "<group>-自动选择" over the same nodes, listed first so
+			// automatic selection is the default and every node stays
+			// one tap away. The subgroup carries the chain's second
+			// hop, so it gets the hop health-check floors.
+			autoName := uniqueChainGroupNameWithBase(used, explicitChainGroup+"-自动选择")
+			auto := map[string]any{
+				"name":      autoName,
+				"type":      "url-test",
+				"proxies":   landingMembers,
+				"interval":  180,
+				"tolerance": 200,
+				"timeout":   5000,
+			}
+			if url, ok := expandedGroup["url"].(string); ok && url != "" {
+				auto["url"] = url
+			} else {
+				auto["url"] = "https://www.gstatic.com/generate_204"
+			}
+			raw.ProxyGroup = append(raw.ProxyGroup, auto)
+			landingMembers = append([]any{autoName}, landingMembers...)
+		}
 		chainGroup := explicitChainGroup
-		if !soleAliasedGroup {
+		switch {
+		case expandedGroup != nil && externals[0].ExternalTarget == explicitChainGroup:
+			// The imported group already carries the landing group's
+			// name (the pre-T310 aliased shape): convert it in place
+			// into the select landing group instead of wrapping it.
+			expandedGroup["type"] = "select"
+			expandedGroup["proxies"] = landingMembers
+			delete(expandedGroup, "url")
+		case expandedGroup != nil:
+			expandedGroup["hidden"] = true
 			chainGroup = uniqueChainGroupName(used)
 			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
 				"name":    chainGroup,
 				"type":    "select",
-				"proxies": chainMembers,
+				"proxies": landingMembers,
+			})
+		default:
+			chainGroup = uniqueChainGroupName(used)
+			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
+				"name":    chainGroup,
+				"type":    "select",
+				"proxies": landingMembers,
 			})
 		}
 		// The chain must not be inserted into its own entry group or any

@@ -39,8 +39,6 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
   var _ready = false;
   var _saving = false;
 
-  /// Which saved exit the profile/target pickers below are editing.
-  var _editingIndex = 0;
   String? _error;
   Map<String, _ChainProfileChoices> _byProfile = {};
   List<Profile> _profiles = const [];
@@ -132,14 +130,14 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
       choice.key,
   };
 
-  ChainLanding? _editingLanding(ProfileChain chain) {
-    if (chain.landings.isEmpty) return null;
-    final index = _editingIndex.clamp(0, chain.landings.length - 1);
-    return chain.landings[index];
-  }
+  /// The chain has exactly one exit (T310: the user's clarification that
+  /// choice belongs in the generated landing group, not in extra exits
+  /// configured here). Stored lists keep only their first entry in effect.
+  ChainLanding? _exitLanding(ProfileChain chain) =>
+      chain.landings.isEmpty ? null : chain.landings.first;
 
-  String _editingProfileId(ProfileChain chain) =>
-      _editingLanding(chain)?.resolvedProfileId(widget.profile.id) ??
+  String _exitProfileId(ProfileChain chain) =>
+      _exitLanding(chain)?.resolvedProfileId(widget.profile.id) ??
       widget.profile.id;
 
   ProfileChainIssue? get _currentIssue => ProfileChainStore.instance
@@ -206,50 +204,11 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
     }
   }
 
-  /// Replace the exit at [index] (or append the first exit when the list
-  /// is empty) and commit.
-  void _commitLanding(ProfileChain chain, int index, ChainLanding landing) {
-    final landings = List<ChainLanding>.of(chain.landings);
-    if (landings.isEmpty) {
-      landings.add(landing);
-    } else {
-      landings[index.clamp(0, landings.length - 1)] = landing;
-    }
-    _commit(chain.copyWith(landings: landings));
-  }
-
-  void _removeLanding(ProfileChain chain, int index) {
-    final landings = List<ChainLanding>.of(chain.landings)..removeAt(index);
-    if (_editingIndex > index) _editingIndex--;
-    if (_editingIndex >= landings.length) {
-      _editingIndex = landings.isEmpty ? 0 : landings.length - 1;
-    }
-    _commit(chain.copyWith(landings: landings));
-  }
-
-  void _addLanding(ProfileChain chain, List<Profile> exitProfiles) {
-    final taken = {
-      for (final landing in chain.landings)
-        '${landing.resolvedProfileId(widget.profile.id)}\u0000${landing.key}',
-    };
-    for (final profile in exitProfiles) {
-      final choices = _byProfile[profile.id]?.choices ?? const [];
-      for (final choice in choices) {
-        if (taken.contains('${profile.id}\u0000${choice.key}')) continue;
-        final landings = List<ChainLanding>.of(chain.landings)
-          ..add(
-            ChainLanding(
-              profileId: profile.id,
-              kind: choice.kind,
-              name: choice.name,
-            ),
-          );
-        _editingIndex = landings.length - 1;
-        _commit(chain.copyWith(landings: landings));
-        return;
-      }
-    }
-    setState(() => _error = appLocalizations.chainNoExits);
+  /// Replace the single exit and commit. Any extra stored exits from
+  /// the T303 multi-exit layout are dropped here: only the first exit
+  /// was ever in effect under T310, and saving makes that explicit.
+  void _commitLanding(ProfileChain chain, ChainLanding landing) {
+    _commit(chain.copyWith(landings: [landing]));
   }
 
   ListItem<String> _targetItem({
@@ -299,8 +258,8 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
     final exitProfiles = _profiles
         .where((profile) => profile.id != widget.profile.id)
         .toList(growable: false);
-    final editing = _editingLanding(chain);
-    final editingProfileId = _editingProfileId(chain);
+    final editing = _exitLanding(chain);
+    final editingProfileId = _exitProfileId(chain);
     final selectedExitProfileId =
         exitProfiles.any((profile) => profile.id == editingProfileId)
         ? editingProfileId
@@ -363,35 +322,6 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
                         );
                       },
                     ),
-                  for (var i = 0; i < chain.landings.length; i++)
-                    ListItem(
-                      title: Text(
-                        '${appLocalizations.chainExit} ${i + 1}'
-                        '${i == _editingIndex.clamp(0, chain.landings.length - 1) ? ' ✓' : ''}',
-                      ),
-                      subtitle: Text(
-                        '${_byProfile[chain.landings[i].resolvedProfileId(widget.profile.id)]?.profile.label ?? chain.landings[i].resolvedProfileId(widget.profile.id)}'
-                        ' · ${_choiceLabel(_ChainChoice(chain.landings[i].kind, chain.landings[i].name))}',
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: _saving
-                            ? null
-                            : () => _removeLanding(chain, i),
-                      ),
-                      onTap: _saving
-                          ? null
-                          : () => setState(() => _editingIndex = i),
-                    ),
-                  if (exitProfiles.isNotEmpty)
-                    ListItem(
-                      title: Text(appLocalizations.chainAddExit),
-                      subtitle: Text(appLocalizations.chainExitProfile),
-                      leading: const Icon(Icons.add),
-                      onTap: _saving
-                          ? null
-                          : () => _addLanding(chain, exitProfiles),
-                    ),
                   if (exitProfiles.isNotEmpty)
                     ListItem<String>.options(
                       title: Text(appLocalizations.chainExitProfile),
@@ -445,7 +375,6 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
                           }
                           _commitLanding(
                             chain,
-                            _editingIndex,
                             ChainLanding(
                               profileId: profileId,
                               kind: next.kind,
@@ -476,7 +405,6 @@ class _ProfileChainPageState extends ConsumerState<ProfileChainPage> {
                       onChanged: (choice) {
                         _commitLanding(
                           chain,
-                          _editingIndex,
                           ChainLanding(
                             profileId: selectedExitProfileId,
                             kind: choice.kind,
