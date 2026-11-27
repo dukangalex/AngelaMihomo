@@ -267,6 +267,9 @@ rules: ['MATCH,Main']
 	if auto == nil || auto["type"] != "url-test" {
 		t.Fatalf("paired auto-select group missing or wrong type: %v", auto)
 	}
+	if auto["hidden"] != true {
+		t.Fatalf("paired auto-select group must be hidden like region auto groups: %v", auto)
+	}
 	if got := anyStrings(auto["proxies"]); len(got) != 2 {
 		t.Fatalf("auto-select members = %v, want both landing nodes", got)
 	}
@@ -291,6 +294,9 @@ rules: ['MATCH,Main']
 	main := findGroup(raw.ProxyGroup, "Main")
 	if got := anyStrings(main["proxies"]); len(got) == 0 || got[0] != "链式落地" {
 		t.Fatalf("main selector not leading with chain landing: %v", got)
+	}
+	if auto := findGroup(raw.ProxyGroup, "链式落地-自动选择"); auto == nil || auto["hidden"] != true {
+		t.Fatalf("paired auto group must exist and be hidden: %v", auto)
 	}
 	parseChainConfig(t, raw)
 }
@@ -358,6 +364,9 @@ rules: ['MATCH,Main']
 	auto := findGroup(raw.ProxyGroup, "链式落地-自动选择")
 	if auto == nil || auto["type"] != "url-test" {
 		t.Fatalf("paired auto-select group missing or wrong type: %v", auto)
+	}
+	if auto["hidden"] != true {
+		t.Fatalf("provider-fed paired auto group must be hidden like region auto groups: %v", auto)
 	}
 	if got := anyStrings(auto["use"]); len(got) != 1 || got[0] != "exit-sub" {
 		t.Fatalf("auto-select use = %v, want the exit group's provider source", auto["use"])
