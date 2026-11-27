@@ -1082,8 +1082,13 @@ rules:
 		t.Fatal(err)
 	}
 	chain := findGroup(raw.ProxyGroup, explicitChainGroup)
-	if chain == nil || !reflect.DeepEqual(chain["proxies"], []any{"[ext] Exit Group"}) {
-		t.Fatalf("generated chain must point at selected exit graph: %#v", chain)
+	if chain == nil || chain["type"] != "select" ||
+		!reflect.DeepEqual(chain["proxies"], []any{"[ext] Exit"}) {
+		t.Fatalf("generated chain must list the exit group's nodes for selection: %#v", chain)
+	}
+	if imported := findGroup(raw.ProxyGroup, "[ext] Exit Group"); imported == nil ||
+		imported["hidden"] != true {
+		t.Fatalf("imported exit group must stay but be hidden: %#v", imported)
 	}
 	manual := findGroup(raw.ProxyGroup, "Manual")["proxies"]
 	if !reflect.DeepEqual(manual, []any{explicitChainGroup, "Entry"}) {

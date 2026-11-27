@@ -48,12 +48,15 @@ const List<double> _emptySegments = [0];
 /// the delay number and the node name on the pill's own full-width
 /// second line (superseding the T211 top-right placement of the
 /// light, which starved the name row). No field in the card
-/// ellipsizes and no font shrinks. The card's height follows its
-/// content with the old two-grid-row height as a floor (the
-/// dashboard grid fits tiles to their content height), so long
-/// names simply make a taller card instead of a clipped one; the
-/// empty-profile placeholder keeps the exact fixed-height form it
-/// always had.
+/// ellipsizes and no font shrinks. Height discipline (T312): the
+/// card's vertical rhythm is tuned so standard content (one-line
+/// name, one-line meta, one-line node) lands exactly on the
+/// two-grid-row height every other dashboard tile uses, with that
+/// height as the floor — the card no longer stands taller than its
+/// neighbours. Only genuinely long content (a name wrapping to two
+/// lines, a wrapped meta line) grows past it instead of clipping;
+/// the empty-profile placeholder keeps the exact fixed-height form
+/// it always had.
 class ProfileModeCard extends ConsumerWidget {
   final DashboardTileSize? size;
 
@@ -75,6 +78,10 @@ class ProfileModeCard extends ConsumerWidget {
       return SizedBox(
         height: floor,
         child: CommonCard(
+          // T312: the dashboard grid's tiles all use an 8.mAp corner;
+          // the merged card takes the same radius so it reads as one
+          // of the grid's modules, not a different species.
+          radius: 8.mAp,
           padding: EdgeInsets.zero,
           child: Stack(
             children: [
@@ -93,6 +100,7 @@ class ProfileModeCard extends ConsumerWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: floor),
       child: CommonCard(
+        radius: 8.mAp,
         padding: EdgeInsets.zero,
         child: Stack(
           children: [
@@ -181,7 +189,7 @@ class _ProfileZone extends ConsumerWidget {
     // directly under that row, then the node pill carrying the
     // status light.
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 16.ap, 6.ap),
+      padding: EdgeInsets.fromLTRB(16.ap, 4.ap, 16.ap, 4.ap),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -220,11 +228,11 @@ class _ProfileZone extends ConsumerWidget {
             const SizedBox(height: 2),
             const _CurrentNode(style: _NodeStyle.plain),
           ] else ...[
-            if (segments.isNotEmpty) ...[
-              const SizedBox(height: 4),
+            if (usage != null && segments.isNotEmpty) ...[
+              const SizedBox(height: 2),
               UsageSegmentBar(segments: segments, height: 4),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             const _CurrentNodeRow(),
           ],
         ],
@@ -515,6 +523,9 @@ class _UpdateProfileButton extends ConsumerWidget {
           : null,
       tooltip: appLocalizations.update,
       visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(
         minWidth: 28,
@@ -588,7 +599,7 @@ class _ModeZone extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         InfoHeader(
-          padding: EdgeInsets.fromLTRB(16.ap, 6.ap, 12.ap, 0),
+          padding: EdgeInsets.fromLTRB(16.ap, 2.ap, 12.ap, 0),
           info: Info(
             label: appLocalizations.runningMode,
             iconData: Icons.call_split_sharp,
@@ -596,9 +607,9 @@ class _ModeZone extends StatelessWidget {
           actions: tall ? const [] : const [_OutboundStatusChips()],
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(10.ap, 4.ap, 10.ap, 6.ap),
+          padding: EdgeInsets.fromLTRB(10.ap, 2.ap, 10.ap, 4.ap),
           child: SizedBox(
-            height: 34.ap,
+            height: 28.ap,
             child: Consumer(
               builder: (_, ref, _) {
                 final mode = ref.watch(
@@ -858,7 +869,7 @@ class _TapArea extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             child: child,
           ),
         ),
@@ -1018,7 +1029,7 @@ class _NodePillRow extends ConsumerWidget {
       child: InkWell(
         onTap: direct ? null : () => showGroupProxySheet(context, groupName!),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 5, 10, 8),
+          padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -1039,7 +1050,6 @@ class _NodePillRow extends ConsumerWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 2),
               EmojiText(
                 nodeName,
                 maxLines: 2,
