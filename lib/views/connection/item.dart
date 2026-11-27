@@ -135,6 +135,9 @@ class TrackerInfoItem extends ConsumerWidget {
               trackerInfo.start.lastUpdateTimeDesc,
               style: context.textTheme.bodySmall?.copyWith(
                 color: context.colorScheme.onSurface.opacity60,
+                // T315: a ticking readout — tabular figures like
+                // every other changing number in the app.
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
           ],
@@ -147,6 +150,9 @@ class TrackerInfoItem extends ConsumerWidget {
           style: context.textTheme.bodyMedium?.copyWith(
             fontSize: 12.5,
             color: context.colorScheme.onSurfaceVariant,
+            // T315: the live speed figures in this line tick every
+            // second; tabular figures keep the row from jittering.
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
