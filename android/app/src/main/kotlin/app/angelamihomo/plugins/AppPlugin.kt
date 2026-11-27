@@ -51,7 +51,10 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.ConcurrentHashMap
 import android.content.res.Configuration
+import android.net.ConnectivityManager
 import android.net.Uri
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
@@ -262,6 +265,17 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 }.getOrNull() ?: getDefaultIconBytes()
                 result.success(icon)
             }
+            "getConnectionOwnerPackage" -> {
+                result.success(
+                    getConnectionOwnerPackage(
+                        protocol = call.argument<Int>("protocol") ?: -1,
+                        sourceIp = call.argument<String>("sourceIp") ?: "",
+                        sourcePort = call.argument<Int>("sourcePort") ?: 0,
+                        destinationIp = call.argument<String>("destinationIp") ?: "",
+                        destinationPort = call.argument<Int>("destinationPort") ?: 0,
+                    ),
+                )
+            }
             "tip" -> {
                 tip(call.argument<String>("message"))
                 result.success(true)
@@ -442,6 +456,35 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
     private suspend fun getChinaPackageNamesList(): List<String> =
         getPackages().map { it.packageName }.filter { isChinaPackage(it) }
+
+    /**
+     * T309: under find-process-mode=strict the kernel fills a
+     * connection's process only when a rule actually asked, so the
+     * connections page backfills the rest on demand through the
+     * platform's per-connection owner query (API 29+; answered only
+     * for flows through this app's own VPN tunnel). The local address
+     * is the application's side of the flow. Returns the first package
+     * name of the owning uid, or null when the platform cannot
+     * attribute the flow.
+     */
+    private fun getConnectionOwnerPackage(
+        protocol: Int,
+        sourceIp: String,
+        sourcePort: Int,
+        destinationIp: String,
+        destinationPort: Int,
+    ): String? = runCatching {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
+        if (protocol != 6 && protocol != 17) return null
+        if (sourceIp.isEmpty() || destinationIp.isEmpty()) return null
+        val context = AngelaMihomoApplication.getAppContext()
+        val connectivity = context.getSystemService<ConnectivityManager>() ?: return null
+        val local = InetSocketAddress(InetAddress.getByName(sourceIp), sourcePort)
+        val remote = InetSocketAddress(InetAddress.getByName(destinationIp), destinationPort)
+        val uid = connectivity.getConnectionOwnerUid(protocol, local, remote)
+        if (uid == android.os.Process.INVALID_UID) return null
+        context.packageManager.getPackagesForUid(uid)?.firstOrNull()
+    }.getOrNull()
 
     private fun cleanIconCache() {
         runCatching {

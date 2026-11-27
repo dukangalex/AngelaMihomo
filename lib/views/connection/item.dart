@@ -108,11 +108,10 @@ class TrackerInfoItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final value = ref.watch(
-      patchClashConfigProvider.select(
-        (state) => state.findProcessMode != FindProcessMode.off,
-      ),
+    final findProcessMode = ref.watch(
+      patchClashConfigProvider.select((state) => state.findProcessMode),
     );
+    final value = findProcessMode != FindProcessMode.off;
     final title = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -190,14 +189,22 @@ class TrackerInfoItem extends ConsumerWidget {
         ],
       ),
     );
-    final icon = value
-        ? ConnectionProcessIcon(
+    final icon = !value
+        ? null
+        : system.isAndroid &&
+              findProcessMode == FindProcessMode.strict &&
+              trackerInfo.metadata.process.isEmpty
+        ? _StrictProcessIcon(
+            metadata: trackerInfo.metadata,
+            port: trackerInfo.metadata.destinationPort,
+            onClick: onClickKeyword,
+          )
+        : ConnectionProcessIcon(
             process: trackerInfo.metadata.process,
             path: trackerInfo.metadata.processPath,
             port: trackerInfo.metadata.destinationPort,
             onClick: onClickKeyword,
-          )
-        : null;
+          );
     final listItem = InkWell(
       focusColor: context.colorScheme.primary.withValues(alpha: 0.18),
       onTap: () {
@@ -396,6 +403,68 @@ class _ConnectionProcessIconState extends State<ConnectionProcessIcon> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// T309: strict-mode icon. The kernel left this flow's process empty
+/// (no rule asked for it), so the package is backfilled on demand via
+/// [ConnectionProcessResolver] and the regular icon renders once it
+/// lands; until then — or when the platform cannot attribute the
+/// flow — the icon behaves exactly like an unknown process.
+class _StrictProcessIcon extends StatefulWidget {
+  final Metadata metadata;
+  final String port;
+  final Function(String)? onClick;
+
+  const _StrictProcessIcon({
+    required this.metadata,
+    required this.port,
+    this.onClick,
+  });
+
+  @override
+  State<_StrictProcessIcon> createState() => _StrictProcessIconState();
+}
+
+class _StrictProcessIconState extends State<_StrictProcessIcon> {
+  String _process = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(_StrictProcessIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final resolver = ConnectionProcessResolver.instance;
+    if (resolver.keyFor(oldWidget.metadata) !=
+        resolver.keyFor(widget.metadata)) {
+      _process = '';
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final resolver = ConnectionProcessResolver.instance;
+    if (resolver.hasCached(widget.metadata)) {
+      _process = resolver.cached(widget.metadata) ?? '';
+      return;
+    }
+    resolver.resolve(widget.metadata).then((package) {
+      if (mounted) setState(() => _process = package ?? '');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ConnectionProcessIcon(
+      process: _process,
+      path: '',
+      port: widget.port,
+      onClick: widget.onClick,
     );
   }
 }
