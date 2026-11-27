@@ -6,15 +6,16 @@
   <strong>简⁠体⁠中⁠文</strong> | <a href="readme/README_en.md">English</a> | <a href="readme/README_ru.md">Русский</a> | <a href="readme/README_fa.md">فارسی</a> | <a href="readme/README_ja.md">日⁠本⁠語</a> | <a href="readme/README_ko.md">한⁠국⁠어</a>
 </h4>
 
-<h1 align="center">♐ Angela Mihomo</h1>
+<h1 align="center">♐ Angela Mihomo（羲和）</h1>
 <p align="center">
   <strong>「星辰大海」主题家族的 Mihomo 客户端</strong><br/>
-  默认主题：射手座 · 靛夜飞箭
+  默认主题：射手座 · 靛夜飞箭<br/>
+  中文别名「羲和」：手机上的上网代理工具，导入订阅就能用，主打隐私、省电、不折腾
 </p>
 
 <p align="center">
   <strong>项目落地页</strong>：<a href="https://angeleai.loc.cc">angeleai.loc.cc</a>（下载指引 · 常见问题）<br/>
-  <strong>Angela Lab</strong>：<a href="https://lab.angela.ipv64.net">lab.angela.ipv64.net</a>（自有项目全貌；应用内「关于」页也有入口）
+  <strong>Angela Lab</strong>：<a href="https://aiangela.kdns.fr">aiangela.kdns.fr</a>（自有项目全貌；应用内「关于」页也有入口）
 </p>
 
 ## 关于本项目
