@@ -85,6 +85,38 @@ Profile _userReportProfile() {
   );
 }
 
+/// T312 fixtures: the standard-content shapes the height discipline
+/// is tuned for — a short profile name and a one-line node name, with
+/// and without subscription usage figures.
+const _shortNodeName = 'US h2';
+
+Profile _shortProfileNoUsage() {
+  return Profile(
+    id: 'p',
+    label: 'zgo',
+    autoUpdateDuration: const Duration(days: 1),
+    lastUpdateDate: DateTime.now().subtract(const Duration(hours: 21)),
+    selectedMap: {'MainGroup': _shortNodeName},
+  );
+}
+
+Profile _shortProfileWithUsage() {
+  const gb = 1024 * 1024 * 1024;
+  return Profile(
+    id: 'p',
+    label: 'my-sub',
+    autoUpdateDuration: const Duration(days: 1),
+    lastUpdateDate: DateTime.now().subtract(const Duration(hours: 3)),
+    subscriptionInfo: SubscriptionInfo(
+      upload: 0,
+      download: 20 * gb,
+      total: 100 * gb,
+      expire: DateTime(2027, 3, 1).millisecondsSinceEpoch ~/ 1000,
+    ),
+    selectedMap: {'MainGroup': _shortNodeName},
+  );
+}
+
 Future<void> _pumpCard(
   WidgetTester tester, {
   required double width,
@@ -324,6 +356,40 @@ void main() {
       // rather than clipping the stacked rows.
       final cardSize = tester.getSize(find.byType(ProfileModeCard));
       expect(cardSize.height, greaterThanOrEqualTo(180));
+    },
+  );
+
+  testWidgets(
+    'T312: standard short content without usage lands exactly on the '
+    'two-row height every other tile uses',
+    (tester) async {
+      ClashCore.setHandlerForTesting(_FakeHandler());
+      await _pumpCard(
+        tester,
+        width: 400,
+        nodeName: _shortNodeName,
+        profile: _shortProfileNoUsage(),
+      );
+      expect(tester.takeException(), isNull);
+      // The fallback metrics in this harness give 2*84+12 = 180,
+      // the same height DashboardTileCard pins a two-row tile to.
+      expect(tester.getSize(find.byType(ProfileModeCard)).height, 180);
+    },
+  );
+
+  testWidgets(
+    'T312: standard short content with usage also lands on the '
+    'two-row height',
+    (tester) async {
+      ClashCore.setHandlerForTesting(_FakeHandler());
+      await _pumpCard(
+        tester,
+        width: 660,
+        nodeName: _shortNodeName,
+        profile: _shortProfileWithUsage(),
+      );
+      expect(tester.takeException(), isNull);
+      expect(tester.getSize(find.byType(ProfileModeCard)).height, 180);
     },
   );
 
