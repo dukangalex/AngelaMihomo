@@ -1527,6 +1527,7 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 				"interval":  180,
 				"tolerance": 200,
 				"timeout":   5000,
+				"hidden":    true,
 			}
 			if len(landingMembers) > 0 {
 				auto["proxies"] = landingMembers
