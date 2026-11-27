@@ -255,7 +255,8 @@ final chainCardHealthProvider = FutureProvider<Map<String, ChainCardHealth>>((
       final chain = store.of(profile.id);
       if (!chain.enabled) continue;
       final landingTargetsByProfile = <String, Set<String>>{};
-      for (final landing in chain.landings) {
+      // T310: only the first stored landing is in effect.
+      for (final landing in chain.landings.take(1)) {
         final landingProfileId = landing.resolvedProfileId(profile.id);
         if (existingProfileIds.contains(landingProfileId)) {
           landingTargetsByProfile[landingProfileId] = await targetsOf(
