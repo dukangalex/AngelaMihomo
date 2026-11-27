@@ -933,6 +933,26 @@ func hasGroupSource(group map[string]any) bool {
 	return false
 }
 
+// groupSourceKeys are the keys that make a group enumerate its
+// members from proxy providers at runtime instead of listing them
+// statically: the provider source itself plus the member filters
+// that shape the enumeration.
+var groupSourceKeys = []string{
+	"use", "filter", "exclude-filter", "exclude-type",
+	"include-all", "include-all-proxies", "include-all-providers",
+}
+
+// copyGroupSourceKeys copies a provider-supplied group's source keys
+// onto a generated group, so the kernel enumerates the same nodes
+// into it at runtime.
+func copyGroupSourceKeys(dst, src map[string]any) {
+	for _, key := range groupSourceKeys {
+		if value, ok := src[key]; ok {
+			dst[key] = value
+		}
+	}
+}
+
 func combineExcludeFilter(target map[string]any, filter string) {
 	if existing, ok := target["exclude-filter"].(string); ok && existing != "" {
 		target["exclude-filter"] = existing + "|" + filter
@@ -1438,39 +1458,86 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 		// user picks one on the proxies page. (The T303/T307 shape kept
 		// the imported group's own type, so a url-test exit silently
 		// auto-picked the landing node.) The imported group is hidden
-		// so it does not duplicate the landing group on the page. A
-		// group whose members are provider-supplied at runtime cannot
-		// be enumerated here; it stays the landing group's sole member.
+		// so it does not duplicate the landing group on the page.
+		//
+		// T319: two more shapes must land the same way — automatic and
+		// manual inside the one landing group, like the region groups:
+		//   - A provider-supplied exit group (use / include-all*, no
+		//     static members) cannot be enumerated here. The landing
+		//     group and its paired auto subgroup inherit the group's
+		//     source keys, so the kernel enumerates the nodes into
+		//     both at runtime and every node stays pickable.
+		//   - A wrapper exit group whose sole member is itself a
+		//     group expands one level: the member group heads the
+		//     landing list as the automatic entry and its own members
+		//     follow for manual picks; no second auto subgroup is
+		//     synthesised.
 		landingMembers := chainMembers
 		var expandedGroup map[string]any
+		var sourceGroup map[string]any
+		wrapped := false
+		sourceFromChild := false
 		if externals[0].ExternalKind == "group" {
 			if target := findGroup(externals[0].ExternalTarget); target != nil {
-				if members := anyStrings(target["proxies"]); len(members) > 0 {
+				members := anyStrings(target["proxies"])
+				switch {
+				case len(members) == 1:
 					landingMembers = members
 					expandedGroup = target
+					if hasGroupSource(target) {
+						sourceGroup = target
+					}
+					if childName, ok := members[0].(string); ok {
+						if child := findGroup(childName); child != nil {
+							landingMembers = append([]any{childName}, anyStrings(child["proxies"])...)
+							wrapped = true
+							if hasGroupSource(child) {
+								sourceGroup = child
+								sourceFromChild = true
+							}
+						}
+					}
+				case len(members) > 1:
+					landingMembers = members
+					expandedGroup = target
+					if hasGroupSource(target) {
+						sourceGroup = target
+					}
+				case hasGroupSource(target):
+					landingMembers = nil
+					expandedGroup = target
+					sourceGroup = target
 				}
 			}
 		}
-		if expandedGroup != nil && len(landingMembers) > 1 {
+		if expandedGroup != nil && !wrapped && (len(landingMembers) > 1 || sourceGroup != nil) {
 			// Manual and automatic coexist, shaped like the region
 			// groups: a paired url-test subgroup named
 			// "<group>-自动选择" over the same nodes, listed first so
 			// automatic selection is the default and every node stays
 			// one tap away. The subgroup carries the chain's second
-			// hop, so it gets the hop health-check floors.
+			// hop, so it gets the hop health-check floors. A
+			// provider-supplied exit has no static members to list;
+			// the subgroup inherits the source keys instead and the
+			// kernel fills it at runtime.
 			autoName := uniqueChainGroupNameWithBase(used, explicitChainGroup+"-自动选择")
 			auto := map[string]any{
 				"name":      autoName,
 				"type":      "url-test",
-				"proxies":   landingMembers,
 				"interval":  180,
 				"tolerance": 200,
 				"timeout":   5000,
+			}
+			if len(landingMembers) > 0 {
+				auto["proxies"] = landingMembers
 			}
 			if url, ok := expandedGroup["url"].(string); ok && url != "" {
 				auto["url"] = url
 			} else {
 				auto["url"] = "https://www.gstatic.com/generate_204"
+			}
+			if sourceGroup != nil {
+				copyGroupSourceKeys(auto, sourceGroup)
 			}
 			raw.ProxyGroup = append(raw.ProxyGroup, auto)
 			landingMembers = append([]any{autoName}, landingMembers...)
@@ -1481,17 +1548,27 @@ func patchChainPolicy(raw *config.RawConfig, policy *PatchChainPolicy) error {
 			// The imported group already carries the landing group's
 			// name (the pre-T310 aliased shape): convert it in place
 			// into the select landing group instead of wrapping it.
+			// Its own source keys stay — they are the landing group's
+			// runtime member source; a wrapped child group's source
+			// keys are inherited the same way.
 			expandedGroup["type"] = "select"
 			expandedGroup["proxies"] = landingMembers
 			delete(expandedGroup, "url")
+			if sourceFromChild {
+				copyGroupSourceKeys(expandedGroup, sourceGroup)
+			}
 		case expandedGroup != nil:
 			expandedGroup["hidden"] = true
 			chainGroup = uniqueChainGroupName(used)
-			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
+			landing := map[string]any{
 				"name":    chainGroup,
 				"type":    "select",
 				"proxies": landingMembers,
-			})
+			}
+			if sourceGroup != nil {
+				copyGroupSourceKeys(landing, sourceGroup)
+			}
+			raw.ProxyGroup = append(raw.ProxyGroup, landing)
 		default:
 			chainGroup = uniqueChainGroupName(used)
 			raw.ProxyGroup = append(raw.ProxyGroup, map[string]any{
