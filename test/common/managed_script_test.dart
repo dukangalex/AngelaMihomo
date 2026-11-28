@@ -314,6 +314,34 @@ void main() {
     expect(plain.content, contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具'));
   });
 
+  test('bundled script carries the T327 media rule set markers', () async {
+    const props = ManagedProps();
+    final plain = await ManagedScript.script(props);
+    // Media 聚合组开关与提供者计数（40 → 50）
+    expect(plain.content, contains('Media: true'));
+    expect(plain.content, contains("name: 'Media'"));
+    expect(plain.content, contains('50 个 .mrs 规则提供者'));
+    // 十个新集的提供者定义与规则指向
+    for (final name in [
+      'hulu',
+      'hbo',
+      'amazon',
+      'bahamut',
+      'abema',
+      'bbc',
+      'gitlab',
+      'instagram',
+      'discord',
+      'icloud',
+    ]) {
+      expect(plain.content, contains('geosite-$name.mrs'), reason: name);
+      expect(plain.content, contains('RULE-SET,$name,Media'), reason: name);
+    }
+    // 微信官方无源，维持 T325 内联过渡，本批不切换
+    expect(plain.content, contains('DOMAIN,szlong.weixin.qq.com,直连'));
+    expect(plain.content, isNot(contains('geosite-wechat')));
+  });
+
   test('group order is injected only when saved', () async {
     const props = ManagedProps();
     final plain = await ManagedScript.script(props);

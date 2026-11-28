@@ -298,4 +298,93 @@ void main() {
     expect(hosts['cloudflare-dns.com'], contains('2606:4700:4700::1111'));
     expect(hosts['doh.pub'], contains('2402:4e00::'));
   });
+
+  test('T327 media rule sets land in the generated config', () async {
+    await initEditorNative();
+    final dir = await Directory.systemTemp.createTemp('t327_eval_');
+    addTearDown(() => dir.delete(recursive: true));
+    Map<String, Object?> node(String name, String server) => {
+      'name': name,
+      'type': 'ss',
+      'server': server,
+      'port': 8388,
+      'cipher': 'aes-128-gcm',
+      'password': 'x',
+    };
+    final input = File('${dir.path}/input.json')
+      ..writeAsStringSync(
+        json.encode({
+          'port': 7890,
+          'mode': 'rule',
+          'proxies': [
+            node('香港 01', '203.0.113.1'),
+            node('美国 01', '203.0.113.3'),
+          ],
+          'proxy-groups': <Object?>[],
+          'rules': ['MATCH,DIRECT'],
+        }),
+      );
+    final output = File('${dir.path}/output.json');
+    await evaluateScriptFile(
+      script: await ManagedScript.readBundled(),
+      inputPath: input.path,
+      outputPath: output.path,
+      token: 7,
+    );
+    final result =
+        json.decode(output.readAsStringSync()) as Map<String, dynamic>;
+
+    const mediaSets = [
+      'hulu',
+      'hbo',
+      'amazon',
+      'bahamut',
+      'abema',
+      'bbc',
+      'gitlab',
+      'instagram',
+      'discord',
+      'icloud',
+    ];
+
+    // Media 聚合组：select 组，成员口径与其它分流组一致
+    final groups = {
+      for (final g in result['proxy-groups'] as List)
+        (g as Map)['name'] as String: g,
+    };
+    final media = groups['Media'] as Map;
+    expect(media['type'], 'select');
+    expect(
+      (media['proxies'] as List),
+      containsAll(['默认代理', '手动选择', '自动选择', '负载均衡', '故障转移']),
+    );
+    expect(
+      media['icon'],
+      contains('angelamihomo-icons/main/icon/svg/common/Media.svg'),
+    );
+
+    // 十个新集的提供者定义与既有条目同构；提供者总数 40 → 50
+    final providers = result['rule-providers'] as Map;
+    expect(providers, hasLength(50));
+    for (final name in mediaSets) {
+      final provider = providers[name] as Map;
+      expect(
+        provider['url'],
+        'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-$name.mrs',
+        reason: name,
+      );
+      expect(provider['path'], './ruleset/$name.mrs', reason: name);
+      expect(provider['path-in-bundle'], 'geo/geosite/$name.mrs', reason: name);
+      expect(provider['behavior'], 'domain', reason: name);
+      expect(provider['format'], 'mrs', reason: name);
+    }
+    // 微信维持内联过渡，不生成 wechat 提供者
+    expect(providers.containsKey('wechat'), isFalse);
+
+    // 十集规则统一指向 Media
+    final rules = (result['rules'] as List).cast<String>();
+    for (final name in mediaSets) {
+      expect(rules, contains('RULE-SET,$name,Media'), reason: name);
+    }
+  });
 }
