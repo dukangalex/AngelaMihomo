@@ -134,4 +134,32 @@ void main() {
     expect(dns.fakeIpFilter, ['+.lan']);
     expect(dns.nameserverPolicy, {'geosite:google': '8.8.8.8'});
   });
+
+  test('fake-ip-range6 出厂默认显式写 2001:2::1/48（T326）', () {
+    // 以前默认是空字符串，只有 effectiveFakeIpRangeV6 在 IPv6 开启
+    // 时才回落到这个值；现在默认值本身就是它，行为不变、只是显式。
+    expect(const Dns().fakeIpRangeV6, '2001:2::1/48');
+    expect(Dns.fromJson(const {}).fakeIpRangeV6, '2001:2::1/48');
+    // 序列化往返后仍是显式值，不再写回空字符串。
+    final json = Dns().toJson();
+    expect(json['fake-ip-range6'], '2001:2::1/48');
+  });
+
+  test('存量空 fake-ip-range6 仍按旧语义走 effective 回落（T326）', () {
+    // 已存设置里的 '' 不被改写，继续由 effectiveFakeIpRangeV6 解释：
+    // IPv6 开时回落 2001:2::1/48，关时为空（内核侧 parseIPV6 也会清零）。
+    final stored = Dns.fromJson(const {'fake-ip-range6': ''});
+    expect(stored.fakeIpRangeV6, '');
+    expect(stored.effectiveFakeIpRangeV6(ipv6Enabled: true), '2001:2::1/48');
+    expect(stored.effectiveFakeIpRangeV6(ipv6Enabled: false), '');
+    // 显式默认值在 getter 第一分支命中，与开关无关。
+    expect(
+      const Dns().effectiveFakeIpRangeV6(ipv6Enabled: true),
+      '2001:2::1/48',
+    );
+    expect(
+      const Dns().effectiveFakeIpRangeV6(ipv6Enabled: false),
+      '2001:2::1/48',
+    );
+  });
 }

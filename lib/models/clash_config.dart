@@ -402,7 +402,14 @@ abstract class Dns with _$Dns {
     @Default('198.18.0.1/15')
     @JsonKey(name: 'fake-ip-range')
     String fakeIpRange,
-    @Default('') @JsonKey(name: 'fake-ip-range6') String fakeIpRangeV6,
+    // T326: explicit value instead of ''. This is the same range
+    // effectiveFakeIpRangeV6 already fell back to for an empty field
+    // when IPv6 was on, so runtime behavior is unchanged — the stored
+    // default now names the real range instead of a blank that only
+    // the getter could interpret.
+    @Default('2001:2::1/48')
+    @JsonKey(name: 'fake-ip-range6')
+    String fakeIpRangeV6,
     @Default(FilterMode.blacklist)
     @JsonKey(name: 'fake-ip-filter-mode')
     FilterMode fakeIpFilterMode,
