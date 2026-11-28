@@ -13,14 +13,19 @@
  * 【DNS】整组自建：nameserver、proxy-server-nameserver、
  * direct-nameserver、fallback、fake-ip 相关字段全部由脚本生成，
  * 订阅自带 DNS 不生效。脚本写死的 DNS 出口如实列明：境外解析走
- * Cloudflare/Google 的 DoH（经代理组）；直连解析走阿里
- * 223.5.5.5 与 DNSPod 1.12.12.12 的 DoH（标 DIRECT）；节点域名
- * 解析走 tls://223.5.5.5 与 doh.pub（标 DIRECT）。这是托管脚本
- * 的既定行为（HiClash 沿袭），与 App 未启用脚本时的出厂默认
- * （跟随系统）是两条独立口径，不要混淆。
+ * Cloudflare/Google 的 DoH（经代理组）；直连解析走 doh.pub、
+ * 阿里 223.5.5.5 与 DNSPod 1.12.12.12 的 DoH 及 Cloudflare 的
+ * IPv6 DoH 端点（标 DIRECT）；引导解析（default-nameserver）为
+ * 阿里与 DNSPod 两家的 DoT（含 IPv6 端点）；节点域名解析走
+ * tls://223.5.5.5 与 doh.pub（标 DIRECT）。分域名策略
+ * （nameserver-policy）按国内集/TLD 走直连解析、核心境外与 AI
+ * 域名走境外解析。这是托管脚本的既定行为（HiClash 沿袭），与
+ * App 未启用脚本时的出厂默认（跟随系统）是两条独立口径，
+ * 不要混淆。
  *
  * 【hosts】两组 hosts 合并写入：DoH 服务域名到其 IP 的引导映射
- * （doh.pub、cloudflare-dns.com、dns.google、dns.alidns.com）、
+ * （doh.pub、cloudflare-dns.com、dns.google、dns.alidns.com，
+ * 含 IPv6 钉址）与微软 NCSI 判定端点（dns.msftncsi.com）钉址、
  * services.googleapis.cn 别名，以及 Bilibili PCDN 域名空路由
  * （+.mcdn.bilivideo.com 等四条指向 0.0.0.0）。
  *
@@ -147,6 +152,24 @@ const prefixRules = [
   // 私有网络直连
   'RULE-SET,private,直连',
 
+  // 腾讯云监控 SDK 上报端点单独钉死，不随国内直连集放行（T325）
+  'DOMAIN-SUFFIX,teg.tencent-cloud.net,REJECT-DROP',
+
+  // 微信长连接域名与服务器段直连（T325）：先内联落地，
+  // 等五藏产出 wechat 规则集后改集引用
+  'DOMAIN,szlong.weixin.qq.com,直连',
+  'DOMAIN,szminorshort.weixin.qq.com,直连',
+  'DOMAIN,szshort.weixin.qq.com,直连',
+  'DOMAIN,sz.weixin.qq.com,直连',
+  'DOMAIN,long.weixin.qq.com,直连',
+  'DOMAIN,short.weixin.qq.com,直连',
+  'DOMAIN-SUFFIX,weixin.qq.com,直连',
+  'DOMAIN-SUFFIX,servicewechat.com,直连',
+  'DOMAIN-SUFFIX,weixinbridge.com,直连',
+  'DOMAIN-SUFFIX,url.cn,直连',
+  'IP-CIDR,101.226.0.0/16,DIRECT,no-resolve',
+  'IP-CIDR,140.207.0.0/16,DIRECT,no-resolve',
+
   // 国内直连
   'RULE-SET,geolocation-cn,直连',
   'RULE-SET,games_cn,直连', // 已包含 steam 下载域名
@@ -158,6 +181,57 @@ const prefixRules = [
   // 社区刚需：B 站国际版与 Disney+ 走默认代理，便于按地区解锁
   'RULE-SET,biliintl,默认代理',
   'RULE-SET,disney,默认代理',
+
+  // 防硬编码境外 DNS 绕过分流与泄漏（T325）：目标为非国内 IP 的
+  // 53/853 端口流量直接丢弃；国内 DNS 服务器段在 cn_ip 内不受影响
+  'AND,((NETWORK,UDP),(DST-PORT,53),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+  'AND,((NETWORK,TCP),(DST-PORT,53),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+  'AND,((NETWORK,UDP),(DST-PORT,853),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+  'AND,((NETWORK,TCP),(DST-PORT,853),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+];
+
+// 银行/政务/运营商/支付 App 进程名直连包（T325）：find-process-mode 为
+// strict 时域名与 cn_ip 都救不了的 IP 直连流量靠进程名兜底，避免银行
+// App 被吸进代理后人脸/风控失败
+const processDirectRules = [
+  'PROCESS-NAME-WILDCARD,*com.android.bank*,直连',
+  'PROCESS-NAME-WILDCARD,*com.icbc*,直连',
+  'PROCESS-NAME-WILDCARD,*com.ccb*,直连',
+  'PROCESS-NAME-WILDCARD,*com.boc*,直连',
+  'PROCESS-NAME-WILDCARD,*com.abchina*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cmbchina*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cmbc*,直连',
+  'PROCESS-NAME-WILDCARD,*com.bankcomm*,直连',
+  'PROCESS-NAME-WILDCARD,*com.psbc*,直连',
+  'PROCESS-NAME-WILDCARD,*com.spdb*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cib*,直连',
+  'PROCESS-NAME-WILDCARD,*com.pingan*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cgbchina*,直连',
+  'PROCESS-NAME-WILDCARD,*com.hxb*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cebbank*,直连',
+  'PROCESS-NAME-WILDCARD,*com.citic*,直连',
+  'PROCESS-NAME-WILDCARD,*com.tenpay*,直连',
+  'PROCESS-NAME-WILDCARD,*com.tencent.mm*,直连',
+  'PROCESS-NAME-WILDCARD,*WeChat*,直连',
+  'PROCESS-NAME-WILDCARD,*Weixin*,直连',
+  'PROCESS-NAME-WILDCARD,*com.MobileTicket*,直连',
+  'PROCESS-NAME-WILDCARD,*com.hicorenational.antifraud*,直连',
+  'PROCESS-NAME-WILDCARD,*com.service.android.gov.cn*,直连',
+  'PROCESS-NAME-WILDCARD,*cn.hsa.app*,直连',
+  'PROCESS-NAME-WILDCARD,*cn.gov.tax.its*,直连',
+  'PROCESS-NAME-WILDCARD,*com.greenpoint.android.mc10086*,直连',
+  'PROCESS-NAME-WILDCARD,*com.sinovatech.unicom.ui*,直连',
+  'PROCESS-NAME-WILDCARD,*com.ct.client*,直连',
+  'PROCESS-NAME-WILDCARD,*com.unionpay*,直连',
+  'PROCESS-NAME-WILDCARD,*com.eg.android.Alipay*,直连',
+  'PROCESS-NAME-WILDCARD,*com.chinamworld*,直连',
+  'PROCESS-NAME-WILDCARD,*com.bankabc*,直连',
+  'PROCESS-NAME-WILDCARD,*cmb.pb*,直连',
+  'PROCESS-NAME-WILDCARD,*com.yitong.mbank*,直连',
+  'PROCESS-NAME-WILDCARD,*com.cgb.mobilebank*,直连',
+  'PROCESS-NAME-WILDCARD,*com.czbank*,直连',
+  'PROCESS-NAME-WILDCARD,*com.bjrcb*,直连',
+  'PROCESS-NAME-WILDCARD,*com.android.mobilebank*,直连',
 ];
 
 // 定义全局排除节点的正则表达式，用于排除非地区节点
@@ -178,6 +252,16 @@ const blockWebRtcStun = [
   'AND,((NETWORK,UDP),(DST-PORT,19302-19309)),REJECT',
   'AND,((NETWORK,TCP),(DST-PORT,3478-3497)),REJECT',
   'AND,((NETWORK,TCP),(DST-PORT,5349)),REJECT',
+  'AND,((NETWORK,TCP),(DST-PORT,19302-19309)),REJECT',
+  // STUN/TURN 域名维补面（T325）：走非标准端口的 STUN 域名一并拦下
+  'DOMAIN-REGEX,^(stun|turn|stuns|turns)\\.,REJECT',
+  'DOMAIN-REGEX,[-.]stun[-.],REJECT',
+  'DOMAIN-REGEX,[-.]turn[-.],REJECT',
+  'DOMAIN-REGEX,[-.]stuns[-.],REJECT',
+  'DOMAIN-REGEX,[-.]turns[-.],REJECT',
+  // SSDP/mDNS 局域网发现协议防外泄（T325）：非国内目标直接丢弃
+  'AND,((NETWORK,UDP),(DST-PORT,1900),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+  'AND,((NETWORK,UDP),(DST-PORT,5353),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
 ];
 // @shared:end blockWebRtcStun
 
@@ -1549,6 +1633,7 @@ const serviceConfigs = [
       'PROCESS-NAME-WILDCARD,*RustDesk*,远控工具',
       'PROCESS-NAME-WILDCARD,*rustdesk*,远控工具',
       'PROCESS-NAME-WILDCARD,*tailscale*,远控工具',
+      'PROCESS-NAME-WILDCARD,*tailscaled*,远控工具',
       'PROCESS-NAME-WILDCARD,*zerotier*,远控工具',
       'PROCESS-NAME-WILDCARD,*ngrok*,远控工具',
       'PROCESS-NAME-WILDCARD,*frpc*,远控工具',
@@ -1759,7 +1844,10 @@ function getReservedProxyNames() {
     ...regionDefinitions.map((region) => region.name),
     ...rateRegionDefinitions.map((region) => region.name),
   ]);
-  for (const region of allRegionDefinitions) names.add(region.name + '-自动选择');
+  for (const region of allRegionDefinitions) {
+    names.add(region.name + '-自动选择');
+    names.add(region.name + '-负载均衡');
+  }
   return names;
 }
 // @shared:end getReservedProxyNames
@@ -1914,6 +2002,7 @@ function createRegionGroup(name, icon, proxies) {
 
   if (generateRegionAutoSelectEnabled) {
     const urlTestName = `${name}-自动选择`;
+    const loadBalanceName = `${name}-负载均衡`;
     return [
       {
         ...urlTestBaseOption,
@@ -1921,10 +2010,15 @@ function createRegionGroup(name, icon, proxies) {
         proxies,
       },
       {
+        ...loadBalanceBaseOption,
+        name: loadBalanceName,
+        proxies,
+      },
+      {
         ...selectBaseOption,
         name,
         icon,
-        proxies: [...proxies, urlTestName],
+        proxies: [...proxies, urlTestName, loadBalanceName],
         hidden: hideManualSelectGroupEnabled,
       },
     ];
@@ -2200,9 +2294,26 @@ const commonDnsRegex = new RegExp(
 // @shared:end commonDnsRegex
 
 // 国内外 DNS 定义
-const chinaDNS = ['https://223.5.5.5/dns-query#DIRECT', 'https://1.12.12.12/dns-query#DIRECT'];
+// 直连解析（T325 补齐）：doh.pub 与 223.5.5.5 双活、1.12.12.12 备份，
+// 附 Cloudflare IPv6 端点保证双栈齐全
+const chinaDNS = [
+  'https://doh.pub/dns-query#DIRECT',
+  'https://223.5.5.5/dns-query#DIRECT',
+  'https://1.12.12.12/dns-query#DIRECT',
+  'https://[2606:4700:4700::1111]/dns-query#DIRECT',
+];
 const foreignDNS = ['https://cloudflare-dns.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理'];
-const defaultDNS = ['tls://223.5.5.5#DIRECT', 'https://1.12.12.12/dns-query#DIRECT'];
+// 引导解析（T325 补齐至 7 条）：阿里/DNSPod 两家 DoT、IPv4/IPv6 双栈，
+// 去掉单点故障——任一端点不可达不再拖垮全部 DNS 引导
+const defaultDNS = [
+  'tls://223.5.5.5#DIRECT',
+  'tls://223.6.6.6#DIRECT',
+  'tls://1.12.12.12#DIRECT',
+  'tls://120.53.53.53#DIRECT',
+  'tls://[2400:3200::1]#DIRECT',
+  'tls://[2400:3200:baba::1]#DIRECT',
+  'tls://[2606:4700:4700::1111]#DIRECT',
+];
 const proxyServerDNS = ['tls://223.5.5.5#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
 
 // @shared:begin hostSpecificity — 由 Script/shared/hostSpecificity.js 同步，请勿在此直接修改
@@ -2589,6 +2700,33 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
       'rule-set:private',
       'rule-set:fakeip_filter',
       'rule-set:cn',
+      // T325 补齐：三集未覆盖的三类 real-ip 小批——连通性检测域名拿
+      // fake-ip 会让个别 ROM 误判无网络；品牌路由器后台按域名绑定
+      // 会话，fake-ip 下打不开；NTP 对时与 fake-ip 映射不兼容
+      'DOMAIN-SUFFIX,msftconnecttest.com',
+      'DOMAIN-SUFFIX,msftncsi.com',
+      'DOMAIN,captive.apple.com',
+      'DOMAIN,connectivitycheck.gstatic.com',
+      'DOMAIN-SUFFIX,gstatic.com',
+      'DOMAIN-SUFFIX,asusrouter.com',
+      'DOMAIN-SUFFIX,router.asus.com',
+      'DOMAIN-SUFFIX,tplinkwifi.net',
+      'DOMAIN-SUFFIX,tendawifi.com',
+      'DOMAIN-SUFFIX,routerlogin.com',
+      'DOMAIN-SUFFIX,tplogin.cn',
+      'DOMAIN-SUFFIX,hiwifi.com',
+      'DOMAIN-SUFFIX,phicomm.me',
+      'DOMAIN-SUFFIX,local.adguard.org',
+      'DOMAIN-SUFFIX,plex.direct',
+      'DOMAIN-SUFFIX,ts.net',
+      'DOMAIN-SUFFIX,pool.ntp.org',
+      'DOMAIN-SUFFIX,ntp.org',
+      'DOMAIN-SUFFIX,ntp.aliyun.com',
+      'DOMAIN-SUFFIX,ntp1.aliyun.com',
+      'DOMAIN-SUFFIX,ntp.tencent.com',
+      'DOMAIN-SUFFIX,ntp.ubuntu.com',
+      'DOMAIN-SUFFIX,time.nist.gov',
+      'DOMAIN,time.cloudflare.com',
       ...(minimalModeEnabled ? [] : activeRuleOptions['FCM'] ? ['rule-set:googlefcm'] : []),
       ...proxyFakeIpFilter,
     ],
@@ -2599,18 +2737,53 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     }),
     nameserver: foreignDNS,
     'nameserver-policy': {
+      // 国内侧：直连主力集与规则走向对齐，TLD 兜底承接集外新域名
       'rule-set:cn': chinaDNS,
+      'rule-set:geolocation-cn': chinaDNS,
+      'rule-set:bilibili': chinaDNS,
+      '+.cn': chinaDNS,
+      '+.com.cn': chinaDNS,
+      '+.net.cn': chinaDNS,
+      '+.org.cn': chinaDNS,
+      '+.edu.cn': chinaDNS,
+      '+.gov.cn': chinaDNS,
+      // 外国侧：核心服务与验证/AI 域名钉境外解析防污染，走 foreignDNS
+      // 经默认代理（不用裸 IP #RULES，与 respect-rules:false 口径配套）
+      'geosite:google': foreignDNS,
+      'geosite:youtube': foreignDNS,
+      'geosite:telegram': foreignDNS,
+      'geosite:geolocation-!cn': foreignDNS,
+      '+.twitter.com': foreignDNS,
+      '+.t.co': foreignDNS,
+      '+.x.com': foreignDNS,
+      '+.challenges.cloudflare.com': foreignDNS,
+      '+.recaptcha.net': foreignDNS,
+      'recaptcha.google.com': foreignDNS,
+      '+.openai.com': foreignDNS,
+      '+.chatgpt.com': foreignDNS,
+      '+.oaistatic.com': foreignDNS,
+      '+.oaiusercontent.com': foreignDNS,
+      '+.anthropic.com': foreignDNS,
+      '+.claude.ai': foreignDNS,
+      '+.gemini.google.com': foreignDNS,
+      '+.aistudio.google.com': foreignDNS,
     },
     'direct-nameserver': chinaDNS,
+    // policy 对直连解析生效的闭环前提（T325）
+    'direct-nameserver-follow-policy': true,
+    // type-65（HTTPS 记录）查询在 fake-ip 下会绕分流/解析异常（T325）
+    'disable-qtype-65': true,
     // 官方默认：黑名单 fake-ip；DNS 服务器自身不跟 rules，避免规则集没下完时解析环路。
     'fake-ip-filter-mode': 'blacklist',
     'respect-rules': false,
   };
 
   const hosts = {
-    'doh.pub': ['1.12.12.12', '120.53.53.53'],
-    'cloudflare-dns.com': ['1.1.1.1', '1.0.0.1'],
-    'dns.google': ['8.8.8.8', '8.8.4.4'],
+    // 与 securityHosts 同值（含 IPv6 钉址）：main 合并 hosts 时本表
+    // 覆盖 securityHosts，只写 v4 会把双栈钉址冲掉（T325）
+    'doh.pub': ['1.12.12.12', '120.53.53.53', '2402:4e00::', '2402:4e00:1::'],
+    'cloudflare-dns.com': ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'],
+    'dns.google': ['8.8.8.8', '8.8.4.4', '2001:4860:4860::8888', '2001:4860:4860::8844'],
 
     // 解决谷歌商店无法下载的问题
     'services.googleapis.cn': 'services.googleapis.com',
@@ -2832,6 +3005,8 @@ const securityHosts = {
   'doh.pub': ['1.12.12.12', '120.53.53.53', '2402:4e00::', '2402:4e00:1::'],
   'dns.google': ['8.8.8.8', '8.8.4.4', '2001:4860:4860::8888', '2001:4860:4860::8844'],
   'cloudflare-dns.com': ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'],
+  // 微软 NCSI 联网判定端点钉址（T325），防被污染时 Windows 误判断网
+  'dns.msftncsi.com': ['131.107.255.255', 'fd3e:4f5a:5b81::1'],
 };
 
 // --- proxy-providers 兼容：保留节点信息，脚本接管其余配置 ---
@@ -2905,7 +3080,10 @@ function buildProviderRegionGroups(filteredProxies, providerNames) {
   const regionByName = new Map(allRegionDefinitions.map((region) => [region.name, region]));
 
   for (const group of groups) {
-    const regionName = group.name.endsWith('-自动选择') ? group.name.slice(0, -5) : group.name;
+    const regionName =
+      group.name.endsWith('-自动选择') || group.name.endsWith('-负载均衡')
+        ? group.name.slice(0, -5)
+        : group.name;
     const region = regionByName.get(regionName);
     if (!region) continue;
 
@@ -3045,6 +3223,7 @@ function main(config, context) {
 
   newConfig['rules'] = [
     ...prefixRules,
+    ...processDirectRules,
     ...(activeRuleOptions.屏蔽WebRTC ? blockWebRtcStun : []),
     ...(activeRuleOptions.屏蔽国外QUIC ? blockForeignQuic : []),
     ...functionalRules,
