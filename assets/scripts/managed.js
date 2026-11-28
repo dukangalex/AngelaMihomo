@@ -42,7 +42,7 @@
  * 其余节点按地区识别改名并分组；provider 模式不下载、不展开、
  * 不改名，仅补内核必填字段。
  *
- * 【策略组与规则】策略组、规则与 40 个 .mrs 规则提供者全部由
+ * 【策略组与规则】策略组、规则与 50 个 .mrs 规则提供者全部由
  * 脚本生成；提供者一律指向本项目数据仓（geo-data Release 直链
  * 或 core-bundle 包内路径），已下载到本地的规则文件由 App 以
  * 数据仓签名清单校验完整性，不符者删除重下（T233）。
@@ -90,6 +90,7 @@ const ruleOptionsEnable = {
   Meta: true, // Meta服务
   Line: true, // Line通讯软件
   Netflix: true, // Netflix视频平台
+  Media: true, // 流媒体与服务聚合（Hulu/HBO/Amazon/Bahamut/Abema/BBC/GitLab/Instagram/Discord/iCloud）
   Emby: true, // Emby媒体服务
   PikPak: true, // PikPak网盘服务
   Spotify: true, // Spotify音乐服务
@@ -1536,6 +1537,88 @@ const serviceConfigs = [
     },
     icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Netflix.svg',
     rules: ['RULE-SET,netflix,Netflix', 'RULE-SET,netflix_ip,Netflix,no-resolve'],
+  },
+  {
+    // T327 新增：流媒体与常用服务聚合组。十集均出自内核官方规则
+    // 数据仓的 geosite、经本项目数据仓分发。与 Apple/Meta 等既有
+    // 专组重叠的域名按规则先后仍先命中专组，本组兜其余部分。
+    name: 'Media',
+    baseOption: selectBaseOption,
+    providers: {
+      hulu: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-hulu.mrs',
+        path: './ruleset/hulu.mrs',
+        'path-in-bundle': 'geo/geosite/hulu.mrs',
+      },
+      hbo: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-hbo.mrs',
+        path: './ruleset/hbo.mrs',
+        'path-in-bundle': 'geo/geosite/hbo.mrs',
+      },
+      amazon: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-amazon.mrs',
+        path: './ruleset/amazon.mrs',
+        'path-in-bundle': 'geo/geosite/amazon.mrs',
+      },
+      bahamut: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-bahamut.mrs',
+        path: './ruleset/bahamut.mrs',
+        'path-in-bundle': 'geo/geosite/bahamut.mrs',
+      },
+      abema: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-abema.mrs',
+        path: './ruleset/abema.mrs',
+        'path-in-bundle': 'geo/geosite/abema.mrs',
+      },
+      bbc: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-bbc.mrs',
+        path: './ruleset/bbc.mrs',
+        'path-in-bundle': 'geo/geosite/bbc.mrs',
+      },
+      gitlab: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-gitlab.mrs',
+        path: './ruleset/gitlab.mrs',
+        'path-in-bundle': 'geo/geosite/gitlab.mrs',
+      },
+      instagram: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-instagram.mrs',
+        path: './ruleset/instagram.mrs',
+        'path-in-bundle': 'geo/geosite/instagram.mrs',
+      },
+      discord: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-discord.mrs',
+        path: './ruleset/discord.mrs',
+        'path-in-bundle': 'geo/geosite/discord.mrs',
+      },
+      icloud: {
+        ...ruleProviderCommonDomain,
+        url: 'https://github.com/dukangalex/angelamihomo-geo/releases/download/geo-data-2026.11/geosite-icloud.mrs',
+        path: './ruleset/icloud.mrs',
+        'path-in-bundle': 'geo/geosite/icloud.mrs',
+      },
+    },
+    icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Media.svg',
+    rules: [
+      'RULE-SET,hulu,Media',
+      'RULE-SET,hbo,Media',
+      'RULE-SET,amazon,Media',
+      'RULE-SET,bahamut,Media',
+      'RULE-SET,abema,Media',
+      'RULE-SET,bbc,Media',
+      'RULE-SET,gitlab,Media',
+      'RULE-SET,instagram,Media',
+      'RULE-SET,discord,Media',
+      'RULE-SET,icloud,Media',
+    ],
   },
   {
     name: 'Emby',
