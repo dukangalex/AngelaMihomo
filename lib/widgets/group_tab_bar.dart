@@ -10,7 +10,13 @@ import 'google_bottom_nav_bar.dart';
 import 'text.dart';
 
 class GroupTabBar extends ConsumerStatefulWidget {
-  static const double height = 36;
+  /// T334 batch 3 (star-group rail): each group is a dot riding one
+  /// horizontal rail line with its name under the dot, so the bar is
+  /// taller than the old pill row — dot zone + gap + label.
+  static const double height = 48;
+  static const double _dotZone = 16;
+  static const double _dotGap = 4;
+  static const double _topPad = 6;
 
   final TabController controller;
   final List<String> labels;
@@ -257,7 +263,7 @@ class _GroupTabBarState extends ConsumerState<GroupTabBar> {
             widget.onMore?.call();
           },
           child: SizedBox.square(
-            dimension: GroupTabBar.height,
+            dimension: 36,
             child: IconTheme.merge(
               data: IconThemeData(color: iconColor, size: 18),
               child: isMobileView && moreOpen != null
@@ -290,28 +296,22 @@ class _GroupTabBarState extends ConsumerState<GroupTabBar> {
     final unselectedBg = isLight
         ? colorScheme.surfaceContainerLowest
         : colorScheme.surfaceContainerLow;
-    final selectedBg = isLight
-        ? Color.alphaBlend(
-            colorScheme.secondaryContainer.withValues(alpha: 0.78),
-            colorScheme.surfaceContainerLowest,
-          )
-        : Color.alphaBlend(
-            colorScheme.primary.withValues(alpha: 0.18),
-            unselectedBg,
-          );
     final unselectedBorder = colorScheme.outlineVariant.withValues(
       alpha: isLight ? 0.35 : 0.16,
-    );
-    final selectedBorder = colorScheme.primary.withValues(
-      alpha: isLight ? 0.45 : 0.55,
     );
     final unselectedText = colorScheme.onSurfaceVariant;
     final selectedText = isLight
         ? colorScheme.onSecondaryContainer
         : colorScheme.primary;
+    // The rail the dots ride on: the design's glow line at rest
+    // strength, falling back to the outline tone when the star-rail
+    // extension is absent.
+    final railColor =
+        context.starRail?.glowLine.withValues(alpha: 0.16) ??
+        colorScheme.outlineVariant.withValues(alpha: 0.5);
 
     final textStyle = context.textTheme.bodyMedium?.copyWith(
-      fontSize: 13,
+      fontSize: 12.5,
       fontWeight: FontWeight.w500,
     );
 
@@ -343,27 +343,39 @@ class _GroupTabBarState extends ConsumerState<GroupTabBar> {
                     child: SingleChildScrollView(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
-                      child: Row(
-                        key: _rowKey,
-                        mainAxisSize: MainAxisSize.min,
+                      child: Stack(
                         children: [
-                          for (var index = 0; index < count; index++) ...[
-                            if (index > 0) const SizedBox(width: 7),
-                            _GroupTabChip(
-                              key: _itemKeys[index],
-                              label: widget.labels[index],
-                              index: index,
-                              selectedIndex: _selectedIndex,
-                              style: textStyle,
-                              unselectedBg: unselectedBg,
-                              selectedBg: selectedBg,
-                              unselectedBorder: unselectedBorder,
-                              selectedBorder: selectedBorder,
-                              unselectedText: unselectedText,
-                              selectedText: selectedText,
-                              onTap: () => _select(index),
-                            ),
-                          ],
+                          // The rail line, running under every dot at
+                          // the dot zone's centre height.
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            top:
+                                GroupTabBar._topPad +
+                                GroupTabBar._dotZone / 2 -
+                                0.5,
+                            child: Container(height: 1, color: railColor),
+                          ),
+                          Row(
+                            key: _rowKey,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (var index = 0; index < count; index++) ...[
+                                if (index > 0) const SizedBox(width: 7),
+                                _GroupTabChip(
+                                  key: _itemKeys[index],
+                                  label: widget.labels[index],
+                                  index: index,
+                                  selectedIndex: _selectedIndex,
+                                  style: textStyle,
+                                  unselectedText: unselectedText,
+                                  selectedText: selectedText,
+                                  dotColor: colorScheme.primary,
+                                  onTap: () => _select(index),
+                                ),
+                              ],
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -392,12 +404,9 @@ class _GroupTabChip extends StatefulWidget {
   final int index;
   final ValueListenable<int> selectedIndex;
   final TextStyle? style;
-  final Color unselectedBg;
-  final Color selectedBg;
-  final Color unselectedBorder;
-  final Color selectedBorder;
   final Color unselectedText;
   final Color selectedText;
+  final Color dotColor;
   final VoidCallback onTap;
 
   const _GroupTabChip({
@@ -406,12 +415,9 @@ class _GroupTabChip extends StatefulWidget {
     required this.index,
     required this.selectedIndex,
     required this.style,
-    required this.unselectedBg,
-    required this.selectedBg,
-    required this.unselectedBorder,
-    required this.selectedBorder,
     required this.unselectedText,
     required this.selectedText,
+    required this.dotColor,
     required this.onTap,
   });
 
@@ -490,43 +496,88 @@ class _GroupTabChipState extends State<_GroupTabChip>
           animation: _animation,
           builder: (_, _) {
             final t = _animation.value;
-            final bgColor = Color.lerp(
-              widget.unselectedBg,
-              widget.selectedBg,
-              t,
-            )!;
-            final borderColor = Color.lerp(
-              widget.unselectedBorder,
-              widget.selectedBorder,
-              t,
-            )!;
             final textColor = Color.lerp(
               widget.unselectedText,
               widget.selectedText,
               t,
             )!;
+            final dotColor = Color.lerp(
+              widget.unselectedText.withValues(alpha: 0.45),
+              widget.dotColor,
+              t,
+            )!;
+            // Lucian UX/UI Prompt #015/#039 behaviour, mapped to the
+            // rail: the newly selected dot pops into place (grows,
+            // gains its orbit ring and glow) while the label takes
+            // the selected tone; the switch itself is a short
+            // state-change animation, nothing moves at rest.
             return Container(
               constraints: const BoxConstraints(
-                minWidth: 64,
+                minWidth: 60,
                 minHeight: GroupTabBar.height,
                 maxHeight: GroupTabBar.height,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: ShapeDecoration(
-                color: bgColor,
-                shape: RoundedSuperellipseBorder(
-                  borderRadius: BorderRadius.circular(GroupTabBar.height / 2),
-                  side: BorderSide(
-                    color: borderColor,
-                    width: 1.0 + 0.15 * t,
-                  ),
-                ),
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 12,
+                top: GroupTabBar._topPad,
               ),
-              alignment: Alignment.center,
-              child: EmojiText(
-                widget.label,
-                maxLines: 1,
-                style: widget.style?.copyWith(color: textColor),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  SizedBox(
+                    height: GroupTabBar._dotZone,
+                    child: Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: GroupTabBar._dotZone,
+                            height: GroupTabBar._dotZone,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: widget.dotColor.withValues(
+                                  alpha: 0.65 * t,
+                                ),
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 6 + 3.5 * t,
+                            height: 6 + 3.5 * t,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: dotColor,
+                              boxShadow: [
+                                if (t > 0)
+                                  BoxShadow(
+                                    color: widget.dotColor.withValues(
+                                      alpha: 0.55 * t,
+                                    ),
+                                    blurRadius: 10 * t,
+                                    spreadRadius: 1.5 * t,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: GroupTabBar._dotGap),
+                  EmojiText(
+                    widget.label,
+                    maxLines: 1,
+                    style: widget.style?.copyWith(
+                      color: textColor,
+                      fontWeight: t > 0.5
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             );
           },
