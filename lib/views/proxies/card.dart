@@ -203,7 +203,7 @@ class ProxyCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProxyNameText(BuildContext context) {
+  Widget _buildProxyNameText(BuildContext context, {bool isSelected = false}) {
     final maxLines = type == ProxyCardType.min ? 1 : 2;
     return SizedBox(
       height: measure.bodyMediumHeight * maxLines,
@@ -211,12 +211,20 @@ class ProxyCard extends StatelessWidget {
         proxy.name,
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
-        style: context.textTheme.bodyMedium,
+        // #015: the selected row's name takes weight; unselected
+        // rows stay at the regular weight.
+        style: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: isSelected ? FontWeight.w600 : null,
+        ),
       ),
     );
   }
 
-  Widget _buildFooter(BuildContext context, Widget delayText) {
+  Widget _buildFooter(
+    BuildContext context,
+    Widget delayText, {
+    bool isSelected = false,
+  }) {
     if (type == ProxyCardType.expand) {
       final labelSmallHeight = measure.labelSmallHeight;
       return SizedBox(
@@ -264,7 +272,11 @@ class ProxyCard extends StatelessWidget {
                 proxy.type,
                 style: bodySmallStyle?.copyWith(
                   overflow: TextOverflow.ellipsis,
-                  color: bodySmallStyle.color?.opacity80,
+                  // #015: unselected rows dim their sub-label; the
+                  // selected row keeps the brighter tone.
+                  color: bodySmallStyle.color?.withValues(
+                    alpha: isSelected ? 0.8 : 0.55,
+                  ),
                 ),
               ),
             ),
@@ -318,12 +330,19 @@ class ProxyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final delayText = ProxyDelayText(proxy: proxy, testUrl: testUrl);
-    final nameTextWidget = _buildProxyNameText(context);
-    final footerWidget = _buildFooter(context, delayText);
     return Consumer(
       builder: (context, ref, _) {
         final isSelected = _isSelectedProxy(ref);
+        final delayText = ProxyDelayText(proxy: proxy, testUrl: testUrl);
+        final nameTextWidget = _buildProxyNameText(
+          context,
+          isSelected: isSelected,
+        );
+        final footerWidget = _buildFooter(
+          context,
+          delayText,
+          isSelected: isSelected,
+        );
         final hasActions = _hasActions;
         final isComputedMatch =
             groupType.isComputedSelected && _isComputedMatch(ref);
@@ -335,7 +354,7 @@ class ProxyCard extends StatelessWidget {
         final card = Stack(
           children: [
             CommonCard(
-              radius: 20.0,
+              radius: StarRailRadius.sheetRow,
               subtle: true,
               elevated: false,
               clipBehavior: Clip.none,
@@ -345,11 +364,19 @@ class ProxyCard extends StatelessWidget {
               child: Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 8,
-                  children: [proxyNameWidget, footerWidget],
+                child: Row(
+                  children: [
+                    _ProxyOrbitDot(isSelected: isSelected),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [proxyNameWidget, footerWidget],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -368,6 +395,63 @@ class ProxyCard extends StatelessWidget {
           child: card,
         );
       },
+    );
+  }
+}
+
+/// The star-group orbit dot (T334 batch 3, #015 mapped): the
+/// selected node's dot is lit, enlarged and ringed in the star-rail
+/// primary; every other node keeps a small dim dot on the same
+/// column, so the eye reads the group's current exit at a glance.
+/// Only the selection change animates (150 ms); at rest the dot is
+/// a static drawing.
+class _ProxyOrbitDot extends StatelessWidget {
+  final bool isSelected;
+
+  const _ProxyOrbitDot({required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final accent = context.starRail?.primary ?? colorScheme.primary;
+    return SizedBox.square(
+      dimension: 16,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: accent.withValues(alpha: isSelected ? 0.65 : 0),
+                width: 1.4,
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutCubic,
+            width: isSelected ? 9.5 : 6,
+            height: isSelected ? 9.5 : 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected
+                  ? accent
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              boxShadow: [
+                if (isSelected)
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.55),
+                    blurRadius: 10,
+                    spreadRadius: 1.5,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
