@@ -13,8 +13,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'item.dart';
+import 'trajectory.dart';
 
 enum _ConnectionsTab { active, closed, all }
+
+/// One row of the trajectory timeline: either a process group
+/// header (the glowing node) or one connection row under it.
+sealed class _TrajectoryEntry {
+  const _TrajectoryEntry();
+
+  String get entryKey;
+}
+
+class _TrajectoryGroupEntry extends _TrajectoryEntry {
+  final String process;
+  final int count;
+  final TrackerInfo firstInfo;
+  final bool isFirst;
+
+  const _TrajectoryGroupEntry({
+    required this.process,
+    required this.count,
+    required this.firstInfo,
+    required this.isFirst,
+  });
+
+  @override
+  String get entryKey => 'trajectory-group-$process';
+}
+
+class _TrajectoryItemEntry extends _TrajectoryEntry {
+  final TrackerInfo info;
+  final int indexInGroup;
+  final int groupCount;
+  final bool closed;
+  final bool markClosed;
+
+  const _TrajectoryItemEntry({
+    required this.info,
+    required this.indexInGroup,
+    required this.groupCount,
+    required this.closed,
+    required this.markClosed,
+  });
+
+  @override
+  String get entryKey => 'trajectory-item-${info.id}';
+}
 
 class ConnectionsView extends ConsumerStatefulWidget {
   final bool respectCurrentPage;
@@ -532,18 +577,20 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         final showSpeed =
             ref.watch(connectionsSortProvider) !=
             ConnectionsSortType.totalTraffic;
-        return _buildList(
-          count: connections.length,
-          idOf: (index) => connections[index].id,
-          itemOf: (context, index) => _buildItem(
-            context,
-            trackerInfo: connections[index],
-            index: index,
-            count: connections.length,
-            closed: false,
-            showSpeed: showSpeed,
+        final showProcessIcons = ref.watch(
+          patchClashConfigProvider.select(
+            (state) => state.findProcessMode != FindProcessMode.off,
+          ),
+        );
+        return _buildGroupedList(
+          entries: _trajectoryEntries(
+            connections,
+            infoOf: (info) => info,
+            closedOf: (_) => false,
             markClosed: false,
           ),
+          showSpeed: showSpeed,
+          showProcessIcons: showProcessIcons,
         );
       },
     );
@@ -598,17 +645,227 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
         final showSpeed =
             ref.watch(connectionsSortProvider) !=
             ConnectionsSortType.totalTraffic;
-        return _buildList(
-          count: items.length,
-          idOf: (index) => items[index].info.id,
-          itemOf: (context, index) => _buildItem(
-            context,
-            trackerInfo: items[index].info,
-            index: index,
-            count: items.length,
-            closed: items[index].closed,
-            showSpeed: showSpeed,
+        final showProcessIcons = ref.watch(
+          patchClashConfigProvider.select(
+            (state) => state.findProcessMode != FindProcessMode.off,
+          ),
+        );
+        return _buildGroupedList(
+          entries: _trajectoryEntries(
+            items,
+            infoOf: (item) => item.info,
+            closedOf: (item) => item.closed,
             markClosed: true,
+          ),
+          showSpeed: showSpeed,
+          showProcessIcons: showProcessIcons,
+        );
+      },
+    );
+  }
+
+  /// T334 batch 4: flattens the process groups of one tab into
+  /// header + row entries for the trajectory timeline. Grouping is
+  /// presentation only — the underlying filtered lists, their sort
+  /// order inside each group, and every row callback stay stock.
+  List<_TrajectoryEntry> _trajectoryEntries<T>(
+    List<T> items, {
+    required TrackerInfo Function(T item) infoOf,
+    required bool Function(T item) closedOf,
+    required bool markClosed,
+  }) {
+    final groups = groupConnectionsByProcess(
+      items,
+      (item) => infoOf(item).metadata.process,
+    );
+    final entries = <_TrajectoryEntry>[];
+    for (var g = 0; g < groups.length; g++) {
+      final group = groups[g];
+      entries.add(
+        _TrajectoryGroupEntry(
+          process: group.process,
+          count: group.items.length,
+          firstInfo: infoOf(group.items.first),
+          isFirst: g == 0,
+        ),
+      );
+      for (var i = 0; i < group.items.length; i++) {
+        final item = group.items[i];
+        entries.add(
+          _TrajectoryItemEntry(
+            info: infoOf(item),
+            indexInGroup: i,
+            groupCount: group.items.length,
+            closed: closedOf(item),
+            markClosed: markClosed,
+          ),
+        );
+      }
+    }
+    return entries;
+  }
+
+  Widget? _buildGroupIcon(TrackerInfo info) {
+    if (info.metadata.process.isEmpty) return null;
+    return Builder(
+      builder: (context) => ConnectionProcessIcon(
+        process: info.metadata.process,
+        path: info.metadata.processPath,
+        port: info.metadata.destinationPort,
+        onClick: (value) {
+          context.commonScaffoldState?.addKeyword(value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildGroupedList({
+    required List<_TrajectoryEntry> entries,
+    required bool showSpeed,
+    required bool showProcessIcons,
+  }) {
+    if (entries.isEmpty) {
+      final udpOnly = ref.watch(connectionsUdpOnlyProvider);
+      return NullStatus(
+        label: udpOnly
+            ? appLocalizations.nullUdpConnections
+            : appLocalizations.nullTip(appLocalizations.connections),
+        icon: Icons.swap_vert_rounded,
+      );
+    }
+    Map<String, int>? indexByKey;
+    final scrollView = RouteScrollCacheBuilder(
+      builder: (_, cacheExtent) => CustomScrollView(
+        controller: _scrollController,
+        physics: const NextClampingScrollPhysics(),
+        scrollCacheExtent: cacheExtent,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final entry = entries[index];
+                  return switch (entry) {
+                    _TrajectoryGroupEntry() => TrajectoryGroupHeader(
+                      key: ValueKey(entry.entryKey),
+                      process: entry.process,
+                      count: entry.count,
+                      isFirst: entry.isFirst,
+                      icon: showProcessIcons
+                          ? _buildGroupIcon(entry.firstInfo)
+                          : null,
+                    ),
+                    _TrajectoryItemEntry() => TrajectoryRailRow(
+                      key: ValueKey(entry.entryKey),
+                      child: _buildItem(
+                        context,
+                        trackerInfo: entry.info,
+                        index: entry.indexInGroup,
+                        count: entry.groupCount,
+                        closed: entry.closed,
+                        showSpeed: showSpeed,
+                        markClosed: entry.markClosed,
+                      ),
+                    ),
+                  };
+                },
+                childCount: entries.length,
+                findChildIndexCallback: (key) {
+                  indexByKey ??= {
+                    for (var i = 0; i < entries.length; i++)
+                      entries[i].entryKey: i,
+                  };
+                  return indexByKey![(key as ValueKey<String>).value];
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return CommonScrollBar(
+      controller: _scrollController,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification) {
+            _isScrolling = true;
+          } else if (notification is ScrollEndNotification) {
+            _isScrolling = false;
+            _applyPendingConnections();
+          }
+          return false;
+        },
+        child: scrollView,
+      ),
+    );
+  }
+
+  /// The page's top readout (design screen 4): the live active
+  /// connection count — the same filtered list the active tab
+  /// counts — plus the core's current up/down speeds, the same
+  /// traffics source the dashboard speed tile reads.
+  Widget _buildSummary() {
+    return Consumer(
+      builder: (context, ref, _) {
+        final count = ref.watch(
+          filteredConnectionsProvider.select((state) => state.length),
+        );
+        final traffic = ref.watch(
+          trafficsProvider.select(
+            (state) => state.list.isEmpty ? null : state.list.last,
+          ),
+        );
+        final tokens =
+            context.starRail ??
+            StarRailTokens.forBrightness(Theme.of(context).brightness);
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
+          child: CommonCard(
+            type: CommonCardType.filled,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: tokens.secondary,
+                      boxShadow: [
+                        BoxShadow(
+                          color: tokens.secondary.withValues(alpha: 0.55),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    appLocalizations.connectionsActive,
+                    style: context.textTheme.titleSmall,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$count',
+                    style: context.textTheme.titleLarge?.copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const Spacer(),
+                  if (traffic != null)
+                    Text(
+                      traffic.toSpeedText(),
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: tokens.textSecondary,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -625,6 +882,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          _buildSummary(),
           _buildTabs(),
           Expanded(
             child: switch (_tab) {
