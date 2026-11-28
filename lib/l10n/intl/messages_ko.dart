@@ -367,6 +367,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "영문자, 숫자, 기호만 지원됩니다",
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("백업 비밀번호가 올바르지 않습니다. 비밀번호를 확인한 뒤 다시 시도하세요. 백업을 만들 때 설정한 비밀번호가 없으면 복원할 수 없습니다."),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("Current theme"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("이 백업의 WebDAV 사용자 이름과 비밀번호를 해독할 수 없습니다(다른 기기나 설치에서 만든 백업일 수 있음). 비워 두었으니 백업 설정에서 다시 입력하세요."),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("App"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("Appearance"),

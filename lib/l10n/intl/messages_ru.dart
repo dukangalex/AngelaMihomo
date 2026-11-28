@@ -438,6 +438,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Поддерживаются только латинские буквы, цифры и символы",
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Неверный пароль резервной копии. Проверьте пароль и повторите; без пароля, заданного при создании копии, восстановить её нельзя."),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("Current theme"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("Не удалось расшифровать имя пользователя и пароль WebDAV из этой резервной копии (возможно, она создана на другом устройстве или в другой установке). Поля оставлены пустыми; введите их снова в настройках резервного копирования."),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("App"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("Appearance"),

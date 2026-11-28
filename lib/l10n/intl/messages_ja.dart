@@ -360,6 +360,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "英字、数字、記号のみ使用できます",
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("バックアップのパスワードが正しくありません。パスワードを確認して再試行してください。作成時に設定したパスワードがないと、このバックアップは復元できません。"),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("Current theme"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("このバックアップの WebDAV ユーザー名とパスワードは復号できませんでした（別の端末または別のインストールで作成された可能性があります）。空欄にしました。バックアップ設定で再入力してください。"),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("App"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("Appearance"),

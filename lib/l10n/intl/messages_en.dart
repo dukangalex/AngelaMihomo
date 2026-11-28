@@ -423,6 +423,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Only English letters, digits and symbols are supported",
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("Incorrect backup password. Check the password and try again; without the password set when the backup was created, it cannot be restored."),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("Current theme"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("The WebDAV user name and password in this backup could not be decrypted (the backup may come from another device or install). They were left empty; enter them again in the backup settings."),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("App"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("Appearance"),

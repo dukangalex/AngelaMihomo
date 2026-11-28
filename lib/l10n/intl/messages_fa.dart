@@ -418,6 +418,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "فقط حروف انگلیسی، اعداد و نمادها پشتیبانی می‌شوند",
     ),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("رمز عبور نسخه پشتیبان نادرست است. رمز را بررسی و دوباره تلاش کنید؛ بدون رمزی که هنگام ساخت نسخه پشتیبان تعیین شده، بازیابی آن ممکن نیست."),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("Current theme"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("نام کاربری و رمز عبور WebDAV در این نسخه پشتیبان قابل رمزگشایی نبود (ممکن است نسخه پشتیبان از دستگاه یا نصب دیگری باشد). خالی گذاشته شد؛ آن‌ها را در تنظیمات پشتیبان‌گیری دوباره وارد کنید."),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("App"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("Appearance"),

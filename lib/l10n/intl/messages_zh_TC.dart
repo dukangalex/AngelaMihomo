@@ -339,6 +339,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "backupPasswordTip": MessageLookupByLibrary.simpleMessage("僅支援英文字母、數字和符號"),
     "backupPasswordWrong": MessageLookupByLibrary.simpleMessage("備份密碼不正確。請核對密碼後重試；沒有建立備份時設定的密碼，這份備份無法還原。"),
+    "currentTheme": MessageLookupByLibrary.simpleMessage("當前主題"),
     "davCredentialsNotRestored": MessageLookupByLibrary.simpleMessage("備份中的 WebDAV 帳號密碼無法解密（該備份可能來自另一台裝置或另一次安裝），已留空，請在備份設定中重新填寫。"),
     "toolsSectionApp": MessageLookupByLibrary.simpleMessage("應用"),
     "toolsSectionAppearance": MessageLookupByLibrary.simpleMessage("外觀主題"),

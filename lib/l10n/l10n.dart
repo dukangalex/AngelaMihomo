@@ -124,6 +124,11 @@ class AppLocalizations {
     return Intl.message('Subscription remaining', name: 'subscriptionRemaining', desc: '', args: []);
   }
 
+  /// `Current theme`
+  String get currentTheme {
+    return Intl.message('Current theme', name: 'currentTheme', desc: '', args: []);
+  }
+
   /// `Appearance`
   String get toolsSectionAppearance {
     return Intl.message('Appearance', name: 'toolsSectionAppearance', desc: '', args: []);
