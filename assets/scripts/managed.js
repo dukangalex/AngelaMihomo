@@ -1,4 +1,4 @@
-// @version 2026112802
+// @version 2026112803
 /**
  * AngelaMihomo 内置托管脚本（managed.js）——改写范围自述（T234）
  *
@@ -1713,19 +1713,21 @@ const serviceConfigs = [
     fixedProxies: ['默认代理', 'DIRECT', 'REJECT-DROP'],
     icon: 'https://raw.githubusercontent.com/dukangalex/angelamihomo-icons/main/icon/svg/common/Remote.svg',
     rules: [
-      // T336 拆分：手机经本机 Tailscale 出口节点转发的流量由 tailscaled 承载，
-      // 会命中下方 *tailscale* 进程规则被一并判进远控组。其来源地址是手机的
-      // tailnet 地址（100.64.0.0/10），本机远控流量来源是本机地址——以前置
-      // 规则按来源把转发流量先提出、交回正常链入口（默认代理）；本机流量
-      // 不在此网段，继续命中进程规则进远控组，DIRECT 直连选项不受影响。
-      'SRC-IP-CIDR,100.64.0.0/10,默认代理',
+      // T336 二版拆分（按目标判别）：真机样本证实，手机经本机 Tailscale
+      // 出口节点转发的流量在核心里就是 tailscaled.exe 自己的出站连接，
+      // 源地址是 TUN 本地地址（198.18.0.1），按来源判别（SRC-IP）走不通。
+      // 改按目标拆：Tailscale 自家基础设施域名与 WireGuard 数据面端口
+      // （41641）留在远控工具组；tailscale 进程规则删除，其余 tailscaled
+      // 流量（即手机转发流量）回落正常规则链，不再被远控组一并带走。
+      'DOMAIN-SUFFIX,tailscale.com,远控工具',
+      'DOMAIN-SUFFIX,tailscale.io,远控工具',
+      'DOMAIN-SUFFIX,ts.net,远控工具',
+      'AND,((PROCESS-NAME-WILDCARD,*tailscale*),(DST-PORT,41641)),远控工具',
       'PROCESS-NAME-WILDCARD,*AnyDesk*,远控工具',
       'PROCESS-NAME-WILDCARD,*ToDesk*,远控工具',
       'PROCESS-NAME-WILDCARD,*TeamViewer*,远控工具',
       'PROCESS-NAME-WILDCARD,*RustDesk*,远控工具',
       'PROCESS-NAME-WILDCARD,*rustdesk*,远控工具',
-      'PROCESS-NAME-WILDCARD,*tailscale*,远控工具',
-      'PROCESS-NAME-WILDCARD,*tailscaled*,远控工具',
       'PROCESS-NAME-WILDCARD,*zerotier*,远控工具',
       'PROCESS-NAME-WILDCARD,*ngrok*,远控工具',
       'PROCESS-NAME-WILDCARD,*frpc*,远控工具',
