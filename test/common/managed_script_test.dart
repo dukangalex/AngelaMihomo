@@ -311,7 +311,26 @@ void main() {
     // 规则补齐：微信直连、进程名直连包、STUN 域名正则
     expect(plain.content, contains('DOMAIN,szlong.weixin.qq.com,直连'));
     expect(plain.content, contains('const processDirectRules'));
-    expect(plain.content, contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具'));
+    // T336 二版：远控组改按目标判别，tailscale 进程规则与 SRC-IP 死规则已删，
+    // Tailscale 基础设施域名与 WireGuard 数据面端口（41641）指向远控工具
+    expect(
+      plain.content,
+      isNot(contains('PROCESS-NAME-WILDCARD,*tailscale*,远控工具')),
+    );
+    expect(
+      plain.content,
+      isNot(contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具')),
+    );
+    expect(plain.content, isNot(contains('SRC-IP-CIDR,100.64.0.0/10,默认代理')));
+    expect(plain.content, contains('DOMAIN-SUFFIX,tailscale.com,远控工具'));
+    expect(plain.content, contains('DOMAIN-SUFFIX,tailscale.io,远控工具'));
+    expect(plain.content, contains('DOMAIN-SUFFIX,ts.net,远控工具'));
+    expect(
+      plain.content,
+      contains(
+        'AND,((PROCESS-NAME-WILDCARD,*tailscale*),(DST-PORT,41641)),远控工具',
+      ),
+    );
   });
 
   test('bundled script carries the T327 media rule set markers', () async {

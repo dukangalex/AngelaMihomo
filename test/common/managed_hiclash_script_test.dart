@@ -224,7 +224,7 @@ void main() {
     expect(rules, contains('DOMAIN-SUFFIX,weixin.qq.com,直连'));
     expect(rules, contains('IP-CIDR,101.226.0.0/16,DIRECT,no-resolve'));
     expect(rules, contains('IP-CIDR,140.207.0.0/16,DIRECT,no-resolve'));
-    // 动作 19：进程名直连包（38 条）与动作 1 的 tailscaled
+    // 动作 19：进程名直连包（38 条）
     expect(
       rules.where(
         (r) => r.startsWith('PROCESS-NAME-WILDCARD,') && r.endsWith(',直连'),
@@ -236,7 +236,26 @@ void main() {
       rules,
       contains('PROCESS-NAME-WILDCARD,*com.eg.android.Alipay*,直连'),
     );
-    expect(rules, contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具'));
+    // T336 二版：远控组改按目标判别，tailscale 进程规则与 SRC-IP 死规则已删，
+    // Tailscale 基础设施域名与 WireGuard 数据面端口（41641）指向远控工具
+    expect(
+      rules,
+      isNot(contains('PROCESS-NAME-WILDCARD,*tailscale*,远控工具')),
+    );
+    expect(
+      rules,
+      isNot(contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具')),
+    );
+    expect(rules, isNot(contains('SRC-IP-CIDR,100.64.0.0/10,默认代理')));
+    expect(rules, contains('DOMAIN-SUFFIX,tailscale.com,远控工具'));
+    expect(rules, contains('DOMAIN-SUFFIX,tailscale.io,远控工具'));
+    expect(rules, contains('DOMAIN-SUFFIX,ts.net,远控工具'));
+    expect(
+      rules,
+      contains(
+        'AND,((PROCESS-NAME-WILDCARD,*tailscale*),(DST-PORT,41641)),远控工具',
+      ),
+    );
     // 动作 7/9/10/11：STUN 补面、SSDP/mDNS、硬编码 DNS 守卫
     expect(rules, contains('AND,((NETWORK,TCP),(DST-PORT,19302-19309)),REJECT'));
     expect(rules, contains(r'DOMAIN-REGEX,^(stun|turn|stuns|turns)\.,REJECT'));
