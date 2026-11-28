@@ -106,6 +106,16 @@ const _darkSubtleShadows = [
   BoxShadow(color: Color(0x30000000), offset: Offset(0, 1.5), blurRadius: 3.5),
 ];
 
+/// The one corner radius for page-level cards (T328, user ruling
+/// 2026-11-27: the network-speed card is the reference — every card
+/// on the page takes this radius so they read as one family). Cards
+/// that used to override it (the merged profile card at 8.mAp) and
+/// filled inner panels that used to sit at a squarer 10 now take
+/// this token as well; inner panels float inside their card rather
+/// than hugging its edge, so the concentric outer-minus-inset value
+/// does not apply to them.
+const double commonCardRadius = 24.0;
+
 // Dark cards are glass across the whole zodiac family (surface token
 // at 7% white): any black shadow stack paints a dark blob directly
 // under the fill, which reads straight through the glass, dims the
@@ -239,7 +249,7 @@ class CommonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actualRadius = radius ?? 24.0;
+    final actualRadius = radius ?? commonCardRadius;
     var childWidget = child;
 
     if (info != null) {
