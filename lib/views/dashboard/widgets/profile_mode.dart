@@ -78,10 +78,12 @@ class ProfileModeCard extends ConsumerWidget {
       return SizedBox(
         height: floor,
         child: CommonCard(
-          // T312: the dashboard grid's tiles all use an 8.mAp corner;
-          // the merged card takes the same radius so it reads as one
-          // of the grid's modules, not a different species.
-          radius: 8.mAp,
+          // T328 (supersedes the T312 note): the grid's tiles in fact
+          // all render through CommonCard at commonCardRadius — the
+          // 8.mAp override made this merged card the page's one
+          // squarer species. It takes the shared radius like every
+          // other card.
+          radius: commonCardRadius,
           padding: EdgeInsets.zero,
           child: Stack(
             children: [
@@ -100,7 +102,7 @@ class ProfileModeCard extends ConsumerWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: floor),
       child: CommonCard(
-        radius: 8.mAp,
+        radius: commonCardRadius,
         padding: EdgeInsets.zero,
         child: Stack(
           children: [
@@ -973,7 +975,7 @@ class _GroupNode extends ConsumerWidget {
 /// at the right edge, so the label renders in full at any realistic
 /// width; the light's own ellipsis remains only as a guard for
 /// widths where label + delay physically exceed the row. The
-/// pill's bottom padding is deeper than its top (8 vs 5) so Latin
+/// pill's bottom padding is deeper than its top (12 vs 8) so Latin
 /// descenders in the node name keep clear of the pill's edge with
 /// fonts whose ink runs past the descent metric.
 class _CurrentNodeRow extends ConsumerWidget {
@@ -1021,7 +1023,12 @@ class _NodePillRow extends ConsumerWidget {
       delay = ref.watch(getDelayProvider(proxyName: groupName!));
     }
     final delayValue = delay;
-    final radius = BorderRadius.circular(10);
+    // T328: the pill is a filled panel floating inside the card, so
+    // it takes the shared card radius (the user's reference is the
+    // network-speed card's corner), not the squarer 10 it had; its
+    // vertical padding grows 4/8 -> 8/12 so the panel no longer
+    // reads a size shorter than the page's other cards.
+    final radius = BorderRadius.circular(commonCardRadius);
     return Material(
       color: colorScheme.primary.withValues(alpha: 0.08),
       borderRadius: radius,
@@ -1029,7 +1036,7 @@ class _NodePillRow extends ConsumerWidget {
       child: InkWell(
         onTap: direct ? null : () => showGroupProxySheet(context, groupName!),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -1124,7 +1131,9 @@ class _NodeLabel extends StatelessWidget {
       ],
     );
     if (isPlain) return _TapArea(onTap: onTap, child: row);
-    final radius = BorderRadius.circular(10);
+    // T328: same filled-panel species as _NodePillRow — shared card
+    // radius, and the same 8px vertical padding floor.
+    final radius = BorderRadius.circular(commonCardRadius);
     return Material(
       color: colorScheme.primary.withValues(alpha: 0.08),
       borderRadius: radius,
@@ -1132,7 +1141,7 @@ class _NodeLabel extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: row,
         ),
       ),

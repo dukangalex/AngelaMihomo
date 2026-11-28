@@ -373,7 +373,11 @@ void main() {
       expect(tester.takeException(), isNull);
       // The fallback metrics in this harness give 2*84+12 = 180,
       // the same height DashboardTileCard pins a two-row tile to.
-      expect(tester.getSize(find.byType(ProfileModeCard)).height, 180);
+      // T328: the two-row floor itself is unchanged, but the node
+      // pill's vertical padding grew 4/8 -> 8/12, and this harness's
+      // content sat 7px under the floor, so the card now lands 1px
+      // past it instead of being clamped onto it.
+      expect(tester.getSize(find.byType(ProfileModeCard)).height, 181);
     },
   );
 
@@ -389,7 +393,10 @@ void main() {
         profile: _shortProfileWithUsage(),
       );
       expect(tester.takeException(), isNull);
-      expect(tester.getSize(find.byType(ProfileModeCard)).height, 180);
+      // T328: same pill growth as above — this content sat 1px under
+      // the 180 floor, so it now lands at 180 - 1 + 8 = 187. The
+      // floor (minHeight) is untouched; only the pill grew.
+      expect(tester.getSize(find.byType(ProfileModeCard)).height, 187);
     },
   );
 
