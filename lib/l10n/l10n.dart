@@ -124,6 +124,21 @@ class AppLocalizations {
     return Intl.message('Subscription remaining', name: 'subscriptionRemaining', desc: '', args: []);
   }
 
+  /// `Appearance`
+  String get toolsSectionAppearance {
+    return Intl.message('Appearance', name: 'toolsSectionAppearance', desc: '', args: []);
+  }
+
+  /// `Data & Privacy`
+  String get toolsSectionDataPrivacy {
+    return Intl.message('Data & Privacy', name: 'toolsSectionDataPrivacy', desc: '', args: []);
+  }
+
+  /// `App`
+  String get toolsSectionApp {
+    return Intl.message('App', name: 'toolsSectionApp', desc: '', args: []);
+  }
+
   /// `Profile`
   String get profile {
     return Intl.message('Profile', name: 'profile', desc: '', args: []);

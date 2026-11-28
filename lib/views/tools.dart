@@ -246,6 +246,74 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     );
   }
 
+  /// T334 batch 4 （天枢）: one domain section of the tools page —
+  /// a star-note group header (labelSm token + star dot) over the
+  /// same per-entry cards the page already used, at the design's
+  /// sheet-row radius (24). Entries are the stock item widgets with
+  /// their stock delegates; only the grouping and header change.
+  Widget _buildDomainSection(
+    BuildContext context, {
+    required String title,
+    required List<Widget> items,
+    bool isFirst = false,
+  }) {
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final tokens =
+        context.starRail ??
+        StarRailTokens.forBrightness(Theme.of(context).brightness);
+    return ListItemStyleScope(
+      titleStyle: context.textTheme.titleMedium,
+      subtitleStyle: context.textTheme.labelMedium?.toLight,
+      circularTrailing: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 8,
+              top: isFirst ? 4 : 20,
+              bottom: 8,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: tokens.secondary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: StarRailType.labelSm.copyWith(
+                    color: tokens.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: CommonCard(
+                radius: StarRailRadius.sheetRow,
+                subtle: true,
+                type: CommonCardType.filled,
+                child: item,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   String _query = '';
   List<_SearchItem>? _cachedSearchItems;
   String _cachedMoreItemsKey = '';
@@ -1355,6 +1423,14 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         ? const <Widget>[]
         : _buildSearchResults(searchItems);
 
+    // T334 batch 4 （天枢）: the page's entries are grouped by
+    // domain under star-note headers. Every row below is the same
+    // widget, with the same delegate and destination, that the old
+    // more/settings/other sections carried — the entries come from
+    // the one shared moreToolsSelectorStateProvider list, so the
+    // mobile more page and the desktop tools page can never drift
+    // into two inventories. On mobile the logs entry stays in the
+    // app bar (logsItem), so its section simply has no rows there.
     final items = [
       Consumer(
         builder: (_, ref, _) {
@@ -1362,38 +1438,68 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           final navigationItems = state.navigationItems
               .where((item) => logsItem == null || item.label != logsItem.label)
               .toList();
-          if (navigationItems.isEmpty) {
-            return Container();
-          }
-          return _buildModernSection(
-            context,
-            title: appLocalizations.more,
-            isFirst: true,
-            items: navigationItems
-                .map((item) => _buildNavigationMenuItem(item))
-                .toList(),
+          NavigationItem? navigationItem(PageLabel label) =>
+              navigationItems.where((item) => item.label == label).firstOrNull;
+          List<Widget> navigationRows(List<PageLabel> labels) => [
+            for (final label in labels)
+              if (navigationItem(label) != null)
+                _buildNavigationMenuItem(navigationItem(label)!),
+          ];
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDomainSection(
+                context,
+                title: appLocalizations.toolsSectionAppearance,
+                isFirst: true,
+                items: [_ThemeItem(), _LocaleItem()],
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.network,
+                items: [
+                  ...navigationRows([
+                    PageLabel.connections,
+                    PageLabel.toolbox,
+                  ]),
+                  _ConfigItem(),
+                  _OtherSettingItem(),
+                  if (system.isAndroid) _AccessItem(),
+                  if (system.isWindows) _LoopbackItem(),
+                ],
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.toolsSectionDataPrivacy,
+                items: navigationRows([PageLabel.resources, PageLabel.script]),
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.backupAndRecovery,
+                items: [_BackupItem()],
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.logs,
+                items: navigationRows([PageLabel.logs]),
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.toolsSectionApp,
+                items: [_SettingItem(), if (system.isDesktop) _HotkeyItem()],
+              ),
+              _buildDomainSection(
+                context,
+                title: appLocalizations.about,
+                items: [
+                  _InfoItem(),
+                  _DisclaimerItem(),
+                  if (vm2.b) _DeveloperItem(),
+                ],
+              ),
+            ],
           );
         },
-      ),
-      _buildModernSection(
-        context,
-        title: appLocalizations.settings,
-        items: [
-          _LocaleItem(),
-          _ThemeItem(),
-          _BackupItem(),
-          if (system.isDesktop) _HotkeyItem(),
-          if (system.isWindows) _LoopbackItem(),
-          if (system.isAndroid) _AccessItem(),
-          _ConfigItem(),
-          _OtherSettingItem(),
-          _SettingItem(),
-        ],
-      ),
-      _buildModernSection(
-        context,
-        title: appLocalizations.other,
-        items: [_DisclaimerItem(), if (vm2.b) _DeveloperItem(), _InfoItem()],
       ),
     ];
 
@@ -1506,15 +1612,49 @@ abstract class _ToolsItem extends StatelessWidget implements HasLeadingWidget {
   bool get hasLeading => true;
 }
 
-class _ThemeItem extends _ToolsItem {
+/// T334 batch 4: the theme entry carries the current guardian's
+/// thumbnail and constellation name — the same themeSetting state
+/// the theme page itself reads, and the T302 guardian asset for
+/// the ambient brightness. Falls back to the stock icon and
+/// description when a theme has no guardian mapping.
+class _ThemeItem extends ConsumerWidget implements HasLeadingWidget {
   const _ThemeItem();
 
   @override
-  Widget build(BuildContext context) {
+  bool get hasLeading => true;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeId = ref.watch(
+      themeSettingProvider.select((state) => state.zodiacTheme),
+    );
+    final def = resolveZodiacTheme(themeId);
+    final guardian = zodiacGuardianForTheme(def.id);
+    final locale = Localizations.localeOf(context);
+    final Widget leading;
+    final String subtitle;
+    if (guardian == null) {
+      leading = const Icon(Icons.style_outlined);
+      subtitle = appLocalizations.themeDesc;
+    } else {
+      leading = ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          guardian.assetPathFor(Theme.of(context).brightness),
+          width: 30,
+          height: 30,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const Icon(Icons.style_outlined),
+        ),
+      );
+      subtitle =
+          '${zodiacGuardianSignName(def.id, locale)} · '
+          '${appLocalizations.themeDesc}';
+    }
     return ListItem.next(
-      leading: const Icon(Icons.style_outlined),
+      leading: leading,
       title: Text(appLocalizations.theme),
-      subtitle: Text(appLocalizations.themeDesc),
+      subtitle: Text(subtitle),
       delegate: NextDelegate(
         title: appLocalizations.theme,
         builder: (_) => const ThemeView(),
