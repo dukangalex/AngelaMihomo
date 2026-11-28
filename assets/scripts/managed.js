@@ -1,4 +1,4 @@
-// @version 2026112201
+// @version 2026112801
 /**
  * AngelaMihomo 内置托管脚本（managed.js）——改写范围自述（T234）
  *
@@ -171,6 +171,12 @@ const prefixRules = [
   'IP-CIDR,101.226.0.0/16,DIRECT,no-resolve',
   'IP-CIDR,140.207.0.0/16,DIRECT,no-resolve',
 
+  // 社区刚需：B 站国际版与 Disney+ 走默认代理，便于按地区解锁。
+  // 必须排在 geolocation-cn 之前：两集与国内集存在重叠域名，
+  // 规则先命中先算，排后面会被直连先行截获、解锁意图落空（T330）
+  'RULE-SET,biliintl,默认代理',
+  'RULE-SET,disney,默认代理',
+
   // 国内直连
   'RULE-SET,geolocation-cn,直连',
   'RULE-SET,games_cn,直连', // 已包含 steam 下载域名
@@ -179,9 +185,6 @@ const prefixRules = [
   'RULE-SET,microsoft_cn,直连',
   'RULE-SET,bilibili,直连',
   'DOMAIN,fsend.cn,直连',
-  // 社区刚需：B 站国际版与 Disney+ 走默认代理，便于按地区解锁
-  'RULE-SET,biliintl,默认代理',
-  'RULE-SET,disney,默认代理',
 
   // 防硬编码境外 DNS 绕过分流与泄漏（T325）：目标为非国内 IP 的
   // 53/853 端口流量直接丢弃；国内 DNS 服务器段在 cn_ip 内不受影响
@@ -2378,12 +2381,13 @@ const commonDnsRegex = new RegExp(
 
 // 国内外 DNS 定义
 // 直连解析（T325 补齐）：doh.pub 与 223.5.5.5 双活、1.12.12.12 备份，
-// 附 Cloudflare IPv6 端点保证双栈齐全
+// 附阿里 IPv6 端点保证双栈齐全；解析商全部在国内（T330：原 Cloudflare
+// IPv6 端点会把国内域名查询发给境外解析商，已换出）
 const chinaDNS = [
   'https://doh.pub/dns-query#DIRECT',
   'https://223.5.5.5/dns-query#DIRECT',
   'https://1.12.12.12/dns-query#DIRECT',
-  'https://[2606:4700:4700::1111]/dns-query#DIRECT',
+  'https://[2400:3200::1]/dns-query#DIRECT',
 ];
 const foreignDNS = ['https://cloudflare-dns.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理'];
 // 引导解析（T325 补齐至 7 条）：阿里/DNSPod 两家 DoT、IPv4/IPv6 双栈，
@@ -2395,7 +2399,7 @@ const defaultDNS = [
   'tls://120.53.53.53#DIRECT',
   'tls://[2400:3200::1]#DIRECT',
   'tls://[2400:3200:baba::1]#DIRECT',
-  'tls://[2606:4700:4700::1111]#DIRECT',
+  'tls://[2402:4e00::]#DIRECT',
 ];
 const proxyServerDNS = ['tls://223.5.5.5#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
 
