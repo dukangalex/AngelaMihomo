@@ -404,14 +404,30 @@ enum FunctionTag {
   delaySort,
 }
 
+/// T337 (fusion): the catalog carries every readout and function
+/// as its own tile — the user arranges the dashboard, so no
+/// option may be missing. The batch-2 hero's pinned readouts came
+/// back into the grid as tiles of their own (exit node, outbound
+/// mode, today's traffic, subscription remaining, subscription),
+/// beside the restored network-speed pair and traffic-usage tile.
+/// Only the two fused-away shapes stay retired: the merged
+/// profile/mode card (its functions live on the exit-node,
+/// outbound-mode and subscription tiles separately) and the
+/// start button (the hero's power core is its home). Layouts
+/// saved with their names decode by dropping them
+/// (models/config.dart).
 enum DashboardWidget {
   networkSpeed(GridItem(crossAxisCellCount: 8, child: NetworkSpeed())),
   networkSpeedSmall(
     GridItem(crossAxisCellCount: 4, child: NetworkSpeedSmall()),
   ),
-  profileMode(
-    GridItem(crossAxisCellCount: 8, isDeletable: false, child: ProfileModeCard()),
+  exitNode(GridItem(crossAxisCellCount: 8, child: ExitNode())),
+  outboundMode(GridItem(crossAxisCellCount: 4, child: OutboundModeCard())),
+  todayTraffic(GridItem(crossAxisCellCount: 4, child: TodayTraffic())),
+  subscriptionRemaining(
+    GridItem(crossAxisCellCount: 4, child: SubscriptionRemaining()),
   ),
+  subscription(GridItem(crossAxisCellCount: 8, child: SubscriptionCard())),
   trafficUsage(GridItem(crossAxisCellCount: 4, child: TrafficUsage())),
   networkDetection(GridItem(crossAxisCellCount: 4, child: NetworkDetection())),
   tunButton(
@@ -442,9 +458,6 @@ enum DashboardWidget {
   toolboxShortcut(
     GridItem(crossAxisCellCount: 4, child: ToolboxShortcut()),
     platforms: [SupportPlatform.Android],
-  ),
-  startButton(
-    GridItem(crossAxisCellCount: 4, isDeletable: false, child: StartButton()),
   );
 
   final GridItem widget;
@@ -466,7 +479,8 @@ enum DashboardWidget {
 
   DashboardTileSize get nativeSize => switch (this) {
     networkSpeed => DashboardTileSize.large,
-    profileMode => DashboardTileSize.large,
+    exitNode => DashboardTileSize.wide,
+    subscription => DashboardTileSize.wide,
     trafficUsage => DashboardTileSize.tall,
     _ => DashboardTileSize.small,
   };
@@ -478,14 +492,22 @@ enum DashboardWidget {
       DashboardTileSize.tall,
       DashboardTileSize.large,
     ],
+    exitNode => const [
+      DashboardTileSize.small,
+      DashboardTileSize.wide,
+      DashboardTileSize.tall,
+      DashboardTileSize.large,
+    ],
+    subscription => const [DashboardTileSize.wide, DashboardTileSize.large],
     trafficUsage => const [DashboardTileSize.tall, DashboardTileSize.wide],
-    profileMode => const [DashboardTileSize.large],
+    outboundMode ||
+    todayTraffic ||
+    subscriptionRemaining ||
     networkDetection ||
     intranetIp ||
     memoryInfo ||
     connectionsCount ||
-    toolboxShortcut ||
-    startButton => const [
+    toolboxShortcut => const [
       DashboardTileSize.small,
       DashboardTileSize.wide,
       DashboardTileSize.tall,
@@ -494,14 +516,6 @@ enum DashboardWidget {
   };
 
   bool get resizable => sizes.length > 1;
-
-  /// T153: a pinned widget always heads the dashboard at its native
-  /// size. It is present in every layout (decode normalization in
-  /// models/config.dart restores it), cannot be removed, resized or
-  /// moved in edit mode, and never appears in the add-widget surface.
-  /// Only the merged profile/mode card is pinned: resized to a narrow
-  /// size its content breaks down, so its size is fixed by design.
-  bool get pinned => this == DashboardWidget.profileMode;
 
   DashboardWidget variantFor(DashboardTileSize size) => variants.firstWhere(
     (item) => item.nativeSize == size,

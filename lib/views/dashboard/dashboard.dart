@@ -103,7 +103,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     _saveWidgets(widgets);
   }
 
-  List<Widget> _buildActions(ThemeMode themeMode, bool watermark) {
+  List<Widget> _buildActions(bool watermark) {
     return [
       _buildIsEdit((isEdit) {
         if (!isEdit) return const SizedBox.shrink();
@@ -154,38 +154,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 icon: Icons.edit,
                 label: appLocalizations.edit,
                 onPressed: _handleUpdateIsEdit,
-              ),
-              PopupMenuItemData(
-                icon: switch (themeMode) {
-                  ThemeMode.system => Icons.auto_mode,
-                  ThemeMode.light => Icons.light_mode,
-                  ThemeMode.dark => Icons.dark_mode,
-                },
-                label: switch (themeMode) {
-                  ThemeMode.system => appLocalizations.auto,
-                  ThemeMode.light => appLocalizations.light,
-                  ThemeMode.dark => appLocalizations.dark,
-                },
-                onPressed: () {
-                  final nextThemeMode = switch (themeMode) {
-                    ThemeMode.system => ThemeMode.light,
-                    ThemeMode.light => ThemeMode.dark,
-                    ThemeMode.dark => ThemeMode.system,
-                  };
-                  ref
-                      .read(themeSettingProvider.notifier)
-                      .updateState(
-                        (state) => state.copyWith(themeMode: nextThemeMode),
-                      );
-                  final label = switch (nextThemeMode) {
-                    ThemeMode.system => appLocalizations.auto,
-                    ThemeMode.light => appLocalizations.light,
-                    ThemeMode.dark => appLocalizations.dark,
-                  };
-                  globalState.showNotifier(
-                    '${appLocalizations.themeMode}: $label',
-                  );
-                },
               ),
               PopupMenuItemData(
                 icon: Icons.title,
@@ -293,9 +261,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final customTitle = ref.watch(
       appSettingProvider.select((state) => state.dashboardTitle),
     );
-    final themeMode = ref.watch(
-      themeSettingProvider.select((state) => state.themeMode),
-    );
     final watermark = ref.watch(
       appSettingProvider.select((state) => state.dashboardWatermark),
     );
@@ -323,7 +288,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         title: title,
         inset: math.max(0, (page.maxWidth - dashboardMaxGridWidth) / 2),
         isMobileView: isMobileView,
-        themeMode: themeMode,
         watermark: watermark,
         spacing: spacing,
         children: children,
@@ -335,7 +299,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     required String title,
     required double inset,
     required bool isMobileView,
-    required ThemeMode themeMode,
     required bool watermark,
     required double spacing,
     required List<DashboardTile> children,
@@ -363,7 +326,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             : EmojiText(title),
       ),
       actions: [
-        ..._buildActions(themeMode, watermark),
+        ..._buildActions(watermark),
         if (inset > 4) SizedBox(width: inset - 4),
       ],
       body: ScrollEdgeRise(
@@ -420,9 +383,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       ),
                       // T334 batch 2: the star-rail hero heads the
                       // page above the editable grid. It is a fixed
-                      // header, not a grid tile — the grid below
-                      // keeps every existing widget and the edit
-                      // mode exactly as before.
+                      // header, not a grid tile. T337: the grid
+                      // below keeps only the tiles the hero does
+                      // not present; the widgets it absorbed were
+                      // retired from the catalog entirely.
                       const OrbitHomeHero(),
                       SizedBox(height: spacing),
                       _buildIsEdit(
@@ -440,7 +404,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           onResize: _resizeWidget,
                           canDelete: (tile) => tile.widget.widget.isDeletable,
                           onDelete: _deleteWidget,
-                          canMove: (tile) => !tile.widget.pinned,
                           onMove: _moveWidget,
                           overlayWrapper: (child) => DashboardWidgetMetrics(
                             unitHeight: unitHeight,
@@ -469,16 +432,15 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 }
 
-/// The add-widget surface's data source: widget families not already
-/// on the dashboard. T153: pinned widgets (the merged profile/mode
-/// card) are always present and can never be added, so they are
-/// excluded here even if a layout somehow lacks one.
+/// The add-widget surface's data source: widget families not
+/// already on the dashboard. (T337: the retired widgets are not
+/// in the enum at all, so nothing needs excluding here beyond
+/// families already placed.)
 List<DashboardWidget> addableDashboardWidgets(List<DashboardWidget> current) {
   final families = {for (final item in current) item.family};
   return [
     for (final item in DashboardWidget.values)
       if (item == item.family &&
-          !item.pinned &&
           !families.contains(item) &&
           item.platforms.contains(SupportPlatform.currentPlatform))
         item,

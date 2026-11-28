@@ -29,48 +29,30 @@ DashboardState _readState(List<DashboardWidget> widgets) {
 
 void main() {
   group('dashboardState', () {
-    test('keeps traffic usage and network speed as separate tiles', () {
+    // T337: the state presents the saved layout exactly as it is.
+    // The start-button tile it used to force-append was retired
+    // into the hero core, so nothing is synthesized any more.
+    test('presents the saved layout exactly, in order', () {
       final state = _readState([
-        DashboardWidget.networkSpeed,
-        DashboardWidget.trafficUsage,
+        DashboardWidget.memoryInfo,
+        DashboardWidget.networkDetection,
+        DashboardWidget.connectionsCount,
       ]);
-      expect(
-        state.dashboardWidgets,
-        containsAll([
-          DashboardWidget.networkSpeed,
-          DashboardWidget.trafficUsage,
-        ]),
-      );
-      expect(
-        state.dashboardWidgets
-            .where((w) => w == DashboardWidget.networkSpeed)
-            .length,
-        1,
-      );
-      expect(
-        state.dashboardWidgets
-            .where((w) => w == DashboardWidget.trafficUsage)
-            .length,
-        1,
-      );
+      expect(state.dashboardWidgets, [
+        DashboardWidget.memoryInfo,
+        DashboardWidget.networkDetection,
+        DashboardWidget.connectionsCount,
+      ]);
     });
 
-    test('appends the start button when missing', () {
-      final state = _readState([DashboardWidget.trafficUsage]);
-      expect(state.dashboardWidgets.last, DashboardWidget.startButton);
+    test('appends nothing when the layout is short', () {
+      final state = _readState([DashboardWidget.memoryInfo]);
+      expect(state.dashboardWidgets, [DashboardWidget.memoryInfo]);
     });
 
-    test('does not duplicate the start button', () {
-      final state = _readState([
-        DashboardWidget.startButton,
-        DashboardWidget.trafficUsage,
-      ]);
-      expect(
-        state.dashboardWidgets
-            .where((w) => w == DashboardWidget.startButton)
-            .length,
-        1,
-      );
+    test('an empty layout stays empty', () {
+      final state = _readState(const []);
+      expect(state.dashboardWidgets, isEmpty);
     });
   });
 }

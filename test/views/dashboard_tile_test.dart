@@ -60,19 +60,62 @@ void main() {
       size: DashboardTileSize.tall,
     ));
     expect((tallMemory as MemoryInfo).size, DashboardTileSize.tall);
+  });
 
-    final mergedNative = buildDashboardTile((
-      widget: DashboardWidget.profileMode,
-      size: DashboardTileSize.large,
+  test('T337：新读数卡按尺寸经 tile 构建，退役形态不在目录中', () {
+    final exit = buildDashboardTile((
+      widget: DashboardWidget.exitNode,
+      size: DashboardTileSize.wide,
     ));
-    expect(mergedNative, isA<ProfileModeCard>());
-    expect((mergedNative as ProfileModeCard).size, isNull);
+    expect(exit, isA<ExitNode>());
 
-    final mergedTall = buildDashboardTile((
-      widget: DashboardWidget.profileMode,
-      size: DashboardTileSize.tall,
+    final mode = buildDashboardTile((
+      widget: DashboardWidget.outboundMode,
+      size: DashboardTileSize.small,
     ));
-    expect(mergedTall, isA<ProfileModeCard>());
-    expect((mergedTall as ProfileModeCard).size, DashboardTileSize.tall);
+    expect(mode, isA<OutboundModeCard>());
+
+    final today = buildDashboardTile((
+      widget: DashboardWidget.todayTraffic,
+      size: DashboardTileSize.small,
+    ));
+    expect(today, isA<TodayTraffic>());
+
+    final remaining = buildDashboardTile((
+      widget: DashboardWidget.subscriptionRemaining,
+      size: DashboardTileSize.small,
+    ));
+    expect(remaining, isA<SubscriptionRemaining>());
+
+    final subscription = buildDashboardTile((
+      widget: DashboardWidget.subscription,
+      size: DashboardTileSize.wide,
+    ));
+    expect(subscription, isA<SubscriptionCard>());
+
+    final names = {for (final item in DashboardWidget.values) item.name};
+    // Retired shapes are gone from the catalog entirely.
+    expect(names, isNot(contains('profileMode')));
+    expect(names, isNot(contains('startButton')));
+    // Every readout option exists as its own tile.
+    expect(
+      names,
+      containsAll([
+        'exitNode',
+        'outboundMode',
+        'networkSpeed',
+        'networkSpeedSmall',
+        'todayTraffic',
+        'subscriptionRemaining',
+        'subscription',
+        'trafficUsage',
+        'networkDetection',
+        'intranetIp',
+        'memoryInfo',
+        'connectionsCount',
+        'systemProxyButton',
+        'tunButton',
+      ]),
+    );
   });
 }

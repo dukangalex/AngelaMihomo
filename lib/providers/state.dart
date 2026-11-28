@@ -348,10 +348,13 @@ DashboardState dashboardState(Ref ref) {
     ),
   );
   final viewWidth = ref.watch(viewWidthProvider);
-  final widgets = dashboardWidgets.contains(DashboardWidget.startButton)
-      ? dashboardWidgets
-      : [...dashboardWidgets, DashboardWidget.startButton];
-  return DashboardState(dashboardWidgets: widgets, viewWidth: viewWidth);
+  // T337: the layout is presented exactly as saved — the start
+  // button tile the state used to force-append was retired into
+  // the hero core, so nothing is synthesized here any more.
+  return DashboardState(
+    dashboardWidgets: dashboardWidgets,
+    viewWidth: viewWidth,
+  );
 }
 
 @riverpod
@@ -902,10 +905,7 @@ String getRealTestUrl(Ref ref, [String? testUrl]) {
 int? getDelay(Ref ref, {required String proxyName, String? testUrl}) {
   final proxyCardState = ref.watch(getProxyCardStateProvider(proxyName));
   final currentTestUrl = delayTestUrlFor(
-    proxyType: proxyTypeOf(
-      ref.watch(groupsProvider),
-      proxyCardState.proxyName,
-    ),
+    proxyType: proxyTypeOf(ref.watch(groupsProvider), proxyCardState.proxyName),
     resolvedTestUrl: proxyCardState.testUrl.getSafeValue(testUrl ?? ''),
     fallbackTestUrl: ref.watch(
       appSettingProvider.select((state) => state.testUrl),

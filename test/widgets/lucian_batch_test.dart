@@ -4,7 +4,7 @@
 // state, #070 stacking toasts, #336 detent sheet.
 import 'package:angelamihomo/manager/message_manager.dart';
 import 'package:angelamihomo/models/profile_usage.dart';
-import 'package:angelamihomo/views/dashboard/widgets/profile_mode.dart';
+import 'package:angelamihomo/views/dashboard/widgets/profile_info.dart';
 import 'package:angelamihomo/widgets/detent_sheet.dart';
 import 'package:angelamihomo/widgets/first_run_empty_state.dart';
 import 'package:angelamihomo/widgets/icon_sweep_progress.dart';

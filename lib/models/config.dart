@@ -47,77 +47,81 @@ const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
 const defaultThemeProps = ThemeProps();
 
+/// T337 (fusion): the default layouts present each readout once,
+/// arranged for reading — the exit node full-width (name on its
+/// own line, chain info under it), the speeds full-width, today
+/// traffic and subscription remaining side by side at equal
+/// width, the outbound mode (mode only; the delay lives in the
+/// hero's pill), then the full-width subscription card with the
+/// traffic statistics inside it and the speed test as an in-card
+/// button. The standalone traffic-usage tile stays in the
+/// catalog as an option but out of the defaults, so its numbers
+/// are not shown twice. Everything here is a grid tile: the user
+/// rearranges, resizes and removes freely in edit mode.
 const List<DashboardWidget> defaultDashboardWidgets = [
-  DashboardWidget.profileMode,
+  DashboardWidget.exitNode,
   DashboardWidget.networkSpeed,
+  DashboardWidget.todayTraffic,
+  DashboardWidget.subscriptionRemaining,
+  DashboardWidget.outboundMode,
+  DashboardWidget.subscription,
   DashboardWidget.systemProxyButton,
   DashboardWidget.tunButton,
   DashboardWidget.networkDetection,
   DashboardWidget.intranetIp,
-  DashboardWidget.trafficUsage,
   DashboardWidget.memoryInfo,
   DashboardWidget.connectionsCount,
-  DashboardWidget.startButton,
 ];
 
 const List<DashboardWidget> defaultAndroidDashboardWidgets = [
-  DashboardWidget.profileMode,
+  DashboardWidget.exitNode,
   DashboardWidget.networkSpeed,
-  DashboardWidget.trafficUsage,
-  DashboardWidget.networkDetection,
-  DashboardWidget.connectionsCount,
-  DashboardWidget.memoryInfo,
-  DashboardWidget.startButton,
+  DashboardWidget.todayTraffic,
+  DashboardWidget.subscriptionRemaining,
+  DashboardWidget.outboundMode,
+  DashboardWidget.subscription,
 ];
 
 final _dashboardWidgetNames = {
   for (final entry in _$DashboardWidgetEnumMap.entries) entry.value: entry.key,
 };
 
-/// T147: the profile card and the running-mode card merged into one
-/// widget. Layouts saved before the merge name the old widgets; they
-/// decode onto the merged widget, which appears exactly once.
-/// T153: the merged widget is pinned — normalization below restores
-/// exactly one of it at the head of every decoded layout (a layout
-/// that lost it, duplicated it or moved it is repaired here), while
-/// every other widget keeps its relative order.
-const _mergedDashboardWidgetLegacyNames = {
+/// Names of dashboard widgets that no longer exist. Layouts
+/// saved before T147 named the profile and mode cards separately
+/// (profileInfo / outboundMode / outboundModeV2); T147 merged
+/// them into profileMode; T337 retired profileMode itself — its
+/// functions live on as separate tiles (exitNode, outboundMode,
+/// subscription) — and startButton, whose home is the hero's
+/// power core. Those names decode by being dropped: a saved
+/// layout simply loses the retired shapes and keeps every
+/// surviving widget in its saved relative order.
+const _retiredDashboardWidgetNames = {
   'profileInfo',
   'outboundModeV2',
   'outboundMode',
+  'profileMode',
+  'startButton',
 };
 
 List<DashboardWidget> _decodeDashboardWidgets(List<dynamic> values) {
   final widgets = <DashboardWidget>[];
   for (final value in values) {
-    final widget = _mergedDashboardWidgetLegacyNames.contains(value)
-        ? DashboardWidget.profileMode
-        : _dashboardWidgetNames[value];
+    if (_retiredDashboardWidgetNames.contains(value)) continue;
+    final widget = _dashboardWidgetNames[value];
     if (widget == null) continue;
-    if (widget == DashboardWidget.profileMode &&
-        widgets.contains(DashboardWidget.profileMode)) {
-      continue;
-    }
     widgets.add(widget);
   }
-  widgets.remove(DashboardWidget.profileMode);
-  widgets.insert(0, DashboardWidget.profileMode);
   return widgets;
 }
 
-/// Size-table normalization for the dashboard layouts.
-/// T147: legacy keys of the pre-merge widgets are dropped; their
-/// sizes have no merged counterpart worth keeping.
-/// T153: the merged widget's size is fixed at its native (large)
-/// size, so any saved entry for it — a legacy tall carried over by
-/// the T147 mapping, or a tall saved while resizing was still
-/// possible — is dropped; with no entry the size resolves to the
-/// native size. Every other widget's entry is kept as saved.
+/// Size-table normalization for the dashboard layouts: entries
+/// naming retired widgets (see _retiredDashboardWidgetNames) are
+/// dropped — their tiles are gone, so a saved size for one could
+/// never resolve. Every surviving widget's entry is kept as saved.
 Map<String, String> _normalizeDashboardSizes(Map<String, String> sizes) {
   return {
     for (final entry in sizes.entries)
-      if (!_mergedDashboardWidgetLegacyNames.contains(entry.key) &&
-          entry.key != DashboardWidget.profileMode.name)
+      if (!_retiredDashboardWidgetNames.contains(entry.key))
         entry.key: entry.value,
   };
 }
