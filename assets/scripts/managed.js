@@ -1,4 +1,4 @@
-// @version 2026112201
+// @version 2026112801
 /**
  * AngelaMihomo 内置托管脚本（managed.js）——改写范围自述（T234）
  *
