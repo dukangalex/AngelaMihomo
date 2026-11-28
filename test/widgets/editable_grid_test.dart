@@ -121,6 +121,40 @@ void main() {
     expect(log, contains('move A>D'));
   });
 
+  testWidgets('编辑模式拖动中：被拖卡只画一份、让位不滑动（T343）', (tester) async {
+    final log = <String>[];
+    await tester.pumpWidget(_Harness(editing: true, log: log));
+    await tester.pump();
+    final gesture = await tester.startGesture(tester.getCenter(find.text('A')));
+    await tester.pump(const Duration(milliseconds: 600));
+    // Move within A's own cell: the drag is live (past the touch
+    // slop / long-press delay) but no reorder has fired yet.
+    await gesture.moveBy(const Offset(0, 40));
+    await tester.pump();
+    // The dragged tile exists exactly once while dragging: in the
+    // feedback. Its origin cell holds an empty slot marker with no
+    // content (pre-fix the origin repainted the full content at
+    // 30% opacity — a second, text-bearing copy).
+    expect(find.text('A'), findsOneWidget);
+    // Hovering D fires the reorder; the displaced tile C must
+    // already sit in its yielded cell — during a drag there is no
+    // FLIP slide, so its painted position mid-window equals its
+    // settled position (pre-fix it was still gliding across).
+    await gesture.moveTo(tester.getCenter(find.text('D').first));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(log, contains('move A>D'));
+    await tester.pump(const Duration(milliseconds: 60));
+    final cMid = tester.getTopLeft(find.text('C'));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 600));
+    final cSettled = tester.getTopLeft(find.text('C'));
+    // Within jiggle-rotation tolerance (a real FLIP slide would
+    // be off by a large fraction of a cell, not a fraction of a
+    // pixel): the yielded tile is already home, not gliding.
+    expect((cMid - cSettled).distance, lessThan(4.0));
+    expect(find.text('A'), findsOneWidget);
+  });
+
   testWidgets('不可移动项既不能被拖动、也不能被拖到其上（T153）', (tester) async {
     final log = <String>[];
     await tester.pumpWidget(_Harness(editing: true, log: log));

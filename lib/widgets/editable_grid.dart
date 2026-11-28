@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'builder.dart';
+import 'card.dart';
 import 'grid.dart';
 
 typedef EditableGridWrapper = Widget Function(Widget child);
@@ -66,6 +67,20 @@ class _EditableGridState<T extends Object> extends State<EditableGrid<T>>
     value: 0.5,
   );
   DateTime _lastMove = DateTime.fromMillisecondsSinceEpoch(0);
+
+  // While a drag is in flight the grid must not FLIP-animate the
+  // tiles a hover-reorder displaces (T343): the slides run
+  // unclipped over neighbouring tiles, and with translucent card
+  // faces the text of the sliding tile and the tile beneath reads
+  // as one doubled image. During a drag the displaced tiles snap
+  // straight into their yielded cells instead — the yield itself
+  // (the layout reflow on hover) is unchanged.
+  bool _dragActive = false;
+
+  void _setDragActive(bool value) {
+    if (_dragActive == value || !mounted) return;
+    setState(() => _dragActive = value);
+  }
 
   @override
   void initState() {
@@ -132,6 +147,8 @@ class _EditableGridState<T extends Object> extends State<EditableGrid<T>>
       // An item that cannot move is neither a drag source nor a drop
       // target, so nothing can displace it either.
       onMove: widget.onMove == null || !canMove ? null : _move,
+      onDragStarted: () => _setDragActive(true),
+      onDragEnded: () => _setDragActive(false),
       overlayWrapper: widget.overlayWrapper,
       child: child,
     );
@@ -157,6 +174,7 @@ class _EditableGridState<T extends Object> extends State<EditableGrid<T>>
               mainAxisCellCount: widget.mainAxisCellCountOf?.call(item),
               child: _FlipTile(
                 gridKey: _gridKey,
+                animate: !_dragActive,
                 child: _buildTile(context, item, index),
               ),
             ),
@@ -170,7 +188,16 @@ class _FlipTile extends StatefulWidget {
   final GlobalKey gridKey;
   final Widget child;
 
-  const _FlipTile({required this.gridKey, required this.child});
+  /// When false, relocations apply instantly with no slide: the
+  /// tile is painted exactly in its layout cell, never over a
+  /// neighbour. Used while a drag is in flight (T343).
+  final bool animate;
+
+  const _FlipTile({
+    required this.gridKey,
+    required this.child,
+    this.animate = true,
+  });
 
   @override
   State<_FlipTile> createState() => _FlipTileState();
@@ -200,6 +227,19 @@ class _FlipTileState extends State<_FlipTile>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(_FlipTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animate && !widget.animate) {
+      // A drag just started: settle any in-flight slide into the
+      // layout cell at once, so nothing keeps gliding over its
+      // neighbours while the finger is down.
+      _controller.stop();
+      _controller.value = 1;
+      _from = Offset.zero;
+    }
+  }
+
   void _check(Duration _) {
     if (!mounted) return;
     final box = context.findRenderObject();
@@ -208,6 +248,7 @@ class _FlipTileState extends State<_FlipTile>
     final position = box.localToGlobal(Offset.zero, ancestor: grid);
     final last = _last;
     _last = position;
+    if (!widget.animate) return;
     if (last == null || (last - position).distance < 0.5) return;
     _from = _offset + last - position;
     _controller.forward(from: 0);
@@ -233,6 +274,8 @@ class _EditTile<T extends Object> extends StatelessWidget {
   final VoidCallback? onResize;
   final VoidCallback? onDelete;
   final void Function(T from, T to)? onMove;
+  final VoidCallback? onDragStarted;
+  final VoidCallback? onDragEnded;
   final EditableGridWrapper? overlayWrapper;
   final Widget child;
 
@@ -245,6 +288,8 @@ class _EditTile<T extends Object> extends StatelessWidget {
     required this.onResize,
     required this.onDelete,
     required this.onMove,
+    required this.onDragStarted,
+    required this.onDragEnded,
     required this.overlayWrapper,
     required this.child,
   });
@@ -358,12 +403,33 @@ class _EditTile<T extends Object> extends StatelessWidget {
         return Material(type: MaterialType.transparency, child: lifted);
       },
     );
-    final placeholder = Opacity(opacity: 0.3, child: content);
+    // T343: the drag origin keeps an empty slot marker, never a
+    // copy of the tile. The old placeholder repainted the full
+    // content at 30% opacity under the feedback's full copy — two
+    // text-bearing images of the same tile at once, and when a
+    // hover-reorder moved the origin cell the ghost copy slid
+    // across its neighbours. The dragged tile now exists exactly
+    // once: in the feedback.
+    final placeholder = DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+        ),
+        borderRadius: BorderRadius.circular(commonCardRadius),
+      ),
+      child: const SizedBox.expand(),
+    );
+    final onDragStarted = this.onDragStarted;
+    final onDragEnded = this.onDragEnded;
     return system.isDesktop
         ? Draggable<T>(
             data: item,
             feedback: feedback,
             childWhenDragging: placeholder,
+            onDragStarted: onDragStarted,
+            onDraggableCanceled: (_, _) => onDragEnded?.call(),
+            onDragEnd: (_) => onDragEnded?.call(),
             child: target,
           )
         : LongPressDraggable<T>(
@@ -371,6 +437,9 @@ class _EditTile<T extends Object> extends StatelessWidget {
             delay: const Duration(milliseconds: 200),
             feedback: feedback,
             childWhenDragging: placeholder,
+            onDragStarted: onDragStarted,
+            onDraggableCanceled: (_, _) => onDragEnded?.call(),
+            onDragEnd: (_) => onDragEnded?.call(),
             child: target,
           );
   }
