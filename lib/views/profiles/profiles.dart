@@ -334,6 +334,19 @@ class _ProfilesViewState extends ConsumerState<ProfilesView>
             folded,
             chainHealth,
           );
+          // T334 batch 3 (star chart): the three import flows ride at
+          // the top of the page as a big-tile action group instead of
+          // living only behind the app-bar add button. The tiles run
+          // the identical AddProfile flows (see add_profile.dart);
+          // the URL form and merge stay in the add sheet.
+          items.insert(
+            0,
+            GridItem(
+              key: const ValueKey('profile-import-actions'),
+              crossAxisCellCount: columns,
+              child: const _ImportActionGroup(),
+            ),
+          );
           return ScrollEdgeRise(
             builder: (context, rise) {
               final padding = EdgeInsets.only(
@@ -399,6 +412,109 @@ class _ProfileFold extends StatelessWidget {
         crossAxisSpacing: 14,
         crossAxisCount: columns,
         children: [for (final child in children) GridItem(child: child)],
+      ),
+    );
+  }
+}
+
+/// The import action group (T334 batch 3): paste, scan and file as
+/// three big tiles with the existing AddProfile wording and icons.
+/// Every tile runs the same flow the add sheet runs — the shared
+/// top-level handlers in add_profile.dart — so this group is purely
+/// a more prominent doorway, never a second import path.
+class _ImportActionGroup extends StatelessWidget {
+  const _ImportActionGroup();
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _ImportActionTile(
+              icon: Icons.content_paste,
+              title: appLocalizations.clipboard,
+              subtitle: appLocalizations.clipboardDesc,
+              onTap: () => addProfileFromClipboard(context),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _ImportActionTile(
+              icon: Icons.qr_code_sharp,
+              title: appLocalizations.qrcode,
+              subtitle: appLocalizations.qrcodeDesc,
+              onTap: () => addProfileFromScan(context),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _ImportActionTile(
+              icon: Icons.upload_file_sharp,
+              title: appLocalizations.file,
+              subtitle: appLocalizations.fileDesc,
+              onTap: () => globalState.appController.addProfileFormFile(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ImportActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ImportActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return CommonCard(
+      type: CommonCardType.filled,
+      radius: StarRailRadius.card,
+      onPressed: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.primary.withValues(alpha: 0.14),
+              ),
+              child: Icon(icon, size: 20, color: colorScheme.primary),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.labelSmall?.toLight,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -551,13 +667,35 @@ class ProfileItem extends StatelessWidget {
         : (usages.firstOrNull?.value ?? profile.subscriptionInfo)?.expireDesc;
     // T57 carryback (T141): an expire date within seven days (or one
     // already past) is a warning, painted in the error color.
+    // T334 batch 3: the tone now comes from the one frozen threshold
+    // table (expiryWarningLevel, batch 2) — more than 30 days reads
+    // plain, 30 or fewer takes the reminder tone, the final week and
+    // expired keep the T141 error tone.
     final singleInfo = usages.firstOrNull?.value ?? profile.subscriptionInfo;
-    final expireWarning = usages.length > 1
-        ? usage != null &&
-              (usage.isExpired ||
-                  (usage.daysLeft != null && usage.daysLeft! <= 7))
-        : singleInfo != null &&
-              (singleInfo.isExpired || singleInfo.isExpiringSoon);
+    final daysLeft = usages.length > 1
+        ? usage?.daysLeft
+        : singleInfo != null && singleInfo.expire > 0
+        ? math.max(
+            DateTime.fromMillisecondsSinceEpoch(
+              singleInfo.expire * 1000,
+            ).difference(DateTime.now()).inDays,
+            0,
+          )
+        : null;
+    final isExpired = usages.length > 1
+        ? (usage?.isExpired ?? false)
+        : (singleInfo?.isExpired ?? false);
+    final tokens = context.starRail;
+    final expiryColor = isExpired
+        ? tokens?.error ?? context.colorScheme.error
+        : daysLeft == null
+        ? null
+        : switch (expiryWarningLevel(daysLeft)) {
+            ExpiryWarningLevel.normal => null,
+            ExpiryWarningLevel.reminder => tokens?.warning,
+            ExpiryWarningLevel.warning =>
+              tokens?.error ?? context.colorScheme.error,
+          };
 
     return Row(
       children: [
@@ -592,10 +730,8 @@ class ProfileItem extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             subtitleText,
-            style: expireWarning
-                ? context.textTheme.labelMedium?.copyWith(
-                    color: context.colorScheme.error,
-                  )
+            style: expiryColor != null
+                ? context.textTheme.labelMedium?.copyWith(color: expiryColor)
                 : context.textTheme.labelMedium?.toLight,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -716,7 +852,28 @@ class ProfileItem extends StatelessWidget {
     );
   }
 
-  Widget _buildUsageBar(BuildContext context, double value) {
+  /// The usage bar's fill tone (#299, T334 batch 3): the bar itself
+  /// turns to the warning tone once the fill passes 80%, and to the
+  /// error tone when the traffic is nearly gone — the T141
+  /// low-traffic state — or the limit is reached. Below 80% the
+  /// fill stays the plain primary.
+  Color _usageBarColor(BuildContext context, SubscriptionInfo info) {
+    if (info.isLowTraffic) {
+      return context.starRail?.error ?? context.colorScheme.error;
+    }
+    final ratio = _usageRatio(info);
+    return switch (ratio == null
+        ? UsageWarningLevel.normal
+        : usageWarningLevel(ratio)) {
+      UsageWarningLevel.warning =>
+        context.starRail?.warning ?? const Color(0xFFF59E0B),
+      UsageWarningLevel.critical =>
+        context.starRail?.error ?? context.colorScheme.error,
+      UsageWarningLevel.normal => context.colorScheme.primary,
+    };
+  }
+
+  Widget _buildUsageBar(BuildContext context, SubscriptionInfo info) {
     final primary = context.colorScheme.primary;
     return ClipRRect(
       borderRadius: BorderRadius.circular(2),
@@ -725,11 +882,11 @@ class ProfileItem extends StatelessWidget {
         alignment: Alignment.centerLeft,
         color: primary.withValues(alpha: 0.15),
         child: FractionallySizedBox(
-          widthFactor: value,
+          widthFactor: _usageRatio(info) ?? 0,
           heightFactor: 1,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: primary,
+              color: _usageBarColor(context, info),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -752,7 +909,7 @@ class ProfileItem extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.only(top: top),
-          child: _buildUsageBar(context, _usageRatio(info) ?? 0),
+          child: _buildUsageBar(context, info),
         ),
         Padding(
           padding: EdgeInsets.only(top: top, left: 10),
@@ -1018,9 +1175,7 @@ class ProfileItem extends StatelessWidget {
                                 .clamp(0.0, 1.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: subscriptionInfo.isLowTraffic
-                                ? context.colorScheme.error
-                                : context.colorScheme.primary,
+                            color: _usageBarColor(context, subscriptionInfo),
                             borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),

@@ -12,6 +12,90 @@ import 'edit_profile.dart';
 import 'merge_profile.dart';
 import 'tv_qr_import_dialog.dart';
 
+/// The add-profile import flows, shared by [AddProfileView] and the
+/// profiles page's import action group (T334 batch 3). Each function
+/// is one existing flow verbatim — clipboard paste, QR scan and the
+/// URL form — only the call site moved out of the view so both entry
+/// surfaces run the identical code.
+Future<void> showAddProfileUrlForm(
+  BuildContext context,
+  String url, {
+  String? ageSecretKey,
+}) async {
+  final editKey = GlobalKey<EditProfileViewState>();
+  final profile = Profile.normal(url: url, ageSecretKey: ageSecretKey);
+  showExtend(
+    context,
+    builder: (_, type) {
+      return AdaptiveSheetScaffold(
+        type: type,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.security),
+            tooltip: appLocalizations.ageKeyGenerateTitle,
+            onPressed: () {
+              editKey.currentState?.showAgeKeyGenerator();
+            },
+          ),
+        ],
+        body: EditProfileView(
+          key: editKey,
+          profile: profile,
+          context: context,
+          isNew: true,
+        ),
+        title: appLocalizations.importFromURL,
+      );
+    },
+  );
+}
+
+Future<void> addProfileFromClipboard(BuildContext context) async {
+  try {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboardData?.text?.trim();
+
+    if (text == null || text.isEmpty) {
+      if (context.mounted) {
+        context.showSnackBar(appLocalizations.emptyTip(appLocalizations.clipboard));
+      }
+      return;
+    }
+
+    if (!text.isUrl) {
+      if (context.mounted) {
+        context.showSnackBar(appLocalizations.urlTip(appLocalizations.clipboard));
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    showAddProfileUrlForm(context, text);
+  } catch (e) {
+    if (context.mounted) {
+      context.showSnackBar(e.toString());
+    }
+  }
+}
+
+Future<void> addProfileFromScan(BuildContext context) async {
+  if (system.isDesktop) {
+    globalState.appController.addProfileFormQrCode();
+    return;
+  }
+  if (globalState.isAndroidTV) {
+    await showDialog(context: context, builder: (_) => const TvQrImportDialog());
+    return;
+  }
+  final url = await BaseNavigator.push(context, const ScanPage());
+  if (url != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      showAddProfileUrlForm(context, url);
+    });
+  }
+}
+
 class AddProfileView extends StatelessWidget {
   final BuildContext context;
 
@@ -25,83 +109,15 @@ class AddProfileView extends StatelessWidget {
     String url, {
     String? ageSecretKey,
   }) async {
-    final editKey = GlobalKey<EditProfileViewState>();
-    final profile = Profile.normal(url: url, ageSecretKey: ageSecretKey);
-    showExtend(
-      context,
-      builder: (_, type) {
-        return AdaptiveSheetScaffold(
-          type: type,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.security),
-              tooltip: appLocalizations.ageKeyGenerateTitle,
-              onPressed: () {
-                editKey.currentState?.showAgeKeyGenerator();
-              },
-            ),
-          ],
-          body: EditProfileView(
-            key: editKey,
-            profile: profile,
-            context: context,
-            isNew: true,
-          ),
-          title: appLocalizations.importFromURL,
-        );
-      },
-    );
+    await showAddProfileUrlForm(context, url, ageSecretKey: ageSecretKey);
   }
 
   Future<void> _handleAddProfileFromClipboard() async {
-    try {
-      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-      final text = clipboardData?.text?.trim();
-
-      if (text == null || text.isEmpty) {
-        if (context.mounted) {
-          context.showSnackBar(
-            appLocalizations.emptyTip(appLocalizations.clipboard),
-          );
-        }
-        return;
-      }
-
-      if (!text.isUrl) {
-        if (context.mounted) {
-          context.showSnackBar(
-            appLocalizations.urlTip(appLocalizations.clipboard),
-          );
-        }
-        return;
-      }
-
-      _handleAddProfileFormURL(text);
-    } catch (e) {
-      if (context.mounted) {
-        context.showSnackBar(e.toString());
-      }
-    }
+    await addProfileFromClipboard(context);
   }
 
   Future<void> _toScan() async {
-    if (system.isDesktop) {
-      globalState.appController.addProfileFormQrCode();
-      return;
-    }
-    if (globalState.isAndroidTV) {
-      await showDialog(
-        context: context,
-        builder: (_) => const TvQrImportDialog(),
-      );
-      return;
-    }
-    final url = await BaseNavigator.push(context, const ScanPage());
-    if (url != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleAddProfileFormURL(url);
-      });
-    }
+    await addProfileFromScan(context);
   }
 
   Future<void> _toAdd() async {
