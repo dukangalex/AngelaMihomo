@@ -500,10 +500,7 @@ List<Group> hideTimeoutProxies({
   required DelayMap delayMap,
   required String defaultTestUrl,
 }) {
-  final proxyTypes = {
-    for (final group in allGroups)
-      for (final proxy in group.all) proxy.name: proxy.type,
-  };
+  final proxyTypes = proxyTypeMapOf(allGroups);
   final states = <String, ProxyCardState>{};
   return groups.map((group) {
     final selectedName = (allGroups.getGroup(group.name) ?? group)
@@ -524,8 +521,11 @@ List<Group> hideTimeoutProxies({
       if (_unprobeableProxyTypes.contains(proxyTypes[state.proxyName])) {
         return false;
       }
-      final testUrl = state.testUrl.getSafeValue(group.testUrl ?? '');
-      final url = testUrl.isEmpty ? defaultTestUrl : testUrl;
+      final url = delayTestUrlFor(
+        proxyType: proxyTypes[state.proxyName],
+        resolvedTestUrl: state.testUrl.getSafeValue(group.testUrl ?? ''),
+        fallbackTestUrl: defaultTestUrl,
+      );
       final delay = delayMap[url]?[state.proxyName];
       return delay != null && delay < 0;
     }
@@ -901,8 +901,15 @@ String getRealTestUrl(Ref ref, [String? testUrl]) {
 @riverpod
 int? getDelay(Ref ref, {required String proxyName, String? testUrl}) {
   final proxyCardState = ref.watch(getProxyCardStateProvider(proxyName));
-  final currentTestUrl = ref.watch(
-    getRealTestUrlProvider(proxyCardState.testUrl.getSafeValue(testUrl ?? '')),
+  final currentTestUrl = delayTestUrlFor(
+    proxyType: proxyTypeOf(
+      ref.watch(groupsProvider),
+      proxyCardState.proxyName,
+    ),
+    resolvedTestUrl: proxyCardState.testUrl.getSafeValue(testUrl ?? ''),
+    fallbackTestUrl: ref.watch(
+      appSettingProvider.select((state) => state.testUrl),
+    ),
   );
   final delay = ref.watch(
     delayDataSourceProvider.select((state) {
@@ -991,12 +998,52 @@ ProxyCardState resolveProxyCardState(
   );
 }
 
+/// Whether [type] — a proxy type string as reported by the core —
+/// is the direct outbound. Compared case-insensitively: the core
+/// spells it 'Direct', config plumbing uses other casings.
+bool isDirectProxyType(String? type) => type?.toUpperCase() == 'DIRECT';
+
+/// Name → type for every proxy appearing in any group's member list.
+/// Later groups win, matching how duplicate names resolve elsewhere.
+Map<String, String> proxyTypeMapOf(List<Group> groups) => {
+  for (final group in groups)
+    for (final proxy in group.all) proxy.name: proxy.type,
+};
+
+/// The type of the proxy called [name] in [groups], or null when no
+/// group lists it.
+String? proxyTypeOf(List<Group> groups, String name) {
+  for (final group in groups) {
+    for (final proxy in group.all) {
+      if (proxy.name == name) return proxy.type;
+    }
+  }
+  return null;
+}
+
+/// The URL a delay value for a leaf proxy is measured and read with.
+/// Writers and readers must agree on this, since delays are stored
+/// per (url, name): DIRECT leaves always use [directTestUrl] (T329 —
+/// the global ruler would measure the bare round trip to Google,
+/// not the direct path), everything else uses the resolved group or
+/// entry test URL, falling back to [fallbackTestUrl] (the user's
+/// test URL setting) when the resolution produced none.
+String delayTestUrlFor({
+  required String? proxyType,
+  required String resolvedTestUrl,
+  required String fallbackTestUrl,
+}) {
+  if (isDirectProxyType(proxyType)) return directTestUrl;
+  return resolvedTestUrl.isEmpty ? fallbackTestUrl : resolvedTestUrl;
+}
+
 int? Function(String proxyName, String? testUrl) createDelayLookup({
   required List<Group> groups,
   required SelectedMap selectedMap,
   required DelayMap delayMap,
   required String defaultTestUrl,
 }) {
+  final proxyTypes = proxyTypeMapOf(groups);
   final cache = <(String, String?), int?>{};
   return (proxyName, testUrl) => cache.putIfAbsent((proxyName, testUrl), () {
     final state = resolveProxyCardState(
@@ -1004,8 +1051,11 @@ int? Function(String proxyName, String? testUrl) createDelayLookup({
       selectedMap,
       ProxyCardState(proxyName: proxyName),
     );
-    final realTestUrl = state.testUrl.getSafeValue(testUrl ?? '');
-    final url = realTestUrl.isEmpty ? defaultTestUrl : realTestUrl;
+    final url = delayTestUrlFor(
+      proxyType: proxyTypes[state.proxyName],
+      resolvedTestUrl: state.testUrl.getSafeValue(testUrl ?? ''),
+      fallbackTestUrl: defaultTestUrl,
+    );
     return delayMap[url]?[state.proxyName];
   });
 }
