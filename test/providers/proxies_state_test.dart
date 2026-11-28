@@ -663,6 +663,106 @@ void main() {
     });
   });
 
+  group('DIRECT 专用测速尺子（T329）', () {
+    test('delayTestUrlFor：DIRECT 恒用国内尺子，其余用解析值或回落值', () {
+      expect(
+        delayTestUrlFor(
+          proxyType: 'Direct',
+          resolvedTestUrl: 'https://group',
+          fallbackTestUrl: 'https://global',
+        ),
+        directTestUrl,
+      );
+      expect(
+        delayTestUrlFor(
+          proxyType: 'DIRECT',
+          resolvedTestUrl: '',
+          fallbackTestUrl: 'https://global',
+        ),
+        directTestUrl,
+      );
+      expect(
+        delayTestUrlFor(
+          proxyType: 'Shadowsocks',
+          resolvedTestUrl: 'https://group',
+          fallbackTestUrl: 'https://global',
+        ),
+        'https://group',
+      );
+      expect(
+        delayTestUrlFor(
+          proxyType: 'Shadowsocks',
+          resolvedTestUrl: '',
+          fallbackTestUrl: 'https://global',
+        ),
+        'https://global',
+      );
+      expect(
+        delayTestUrlFor(
+          proxyType: null,
+          resolvedTestUrl: '',
+          fallbackTestUrl: 'https://global',
+        ),
+        'https://global',
+      );
+    });
+
+    final directGroups = [
+      Group(
+        type: GroupType.Selector,
+        name: 'G',
+        now: 'DIRECT',
+        all: [
+          const Proxy(name: 'DIRECT', type: 'Direct'),
+          _proxy('a'),
+          _proxy('b'),
+        ],
+      ),
+    ];
+
+    test('createDelayLookup：DIRECT 叶子读国内尺子，普通节点读全局尺子', () {
+      final delayOf = createDelayLookup(
+        groups: directGroups,
+        selectedMap: const {},
+        delayMap: {
+          directTestUrl: {'DIRECT': 12},
+          'https://global': {'DIRECT': 300, 'a': 88},
+        },
+        defaultTestUrl: 'https://global',
+      );
+      // 组名解析到其选中叶子 DIRECT，读到的是国内尺子的 12，
+      // 不是全局尺子下那个裸连 Google 的 300。
+      expect(delayOf('G', null), 12);
+      expect(delayOf('DIRECT', null), 12);
+      expect(delayOf('a', null), 88);
+    });
+
+    test('hideTimeoutProxies：DIRECT 的超时判定只看国内尺子', () {
+      List<String> visible(DelayMap delayMap) => hideTimeoutProxies(
+        groups: directGroups,
+        allGroups: directGroups,
+        selectedMap: const {'G': 'a'},
+        delayMap: delayMap,
+        defaultTestUrl: 'https://global',
+      ).getGroup('G')!.all.map((proxy) => proxy.name).toList();
+
+      // 国内尺子下超时 → 隐藏；全局尺子下的 -1 不再决定 DIRECT 的去留。
+      expect(
+        visible({
+          directTestUrl: {'DIRECT': -1},
+          'https://global': {'a': 50, 'b': 60},
+        }),
+        ['a', 'b'],
+      );
+      expect(
+        visible({
+          'https://global': {'DIRECT': -1, 'a': 50, 'b': 60},
+        }),
+        ['DIRECT', 'a', 'b'],
+      );
+    });
+  });
+
   group('filterGroupsState 剥离 now', () {
     test('只有 now 变化时不通知，节点变化时通知', () {
       final source = StateProvider<List<Group>>(
