@@ -210,6 +210,16 @@ void main() {
     final rules = (result['rules'] as List).cast<String>();
     // 动作 2/18：teg 钉死与微信直连包
     expect(rules, contains('DOMAIN-SUFFIX,teg.tencent-cloud.net,REJECT-DROP'));
+    // T330：biliintl/disney 必须排在 geolocation-cn 之前，
+    // 否则重叠域名被直连先行截获、按地区解锁的意图落空
+    expect(
+      rules.indexOf('RULE-SET,biliintl,默认代理'),
+      lessThan(rules.indexOf('RULE-SET,geolocation-cn,直连')),
+    );
+    expect(
+      rules.indexOf('RULE-SET,disney,默认代理'),
+      lessThan(rules.indexOf('RULE-SET,geolocation-cn,直连')),
+    );
     expect(rules, contains('DOMAIN,szlong.weixin.qq.com,直连'));
     expect(rules, contains('DOMAIN-SUFFIX,weixin.qq.com,直连'));
     expect(rules, contains('IP-CIDR,101.226.0.0/16,DIRECT,no-resolve'));
@@ -253,7 +263,12 @@ void main() {
     );
     expect(
       dns['direct-nameserver'],
-      contains('https://[2606:4700:4700::1111]/dns-query#DIRECT'),
+      contains('https://[2400:3200::1]/dns-query#DIRECT'),
+    );
+    // T330：引导解析的 IPv6 端点同为国内解析商（DNSPod），无境外端点混入
+    expect(
+      dns['default-nameserver'],
+      contains('tls://[2402:4e00::]#DIRECT'),
     );
     // 动作 3/4 与 respect-rules 定版
     expect(dns['disable-qtype-65'], isTrue);
