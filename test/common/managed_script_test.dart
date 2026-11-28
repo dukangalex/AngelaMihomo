@@ -296,6 +296,24 @@ void main() {
     expect(CustomRuleSet.parse('domain:https://a.com/.mrs')?.tag, 'a_com');
   });
 
+  test('bundled script carries the T325 absorption batch 1 markers', () async {
+    const props = ManagedProps();
+    final plain = await ManagedScript.script(props);
+    // 地区负载均衡子组与保留名
+    expect(plain.content, contains(r'`${name}-负载均衡`'));
+    expect(plain.content, contains("region.name + '-负载均衡'"));
+    // DNS 补齐：双栈引导、直连双活、policy 闭环、hosts 钉址
+    expect(plain.content, contains('tls://[2400:3200::1]#DIRECT'));
+    expect(plain.content, contains('https://doh.pub/dns-query#DIRECT'));
+    expect(plain.content, contains("'direct-nameserver-follow-policy': true"));
+    expect(plain.content, contains("'disable-qtype-65': true"));
+    expect(plain.content, contains("'dns.msftncsi.com'"));
+    // 规则补齐：微信直连、进程名直连包、STUN 域名正则
+    expect(plain.content, contains('DOMAIN,szlong.weixin.qq.com,直连'));
+    expect(plain.content, contains('const processDirectRules'));
+    expect(plain.content, contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具'));
+  });
+
   test('group order is injected only when saved', () async {
     const props = ManagedProps();
     final plain = await ManagedScript.script(props);

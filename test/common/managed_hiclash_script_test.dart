@@ -155,4 +155,147 @@ void main() {
       ),
     );
   });
+
+  test('T325 absorption batch 1 lands in the generated config', () async {
+    await initEditorNative();
+    final dir = await Directory.systemTemp.createTemp('t325_eval_');
+    addTearDown(() => dir.delete(recursive: true));
+    Map<String, Object?> node(String name, String server) => {
+      'name': name,
+      'type': 'ss',
+      'server': server,
+      'port': 8388,
+      'cipher': 'aes-128-gcm',
+      'password': 'x',
+    };
+    final input = File('${dir.path}/input.json')
+      ..writeAsStringSync(
+        json.encode({
+          'port': 7890,
+          'mode': 'rule',
+          'proxies': [
+            node('香港 01', '203.0.113.1'),
+            node('香港 02', '203.0.113.2'),
+            node('美国 01', '203.0.113.3'),
+          ],
+          'proxy-groups': <Object?>[],
+          'rules': ['MATCH,DIRECT'],
+        }),
+      );
+    final output = File('${dir.path}/output.json');
+    await evaluateScriptFile(
+      script: await ManagedScript.readBundled(),
+      inputPath: input.path,
+      outputPath: output.path,
+      token: 7,
+    );
+    final result =
+        json.decode(output.readAsStringSync()) as Map<String, dynamic>;
+
+    // 动作 20：地区组增产负载均衡子组，成员序在自动选择之后
+    final groups = {
+      for (final g in result['proxy-groups'] as List)
+        (g as Map)['name'] as String: g,
+    };
+    final hkLb = groups['香港-负载均衡'] as Map;
+    expect(hkLb['type'], 'load-balance');
+    expect(hkLb['hidden'], isTrue);
+    final hkMembers = (groups['香港'] as Map)['proxies'] as List;
+    expect(
+      hkMembers.sublist(hkMembers.length - 2),
+      ['香港-自动选择', '香港-负载均衡'],
+    );
+    expect(groups['美国-负载均衡'], isNotNull);
+
+    final rules = (result['rules'] as List).cast<String>();
+    // 动作 2/18：teg 钉死与微信直连包
+    expect(rules, contains('DOMAIN-SUFFIX,teg.tencent-cloud.net,REJECT-DROP'));
+    expect(rules, contains('DOMAIN,szlong.weixin.qq.com,直连'));
+    expect(rules, contains('DOMAIN-SUFFIX,weixin.qq.com,直连'));
+    expect(rules, contains('IP-CIDR,101.226.0.0/16,DIRECT,no-resolve'));
+    expect(rules, contains('IP-CIDR,140.207.0.0/16,DIRECT,no-resolve'));
+    // 动作 19：进程名直连包（38 条）与动作 1 的 tailscaled
+    expect(
+      rules.where(
+        (r) => r.startsWith('PROCESS-NAME-WILDCARD,') && r.endsWith(',直连'),
+      ),
+      hasLength(38),
+    );
+    expect(rules, contains('PROCESS-NAME-WILDCARD,*com.icbc*,直连'));
+    expect(
+      rules,
+      contains('PROCESS-NAME-WILDCARD,*com.eg.android.Alipay*,直连'),
+    );
+    expect(rules, contains('PROCESS-NAME-WILDCARD,*tailscaled*,远控工具'));
+    // 动作 7/9/10/11：STUN 补面、SSDP/mDNS、硬编码 DNS 守卫
+    expect(rules, contains('AND,((NETWORK,TCP),(DST-PORT,19302-19309)),REJECT'));
+    expect(rules, contains(r'DOMAIN-REGEX,^(stun|turn|stuns|turns)\.,REJECT'));
+    expect(
+      rules,
+      contains(
+        'AND,((NETWORK,UDP),(DST-PORT,1900),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+      ),
+    );
+    expect(
+      rules,
+      contains(
+        'AND,((NETWORK,UDP),(DST-PORT,53),(NOT,((RULE-SET,cn_ip,no-resolve)))),REJECT-DROP',
+      ),
+    );
+
+    final dns = result['dns'] as Map;
+    // 动作 12/13：引导与直连 DNS 补齐、双栈齐全
+    expect(dns['default-nameserver'], hasLength(7));
+    expect(dns['default-nameserver'], contains('tls://[2400:3200::1]#DIRECT'));
+    expect(
+      dns['direct-nameserver'],
+      contains('https://doh.pub/dns-query#DIRECT'),
+    );
+    expect(
+      dns['direct-nameserver'],
+      contains('https://[2606:4700:4700::1111]/dns-query#DIRECT'),
+    );
+    // 动作 3/4 与 respect-rules 定版
+    expect(dns['disable-qtype-65'], isTrue);
+    expect(dns['direct-nameserver-follow-policy'], isTrue);
+    expect(dns['respect-rules'], isFalse);
+    // 动作 14/15/16：nameserver-policy 扩表
+    final policy = dns['nameserver-policy'] as Map;
+    expect(
+      policy.keys,
+      containsAll([
+        'rule-set:cn',
+        'rule-set:geolocation-cn',
+        'rule-set:bilibili',
+        '+.cn',
+        '+.gov.cn',
+        'geosite:google',
+        'geosite:telegram',
+        'geosite:geolocation-!cn',
+        '+.openai.com',
+        '+.claude.ai',
+        'recaptcha.google.com',
+      ]),
+    );
+    // 动作 17：fake-ip-filter 三类小批
+    final fakeIpFilter = (dns['fake-ip-filter'] as List).cast<String>();
+    expect(
+      fakeIpFilter,
+      containsAll([
+        'DOMAIN-SUFFIX,msftconnecttest.com',
+        'DOMAIN,captive.apple.com',
+        'DOMAIN,connectivitycheck.gstatic.com',
+        'DOMAIN-SUFFIX,tplinkwifi.net',
+        'DOMAIN-SUFFIX,ts.net',
+        'DOMAIN-SUFFIX,pool.ntp.org',
+        'DOMAIN,time.cloudflare.com',
+      ]),
+    );
+
+    // 动作 5/6：hosts 钉址与双栈
+    final hosts = result['hosts'] as Map;
+    expect(hosts['dns.msftncsi.com'], ['131.107.255.255', 'fd3e:4f5a:5b81::1']);
+    expect(hosts['cloudflare-dns.com'], contains('2606:4700:4700::1111'));
+    expect(hosts['doh.pub'], contains('2402:4e00::'));
+  });
 }
