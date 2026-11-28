@@ -148,6 +148,7 @@ class CommonCard extends StatelessWidget {
     this.clipBehavior = Clip.antiAlias,
     this.elevated = true,
     this.subtle = false,
+    this.solidSurface = false,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
@@ -163,6 +164,16 @@ class CommonCard extends StatelessWidget {
   final Clip clipBehavior;
   final bool elevated;
   final bool subtle;
+
+  /// T341: paint the card face solid instead of glass. Zodiac
+  /// cards normally fill with the raw translucent surface token
+  /// so the page's light field (and the guardian watermark) shows
+  /// through; a solid card composites that same token over the
+  /// variant's background base, keeping the tone but letting
+  /// nothing behind the card show through. Only the dashboard's
+  /// T337 readout/subscription tiles opt in — everywhere else the
+  /// glass discipline stands.
+  final bool solidSurface;
 
   // final WidgetStateProperty<Color?>? backgroundColor;
   // final WidgetStateProperty<BorderSide?>? borderSide;
@@ -222,7 +233,7 @@ class CommonCard extends StatelessWidget {
     // selected proxy was not recognisable at a glance on a real device.
     // The unselected fill stays the raw token; only the selected state
     // takes the tint, together with the 2px primary border above.
-    final base = glass
+    var base = glass
         ? (isSelected
               ? Color.alphaBlend(
                   colorScheme.primary.withValues(alpha: 0.30),
@@ -240,6 +251,9 @@ class CommonCard extends StatelessWidget {
                   0.5,
                 )
               : colorScheme.surfaceContainerHigh);
+    if (solidSurface && glass && base != null) {
+      base = zodiac.variant.compositeOverBase(base);
+    }
     final tint = states.contains(WidgetState.pressed)
         ? 0.07
         : (states.contains(WidgetState.hovered) ? 0.03 : 0.0);
@@ -270,6 +284,16 @@ class CommonCard extends StatelessWidget {
       children.add(childWidget);
       children.add(Positioned.fill(child: selectWidget!));
       childWidget = Stack(children: children);
+    }
+
+    // The declared content inset. (T341: this parameter used to
+    // be accepted and silently dropped, so the tiles that rely
+    // on it — the T337 readout and subscription cards — rendered
+    // their content flush against the card borders. Every other
+    // caller either insets its own child or passes zero.)
+    final contentPadding = padding;
+    if (contentPadding != null) {
+      childWidget = Padding(padding: contentPadding, child: childWidget);
     }
 
     final isInteractive = onPressed != null || onLongPress != null;

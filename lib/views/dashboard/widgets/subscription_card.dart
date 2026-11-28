@@ -34,6 +34,7 @@ class SubscriptionCard extends ConsumerWidget {
       return CommonCard(
         radius: commonCardRadius,
         onPressed: () => globalState.appController.toProfiles(),
+        solidSurface: true,
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,6 +71,7 @@ class SubscriptionCard extends ConsumerWidget {
 
     return CommonCard(
       radius: commonCardRadius,
+      solidSurface: true,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

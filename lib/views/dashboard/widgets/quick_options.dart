@@ -337,8 +337,14 @@ class OutboundStatusChips extends ConsumerWidget {
               networkSettingProvider.select((state) => state.systemProxy),
             ),
           );
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    // T341: a wrap, not a row — as the outbound-mode tile's
+    // footnote the chips share a small tile's inner width with
+    // the card padding, where the two chips side by side can
+    // exceed the line and paint outside the card. Wrapping keeps
+    // both chips whole and tappable at any width.
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
       children: [
         OutboundStatusChip(
           label: system.isAndroid ? 'VPN' : 'TUN',
@@ -346,7 +352,6 @@ class OutboundStatusChips extends ConsumerWidget {
           onTap: () =>
               system.isAndroid ? showVpnSheet(context) : showTunSheet(context),
         ),
-        const SizedBox(width: 6),
         OutboundStatusChip(
           label: appLocalizations.systemProxy,
           active: isStart && systemProxyEnable,

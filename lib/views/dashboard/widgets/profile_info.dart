@@ -803,6 +803,7 @@ class ReadoutTileCard extends StatelessWidget {
     return CommonCard(
       radius: commonCardRadius,
       onPressed: onTap,
+      solidSurface: true,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
