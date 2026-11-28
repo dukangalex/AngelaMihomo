@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
 import 'package:angelamihomo/plugins/app.dart';
@@ -159,6 +161,7 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
               ],
             ),
           ),
+          _ZodiacRingPicker(selectedId: selected.id, onSelect: _select),
           _SeriesSection(
             nameZh: zodiacSeriesNameZh,
             nameEn: zodiacSeriesNameEn,
@@ -175,6 +178,429 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
                   isDefault: theme.id == zodiacDefaultThemeId,
                   onTap: () => _select(theme.id),
                 ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Geometry of the star-ring picker (T334 batch 4, 星宫 —
+/// signature interaction 2): the twelve signs ride one ring,
+/// Aries at the top, advancing clockwise in zodiac order. The
+/// ring is static — no rotation, no idle animation; only the
+/// selected dot's glow changes when the selection does.
+double zodiacRingAngle(int index) => -math.pi / 2 + index * (math.pi / 6);
+
+double zodiacRingRadius(Size size) => size.shortestSide * 0.42;
+
+Offset zodiacRingDotCenter(Size size, int index) {
+  final center = Offset(size.width / 2, size.height / 2);
+  final angle = zodiacRingAngle(index);
+  return center +
+      Offset(math.cos(angle), math.sin(angle)) * zodiacRingRadius(size);
+}
+
+/// The two concentric ring lines plus a tick at every sign.
+class ZodiacRingPainter extends CustomPainter {
+  final Color ringColor;
+  final Color innerRingColor;
+
+  const ZodiacRingPainter({
+    required this.ringColor,
+    required this.innerRingColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = zodiacRingRadius(size);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = ringColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    canvas.drawCircle(
+      center,
+      radius * 0.82,
+      Paint()
+        ..color = innerRingColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+    final tickPaint = Paint()
+      ..color = ringColor
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 12; i++) {
+      final angle = zodiacRingAngle(i);
+      final dir = Offset(math.cos(angle), math.sin(angle));
+      canvas.drawLine(
+        center + dir * (radius - 4),
+        center + dir * (radius + 4),
+        tickPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(ZodiacRingPainter oldDelegate) {
+    return oldDelegate.ringColor != ringColor ||
+        oldDelegate.innerRingColor != innerRingColor;
+  }
+}
+
+/// Maps one asterism star (normalized 0–1 field coordinates, the
+/// same data the guardian backdrop paints) into a paint box.
+Offset constellationPoint(Size size, ZodiacStar star) {
+  return Offset(star.x * size.width, star.y * size.height);
+}
+
+/// Paints a theme's guardian asterism — the star chart at the
+/// centre of the ring — from the theme's own constellation data.
+class GuardianConstellationPainter extends CustomPainter {
+  final ZodiacConstellation constellation;
+  final Color lineColor;
+  final Color starColor;
+
+  const GuardianConstellationPainter({
+    required this.constellation,
+    required this.lineColor,
+    required this.starColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stars = constellation.stars;
+    final linePaint = Paint()
+      ..color = lineColor
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    for (final edge in constellation.edges) {
+      if (edge.a >= stars.length || edge.b >= stars.length) continue;
+      canvas.drawLine(
+        constellationPoint(size, stars[edge.a]),
+        constellationPoint(size, stars[edge.b]),
+        linePaint,
+      );
+    }
+    for (final star in stars) {
+      final point = constellationPoint(size, star);
+      final radius = 1.4 + star.magnitude * 0.8;
+      if (star.magnitude >= 3) {
+        canvas.drawCircle(
+          point,
+          radius + 3.5,
+          Paint()..color = starColor.withValues(alpha: 0.2),
+        );
+      }
+      canvas.drawCircle(point, radius, Paint()..color = starColor);
+    }
+  }
+
+  @override
+  bool shouldRepaint(GuardianConstellationPainter oldDelegate) {
+    return !identical(oldDelegate.constellation, constellation) ||
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.starColor != starColor;
+  }
+}
+
+/// The ring picker heading the theme card: tapping a sign on the
+/// ring selects that theme through the very same callback the
+/// rows below use (one tap, same state, same persistence). The
+/// centre shows the selected sign's asterism, name, date range
+/// and current-theme plate; under the ring, the selected theme's
+/// dark and light variants preview side by side from their own
+/// variant data. The collapsible row list stays under it as the
+/// alternate presentation — it alone carries the default badge
+/// and the per-row palette dots.
+class _ZodiacRingPicker extends StatelessWidget {
+  final String selectedId;
+  final ValueChanged<String> onSelect;
+
+  const _ZodiacRingPicker({required this.selectedId, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens =
+        context.starRail ??
+        StarRailTokens.forBrightness(Theme.of(context).brightness);
+    final selected = resolveZodiacTheme(selectedId);
+    return Column(
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final side = math.min(constraints.maxWidth, 360.0);
+            final size = Size.square(side);
+            return SizedBox(
+              width: side,
+              height: side,
+              child: Stack(
+                children: [
+                  CustomPaint(
+                    size: size,
+                    painter: ZodiacRingPainter(
+                      ringColor: tokens.glowLine.withValues(alpha: 0.35),
+                      innerRingColor: tokens.glowLine.withValues(alpha: 0.14),
+                    ),
+                  ),
+                  for (var i = 0; i < zodiacThemes.length; i++)
+                    _buildLabel(context, size, i, tokens),
+                  for (var i = 0; i < zodiacThemes.length; i++)
+                    _buildDot(size, i, tokens),
+                  Center(child: _buildCenter(context, selected, side, tokens)),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _variantPreview(context, selected, Brightness.dark),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _variantPreview(context, selected, Brightness.light),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+    );
+  }
+
+  Widget _buildDot(Size size, int index, StarRailTokens tokens) {
+    final def = zodiacThemes[index];
+    final isSelected = def.id == selectedId;
+    final center = zodiacRingDotCenter(size, index);
+    return Positioned(
+      left: center.dx - 24,
+      top: center.dy - 24,
+      width: 48,
+      height: 48,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onSelect(def.id),
+        child: Center(
+          child: Container(
+            width: isSelected ? 17 : 9,
+            height: isSelected ? 17 : 9,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected
+                  ? tokens.glowLine
+                  : tokens.textSecondary.withValues(alpha: 0.75),
+              border: isSelected
+                  ? null
+                  : Border.all(color: tokens.glowLine.withValues(alpha: 0.35)),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: tokens.secondary.withValues(alpha: 0.65),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(
+    BuildContext context,
+    Size size,
+    int index,
+    StarRailTokens tokens,
+  ) {
+    final def = zodiacThemes[index];
+    final isSelected = def.id == selectedId;
+    final angle = zodiacRingAngle(index);
+    final center =
+        Offset(size.width / 2, size.height / 2) +
+        Offset(math.cos(angle), math.sin(angle)) *
+            (zodiacRingRadius(size) - 20);
+    return Positioned(
+      left: center.dx - 32,
+      top: center.dy - 9,
+      width: 64,
+      height: 18,
+      child: IgnorePointer(
+        child: Text(
+          zodiacGuardianSignName(def.id, Localizations.localeOf(context)),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? tokens.textPrimary : tokens.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenter(
+    BuildContext context,
+    ZodiacThemeDef selected,
+    double side,
+    StarRailTokens tokens,
+  ) {
+    final locale = Localizations.localeOf(context);
+    return SizedBox(
+      width: side * 0.52,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: side * 0.30,
+            height: side * 0.21,
+            child: CustomPaint(
+              painter: GuardianConstellationPainter(
+                constellation: selected.constellation,
+                lineColor: tokens.glowLine.withValues(alpha: 0.55),
+                starColor: tokens.glowLine,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            zodiacGuardianSignName(selected.id, locale),
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            zodiacDateRangeLabel(selected.id, locale),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: tokens.textSecondary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: tokens.secondary.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(StarRailRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: tokens.secondary,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  appLocalizations.currentTheme,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: tokens.secondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// One side of the dark/light preview pair: the variant's own
+  /// background paint and ink, a miniature orbit glyph in its
+  /// primary/secondary, its primary hex, and a live mark when
+  /// this variant is the one the ambient brightness resolves to.
+  Widget _variantPreview(
+    BuildContext context,
+    ZodiacThemeDef def,
+    Brightness brightness,
+  ) {
+    final variant = def.variantFor(brightness);
+    final isLive = Theme.of(context).brightness == brightness;
+    final background = variant.background;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(StarRailRadius.card),
+        color: background.isAtmosphere
+            ? variant.surface
+            : background.isGradient
+            ? null
+            : background.solidColor,
+        gradient: background.isGradient ? background.gradient : null,
+        border: Border.all(color: variant.outline.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: variant.primary, width: 1.5),
+                ),
+                child: Center(
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: variant.secondary,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                isLive ? Icons.check_circle : Icons.radio_button_unchecked,
+                size: 18,
+                color: isLive ? variant.primary : variant.textSecondary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Text(
+                brightness == Brightness.dark
+                    ? appLocalizations.dark
+                    : appLocalizations.light,
+                style: context.textTheme.titleSmall?.copyWith(
+                  color: variant.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                variant.primary.hex,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: variant.textSecondary,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
             ],
           ),
         ],
