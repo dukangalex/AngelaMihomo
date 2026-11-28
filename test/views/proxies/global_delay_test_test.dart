@@ -106,7 +106,10 @@ List<Group> _fixtureGroups() {
   ];
 }
 
-Future<ProviderContainer> _pumpHarness(WidgetTester tester) async {
+Future<ProviderContainer> _pumpHarness(
+  WidgetTester tester, {
+  List<Group>? groups,
+}) async {
   final container = ProviderContainer();
   addTearDown(container.dispose);
   globalState.appState = AppState(
@@ -118,7 +121,7 @@ Future<ProviderContainer> _pumpHarness(WidgetTester tester) async {
     traffics: FixedList(30),
     totalTraffic: Traffic(),
     systemUiOverlayStyle: const SystemUiOverlayStyle(),
-    groups: _fixtureGroups(),
+    groups: groups ?? _fixtureGroups(),
   );
   globalState.config = Config(
     themeProps: defaultThemeProps,
@@ -241,6 +244,75 @@ void main() {
       const DelayTestTarget(name: 'US-01', url: defaultTestUrl),
       const DelayTestTarget(name: 'HK-02', url: _entryTestUrl),
     });
+  });
+
+  testWidgets('DIRECT leaves are measured with the domestic ruler (T329)', (
+    tester,
+  ) async {
+    ClashCore.setHandlerForTesting(_FakeHandler(const {}));
+    const directGroups = [
+      Group(
+        type: GroupType.Selector,
+        name: '直连组',
+        now: '直连 | 双栈',
+        all: [
+          Proxy(name: 'DIRECT', type: 'Direct'),
+          Proxy(name: '直连 | 双栈', type: 'Direct'),
+          Proxy(name: 'SS-01', type: 'Shadowsocks'),
+        ],
+      ),
+      Group(
+        type: GroupType.Selector,
+        name: '混合组',
+        testUrl: 'https://group.example/204',
+        now: 'DIRECT',
+        all: [
+          Proxy(name: 'DIRECT', type: 'Direct'),
+          Proxy(name: 'SS-01', type: 'Shadowsocks'),
+        ],
+      ),
+    ];
+    await _pumpHarness(tester, groups: directGroups);
+    final groups = globalState.appController.getCurrentGroups();
+
+    // Plain members: both direct entries take the domestic ruler,
+    // the proxied entry keeps the global one.
+    final directGroup = groups.getGroup('直连组')!;
+    expect(
+      buildDelayTestTargets(
+        directGroup.all,
+        testUrl: directGroup.testUrl,
+        currentGroups: groups,
+      ),
+      {
+        DelayTestTarget(name: 'DIRECT', url: directTestUrl),
+        DelayTestTarget(name: '直连 | 双栈', url: directTestUrl),
+        DelayTestTarget(name: 'SS-01', url: defaultTestUrl),
+      },
+    );
+
+    // A group test URL governs its proxied members but never a
+    // direct leaf — and a group resolving to a direct leaf is
+    // measured with the domestic ruler too.
+    final mixedGroup = groups.getGroup('混合组')!;
+    expect(
+      buildDelayTestTargets(
+        mixedGroup.all,
+        testUrl: mixedGroup.testUrl,
+        currentGroups: groups,
+      ),
+      {
+        DelayTestTarget(name: 'DIRECT', url: directTestUrl),
+        DelayTestTarget(name: 'SS-01', url: 'https://group.example/204'),
+      },
+    );
+    expect(
+      buildDelayTestTargets(
+        const [Proxy(name: '混合组', type: 'Selector')],
+        currentGroups: groups,
+      ),
+      {DelayTestTarget(name: 'DIRECT', url: directTestUrl)},
+    );
   });
 
   testWidgets('result auto-dismisses after five seconds, failures included', (
