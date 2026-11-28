@@ -92,7 +92,15 @@ class ApplicationState extends ConsumerState<Application>
     final isLight = colorScheme.brightness == Brightness.light;
     final base = ThemeData(
       useMaterial3: true,
-      extensions: [zodiac],
+      // The zodiac extension carries the active constellation; the
+      // star-rail extension carries the shared T334 skeleton tokens
+      // every constellation rides on (design_tokens.dart).
+      extensions: [zodiac, StarRailTokens.forBrightness(colorScheme.brightness)],
+      cardTheme: const CardThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(StarRailRadius.card)),
+        ),
+      ),
       pageTransitionsTheme: _pageTransitionsTheme,
       scaffoldBackgroundColor: zodiac.variant.backgroundBase,
       appBarTheme: isLight ? _lightAppBarTheme : _darkAppBarTheme,
@@ -166,16 +174,19 @@ class ApplicationState extends ConsumerState<Application>
         textStyle: TextStyle(color: colorScheme.onInverseSurface, fontSize: 13),
       ),
     );
-    // T177 (chain.26): small text steps up one notch app-wide — the
-    // smallest styles grow by 1sp so captions, sub-lines and status
-    // rows stay legible on the zodiac glass surfaces; body and title
-    // sizes are unchanged. Colors and weights come from the base
-    // theme untouched.
+    // T334 batch 1: the app text theme takes the star-rail type
+    // scale (design_tokens.dart) for the six slots the design table
+    // defines. T177 (chain.26) stays in force for the slots the
+    // table does not cover: small text steps up one notch app-wide
+    // so captions, sub-lines and status rows stay legible on the
+    // zodiac glass surfaces. labelSmall is a covered slot — the
+    // token's 12px is exactly T177's bumped size, now with the
+    // token's 700 weight and 0.05em tracking.
+    final scaledTextTheme = applyStarRailTypeScale(base.textTheme);
     return base.copyWith(
-      textTheme: base.textTheme.copyWith(
-        bodySmall: base.textTheme.bodySmall?.copyWith(fontSize: 13),
-        labelMedium: base.textTheme.labelMedium?.copyWith(fontSize: 13),
-        labelSmall: base.textTheme.labelSmall?.copyWith(fontSize: 12),
+      textTheme: scaledTextTheme.copyWith(
+        bodySmall: scaledTextTheme.bodySmall?.copyWith(fontSize: 13),
+        labelMedium: scaledTextTheme.labelMedium?.copyWith(fontSize: 13),
       ),
     );
   }

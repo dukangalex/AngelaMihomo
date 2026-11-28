@@ -99,6 +99,10 @@ class AppLocalizations {
   String get proxies {
     return Intl.message('Proxies', name: 'proxies', desc: '', args: []);
   }
+  /// `Proxy traffic`
+  String get proxyTraffic {
+    return Intl.message('Proxy traffic', name: 'proxyTraffic', desc: '', args: []);
+  }
 
   /// `Profile`
   String get profile {

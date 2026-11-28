@@ -6,6 +6,7 @@
   "customDashboardTitle": "عنوان سفارشی",
   "titleTooLong": "عنوان بیش از حد طولانی است (حداکثر ۲۰ کاراکتر)",
   "proxies": "پروکسی‌ها",
+  "proxyTraffic": "Proxy traffic",
   "profile": "پروفایل",
   "profiles": "پروفایل‌ها",
   "tools": "ابزارها",
