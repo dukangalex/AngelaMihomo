@@ -6,6 +6,7 @@
   "customDashboardTitle": "사용자 지정 제목",
   "titleTooLong": "제목이 너무 깁니다 (최대 20자)",
   "proxies": "프록시",
+  "proxyTraffic": "Proxy traffic",
   "profile": "프로필",
   "profiles": "프로필",
   "tools": "도구",

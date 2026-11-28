@@ -1892,6 +1892,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "providersCount": m60,
     "provinceAndCity": MessageLookupByLibrary.simpleMessage("استان / شهر"),
     "proxies": MessageLookupByLibrary.simpleMessage("پروکسی‌ها"),
+    "proxyTraffic": MessageLookupByLibrary.simpleMessage("Proxy traffic"),
     "proxiesCount": MessageLookupByLibrary.simpleMessage("گره‌های پروکسی"),
     "proxiesSetting": MessageLookupByLibrary.simpleMessage("تنظیمات پروکسی"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("زنجیره پروکسی"),

@@ -405,7 +405,7 @@ class _Overview extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                '${appLocalizations.proxies} ${_bytes(result.proxyTotal)}  ·  '
+                '${appLocalizations.proxyTraffic} ${_bytes(result.proxyTotal)}  ·  '
                 '${appLocalizations.direct} ${_bytes(math.max(result.total - result.proxyTotal, 0))}',
                 maxLines: 2,
                 style: muted,

@@ -6,6 +6,7 @@
   "customDashboardTitle": "Custom Title",
   "titleTooLong": "Title is too long, maximum 20 characters supported",
   "proxies": "Proxies",
+  "proxyTraffic": "Proxy traffic",
   "profile": "Profile",
   "profiles": "Profiles",
   "tools": "Tools",

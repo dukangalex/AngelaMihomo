@@ -6,6 +6,7 @@
   "customDashboardTitle": "カスタムタイトル",
   "titleTooLong": "長すぎます（最大20文字）",
   "proxies": "プロキシ",
+  "proxyTraffic": "Proxy traffic",
   "profile": "プロファイル",
   "profiles": "サブスク",
   "tools": "ツール",
