@@ -104,6 +104,26 @@ class AppLocalizations {
     return Intl.message('Proxy traffic', name: 'proxyTraffic', desc: '', args: []);
   }
 
+  /// `Download speed`
+  String get downloadSpeed {
+    return Intl.message('Download speed', name: 'downloadSpeed', desc: '', args: []);
+  }
+
+  /// `Upload speed`
+  String get uploadSpeed {
+    return Intl.message('Upload speed', name: 'uploadSpeed', desc: '', args: []);
+  }
+
+  /// `Today's traffic`
+  String get todayTraffic {
+    return Intl.message('Today\'s traffic', name: 'todayTraffic', desc: '', args: []);
+  }
+
+  /// `Subscription remaining`
+  String get subscriptionRemaining {
+    return Intl.message('Subscription remaining', name: 'subscriptionRemaining', desc: '', args: []);
+  }
+
   /// `Profile`
   String get profile {
     return Intl.message('Profile', name: 'profile', desc: '', args: []);

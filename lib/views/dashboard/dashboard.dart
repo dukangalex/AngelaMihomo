@@ -418,6 +418,13 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                               )
                             : const SizedBox.shrink(),
                       ),
+                      // T334 batch 2: the star-rail hero heads the
+                      // page above the editable grid. It is a fixed
+                      // header, not a grid tile — the grid below
+                      // keeps every existing widget and the edit
+                      // mode exactly as before.
+                      const OrbitHomeHero(),
+                      SizedBox(height: spacing),
                       _buildIsEdit(
                         (isEdit) => EditableGrid<DashboardTile>(
                           key: const ValueKey('dashboard-grid'),
@@ -466,9 +473,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 /// on the dashboard. T153: pinned widgets (the merged profile/mode
 /// card) are always present and can never be added, so they are
 /// excluded here even if a layout somehow lacks one.
-List<DashboardWidget> addableDashboardWidgets(
-  List<DashboardWidget> current,
-) {
+List<DashboardWidget> addableDashboardWidgets(List<DashboardWidget> current) {
   final families = {for (final item in current) item.family};
   return [
     for (final item in DashboardWidget.values)

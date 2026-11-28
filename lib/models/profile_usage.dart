@@ -23,6 +23,19 @@ UsageWarningLevel usageWarningLevel(double ratio) {
   return UsageWarningLevel.normal;
 }
 
+/// Urgency of a subscription's remaining days, for the home
+/// readouts (T334 batch 2, frozen design rule): more than 30 days
+/// reads as a plain fact, 30 days or fewer earns a reminder tone,
+/// and the final week is a warning. The colours live with the
+/// widgets; this is the single threshold table they all read.
+enum ExpiryWarningLevel { normal, reminder, warning }
+
+ExpiryWarningLevel expiryWarningLevel(int daysLeft) {
+  if (daysLeft <= 7) return ExpiryWarningLevel.warning;
+  if (daysLeft <= 30) return ExpiryWarningLevel.reminder;
+  return ExpiryWarningLevel.normal;
+}
+
 int _usedBytes(SubscriptionInfo info) => info.upload + info.download;
 
 class ProfileUsage {
