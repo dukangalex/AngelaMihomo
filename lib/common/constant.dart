@@ -80,6 +80,18 @@ double getFloatingBottomBarFABReserveHeight(BuildContext context) {
 
 const defaultTestUrl = 'https://www.gstatic.com/generate_204';
 
+// Delay ruler for DIRECT-type proxies (T329). Measured against the
+// global default, a direct entry would report the bare round trip
+// from China to Google (~300 ms), which says nothing about the
+// direct path itself, so direct entries are always measured against
+// this domestic 204 endpoint instead — independently of the user's
+// test URL setting, which is a ruler for proxied exits. Endpoint:
+// Xiaomi's connectivity-check 204 (the generate_204 endpoint MIUI
+// devices themselves use), verified to answer 204 on 2026-11-27;
+// Huawei's connectivitycheck.platform.hicloud.com/generate_204 also
+// answers 204 and is the fallback candidate.
+const directTestUrl = 'http://connect.rom.miui.com/generate_204';
+
 // Preset test URLs
 const presetTestUrls = [
   'https://g.cn/generate_204',

@@ -4,6 +4,7 @@ import 'package:angelamihomo/clash/clash.dart';
 import 'package:angelamihomo/common/common.dart';
 import 'package:angelamihomo/enum/enum.dart';
 import 'package:angelamihomo/models/models.dart';
+import 'package:angelamihomo/providers/providers.dart';
 import 'package:angelamihomo/state.dart';
 
 import 'package:flutter/foundation.dart';
@@ -119,8 +120,10 @@ Future<void> proxyDelayTest(Proxy proxy, [String? testUrl]) async {
   if (_isNonTestableProxy(proxy)) return;
   final appController = globalState.appController;
   final state = appController.getProxyCardState(proxy.name);
-  final url = appController.getRealTestUrl(
-    state.testUrl.getSafeValue(testUrl ?? ''),
+  final url = delayTestUrlFor(
+    proxyType: proxyTypeOf(appController.getCurrentGroups(), state.proxyName),
+    resolvedTestUrl: state.testUrl.getSafeValue(testUrl ?? ''),
+    fallbackTestUrl: appController.getRealTestUrl(''),
   );
   if (state.proxyName.isEmpty) {
     return;
@@ -246,14 +249,18 @@ Set<DelayTestTarget> buildDelayTestTargets(
   required List<Group> currentGroups,
 }) {
   final appController = globalState.appController;
+  final proxyTypes = proxyTypeMapOf(currentGroups);
+  final fallbackTestUrl = appController.getRealTestUrl('');
   final targets = <DelayTestTarget>{};
   for (final proxy in proxies) {
     if (_isNonTestableProxy(proxy)) {
       continue;
     }
     final state = appController.getProxyCardState(proxy.name);
-    final url = appController.getRealTestUrl(
-      state.testUrl.getSafeValue(testUrl ?? ''),
+    final url = delayTestUrlFor(
+      proxyType: proxyTypes[state.proxyName],
+      resolvedTestUrl: state.testUrl.getSafeValue(testUrl ?? ''),
+      fallbackTestUrl: fallbackTestUrl,
     );
     final name = state.proxyName;
     if (name.isEmpty ||
