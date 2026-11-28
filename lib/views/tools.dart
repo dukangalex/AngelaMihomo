@@ -1458,10 +1458,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
                 context,
                 title: appLocalizations.network,
                 items: [
-                  ...navigationRows([
-                    PageLabel.connections,
-                    PageLabel.toolbox,
-                  ]),
+                  ...navigationRows([PageLabel.connections, PageLabel.toolbox]),
                   _ConfigItem(),
                   _OtherSettingItem(),
                   if (system.isAndroid) _AccessItem(),
@@ -1503,6 +1500,16 @@ class _ToolViewState extends ConsumerState<ToolsView> {
       ),
     ];
 
+    // T337 （天枢）: the entries are bare list rows with no card
+    // surface of their own, so the page-wide guardian backdrop
+    // used to show straight through the scrolling text and the
+    // star lines ghosted against the glyphs. The scroll area now
+    // sits on the theme's own opaque background base — the same
+    // colour the backdrop paints beneath its artwork — so rows
+    // scroll over a clean field; the watermark keeps the header
+    // area (title bar) above the list, where nothing scrolls.
+    final scrollBase =
+        context.zodiac?.variant.backgroundBase ?? context.colorScheme.surface;
     return CommonScaffold(
       title: isMobileView ? appLocalizations.tools : appLocalizations.settings,
       searchState: AppBarSearchState(onSearch: _onSearchChanged),
@@ -1518,18 +1525,23 @@ class _ToolViewState extends ConsumerState<ToolsView> {
             tooltip: Intl.message(logsItem.label.name),
           ),
       ],
-      body: ScrollEdgeRise(
-        builder: (context, rise) => ListView.builder(
-          key: _query.isEmpty ? toolsStoreKey : null,
-          itemCount: _query.isEmpty ? items.length : searchResults.length,
-          itemBuilder: (_, index) {
-            return _query.isEmpty ? items[index] : searchResults[index];
-          },
-          padding: EdgeInsets.only(
-            bottom:
-                20.0 +
-                (isMobileView ? getFloatingBottomBarReserveHeight(context) : 0),
-            top: 8 + rise,
+      body: DecoratedBox(
+        decoration: BoxDecoration(color: scrollBase),
+        child: ScrollEdgeRise(
+          builder: (context, rise) => ListView.builder(
+            key: _query.isEmpty ? toolsStoreKey : null,
+            itemCount: _query.isEmpty ? items.length : searchResults.length,
+            itemBuilder: (_, index) {
+              return _query.isEmpty ? items[index] : searchResults[index];
+            },
+            padding: EdgeInsets.only(
+              bottom:
+                  20.0 +
+                  (isMobileView
+                      ? getFloatingBottomBarReserveHeight(context)
+                      : 0),
+              top: 8 + rise,
+            ),
           ),
         ),
       ),

@@ -121,6 +121,40 @@ void main() {
     expect(log, contains('move A>D'));
   });
 
+  testWidgets('编辑模式拖动中：被拖卡只画一份、让位不滑动（T343）', (tester) async {
+    final log = <String>[];
+    await tester.pumpWidget(_Harness(editing: true, log: log));
+    await tester.pump();
+    final gesture = await tester.startGesture(tester.getCenter(find.text('A')));
+    await tester.pump(const Duration(milliseconds: 600));
+    // Move within A's own cell: the drag is live (past the touch
+    // slop / long-press delay) but no reorder has fired yet.
+    await gesture.moveBy(const Offset(0, 40));
+    await tester.pump();
+    // The dragged tile exists exactly once while dragging: in the
+    // feedback. Its origin cell holds an empty slot marker with no
+    // content (pre-fix the origin repainted the full content at
+    // 30% opacity — a second, text-bearing copy).
+    expect(find.text('A'), findsOneWidget);
+    // Hovering D fires the reorder; the displaced tile C must
+    // already sit in its yielded cell — during a drag there is no
+    // FLIP slide, so its painted position mid-window equals its
+    // settled position (pre-fix it was still gliding across).
+    await gesture.moveTo(tester.getCenter(find.text('D').first));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(log, contains('move A>D'));
+    await tester.pump(const Duration(milliseconds: 60));
+    final cMid = tester.getTopLeft(find.text('C'));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 600));
+    final cSettled = tester.getTopLeft(find.text('C'));
+    // Within jiggle-rotation tolerance (a real FLIP slide would
+    // be off by a large fraction of a cell, not a fraction of a
+    // pixel): the yielded tile is already home, not gliding.
+    expect((cMid - cSettled).distance, lessThan(4.0));
+    expect(find.text('A'), findsOneWidget);
+  });
+
   testWidgets('不可移动项既不能被拖动、也不能被拖到其上（T153）', (tester) async {
     final log = <String>[];
     await tester.pumpWidget(_Harness(editing: true, log: log));
@@ -149,10 +183,10 @@ void main() {
     expect(log.where((entry) => entry.startsWith('move')), isEmpty);
   });
 
-  testWidgets('编辑态：合并卡无删除叉无缩放柄，其它部件两者俱在（T153）', (tester) async {
+  testWidgets('编辑态：每张卡都有删除叉与缩放柄（T337，无固定卡）', (tester) async {
     // Wired with the same predicate expressions DashboardView uses.
     const tiles = <DashboardTile>[
-      (widget: DashboardWidget.profileMode, size: DashboardTileSize.large),
+      (widget: DashboardWidget.exitNode, size: DashboardTileSize.wide),
       (widget: DashboardWidget.memoryInfo, size: DashboardTileSize.small),
     ];
     await tester.pumpWidget(
@@ -175,7 +209,6 @@ void main() {
               onResize: (_) {},
               canDelete: (tile) => tile.widget.widget.isDeletable,
               onDelete: (_) {},
-              canMove: (tile) => !tile.widget.pinned,
               onMove: (_, _) {},
             ),
           ),
@@ -183,20 +216,10 @@ void main() {
       ),
     );
     await tester.pump();
-    // Exactly one of each badge exists, and both sit on the memory
-    // tile's row (below the merged card's label), not on the merged
-    // card.
-    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.open_in_full_rounded), findsOneWidget);
-    final mergedLabelY = tester.getCenter(find.text('profileMode')).dy;
-    expect(
-      tester.getCenter(find.byIcon(Icons.close_rounded)).dy,
-      greaterThan(mergedLabelY),
-    );
-    expect(
-      tester.getCenter(find.byIcon(Icons.open_in_full_rounded)).dy,
-      greaterThan(mergedLabelY),
-    );
+    // T337: no tile is pinned any more — both tiles carry both
+    // edit affordances, the readout tiles included.
+    expect(find.byIcon(Icons.close_rounded), findsNWidgets(2));
+    expect(find.byIcon(Icons.open_in_full_rounded), findsNWidgets(2));
   });
 
   test('仪表盘组件按组归并并提供可选尺寸', () {
@@ -204,14 +227,16 @@ void main() {
       DashboardWidget.networkSpeedSmall.family,
       DashboardWidget.networkSpeed,
     );
-    expect(DashboardWidget.profileMode.family, DashboardWidget.profileMode);
-    // T153: the merged card is pinned — fixed native size, not
-    // resizable, not deletable; other widgets keep their affordances.
-    expect(DashboardWidget.profileMode.sizes, [DashboardTileSize.large]);
-    expect(DashboardWidget.profileMode.resizable, isFalse);
-    expect(DashboardWidget.profileMode.pinned, isTrue);
-    expect(DashboardWidget.profileMode.widget.isDeletable, isFalse);
-    expect(DashboardWidget.memoryInfo.pinned, isFalse);
+    expect(DashboardWidget.exitNode.family, DashboardWidget.exitNode);
+    // T337: every tile is a free grid citizen — deletable, and
+    // resizable wherever it offers more than one size. The
+    // subscription tile offers its two full-width slots.
+    expect(DashboardWidget.subscription.sizes, [
+      DashboardTileSize.wide,
+      DashboardTileSize.large,
+    ]);
+    expect(DashboardWidget.subscription.resizable, isTrue);
+    expect(DashboardWidget.exitNode.widget.isDeletable, isTrue);
     expect(DashboardWidget.memoryInfo.widget.isDeletable, isTrue);
     expect(DashboardWidget.networkSpeed.sizes, [
       DashboardTileSize.small,

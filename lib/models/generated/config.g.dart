@@ -205,7 +205,11 @@ const _$MrsTapActionEnumMap = {
 const _$DashboardWidgetEnumMap = {
   DashboardWidget.networkSpeed: 'networkSpeed',
   DashboardWidget.networkSpeedSmall: 'networkSpeedSmall',
-  DashboardWidget.profileMode: 'profileMode',
+  DashboardWidget.exitNode: 'exitNode',
+  DashboardWidget.outboundMode: 'outboundMode',
+  DashboardWidget.todayTraffic: 'todayTraffic',
+  DashboardWidget.subscriptionRemaining: 'subscriptionRemaining',
+  DashboardWidget.subscription: 'subscription',
   DashboardWidget.trafficUsage: 'trafficUsage',
   DashboardWidget.networkDetection: 'networkDetection',
   DashboardWidget.tunButton: 'tunButton',
@@ -222,7 +226,6 @@ const _$DashboardWidgetEnumMap = {
   DashboardWidget.fcmStatus: 'fcmStatus',
   DashboardWidget.onlinePanel: 'onlinePanel',
   DashboardWidget.toolboxShortcut: 'toolboxShortcut',
-  DashboardWidget.startButton: 'startButton',
 };
 
 const _$SidebarFlyoutEntryEnumMap = {

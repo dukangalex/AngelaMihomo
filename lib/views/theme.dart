@@ -75,8 +75,11 @@ class ItemCard extends StatelessWidget {
 }
 
 /// The theme chooser: the 星辰大海 family name heads the card and
-/// its one remaining series — the twelve constellations (T298) —
-/// sits under it as a collapsible section, starting expanded.
+/// the star ring is the one selector for its one remaining series
+/// — the twelve constellations (T298). (T337: the collapsible row
+/// list that duplicated the ring is gone; the ring is the single
+/// presentation, and the theme-mode options under it are the
+/// mode's single switch surface.)
 class _StarrySeaThemeItem extends ConsumerStatefulWidget {
   const _StarrySeaThemeItem();
 
@@ -86,25 +89,10 @@ class _StarrySeaThemeItem extends ConsumerStatefulWidget {
 }
 
 class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
-  final Set<ThemeSeries> _expanded = {};
-
-  @override
-  void initState() {
-    super.initState();
-    final selectedId = ref.read(themeSettingProvider).zodiacTheme;
-    _expanded.add(resolveAppTheme(selectedId).series);
-  }
-
   void _select(String id) {
     ref
         .read(themeSettingProvider.notifier)
         .updateState((state) => state.copyWith(zodiacTheme: id));
-  }
-
-  void _toggle(ThemeSeries series) {
-    setState(() {
-      if (!_expanded.remove(series)) _expanded.add(series);
-    });
   }
 
   String _selectedNameZh(AppThemeSelection selected) {
@@ -162,24 +150,6 @@ class _StarrySeaThemeItemState extends ConsumerState<_StarrySeaThemeItem> {
             ),
           ),
           _ZodiacRingPicker(selectedId: selected.id, onSelect: _select),
-          _SeriesSection(
-            nameZh: zodiacSeriesNameZh,
-            nameEn: zodiacSeriesNameEn,
-            expanded: _expanded.contains(ThemeSeries.zodiac),
-            onToggle: () => _toggle(ThemeSeries.zodiac),
-            children: [
-              for (final theme in zodiacThemes)
-                _ThemeRow(
-                  glyph: theme.sign,
-                  nameZh: theme.nameZh,
-                  nameEn: theme.nameEn,
-                  variant: theme.variantFor(Theme.of(context).brightness),
-                  isSelected: theme.id == selected.id,
-                  isDefault: theme.id == zodiacDefaultThemeId,
-                  onTap: () => _select(theme.id),
-                ),
-            ],
-          ),
         ],
       ),
     );
@@ -311,14 +281,11 @@ class GuardianConstellationPainter extends CustomPainter {
 }
 
 /// The ring picker heading the theme card: tapping a sign on the
-/// ring selects that theme through the very same callback the
-/// rows below use (one tap, same state, same persistence). The
-/// centre shows the selected sign's asterism, name, date range
-/// and current-theme plate; under the ring, the selected theme's
-/// dark and light variants preview side by side from their own
-/// variant data. The collapsible row list stays under it as the
-/// alternate presentation — it alone carries the default badge
-/// and the per-row palette dots.
+/// ring selects that theme (one tap, same state, same
+/// persistence). The centre shows the selected sign's asterism,
+/// name, date range and current-theme plate; under the ring, the
+/// theme-mode options (dark / light / auto) sit as three cards
+/// painted from the selected theme's own variant data.
 class _ZodiacRingPicker extends StatelessWidget {
   final String selectedId;
   final ValueChanged<String> onSelect;
@@ -360,21 +327,7 @@ class _ZodiacRingPicker extends StatelessWidget {
           },
         ),
         const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _variantPreview(context, selected, Brightness.dark),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _variantPreview(context, selected, Brightness.light),
-              ),
-            ],
-          ),
-        ),
+        const ThemeModeOptions(),
         const SizedBox(height: 4),
       ],
     );
@@ -526,326 +479,196 @@ class _ZodiacRingPicker extends StatelessWidget {
     );
   }
 
-  /// One side of the dark/light preview pair: the variant's own
+  /// One theme-mode option card, painted from the selected
+  /// theme's variant for [brightness]: the variant's own
   /// background paint and ink, a miniature orbit glyph in its
-  /// primary/secondary, its primary hex, and a live mark when
-  /// this variant is the one the ambient brightness resolves to.
-  Widget _variantPreview(
-    BuildContext context,
-    ZodiacThemeDef def,
-    Brightness brightness,
-  ) {
+  /// primary/secondary, its primary hex, and the selected mark
+  /// when [isSelected]. Tapping writes through to the one
+  /// theme-mode state (see ThemeModeOptions).
+  static Widget modeOptionCard(
+    BuildContext context, {
+    required ZodiacThemeDef def,
+    required Brightness brightness,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    IconData? badge,
+  }) {
     final variant = def.variantFor(brightness);
-    final isLive = Theme.of(context).brightness == brightness;
     final background = variant.background;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(StarRailRadius.card),
-        color: background.isAtmosphere
-            ? variant.surface
-            : background.isGradient
-            ? null
-            : background.solidColor,
-        gradient: background.isGradient ? background.gradient : null,
-        border: Border.all(color: variant.outline.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final tokens =
+        context.starRail ??
+        StarRailTokens.forBrightness(Theme.of(context).brightness);
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(StarRailRadius.card),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(StarRailRadius.card),
+            color: background.isAtmosphere
+                ? variant.surface
+                : background.isGradient
+                ? null
+                : background.solidColor,
+            gradient: background.isGradient ? background.gradient : null,
+            border: Border.all(
+              color: isSelected
+                  ? tokens.secondary
+                  : variant.outline.withValues(alpha: 0.5),
+              width: isSelected ? 1.6 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: tokens.secondary.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: variant.primary, width: 1.5),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 9,
-                    height: 9,
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: variant.secondary,
+                      border: Border.all(color: variant.primary, width: 1.5),
                     ),
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Icon(
-                isLive ? Icons.check_circle : Icons.radio_button_unchecked,
-                size: 18,
-                color: isLive ? variant.primary : variant.textSecondary,
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Text(
-                brightness == Brightness.dark
-                    ? appLocalizations.dark
-                    : appLocalizations.light,
-                style: context.textTheme.titleSmall?.copyWith(
-                  color: variant.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                variant.primary.hex,
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: variant.textSecondary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SeriesSection extends StatelessWidget {
-  final String nameZh;
-  final String nameEn;
-  final bool expanded;
-  final VoidCallback onToggle;
-  final List<Widget> children;
-
-  const _SeriesSection({
-    required this.nameZh,
-    required this.nameEn,
-    required this.expanded,
-    required this.onToggle,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onToggle,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 16, 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.star_border,
-                    size: 15,
-                    color: colorScheme.primary.withValues(alpha: 0.8),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          nameZh,
-                          style: textTheme.titleSmall?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        Text(
-                          nameEn,
-                          style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedRotation(
-                    turns: expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.expand_more,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (expanded) ...children,
-      ],
-    );
-  }
-}
-
-/// One theme row in the constellation series, led by its sign glyph.
-class _ThemeRow extends StatelessWidget {
-  final String glyph;
-  final String nameZh;
-  final String nameEn;
-  final ZodiacVariant variant;
-  final bool isSelected;
-  final bool isDefault;
-  final VoidCallback onTap;
-
-  const _ThemeRow({
-    this.glyph = '',
-    required this.nameZh,
-    required this.nameEn,
-    required this.variant,
-    required this.isSelected,
-    this.isDefault = false,
-    required this.onTap,
-  });
-
-  Widget _dot(Color color) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final activeVariant = context.zodiac?.variant;
-    final selectedPaint = activeVariant?.selected;
-    // Selected row form (design doc 5.1 + the finalized mockups): a
-    // translucent surfaceVariant wash, a gradient marker bar and the
-    // check — never a solid light block, which made the row unreadable
-    // in the rejected theme-dark mockup.
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: isSelected
-                ? BoxDecoration(
-                    color:
-                        activeVariant?.surfaceVariant ??
-                        colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
-                  )
-                : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  if (isSelected &&
-                      selectedPaint != null &&
-                      !selectedPaint.isNone) ...[
-                    Container(
-                      width: 4,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        gradient: selectedPaint.isGradient
-                            ? LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: selectedPaint.stops!,
-                              )
-                            : null,
-                        color: selectedPaint.isGradient
-                            ? null
-                            : selectedPaint.solidColor,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                  SizedBox(
-                    width: 28,
-                    child: Text(glyph, style: const TextStyle(fontSize: 20)),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                nameZh,
-                                style: textTheme.titleSmall?.copyWith(
-                                  color: isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurface,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                ),
+                    child: Center(
+                      child: badge != null
+                          ? Icon(badge, size: 16, color: variant.secondary)
+                          : Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: variant.secondary,
                               ),
                             ),
-                            if (isDefault) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      activeVariant?.surfaceVariant ??
-                                      colorScheme.secondaryContainer,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  appLocalizations.defaultText,
-                                  style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        Text(
-                          nameEn,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                  // Single-set family: one palette thumbnail per theme
-                  // (primary + secondary dots of the canonical variant).
-                  _dot(variant.primary),
-                  const SizedBox(width: 4),
-                  _dot(variant.secondary),
-                  const SizedBox(width: 8),
+                  const Spacer(),
                   Icon(
                     isSelected
                         ? Icons.check_circle
                         : Icons.radio_button_unchecked,
-                    size: 20,
+                    size: 18,
                     color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        ? tokens.secondary
+                        : variant.textSecondary,
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        color: variant.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    variant.primary.hex,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: variant.textSecondary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The theme-mode options （星宫）: dark / light / auto as three
+/// cards under the star ring. They read and write the app's one
+/// existing theme-mode state — themeSettingProvider's
+/// ThemeProps.themeMode, the same value MaterialApp applies and
+/// currentBrightness resolves — so this row is the mode's single
+/// switch surface (the dashboard menu's cycling entry was removed
+/// in T337 for exactly this reason), with no parallel state of
+/// its own. Auto is ThemeMode.system: its card paints the variant
+/// the platform brightness currently resolves to, so the
+/// follow-system result is the very paint the app will wear.
+class ThemeModeOptions extends ConsumerWidget {
+  const ThemeModeOptions({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(
+      themeSettingProvider.select((state) => state.themeMode),
+    );
+    final selectedId = ref.watch(
+      themeSettingProvider.select((state) => state.zodiacTheme),
+    );
+    final def = resolveZodiacTheme(selectedId);
+    final systemBrightness = MediaQuery.platformBrightnessOf(context);
+
+    void select(ThemeMode mode) {
+      ref
+          .read(themeSettingProvider.notifier)
+          .updateState((state) => state.copyWith(themeMode: mode));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _ZodiacRingPicker.modeOptionCard(
+              context,
+              def: def,
+              brightness: Brightness.dark,
+              label: appLocalizations.dark,
+              isSelected: themeMode == ThemeMode.dark,
+              onTap: () => select(ThemeMode.dark),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _ZodiacRingPicker.modeOptionCard(
+              context,
+              def: def,
+              brightness: Brightness.light,
+              label: appLocalizations.light,
+              isSelected: themeMode == ThemeMode.light,
+              onTap: () => select(ThemeMode.light),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _ZodiacRingPicker.modeOptionCard(
+              context,
+              def: def,
+              brightness: systemBrightness,
+              label: appLocalizations.auto,
+              isSelected: themeMode == ThemeMode.system,
+              onTap: () => select(ThemeMode.system),
+              badge: Icons.auto_mode,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -27,13 +27,11 @@ void showOutboundModeSheet(BuildContext context) {
                 items: [
                   for (final item in Mode.values)
                     ListItem(
-                      leading: Icon(
-                        switch (item) {
-                          Mode.rule => Icons.alt_route_rounded,
-                          Mode.global => Icons.language_rounded,
-                          Mode.direct => Icons.east_rounded,
-                        },
-                      ),
+                      leading: Icon(switch (item) {
+                        Mode.rule => Icons.alt_route_rounded,
+                        Mode.global => Icons.language_rounded,
+                        Mode.direct => Icons.east_rounded,
+                      }),
                       title: Text(Intl.message(item.name)),
                       trailing: item == currentMode
                           ? Icon(
@@ -303,6 +301,134 @@ class VpnButton extends StatelessWidget {
                     },
                   );
                 },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The running-mode status chips (TUN/VPN and system proxy: state
+/// dot plus a tap into the very same sheets the quick-option
+/// buttons open). They lived on the merged profile/mode card's
+/// mode zone until T337 retired that card into the star-rail hero;
+/// the chips moved here beside the sheets they open — same state
+/// sources, same destinations, presentation only.
+class OutboundStatusChips extends ConsumerWidget {
+  const OutboundStatusChips({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isStart = ref.watch(runTimeProvider.select((value) => value != null));
+    final realTunEnable = ref.watch(realTunEnableProvider);
+    final (tunEnable, systemProxyEnable) = system.isAndroid
+        ? ref.watch(
+            vpnSettingProvider.select(
+              (state) => (state.enable, state.systemProxy),
+            ),
+          )
+        : (
+            ref.watch(
+              patchClashConfigProvider.select((state) => state.tun.enable),
+            ),
+            ref.watch(
+              networkSettingProvider.select((state) => state.systemProxy),
+            ),
+          );
+    // T341: a wrap, not a row — as the outbound-mode tile's
+    // footnote the chips share a small tile's inner width with
+    // the card padding, where the two chips side by side can
+    // exceed the line and paint outside the card. Wrapping keeps
+    // both chips whole and tappable at any width.
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        OutboundStatusChip(
+          label: system.isAndroid ? 'VPN' : 'TUN',
+          active: isStart && tunEnable && (system.isAndroid || realTunEnable),
+          onTap: () =>
+              system.isAndroid ? showVpnSheet(context) : showTunSheet(context),
+        ),
+        OutboundStatusChip(
+          label: appLocalizations.systemProxy,
+          active: isStart && systemProxyEnable,
+          onTap: () => showSystemProxySheet(context),
+        ),
+      ],
+    );
+  }
+}
+
+class OutboundStatusChip extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const OutboundStatusChip({
+    super.key,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final color = active
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant.withValues(alpha: 0.55);
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: midDuration,
+          padding: const EdgeInsets.fromLTRB(7, 3, 8, 3),
+          decoration: BoxDecoration(
+            color: active
+                ? colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.20)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: active
+                  ? colorScheme.primary.withValues(alpha: isLight ? 0.28 : 0.36)
+                  : colorScheme.outlineVariant.withValues(
+                      alpha: isLight ? 0.9 : 0.6,
+                    ),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: midDuration,
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: active ? colorScheme.primary : Colors.transparent,
+                  border: Border.all(
+                    color: active
+                        ? colorScheme.primary
+                        : colorScheme.outline.withValues(alpha: 0.8),
+                    width: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: context.textTheme.labelSmall?.copyWith(
+                  fontSize: 11,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  color: color,
+                ),
               ),
             ],
           ),
